@@ -9,8 +9,6 @@ import WorkbenchUploadPanel from'./workbench/WorkbenchUploadPanel.jsx';
 import GenerationControls from'./workbench/GenerationControls.jsx';
 import ResourcePickerModal from'./workbench/ResourcePickerModal.jsx';
 import WatermarkConfigModal from'./workbench/WatermarkConfigModal.jsx';
-import ResourceCategoryDrawer from'./resources/ResourceCategoryDrawer.jsx';
-import ResourceDetailModal from'./resources/ResourceDetailModal.jsx';
 
 export const storeAdminNav=storeAdminPages;
 export const staffNav=staffPages;
@@ -820,8 +818,15 @@ function StoreResources({me,setMsg}){
   const [categoryTree,setCategoryTree]=useState([]);
   const [categoryLoading,setCategoryLoading]=useState(false);
   const [categoryError,setCategoryError]=useState('');
+  const [activeResourcePanel,setActiveResourcePanel]=useState('');
   const [renameTarget,setRenameTarget]=useState(null);
   const [renameValue,setRenameValue]=useState('');
+  const [categoryForm,setCategoryForm]=useState(null);
+  const [selectedResourceIds,setSelectedResourceIds]=useState(()=>new Set());
+  const [batchCategoryOpen,setBatchCategoryOpen]=useState(false);
+  const [batchDeleteOpen,setBatchDeleteOpen]=useState(false);
+  const [batchMainCategory,setBatchMainCategory]=useState('');
+  const [batchSubCategory,setBatchSubCategory]=useState('');
   const [detail,setDetail]=useState(null);
   const [dragging,setDragging]=useState(false);
   const [f,setF]=useState({name:'',resourceType:'material',objectName:'材质',colorName:'',description:''});
@@ -888,6 +893,7 @@ function StoreResources({me,setMsg}){
 
   useEffect(()=>{
     setSysPage(1);
+    setSelectedResourceIds(new Set());
   },[query.keyword,query.resourceType,query.mainCategory,query.subCategory,query.status,space]);
 
   useEffect(()=>{
@@ -969,13 +975,84 @@ function StoreResources({me,setMsg}){
 
   async function openDetail(id){
     try{
-      setDetail(await req('/api/resources/'+id+'/detail'));
+      const d=await req('/api/resources/'+id+'/detail');
+      setDetail(d);
+      setCategoryOpen(false);
+      setRenameTarget(null);
+      setActiveResourcePanel('detail');
     }catch(e){
       setMsg(e.message);
     }
   }
 
-  function openRename(r){
+  function toggleResourceSelected(id,checked){
+    setSelectedResourceIds(prev=>{
+      const next=new Set(prev);
+      if(checked)next.add(String(id));
+      else next.delete(String(id));
+      return next;
+    });
+  }
+
+  function clearResourceSelection(){
+    setSelectedResourceIds(new Set());
+    setBatchCategoryOpen(false);
+    setBatchDeleteOpen(false);
+  }
+
+  async function batchDeleteResources(){
+    const ids=Array.from(selectedResourceIds);
+    if(!ids.length)return;
+    setBatchDeleteOpen(true);
+  }
+
+  async function confirmBatchDeleteResources(){
+    const ids=Array.from(selectedResourceIds);
+    if(!ids.length)return;
+    try{
+      for(const id of ids){
+        await req(isSystemAdmin&&space==='SYSTEM'?('/api/admin/resources/'+id):('/api/merchant/resources/'+id),{method:'DELETE'});
+      }
+      setMsg(`已删除 ${ids.length} 个资源`);
+      clearResourceSelection();
+      load();
+      req((isSystemAdmin?'/api/admin/resources':'/api/resources')+'?pageSize=999').then(d=>setSys((d.items||[]).filter(x=>x.scope==='SYSTEM'))).catch(()=>{});
+    }catch(e){
+      setMsg(e.message);
+    }
+  }
+
+  function openBatchCategoryModal(){
+    const firstMain=mainOptions[0]||'';
+    setBatchMainCategory(firstMain);
+    setBatchSubCategory('');
+    setBatchCategoryOpen(true);
+  }
+
+  async function submitBatchCategory(){
+    const ids=Array.from(selectedResourceIds);
+    if(!ids.length)return;
+    if(!batchMainCategory)return setMsg('请选择主分类');
+    try{
+      for(const id of ids){
+        await req(isSystemAdmin&&space==='SYSTEM'?('/api/admin/resources/'+id):('/api/merchant/resources/'+id),{method:'PATCH',body:JSON.stringify({objectName:batchMainCategory,colorName:batchSubCategory})});
+      }
+      setMsg(`已修改 ${ids.length} 个资源的分类`);
+      setBatchCategoryOpen(false);
+      clearResourceSelection();
+      load();
+      req((isSystemAdmin?'/api/admin/resources':'/api/resources')+'?pageSize=999').then(d=>setSys((d.items||[]).filter(x=>x.scope==='SYSTEM'))).catch(()=>{});
+    }catch(e){
+      setMsg(e.message);
+    }
+  }
+
+  function openRename(r,{keepDetail=false}={}){
+    setCategoryOpen(false);
+    if(!keepDetail){
+      setDetail(null);
+      setActiveResourcePanel('');
+    }
     setRenameTarget(r);
     setRenameValue(r.name||'');
   }
@@ -986,7 +1063,9 @@ function StoreResources({me,setMsg}){
       if(!name)return setMsg('资源名称不能为空');
       await req(isSystemAdmin&&space==='SYSTEM'?('/api/admin/resources/'+renameTarget.id):('/api/merchant/resources/'+renameTarget.id),{method:'PATCH',body:JSON.stringify({name})});
       setMsg('资源已重命名');
+      if(detail?.image?.id===renameTarget.id)setDetail({...detail,image:{...detail.image,name}});
       setRenameTarget(null);
+      if(activeResourcePanel!=='detail')setActiveResourcePanel('');
       load();
       req((isSystemAdmin?'/api/admin/resources':'/api/resources')+'?pageSize=999').then(d=>setSys((d.items||[]).filter(x=>x.scope==='SYSTEM'))).catch(()=>{});
     }catch(e){
@@ -1069,12 +1148,107 @@ function StoreResources({me,setMsg}){
   const mainOptions=categoryGroups.map(g=>g.name);
   const selectedMain=categoryGroups.find(g=>g.name===query.mainCategory);
   const subOptions=selectedMain?.subs||[];
+  const batchSelectedMain=categoryGroups.find(g=>g.name===batchMainCategory);
+  const batchSubOptions=batchSelectedMain?.subs||[];
+  const selectedCount=selectedResourceIds.size;
   const uploadMain=f.objectName||categoryGroups[0]?.name||'材质';
   const uploadSelectedMain=categoryGroups.find(g=>g.name===uploadMain);
   const uploadSubOptions=uploadSelectedMain?.subs||[];
 
   function changeUploadMain(main){
     setF({...f,objectName:main,colorName:'',resourceType:fixedCategoryResourceType(main)});
+  }
+
+  const hasSidePanel=categoryOpen||detail||renameTarget;
+  const detailImage=detail?.image||null;
+  const detailUrl=detailImage?.url?(detailImage.url.startsWith('http')?detailImage.url:API+detailImage.url):'';
+  const detailCategory=detailImage?[detailImage.mainCategoryName,detailImage.subCategoryName].filter(Boolean).join(' / ')||'未分类':'';
+  const categorySections=categoryTree.length?categoryTree:[
+    {purposeKey:'user_reference',purposeName:'产品参考',mains:[]},
+    {purposeKey:'material',purposeName:'材质替换',mains:[]},
+    {purposeKey:'scene',purposeName:'场景融合',mains:[]}
+  ];
+  const categoryPurposeOptions=categorySections.map(section=>({key:section.purposeKey,name:section.purposeName}));
+  const canCreateCategory=categoryScope!=='SYSTEM'||isSystemAdmin;
+
+  function closeSidePanel(){
+    setCategoryOpen(false);
+    setDetail(null);
+    setRenameTarget(null);
+    setCategoryForm(null);
+    setActiveResourcePanel('');
+  }
+
+  function openCategoryPanel(){
+    setDetail(null);
+    setRenameTarget(null);
+    setCategoryOpen(true);
+    setActiveResourcePanel('category');
+  }
+
+  async function createMainCategory(purposeKey='user_reference'){
+    setCategoryForm({mode:'createMain',title:'创建主分类',label:'分类名称',value:'',purposeKey,sortOrder:0});
+  }
+
+  async function renameMainCategory(main){
+    setCategoryForm({mode:'renameMain',title:'编辑主分类',label:'分类名称',value:main.name,main,sortOrder:main.sortOrder||0});
+  }
+
+  async function deleteMainCategory(main){
+    setCategoryForm({mode:'deleteMain',title:'删除主分类',value:main.name,main,danger:true});
+  }
+
+  async function createSubCategory(main){
+    setCategoryForm({mode:'createSub',title:'创建子分类',label:'分类名称',value:'',main,sortOrder:0});
+  }
+
+  async function renameSubCategory(sub){
+    setCategoryForm({mode:'renameSub',title:'编辑子分类',label:'分类名称',value:sub.name,sub,sortOrder:sub.sortOrder||0});
+  }
+
+  async function deleteSubCategory(sub){
+    setCategoryForm({mode:'deleteSub',title:'删除子分类',value:sub.name,sub,danger:true});
+  }
+
+  async function submitCategoryForm(){
+    if(!categoryForm)return;
+    const name=String(categoryForm.value||'').trim();
+    if(!categoryForm.danger&&!name)return;
+    try{
+      if(categoryForm.mode==='createMain'){
+        await req('/api/categories/main',{method:'POST',body:JSON.stringify({scope:categoryScope,purposeKey:categoryForm.purposeKey||'user_reference',name,sortOrder:Number(categoryForm.sortOrder||0)})});
+        setMsg('主分类已创建');
+      }else if(categoryForm.mode==='renameMain'){
+        if(name===categoryForm.main.name)return setCategoryForm(null);
+        await req('/api/categories/main/'+categoryForm.main.id,{method:'PATCH',body:JSON.stringify({name,sortOrder:Number(categoryForm.sortOrder||0)})});
+        setMsg('主分类已重命名');
+      }else if(categoryForm.mode==='deleteMain'){
+        await req('/api/categories/main/'+categoryForm.main.id,{method:'PATCH',body:JSON.stringify({status:'DELETED'})});
+        setMsg('主分类已删除');
+      }else if(categoryForm.mode==='createSub'){
+        await req('/api/categories/'+categoryForm.main.id+'/sub',{method:'POST',body:JSON.stringify({name,sortOrder:Number(categoryForm.sortOrder||0)})});
+        setMsg('子分类已创建');
+      }else if(categoryForm.mode==='renameSub'){
+        if(name===categoryForm.sub.name)return setCategoryForm(null);
+        await req('/api/categories/sub/'+categoryForm.sub.id,{method:'PATCH',body:JSON.stringify({name,sortOrder:Number(categoryForm.sortOrder||0)})});
+        setMsg('子分类已重命名');
+      }else if(categoryForm.mode==='deleteSub'){
+        await req('/api/categories/sub/'+categoryForm.sub.id,{method:'PATCH',body:JSON.stringify({status:'DELETED'})});
+        setMsg('子分类已删除');
+      }
+      setCategoryForm(null);
+      loadCategories();
+    }catch(e){
+      setMsg(e.message);
+    }
+  }
+
+  function formatResourceBytes(bytes){
+    const n=Number(bytes||0);
+    if(!n)return '-';
+    if(n<1024)return `${n} B`;
+    if(n<1024*1024)return `${(n/1024).toFixed(1)} KB`;
+    return `${(n/1024/1024).toFixed(2)} MB`;
   }
 
   return <div className="resourcePageV3">
@@ -1099,7 +1273,7 @@ function StoreResources({me,setMsg}){
         {subOptions.map(v=><option key={v} value={v}>{v}</option>)}
       </select>
 
-      <button className="resourceManageCategoryV3" type="button" onClick={()=>setCategoryOpen(true)}>管理分类</button>
+      <button className="resourceManageCategoryV3" type="button" onClick={openCategoryPanel}>管理分类</button>
 
       {canUpload&&<button className="resourceUploadOpenV3" type="button" onClick={()=>setUploadOpen(true)}>
         <span>+</span> 上传文件
@@ -1112,9 +1286,146 @@ function StoreResources({me,setMsg}){
         {!isSystemAdmin&&isStoreAdmin&&<button className={space==='STORE'?'active':''} onClick={()=>setSpace('STORE')}>门店空间</button>}
         {!isSystemAdmin&&!isStoreAdmin&&<button className={space==='PERSONAL'?'active':''} onClick={()=>setSpace('PERSONAL')}>我的空间</button>}
       </div>
-      <button className="resourceManageCategoryV3" type="button" onClick={()=>setCategoryOpen(true)}>分类修改</button>
+      {selectedCount>0&&<div className="resourceBatchBarV8">
+        <b>已选 {selectedCount} 项</b>
+        <button type="button" onClick={openBatchCategoryModal}>修改分类</button>
+        <button type="button" className="danger" onClick={batchDeleteResources}>删除</button>
+        <button type="button" className="ghost" onClick={clearResourceSelection}>取消选择</button>
+      </div>}
     </section>
 
+    {activeResourcePanel&&<section className={activeResourcePanel==='category'?'resourceActionPanelV7 categoryDrawerV7':activeResourcePanel==='detail'?'resourceActionPanelV7 detailDrawerV7':'resourceActionPanelV7'}>
+      {activeResourcePanel==='category'&&<div className="resourceActionContentV7">
+        <div className="resourceCategoryDrawerHeadV7">
+          <div>
+            <h2>分类管理</h2>
+            <span>全部分类会在这里统一展示，可新增、重命名或删除可管理分类。</span>
+          </div>
+          <div className="resourceCategoryDrawerActionsV7">
+            {canCreateCategory&&<button type="button" className="primary" onClick={()=>createMainCategory('user_reference')}><Plus size={16}/>创建主分类</button>}
+            <button type="button" className="iconOnly" title="刷新" aria-label="刷新" onClick={loadCategories}><RotateCcw size={17}/></button>
+            <button type="button" className="iconOnly" title="收起" aria-label="收起" onClick={closeSidePanel}><X size={18}/></button>
+          </div>
+        </div>
+        {categoryLoading&&<div className="resourceSideStateV6">分类加载中...</div>}
+        {categoryError&&<div className="resourceSideStateV6 error">{categoryError}</div>}
+        <div className="resourceCategoryFlatV7">
+          {categorySections.map(section=><section className="resourceCategorySectionInlineV6" key={section.purposeKey}>
+            <div className="resourceCategoryPurposeV6">
+              <h3>{section.purposeName}</h3>
+              {canCreateCategory&&<button type="button" onClick={()=>createMainCategory(section.purposeKey)}><Plus size={14}/>新增</button>}
+            </div>
+            {(section.mains||[]).length?(section.mains||[]).map(main=><article className="resourceCategoryMainV6" key={main.id}>
+              <div className="resourceCategoryMainHeadV6">
+                <b>{main.name}</b>
+                <span>{(main.subs||[]).length} 个子分类</span>
+                {main.canManage&&<button type="button" onClick={()=>renameMainCategory(main)}><Pencil size={15}/></button>}
+                {main.canManage&&!main.isFixed&&<button className="danger" type="button" onClick={()=>deleteMainCategory(main)}><Trash2 size={15}/></button>}
+              </div>
+              <div className="resourceCategorySubListV6">
+                {(main.subs||[]).length?(main.subs||[]).map(sub=><div className="resourceCategorySubItemV6" key={sub.id}>
+                  <span>{sub.name}</span>
+                  {main.canManage&&<button type="button" onClick={()=>renameSubCategory(sub)}><Pencil size={14}/></button>}
+                  {main.canManage&&<button className="danger" type="button" onClick={()=>deleteSubCategory(sub)}><Trash2 size={14}/></button>}
+                </div>):<div className="resourceCategoryEmptyV6">暂无子分类</div>}
+                {main.canManage&&<button className="resourceCategoryAddSubV6" type="button" onClick={()=>createSubCategory(main)}><Plus size={14}/>添加子分类</button>}
+              </div>
+            </article>):<div className="resourceCategoryEmptyV6">暂无主分类，点击“新增”创建</div>}
+          </section>)}
+        </div>
+      </div>}
+
+      {activeResourcePanel==='detail'&&detail&&detailImage&&<div className="resourceActionContentV7 resourceDetailFlatV7">
+        <div className="resourceDetailImageV6">
+          {detailUrl?<img src={detailUrl} alt={detailImage.name}/>:<span>暂无图片</span>}
+        </div>
+        <div>
+          <div className="resourceDetailTitleV6">
+            <h3>{detailImage.name}</h3>
+            <button type="button" onClick={()=>openRename({id:detailImage.id,name:detailImage.name},{keepDetail:true})}><Pencil size={16}/></button>
+            <button type="button" onClick={closeSidePanel}><X size={17}/></button>
+          </div>
+          <dl className="resourceDetailMetaV6">
+            <dt>文件大小</dt><dd>{formatResourceBytes(detailImage.fileSize)}</dd>
+            <dt>分辨率</dt><dd>{detailImage.width&&detailImage.height?`${detailImage.width} × ${detailImage.height}`:'-'}</dd>
+            <dt>分类</dt><dd>{detailCategory}</dd>
+            <dt>上传时间</dt><dd>{fmt(detailImage.createdAt)}</dd>
+          </dl>
+          <div className="resourceDetailActionsV6">
+            <button type="button" onClick={()=>localStorage.setItem('pendingWorkbenchImage',JSON.stringify({id:detailImage.id,url:detailImage.url,name:detailImage.name}))}>智能工作台</button>
+            <button type="button" onClick={()=>detailUrl&&window.open(detailUrl,'_blank')}>图片处理</button>
+          </div>
+        </div>
+        <section className="resourceRelatedTasksV6">
+          <h4>关联生成记录（{(detail.relatedTasks||[]).length}）</h4>
+          {(detail.relatedTasks||[]).length?(detail.relatedTasks||[]).map(t=><article key={t.id}>
+            <b>{featureName[t.featureKey]||t.featureKey||'AI任务'}</b>
+            <span>{t.status} · {fmt(t.submittedAt)}</span>
+          </article>):<div className="resourceCategoryEmptyV6">暂无关联生成记录</div>}
+        </section>
+      </div>}
+
+    </section>}
+
+    {renameTarget&&<div className="resourceCategoryModalMaskV8" onMouseDown={e=>{if(e.target===e.currentTarget)setRenameTarget(null);}}>
+      <div className="resourceCategoryModalV8 resourceRenameModalV8" role="dialog" aria-modal="true" aria-label="重命名资源">
+        <h2>重命名资源</h2>
+        <input className="resourceCategoryModalInputV8" value={renameValue} autoFocus placeholder="资源名称 *" onChange={e=>setRenameValue(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')submitRename();}}/>
+        <div className="resourceCategoryModalActionsV8">
+          <button type="button" onClick={()=>setRenameTarget(null)}>取消</button>
+          <button type="button" className="primary" disabled={!renameValue.trim()} onClick={submitRename}>保存</button>
+        </div>
+      </div>
+    </div>}
+
+    {batchCategoryOpen&&<div className="resourceCategoryModalMaskV8" onMouseDown={e=>{if(e.target===e.currentTarget)setBatchCategoryOpen(false);}}>
+      <div className="resourceCategoryModalV8 resourceBatchCategoryModalV8" role="dialog" aria-modal="true" aria-label="批量更改分类">
+        <h2>批量更改分类（已选 {selectedCount} 项）</h2>
+        <select className="resourceCategoryModalSelectV8" value={batchMainCategory} onChange={e=>{setBatchMainCategory(e.target.value);setBatchSubCategory('');}}>
+          <option value="">主分类</option>
+          {mainOptions.map(name=><option key={name} value={name}>{name}</option>)}
+        </select>
+        <select className="resourceCategoryModalSelectV8" value={batchSubCategory} disabled={!batchMainCategory} onChange={e=>setBatchSubCategory(e.target.value)}>
+          <option value="">子分类</option>
+          {batchSubOptions.map(name=><option key={name} value={name}>{name}</option>)}
+        </select>
+        <div className="resourceCategoryModalActionsV8">
+          <button type="button" onClick={()=>setBatchCategoryOpen(false)}>取消</button>
+          <button type="button" className="primary" disabled={!batchMainCategory} onClick={submitBatchCategory}>确定</button>
+        </div>
+      </div>
+    </div>}
+
+    {batchDeleteOpen&&<div className="resourceCategoryModalMaskV8" onMouseDown={e=>{if(e.target===e.currentTarget)setBatchDeleteOpen(false);}}>
+      <div className="resourceCategoryModalV8 danger resourceBatchDeleteModalV8" role="dialog" aria-modal="true" aria-label="批量删除资源">
+        <h2>批量删除资源</h2>
+        <p className="resourceCategoryModalTextV8">确认删除已选的 {selectedCount} 个资源？删除后资源不会再显示。</p>
+        <div className="resourceCategoryModalActionsV8">
+          <button type="button" onClick={()=>setBatchDeleteOpen(false)}>取消</button>
+          <button type="button" className="danger" onClick={confirmBatchDeleteResources}>确认删除</button>
+        </div>
+      </div>
+    </div>}
+
+    {categoryForm&&<div className="resourceCategoryModalMaskV8" onMouseDown={e=>{if(e.target===e.currentTarget)setCategoryForm(null);}}>
+      <div className={`resourceCategoryModalV8 ${categoryForm.danger?'danger':''}`} role="dialog" aria-modal="true" aria-label={categoryForm.title}>
+        <h2>{categoryForm.title}</h2>
+        {categoryForm.danger?<>
+          <p className="resourceCategoryModalTextV8">确认删除“{categoryForm.value}”？删除后该分类不会再显示。</p>
+        </>:<>
+          <input className="resourceCategoryModalInputV8" value={categoryForm.value} autoFocus placeholder={`${categoryForm.label} *`} onChange={e=>setCategoryForm({...categoryForm,value:e.target.value})} onKeyDown={e=>{if(e.key==='Enter')submitCategoryForm();}}/>
+          {categoryForm.mode==='createMain'&&<select className="resourceCategoryModalSelectV8" value={categoryForm.purposeKey||''} onChange={e=>setCategoryForm({...categoryForm,purposeKey:e.target.value})}>
+            {categoryPurposeOptions.map(option=><option key={option.key} value={option.key}>{option.name}</option>)}
+          </select>}
+        </>}
+        <div className="resourceCategoryModalActionsV8">
+          <button type="button" onClick={()=>setCategoryForm(null)}>取消</button>
+          <button type="button" className={categoryForm.danger?'danger':'primary'} disabled={!categoryForm.danger&&!String(categoryForm.value||'').trim()} onClick={submitCategoryForm}>{categoryForm.danger?'确认删除':'保存'}</button>
+        </div>
+      </div>
+    </div>}
+
+    <div className="resourceInlineLayoutV6">
     <section className="resourceGridPanelV3">
       <div className="resourceGridV3">
         {displayItems.length?displayItems.map(r=>{
@@ -1122,14 +1433,14 @@ function StoreResources({me,setMsg}){
           const canManage=(isSystemAdmin&&isSystem)||(!isSystem&&canUpload&&r.source!=='GENERATED_IMAGE');
           return <article className="resourceCardV3" key={space+'-'+r.id}>
             <label className="resourceSelectV3" title="勾选">
-              <input type="checkbox" aria-label="勾选资源"/>
+              <input type="checkbox" aria-label="勾选资源" checked={selectedResourceIds.has(String(r.id))} onChange={e=>toggleResourceSelected(r.id,e.target.checked)}/>
               <span></span>
             </label>
 
             <div className="resourceImageV3">
               {url?<img src={url} alt={r.name}/>:<div className="resourcePlaceholderV3">{resTypeName[r.resourceType]||'资源'}</div>}
               <div className="resourceHoverActionsV3">
-                <button title="预览" onClick={()=>openDetail(r.id)}><Eye size={18}/></button>
+                <button title="预览" onClick={()=>{setCategoryOpen(false);setRenameTarget(null);openDetail(r.id)}}><Eye size={18}/></button>
                 {canManage&&<button title="重命名" onClick={()=>openRename(r)}><Pencil size={17}/></button>}
               </div>
             </div>
@@ -1165,6 +1476,84 @@ function StoreResources({me,setMsg}){
         <div className="resourceJumpV3">跳至 <input type="number" min="1" max={totalPages} onKeyDown={e=>{if(e.key==='Enter')changePage(Number(e.currentTarget.value)||1)}}/> 页</div>
       </div>
     </section>
+
+    {false&&hasSidePanel&&<aside className="resourceSidePanelV6">
+      <header className="resourceSideHeadV6">
+        <div>
+          <h2>{categoryOpen?'分类管理':detail?'资源详情':'重命名资源'}</h2>
+          <span>{categoryScope==='SYSTEM'?'系统空间':categoryScope==='MERCHANT'?'门店空间':'我的空间'}</span>
+        </div>
+        <button type="button" onClick={closeSidePanel}>×</button>
+      </header>
+
+      {categoryOpen&&<div className="resourceCategoryInlineV6">
+        <div className="resourceCategoryTopV6">
+          <button type="button" onClick={()=>createMainCategory('user_reference')}><Plus size={16}/>创建主分类</button>
+          <button type="button" onClick={loadCategories}>刷新</button>
+        </div>
+        {categoryLoading&&<div className="resourceSideStateV6">分类加载中...</div>}
+        {categoryError&&<div className="resourceSideStateV6 error">{categoryError}</div>}
+        {categorySections.map(section=><section className="resourceCategorySectionInlineV6" key={section.purposeKey}>
+          <div className="resourceCategoryPurposeV6">
+            <h3>{section.purposeName}</h3>
+            <button type="button" onClick={()=>createMainCategory(section.purposeKey)}><Plus size={14}/>新增</button>
+          </div>
+          {(section.mains||[]).length?(section.mains||[]).map(main=><article className="resourceCategoryMainV6" key={main.id}>
+            <div className="resourceCategoryMainHeadV6">
+              <b>{main.name}</b>
+              <span>{(main.subs||[]).length} 个子分类</span>
+              {main.canManage&&<button type="button" onClick={()=>renameMainCategory(main)}><Pencil size={15}/></button>}
+              {main.canManage&&!main.isFixed&&<button className="danger" type="button" onClick={()=>deleteMainCategory(main)}><Trash2 size={15}/></button>}
+            </div>
+            <div className="resourceCategorySubListV6">
+              {(main.subs||[]).length?(main.subs||[]).map(sub=><div className="resourceCategorySubItemV6" key={sub.id}>
+                <span>{sub.name}</span>
+                {main.canManage&&<button type="button" onClick={()=>renameSubCategory(sub)}><Pencil size={14}/></button>}
+                {main.canManage&&<button className="danger" type="button" onClick={()=>deleteSubCategory(sub)}><Trash2 size={14}/></button>}
+              </div>):<div className="resourceCategoryEmptyV6">暂无子分类</div>}
+              {main.canManage&&<button className="resourceCategoryAddSubV6" type="button" onClick={()=>createSubCategory(main)}><Plus size={14}/>添加子分类</button>}
+            </div>
+          </article>):<div className="resourceCategoryEmptyV6">暂无主分类，点击“新增”创建</div>}
+        </section>)}
+      </div>}
+
+      {detail&&detailImage&&<div className="resourceDetailInlineV6">
+        <div className="resourceDetailImageV6">
+          {detailUrl?<img src={detailUrl} alt={detailImage.name}/>:<span>暂无图片</span>}
+        </div>
+        <div className="resourceDetailTitleV6">
+          <h3>{detailImage.name}</h3>
+          <button type="button" onClick={()=>openRename({id:detailImage.id,name:detailImage.name})}><Pencil size={16}/></button>
+        </div>
+        <dl className="resourceDetailMetaV6">
+          <dt>文件大小</dt><dd>{formatResourceBytes(detailImage.fileSize)}</dd>
+          <dt>分辨率</dt><dd>{detailImage.width&&detailImage.height?`${detailImage.width} × ${detailImage.height}`:'-'}</dd>
+          <dt>分类</dt><dd>{detailCategory}</dd>
+          <dt>上传时间</dt><dd>{fmt(detailImage.createdAt)}</dd>
+        </dl>
+        <div className="resourceDetailActionsV6">
+          <button type="button" onClick={()=>localStorage.setItem('pendingWorkbenchImage',JSON.stringify({id:detailImage.id,url:detailImage.url,name:detailImage.name}))}>智能工作台</button>
+          <button type="button" onClick={()=>detailUrl&&window.open(detailUrl,'_blank')}>图片处理</button>
+        </div>
+        <section className="resourceRelatedTasksV6">
+          <h4>关联生成记录（{(detail.relatedTasks||[]).length}）</h4>
+          {(detail.relatedTasks||[]).length?(detail.relatedTasks||[]).map(t=><article key={t.id}>
+            <b>{featureName[t.featureKey]||t.featureKey||'AI任务'}</b>
+            <span>{t.status} · {fmt(t.submittedAt)}</span>
+          </article>):<div className="resourceCategoryEmptyV6">暂无关联生成记录</div>}
+        </section>
+      </div>}
+
+      {renameTarget&&<div className="resourceRenameInlineV6">
+        <label>资源名称</label>
+        <input autoFocus value={renameValue} onChange={e=>setRenameValue(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')submitRename()}}/>
+        <div>
+          <button type="button" onClick={()=>setRenameTarget(null)}>取消</button>
+          <button className="primary" type="button" disabled={!renameValue.trim()} onClick={submitRename}>保存</button>
+        </div>
+      </div>}
+    </aside>}
+    </div>
 
     {uploadOpen&&<div className="resourceUploadMaskV3">
       <div className="resourceUploadModalV3">
@@ -1214,34 +1603,6 @@ function StoreResources({me,setMsg}){
         </div>
       </div>
     </div>}
-    {categoryOpen&&<ResourceCategoryDrawer
-      purposes={categoryTree}
-      scope={categoryScope}
-      canCreateMain={categoryScope!=='SYSTEM'||isSystemAdmin}
-      loading={categoryLoading}
-      error={categoryError}
-      onClose={()=>setCategoryOpen(false)}
-      onRefresh={loadCategories}
-      setMsg={setMsg}
-    />}
-    {renameTarget&&<div className="resourceRenameMaskV3">
-      <div className="resourceRenameModalV3">
-        <h3>重命名资源</h3>
-        <input autoFocus value={renameValue} onChange={e=>setRenameValue(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')submitRename()}}/>
-        <div>
-          <button type="button" onClick={()=>setRenameTarget(null)}>取消</button>
-          <button className="primary" type="button" disabled={!renameValue.trim()} onClick={submitRename}>确定</button>
-        </div>
-      </div>
-    </div>}
-    {detail&&<ResourceDetailModal
-      detail={detail}
-      onClose={()=>setDetail(null)}
-      onUse={(image)=>{
-        localStorage.setItem('pendingWorkbenchImage',JSON.stringify({id:image.id,url:image.url,name:image.name}));
-        setDetail(null);
-      }}
-    />}
   </div>
 }
 

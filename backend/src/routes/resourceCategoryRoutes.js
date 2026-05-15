@@ -33,9 +33,10 @@ function canManageCategory(row, user) {
 }
 
 function ownerWhere(scope, user, alias = 'imc') {
-  if (scope === 'SYSTEM') return { sql: `${alias}.scope="SYSTEM"`, params: [] };
-  if (scope === 'MERCHANT') return { sql: `${alias}.scope="MERCHANT" AND ${alias}.merchant_id=?`, params: [user.merchant_id || ''] };
-  return { sql: `${alias}.scope="USER" AND ${alias}.owner_user_id=?`, params: [user.id] };
+  const prefix = alias ? `${alias}.` : '';
+  if (scope === 'SYSTEM') return { sql: `${prefix}scope="SYSTEM"`, params: [] };
+  if (scope === 'MERCHANT') return { sql: `${prefix}scope="MERCHANT" AND ${prefix}merchant_id=?`, params: [user.merchant_id || ''] };
+  return { sql: `${prefix}scope="USER" AND ${prefix}owner_user_id=?`, params: [user.id] };
 }
 
 function mapPurpose(row) {
@@ -133,7 +134,7 @@ export function registerResourceCategoryRoutes(app) {
     const sortOrder = Math.max(0, Number(req.body.sortOrder || 0));
     if (!name) return res.status(400).json({ message: '分类名称不能为空' });
     if (!purpose) return res.status(400).json({ message: '请选择功能类型/用途' });
-    const owner = ownerWhere(scope, req.user);
+    const owner = ownerWhere(scope, req.user, '');
     const [exists] = await pool.query(`SELECT id FROM image_main_categories WHERE name=? AND ${owner.sql} AND status<>"DELETED" LIMIT 1`, [name, ...owner.params]);
     if (exists.length) return res.status(400).json({ message: '主分类已存在' });
     const id = uuid();
