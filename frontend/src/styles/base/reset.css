@@ -1,0 +1,5 @@
+/* 基础重置：只放通用规则，避免影响具体页面 */
+*{box-sizing:border-box}
+html,body,#root{min-height:100%}
+button,input,select,textarea{font:inherit}
+img{max-width:100%}

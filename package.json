@@ -1,0 +1,13 @@
+{
+  "name": "furniture-retouch",
+  "version": "3.0.0-store-admin",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install --legacy-peer-deps --no-audit --no-fund && npm --prefix backend install --legacy-peer-deps --no-audit --no-fund && npm --prefix frontend install --legacy-peer-deps --no-audit --no-fund",
+    "dev": "concurrently \"npm --prefix backend run dev\" \"npm --prefix frontend run dev -- --host 0.0.0.0\"",
+    "start": "npm run dev"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

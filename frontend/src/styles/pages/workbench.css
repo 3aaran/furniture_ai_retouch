@@ -1,0 +1,797 @@
+/* 智能工作台页面样式。以后 .wb* 相关样式放这里。
+   当前最新项目原有样式仍从 styles/legacy 中加载，保证功能和视觉不变。
+*/
+
+.wbSourceHead{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:12px;
+}
+.wbSourceHead .wbBlockTitle{
+  margin-bottom:0;
+}
+.wbWatermarkBtn{
+  border:1px solid rgba(240,214,138,.52);
+  background:rgba(240,214,138,.06);
+  color:#f0d68a;
+  border-radius:18px;
+  min-height:42px;
+  padding:0 18px;
+  font-weight:900;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  white-space:nowrap;
+}
+.wbWatermarkBtn:hover{
+  background:rgba(240,214,138,.14);
+  border-color:#f0d68a;
+}
+
+.watermarkMask{
+  position:fixed;
+  inset:0;
+  z-index:2147483000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  background:rgba(0,0,0,.72);
+  backdrop-filter:blur(5px);
+}
+.watermarkModal{
+  width:min(1040px,94vw);
+  height:min(640px,92vh);
+  max-height:92vh;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  color:#f5f0e6;
+  background:#191919;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:10px;
+  box-shadow:0 40px 140px rgba(0,0,0,.78);
+}
+.watermarkHead,.watermarkFoot{
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 22px;
+  border-bottom:1px solid rgba(255,255,255,.1);
+}
+.watermarkHead h2{margin:0;font-size:21px}
+.watermarkHead button{
+  width:36px;
+  height:36px;
+  border:0;
+  border-radius:10px;
+  background:transparent;
+  color:#d8cfbd;
+  font-size:28px;
+}
+.watermarkBody{
+  flex:1 1 auto;
+  min-height:0;
+  overflow:hidden;
+  display:grid;
+  grid-template-columns:minmax(330px,470px) minmax(340px,1fr);
+  gap:26px;
+  padding:14px 22px 16px;
+}
+.watermarkControls{min-width:0}
+.watermarkSwitch{
+  display:inline-flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:12px;
+  color:#f7f2e8;
+  font-size:16px;
+  font-weight:800;
+}
+.watermarkSwitch input{display:none}
+.watermarkSwitch i{
+  width:46px;
+  height:20px;
+  border-radius:999px;
+  background:#6a6047;
+  position:relative;
+}
+.watermarkSwitch i:after{
+  content:'';
+  position:absolute;
+  top:-3px;
+  left:0;
+  width:26px;
+  height:26px;
+  border-radius:50%;
+  background:#e9c879;
+  transition:.18s ease;
+}
+.watermarkSwitch input:checked+i:after{left:20px}
+.watermarkFieldTitle{
+  margin:8px 0 6px;
+  font-size:15px;
+  color:#f5ead5;
+  font-weight:900;
+}
+.watermarkUpload{
+  width:76px;
+  height:76px;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  border:1px dashed rgba(240,214,138,.45);
+  border-radius:18px;
+  background:#171717;
+  color:#f0d68a;
+  cursor:pointer;
+}
+.watermarkUpload input{display:none}
+.watermarkUpload img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  background:#0f0f0f;
+}
+.watermarkUploadPreview{
+  position:relative;
+  width:100%;
+  height:100%;
+}
+.watermarkUploadPreview button{
+  position:absolute;
+  right:4px;
+  top:4px;
+  height:22px;
+  min-width:38px;
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:999px;
+  background:rgba(0,0,0,.72);
+  color:#fff;
+  font-size:11px;
+  font-weight:900;
+}
+.watermarkUpload b{
+  font-size:34px;
+  line-height:1;
+}
+.watermarkUpload span{font-size:14px}
+.watermarkHint{
+  margin:6px 0 8px;
+  color:#a9a196;
+  font-size:12px;
+}
+.watermarkPositionGrid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:6px;
+  max-width:640px;
+}
+.watermarkPositionGrid button{
+  height:32px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:9px;
+  background:#171717;
+  color:#f5f0e6;
+  font-weight:900;
+  font-size:14px;
+}
+.watermarkPositionGrid button.active{
+  background:rgba(255,255,255,.18);
+  border-color:rgba(240,214,138,.36);
+}
+.watermarkSliderGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px 12px;
+  margin-top:8px;
+}
+.watermarkSliderGrid label{
+  min-width:0;
+  color:#f5ead5;
+  font-size:13px;
+  font-weight:800;
+}
+.watermarkSliderGrid input{
+  display:block;
+  width:100%;
+  margin-top:6px;
+  accent-color:#e8c978;
+}
+.watermarkPreviewPane>b{
+  display:block;
+  margin-bottom:8px;
+  color:#f5ead5;
+}
+.watermarkPreviewCanvas{
+  min-height:360px;
+  height:100%;
+  display:grid;
+  place-items:center;
+  padding:16px;
+  border-radius:18px;
+  background:#f4f4f4;
+}
+.watermarkPreviewImage{
+  position:relative;
+  width:min(300px,100%);
+  aspect-ratio:4/5;
+  overflow:hidden;
+  background:#d9d9d4;
+}
+.previewWall{
+  position:absolute;
+  inset:0 0 20%;
+  background:linear-gradient(120deg,#d8d8d3,#ecece8 45%,#cfcfca);
+}
+.previewFloor{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:22%;
+  background:repeating-linear-gradient(0deg,#9f9d99 0 3px,#b8b6b1 3px 8px);
+}
+.previewLamp{
+  position:absolute;
+  left:11%;
+  top:20%;
+  width:2px;
+  height:52%;
+  background:#a88742;
+}
+.previewLamp:before{
+  content:'';
+  position:absolute;
+  left:-18px;
+  top:-34px;
+  width:56px;
+  height:56px;
+  border-radius:50%;
+  background:#f7f7f4;
+  box-shadow:0 5px 18px rgba(0,0,0,.1);
+}
+.previewLamp:after{
+  content:'';
+  position:absolute;
+  left:0;
+  top:0;
+  width:70px;
+  height:2px;
+  background:#b08e46;
+}
+.previewChair{
+  position:absolute;
+  left:40%;
+  bottom:18%;
+  width:86px;
+  height:96px;
+  border-radius:44px 44px 14px 14px;
+  border-bottom:18px solid #b99364;
+  background:#d9d5cf;
+  box-shadow:inset 0 -12px #6f4c35;
+}
+.previewChair:before,.previewChair:after{
+  content:'';
+  position:absolute;
+  bottom:-86px;
+  width:8px;
+  height:84px;
+  background:#6a412b;
+  transform:rotate(10deg);
+}
+.previewChair:before{left:18px}
+.previewChair:after{right:18px;transform:rotate(-10deg)}
+.previewTable{
+  position:absolute;
+  right:16%;
+  bottom:18%;
+  width:112px;
+  height:24px;
+  border-radius:50%;
+  background:#d9aa52;
+  box-shadow:0 28px 0 -6px #bb873e;
+}
+.previewTable:after{
+  content:'';
+  position:absolute;
+  left:50%;
+  top:20px;
+  width:18px;
+  height:72px;
+  transform:translateX(-50%);
+  background:#c08f43;
+}
+.watermarkPreviewMark{
+  position:absolute;
+  height:auto;
+  object-fit:contain;
+  pointer-events:none;
+}
+.watermarkFoot{
+  border-top:1px solid rgba(255,255,255,.1);
+  border-bottom:0;
+  justify-content:flex-end;
+  gap:18px;
+}
+.watermarkFoot button{
+  min-width:112px;
+  height:40px;
+  border:0;
+  border-radius:10px;
+  background:transparent;
+  color:#e7c875;
+  font-weight:900;
+  font-size:16px;
+}
+.watermarkFoot button.primary{
+  background:#ebce7a;
+  color:#2b210f;
+}
+@media(max-width:980px){
+  .watermarkBody{grid-template-columns:1fr;gap:24px}
+  .watermarkSliderGrid{grid-template-columns:1fr}
+  .watermarkPreviewCanvas{min-height:420px}
+}
+
+.wmProcessMask{
+  position:fixed;
+  inset:0;
+  z-index:2147483100;
+  display:grid;
+  place-items:center;
+  padding:18px;
+  background:rgba(0,0,0,.72);
+}
+.wmProcessPanel{
+  width:min(1320px,94vw);
+  height:min(560px,88vh);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  border-radius:18px;
+  background:#191919;
+  color:#f5f0e6;
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 40px 140px rgba(0,0,0,.78);
+}
+.wmProcessHead,.wmProcessFoot{
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 18px;
+}
+.wmProcessHead h2{margin:0 0 4px;font-size:18px}
+.wmProcessHead p{margin:0;color:#aaa;font-size:12px}
+.wmProcessHead button{
+  border:0;
+  background:transparent;
+  color:#fff;
+  font-weight:900;
+}
+.wmProcessBody{
+  flex:1 1 auto;
+  min-height:0;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(280px,330px);
+  gap:16px;
+  padding:0 18px 10px;
+  overflow:hidden;
+}
+.wmProcessBody.done{
+  grid-template-columns:1fr;
+}
+.wmProcessSingle{
+  min-height:0;
+  overflow:hidden;
+  display:grid;
+}
+.wmProcessCompare{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  min-height:0;
+  overflow:hidden;
+}
+.wmProcessCompare.done{
+  height:100%;
+}
+.wmProcessFrame{
+  position:relative;
+  min-height:0;
+  display:grid;
+  align-items:center;
+  justify-items:center;
+  padding-top:0;
+  padding-left:0;
+  padding-right:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;
+  background-color:#172032;
+  background-image:linear-gradient(45deg,rgba(255,255,255,.06) 25%,transparent 25%),linear-gradient(-45deg,rgba(255,255,255,.06) 25%,transparent 25%),linear-gradient(45deg,transparent 75%,rgba(255,255,255,.06) 75%),linear-gradient(-45deg,transparent 75%,rgba(255,255,255,.06) 75%);
+  background-size:28px 28px;
+  background-position:0 0,0 14px,14px -14px,-14px 0;
+}
+.wmProcessFrame.isSingle{
+  width:100%;
+  height:100%;
+}
+.wmProcessFrame span,.wmProcessFrame em{
+  position:absolute;
+  top:10px;
+  z-index:2;
+  padding:5px 9px;
+  border-radius:6px;
+  background:rgba(20,92,170,.92);
+  color:#f7d985;
+  font-style:normal;
+  font-weight:900;
+  font-size:12px;
+}
+.wmProcessFrame span{left:10px}
+.wmProcessFrame em{left:58px}
+.wmProcessFrame img{
+  /* 放大 25%（原 30% / 42% -> 37.5% / 52.5%） */
+  max-width:37.5%;
+  max-height:52.5%;
+  object-fit:contain;
+  object-position:top center;
+  display:block;
+  align-self:start;
+  justify-self:center;
+}
+.wmCropStage{
+  position:relative;
+  display:grid;
+  place-items:center;
+  max-width:37.5%;
+  max-height:52.5%;
+  align-self:center!important;
+  justify-self:center;
+  background:transparent!important;
+  padding:0!important;
+  border-radius:0!important;
+}
+.wmCropStage img{
+  max-width:100%!important;
+  max-height:100%!important;
+}
+.wmCropBox{
+  position:absolute;
+  border:2px solid #f0d68a;
+  box-shadow:0 0 0 999px rgba(140,145,152,.62);
+  cursor:move;
+}
+.wmCropBox b{
+  position:absolute;
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  background:#f0d68a;
+  border:2px solid #fff;
+  cursor:nwse-resize;
+}
+.wmCropBox b:nth-child(1){left:-8px;top:-8px}
+.wmCropBox b:nth-child(2){right:-8px;top:-8px;cursor:nesw-resize}
+.wmCropBox b:nth-child(3){left:-8px;bottom:-8px;cursor:nesw-resize}
+.wmCropBox b:nth-child(4){right:-8px;bottom:-8px}
+.wmProcessOptions{
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;
+  padding:14px;
+  overflow:hidden;
+  min-width:0;
+}
+.wmProcessOptions h3{
+  margin:0 0 8px;
+  font-size:14px;
+}
+.wmProcessOptions label{
+  height:40px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:8px;
+  padding:0 14px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:10px;
+  font-weight:900;
+}
+.wmProcessOptions label.active{
+  border-color:#e8c978;
+  background:rgba(240,214,138,.06);
+}
+.wmProcessOptions input{accent-color:#e8c978}
+.wmProcessFoot{
+  border-top:1px solid rgba(255,255,255,.1);
+  justify-content:flex-end;
+  gap:12px;
+}
+.wmProcessFoot button{
+  min-width:120px;
+  height:38px;
+  border:0;
+  border-radius:10px;
+  background:transparent;
+  color:#e8c978;
+  font-weight:900;
+}
+.wmProcessFoot .primary{
+  background:#ebce7a;
+  color:#2b210f;
+}
+
+/* =====================================================================
+   图片处理弹窗样式升级：对齐后续截图的大尺寸、双栏、裁剪编辑器样式
+   只覆盖 .wmProcess* 相关样式，不影响其他工作台页面。
+   ===================================================================== */
+
+.wmProcessMask{
+  padding:22px!important;
+  background:rgba(0,0,0,.78)!important;
+  backdrop-filter:blur(5px)!important;
+}
+
+.wmProcessPanel{
+  width:min(1500px,94vw)!important;
+  height:min(720px,88vh)!important;
+  border-radius:22px!important;
+  background:linear-gradient(180deg,#1b1b1b 0%,#171717 100%)!important;
+  border:1px solid rgba(255,255,255,.14)!important;
+  box-shadow:0 42px 140px rgba(0,0,0,.82)!important;
+  overflow:hidden!important;
+}
+
+.wmProcessHead{
+  min-height:82px!important;
+  padding:20px 26px 14px!important;
+  border-bottom:0!important;
+}
+
+.wmProcessHead h2{
+  margin:0 0 8px!important;
+  font-size:26px!important;
+  line-height:1.15!important;
+  letter-spacing:.02em!important;
+  color:#fff!important;
+  font-weight:1000!important;
+}
+
+.wmProcessHead p{
+  margin:0!important;
+  color:rgba(255,255,255,.66)!important;
+  font-size:15px!important;
+}
+
+.wmProcessHead button{
+  height:38px!important;
+  padding:0 14px!important;
+  border-radius:12px!important;
+  color:#fff!important;
+  font-size:20px!important;
+  font-weight:1000!important;
+}
+
+.wmProcessBody{
+  grid-template-columns:minmax(0,1fr) 430px!important;
+  gap:12px!important;
+  padding:0 26px 12px!important;
+  height:auto!important;
+  overflow:hidden!important;
+}
+
+.wmProcessCompare{
+  gap:0!important;
+}
+
+.wmProcessFrame{
+  box-sizing:border-box!important;
+  border-radius:20px!important;
+  border:1px solid rgba(255,255,255,.14)!important;
+  background-color:#172136!important;
+  background-image:
+    linear-gradient(45deg,rgba(255,255,255,.055) 25%,transparent 25%),
+    linear-gradient(-45deg,rgba(255,255,255,.055) 25%,transparent 25%),
+    linear-gradient(45deg,transparent 75%,rgba(255,255,255,.055) 75%),
+    linear-gradient(-45deg,transparent 75%,rgba(255,255,255,.055) 75%)!important;
+  background-size:30px 30px!important;
+  background-position:0 0,0 15px,15px -15px,-15px 0!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.02)!important;
+  overflow:hidden!important;
+  align-items:center!important;
+  justify-items:center!important;
+}
+
+.wmProcessFrame.isSingle{
+  width:100%!important;
+  height:60%!important;
+  min-height:0!important;
+}
+
+/* 左上角图片信息标识 */
+.wmProcessFrame span,
+.wmProcessFrame em{
+  top:12px!important;
+  z-index:4!important;
+  height:30px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  padding:0 12px!important;
+  border-radius:8px!important;
+  background:#0b63ba!important;
+  color:#f7d985!important;
+  font-size:15px!important;
+  line-height:1!important;
+  font-weight:1000!important;
+  box-shadow:0 8px 20px rgba(0,0,0,.22)!important;
+}
+
+.wmProcessFrame span{left:16px!important}
+.wmProcessFrame em{left:auto!important;right:auto!important;margin-left:0!important}
+
+/* 普通预览图也按后续截图居中放大 */
+.wmProcessFrame img{
+  max-width:min(52%, calc(100% - 72px))!important;
+  max-height:calc(100% - 72px)!important;
+  object-fit:contain!important;
+  object-position:center!important;
+  align-self:center!important;
+  justify-self:center!important;
+}
+
+/* 裁剪状态：整体画布放大居中，周围灰色遮罩由裁剪框负责 */
+.wmCropStage{
+  box-sizing:border-box!important;
+  width:var(--wm-stage-w,360px)!important;
+  height:var(--wm-stage-h,360px)!important;
+  max-width:calc(100% - 112px)!important;
+  max-height:calc(100% - 96px)!important;
+  align-self:center!important;
+  justify-self:center!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  background:rgba(180,185,190,.72)!important;
+  padding:0!important;
+  border-radius:0!important;
+  box-shadow:0 0 0 1px rgba(0,0,0,.08)!important;
+  overflow:hidden!important;
+}
+
+.wmCropStage img{
+  width:100%!important;
+  height:100%!important;
+  max-width:100%!important;
+  max-height:100%!important;
+  object-fit:contain!important;
+  display:block!important;
+  background:#fff!important;
+  align-self:center!important;
+  justify-self:center!important;
+  min-width:0!important;
+  min-height:0!important;
+}
+
+.wmCropBox{
+  border:2px solid #f0d68a!important;
+  box-shadow:0 0 0 999px rgba(135,141,150,.62)!important;
+  cursor:move!important;
+}
+
+.wmCropBox b{
+  width:14px!important;
+  height:14px!important;
+  border-radius:50%!important;
+  background:#f0d68a!important;
+  border:2px solid #fff!important;
+  box-shadow:0 2px 8px rgba(0,0,0,.25)!important;
+}
+
+.wmCropBox b:nth-child(1){left:-9px!important;top:-9px!important}
+.wmCropBox b:nth-child(2){right:-9px!important;top:-9px!important}
+.wmCropBox b:nth-child(3){left:-9px!important;bottom:-9px!important}
+.wmCropBox b:nth-child(4){right:-9px!important;bottom:-9px!important}
+
+.wmProcessOptions{
+  min-height:0!important;
+  border-radius:20px!important;
+  padding:22px 18px!important;
+  border:1px solid rgba(255,255,255,.12)!important;
+  background:linear-gradient(180deg,rgba(16,18,22,.96),rgba(13,15,19,.96))!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.02)!important;
+}
+
+.wmProcessOptions h3{
+  margin:0 0 13px!important;
+  color:#fff!important;
+  font-size:18px!important;
+  font-weight:1000!important;
+}
+
+.wmProcessOptions h3:not(:first-child){
+  margin-top:22px!important;
+  padding-top:20px!important;
+  border-top:1px solid rgba(255,255,255,.08)!important;
+}
+
+.wmProcessOptions label{
+  position:relative!important;
+  min-height:56px!important;
+  height:auto!important;
+  margin-bottom:10px!important;
+  padding:0 16px!important;
+  border-radius:13px!important;
+  border:1px solid rgba(255,255,255,.12)!important;
+  background:rgba(255,255,255,.018)!important;
+  color:#fff!important;
+  font-size:18px!important;
+  font-weight:1000!important;
+  letter-spacing:.01em!important;
+}
+
+.wmProcessOptions label.active{
+  border-color:#e8c978!important;
+  background:linear-gradient(180deg,rgba(240,214,138,.08),rgba(240,214,138,.03))!important;
+  box-shadow:0 0 0 1px rgba(240,214,138,.10),0 10px 28px rgba(0,0,0,.20)!important;
+}
+
+.wmProcessOptions input[type="radio"]{
+  width:20px!important;
+  height:20px!important;
+  accent-color:#e8c978!important;
+  flex:0 0 auto!important;
+}
+
+/* 裁剪的宽高输入区域。如果你的 JSX 已经生成宽高输入，会按这个样式对齐。 */
+.wmProcessOptions input[type="number"],
+.wmProcessOptions .wmCropInput,
+.wmProcessOptions .cropSizeInput{
+  height:50px!important;
+  min-width:78px!important;
+  border-radius:12px!important;
+  border:1px solid rgba(255,255,255,.12)!important;
+  background:rgba(255,255,255,.035)!important;
+  color:#fff!important;
+  font-size:18px!important;
+  font-weight:900!important;
+  text-align:center!important;
+}
+
+.wmProcessFoot{
+  min-height:72px!important;
+  padding:10px 30px 14px!important;
+  border-top:1px solid rgba(255,255,255,.08)!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.01),rgba(0,0,0,.12))!important;
+}
+
+.wmProcessFoot button{
+  min-width:112px!important;
+  height:48px!important;
+  border-radius:12px!important;
+  font-size:18px!important;
+  font-weight:1000!important;
+  color:#e8c978!important;
+}
+
+.wmProcessFoot .primary{
+  min-width:132px!important;
+  height:52px!important;
+  border-radius:14px!important;
+  background:linear-gradient(180deg,#f4d984,#e9c86f)!important;
+  color:#1b1407!important;
+  box-shadow:0 10px 26px rgba(232,201,120,.18)!important;
+}
+
+@media(max-width:1180px){
+  .wmProcessPanel{height:min(820px,92vh)!important}
+  .wmProcessBody{grid-template-columns:1fr!important;overflow:auto!important}
+  .wmProcessOptions{min-height:260px!important}
+}

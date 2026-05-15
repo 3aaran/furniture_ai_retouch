@@ -1,0 +1,471 @@
+import bcrypt from 'bcryptjs';
+import { v4 as uuid } from 'uuid';
+import { pool, publicUser, publicMerchant, publicApplication } from '../db.js';
+import { requireAuth } from '../auth.js';
+import { requireSystemAdmin } from '../middleware/roleMiddleware.js';
+import { getAiConfig, saveAiConfig } from '../ai/configService.js';
+import { getAdminAiTasks } from '../ai/taskService.js';
+import { getLocalFileMeta, saveUploadedImage } from '../services/storageService.js';
+
+function isSystemAdmin(u){ return u?.role === 'SYSTEM_ADMIN'; }
+function random6Digit(){ return String(Math.floor(100000+Math.random()*900000)); }
+async function generateMerchantCode(){ for(let i=0;i<50;i++){ const c=random6Digit(); const [r]=await pool.query('SELECT id FROM merchants WHERE merchant_code=?',[c]); if(!r.length) return c; } return String(Date.now()).slice(-6); }
+function pageParams(req){
+  const page=Math.max(1,Number(req.query.page||1));
+  const pageSize=Math.min(50,Math.max(5,Number(req.query.pageSize||10)));
+  return {page,pageSize,offset:(page-1)*pageSize};
+}
+function like(v){ return `%${String(v||'').trim()}%`; }
+async function paged(sql,countSql,params,req,map=x=>x){
+  const {page,pageSize,offset}=pageParams(req);
+  const [[c]]=await pool.query(countSql,params);
+  const [rows]=await pool.query(`${sql} LIMIT ? OFFSET ?`,[...params,pageSize,offset]);
+  return {items:rows.map(map), page, pageSize, total:Number(c.total||0)};
+}
+function csvEscape(v){ const t=String(v??''); return /[",\n]/.test(t)?`"${t.replace(/"/g,'""')}"`:t; }
+function sendCsv(res, filename, headers, rows){
+  const data=[headers.map(h=>csvEscape(h.label)).join(','), ...rows.map(r=>headers.map(h=>csvEscape(r[h.key])).join(','))].join('\n');
+  res.setHeader('Content-Type','text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition',`attachment; filename="${filename}"`);
+  res.send('\ufeff'+data);
+}
+async function getSettingsMap(){ const [rows]=await pool.query('SELECT setting_key,setting_value FROM app_settings'); return Object.fromEntries(rows.map(r=>[r.setting_key,r.setting_value])); }
+async function addAnnouncement({title,content,audience,createdBy}){ await pool.query('INSERT INTO announcements(id,title,content,audience,created_by) VALUES(?,?,?,?,?)',[uuid(),title,content,audience,createdBy]); }
+function saveUploadedFile(file, options = {}){
+  const saved = saveUploadedImage(file, options);
+  return saved?.url || '';
+}
+function makeRedeemCode(){ return 'DH'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).slice(2,6).toUpperCase(); }
+const fixedMainPurpose = { '材质':1, '软体':1, '产品':3, '场景模板':2 };
+async function ensureSystemSubCategory({mainName='',subName='',createdBy=null}){
+  const main=String(mainName||'').trim();
+  const sub=String(subName||'').trim();
+  if(!main || main==='0' || main==='未分类') return null;
+  let [[mainRow]]=await pool.query('SELECT id FROM image_main_categories WHERE scope="SYSTEM" AND name=? AND status<>"DELETED" LIMIT 1',[main]);
+  if(!mainRow){
+    const id=uuid();
+    await pool.query('INSERT INTO image_main_categories(id,purpose_id,scope,name,is_fixed,created_by) VALUES(?,?, "SYSTEM", ?,0,?)',[id,fixedMainPurpose[main]||3,main,createdBy]);
+    mainRow={id};
+  }
+  if(!sub){
+    let [[subRow]]=await pool.query('SELECT id FROM image_sub_categories WHERE main_category_id=? AND is_main_only=1 AND status<>"DELETED" LIMIT 1',[mainRow.id]);
+    if(!subRow){
+      const id=uuid();
+      await pool.query('INSERT INTO image_sub_categories(id,main_category_id,name,is_main_only,is_fixed,created_by) VALUES(?,?,NULL,1,0,?)',[id,mainRow.id,createdBy]);
+      subRow={id};
+    }
+    return subRow.id;
+  }
+  let [[subRow]]=await pool.query('SELECT id FROM image_sub_categories WHERE main_category_id=? AND name=? AND status<>"DELETED" LIMIT 1',[mainRow.id,sub]);
+  if(!subRow){
+    const id=uuid();
+    await pool.query('INSERT INTO image_sub_categories(id,main_category_id,name,is_main_only,is_fixed,created_by) VALUES(?,?,?,0,0,?)',[id,mainRow.id,sub,createdBy]);
+    subRow={id};
+  }
+  return subRow.id;
+}
+function resourceTypeFromMain(main){
+  if(main==='材质'||main==='软体') return 'material';
+  if(main==='场景模板') return 'scene';
+  return 'user_reference';
+}
+
+export function registerAdminRoutes(app,{upload}){
+  const adminOnly = [requireAuth, requireSystemAdmin];
+  app.get('/api/admin/overview', ...adminOnly, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    const [[m]]=await pool.query('SELECT COUNT(*) total, SUM(status="ACTIVE") active, SUM(status="DISABLED") disabled FROM merchants');
+    const [[a]]=await pool.query('SELECT COUNT(*) total, SUM(status="PENDING") pending FROM merchant_applications');
+    const [[i]]=await pool.query('SELECT COUNT(*) totalImages FROM images');
+    const [[u]]=await pool.query('SELECT COUNT(*) totalUsers FROM users');
+    const [[fin]]=await pool.query('SELECT IFNULL(SUM(CASE WHEN type="INCOME" THEN amount ELSE 0 END),0) income, IFNULL(SUM(CASE WHEN type="COST" THEN amount ELSE 0 END),0) cost FROM finance_logs WHERE created_at>=DATE_FORMAT(CURDATE(),"%Y-%m-01")');
+    res.json({merchants:m,applications:a,images:i,users:u,finance:fin});
+  });
+  
+  app.get('/api/admin/stats', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    const range = ['year','quarter','month'].includes(req.query.range) ? req.query.range : 'month';
+    const days = range==='year'?365:range==='quarter'?90:30;
+    const [trend]=await pool.query(`SELECT DATE(created_at) day, SUM(CASE WHEN type='INCOME' THEN amount ELSE 0 END) income, SUM(CASE WHEN type='COST' THEN amount ELSE 0 END) cost FROM finance_logs WHERE created_at>=DATE_SUB(CURDATE(), INTERVAL ? DAY) GROUP BY DATE(created_at) ORDER BY day`,[days]);
+    const [[pie]]=await pool.query(`SELECT IFNULL(SUM(CASE WHEN type='INCOME' THEN amount ELSE 0 END),0) income, IFNULL(SUM(CASE WHEN type='COST' THEN amount ELSE 0 END),0) cost FROM finance_logs WHERE created_at>=DATE_SUB(CURDATE(), INTERVAL ? DAY)`,[days]);
+    const [ops]=await pool.query(`
+      SELECT t.feature_key operation, COUNT(*) count, SUM(IFNULL(t.cost,0)) quota
+      FROM ai_model_call_logs l
+      LEFT JOIN ai_tasks t ON t.id=l.task_id
+      WHERE l.created_at>=DATE_SUB(CURDATE(), INTERVAL ? DAY)
+      GROUP BY t.feature_key
+    `,[days]);
+    res.json({range,trend,pie,ops});
+  });
+  
+  app.get('/api/admin/settings', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    res.json(await getSettingsMap());
+  });
+  
+  app.patch('/api/admin/settings', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    const allowed=['recharge_ratio','income_per_quota','cost_per_ai_quota','cost_remove_bg','cost_replace_bg','cost_enhance','cost_material','cost_multiview','cost_lineart','resolution_multiplier_1k','resolution_multiplier_2k','resolution_multiplier_4k','cost_resolution_1k','cost_resolution_2k','cost_resolution_4k','invite_new_store_reward_ratio','invite_source_store_reward_ratio','trial_account_hours'];
+    for(const k of allowed){ if(req.body[k]!==undefined) await pool.query('UPDATE app_settings SET setting_value=?,updated_by=? WHERE setting_key=?',[String(req.body[k]),req.user.id,k]); }
+    if(req.body.announce){ await addAnnouncement({title:req.body.announcementTitle||'系统配置调整通知',content:req.body.announcementContent||'平台配置已更新，请关注后续使用规则。',audience:req.body.audience||'MERCHANT',createdBy:req.user.id}); }
+    res.json({message:'配置已更新'});
+  });
+  
+  app.get('/api/admin/ai/config', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    res.json(await getAiConfig({includeSecret:false}));
+  });
+  
+  app.post('/api/admin/ai/config', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    await saveAiConfig(req.body,req.user);
+    res.json({message:'AI模型配置已保存',config:await getAiConfig({includeSecret:false})});
+  });
+  
+  app.get('/api/admin/applications', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    const wh=[]; const ps=[];
+    if(req.query.status){ wh.push('status=?'); ps.push(req.query.status); }
+    if(req.query.keyword){ wh.push('(company_name LIKE ? OR contact_name LIKE ? OR phone LIKE ?)'); ps.push(like(req.query.keyword),like(req.query.keyword),like(req.query.keyword)); }
+    const where=wh.length?'WHERE '+wh.join(' AND '):'';
+    const data=await paged(`SELECT * FROM merchant_applications ${where} ORDER BY (invite_code IS NOT NULL AND invite_code<>'') DESC, created_at DESC`,`SELECT COUNT(*) total FROM merchant_applications ${where}`,ps,req,publicApplication);
+    res.json(data);
+  });
+  
+  app.post('/api/admin/applications/:id/approve', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    const quota=Math.max(0,Number(req.body.quota||500));
+    const settings=await getSettingsMap();
+    const conn=await pool.getConnection();
+    try{
+      await conn.beginTransaction();
+      const [[appRow]]=await conn.query('SELECT * FROM merchant_applications WHERE id=? FOR UPDATE',[req.params.id]);
+      if(!appRow||appRow.status!=='PENDING') throw new Error('申请不存在或已处理');
+      const mid=uuid();
+      const merchantCode = await generateMerchantCode();
+      let finalQuota = quota;
+      let inviter = null;
+      if(appRow.invite_code){
+        const [inv]=await conn.query('SELECT * FROM merchants WHERE merchant_code=? OR invite_code=? LIMIT 1',[appRow.invite_code,appRow.invite_code]);
+        inviter = inv[0] || null;
+        if(inviter){
+          const rewardToNew = Math.floor(quota * Number(settings.invite_new_store_reward_ratio||0));
+          const rewardToInviter = Math.floor(quota * Number(settings.invite_source_store_reward_ratio||0));
+          finalQuota += rewardToNew;
+          if(rewardToInviter>0){
+            await conn.query('UPDATE merchants SET quota_balance=quota_balance+? WHERE id=?',[rewardToInviter,inviter.id]);
+            await conn.query('INSERT INTO quota_logs(id,merchant_id,related_user_id,operator_user_id,amount,type,balance_after,remark) VALUES(?,?,?,?,?,?,(SELECT quota_balance FROM merchants WHERE id=?),?)',[uuid(),inviter.id,null,req.user.id,rewardToInviter,'MANUAL_ADJUST',inviter.id,'邀请奖励']);
+          }
+        }
+      }
+      await conn.query('INSERT INTO merchants(id,company_name,contact_name,phone,merchant_code,invite_code,note,quota_balance,status,approved_at) VALUES(?,?,?,?,?,?,?,?,?,NOW())',[mid,appRow.company_name,appRow.contact_name,appRow.phone,merchantCode,merchantCode,appRow.note,finalQuota,'ACTIVE']);
+      const password = '000000';
+      const uid=uuid();
+      await conn.query('INSERT INTO users(id,merchant_id,phone,username,display_name,company_name,password_hash,role,status) VALUES(?,?,?,?,?,?,?,?,?)',[uid,mid,appRow.phone,appRow.phone,appRow.contact_name,appRow.company_name,await bcrypt.hash(password,10),'MERCHANT_OWNER','ACTIVE']);
+      await conn.query('UPDATE merchant_applications SET status="APPROVED",reviewer_id=?,reviewed_at=NOW(),merchant_id=? WHERE id=?',[req.user.id,mid,req.params.id]);
+      await conn.query('INSERT INTO finance_logs(id,merchant_id,type,amount,title) VALUES(?,?,?,?,?)',[uuid(),mid,'INCOME',Number(settings.income_per_quota||0.1)*finalQuota,'新门店初始额度']);
+      await conn.commit();
+      res.json({message:'已通过申请',account:{phone:appRow.phone,password,merchantCode,quota:finalQuota}});
+    }catch(e){ await conn.rollback(); res.status(400).json({message:e.message}); }
+    finally{ conn.release(); }
+  });
+  
+  app.post('/api/admin/applications/:id/reject', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    await pool.query('UPDATE merchant_applications SET status="REJECTED",reject_reason=?,reviewer_id=?,reviewed_at=NOW() WHERE id=? AND status="PENDING"',[req.body.reason||'未通过审核',req.user.id,req.params.id]);
+    res.json({message:'已驳回申请'});
+  });
+  
+  app.get('/api/admin/merchants', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    const wh=[]; const ps=[];
+    if(req.query.status){ wh.push('m.status=?'); ps.push(req.query.status); }
+    if(req.query.keyword){ wh.push('(m.company_name LIKE ? OR m.contact_name LIKE ? OR m.phone LIKE ?)'); ps.push(like(req.query.keyword),like(req.query.keyword),like(req.query.keyword)); }
+    const where=wh.length?'WHERE '+wh.join(' AND '):'';
+    const sql=`SELECT m.*, COUNT(DISTINCT u.id) user_count, COUNT(DISTINCT i.id) image_count FROM merchants m LEFT JOIN users u ON u.merchant_id=m.id LEFT JOIN images i ON i.merchant_id=m.id ${where} GROUP BY m.id ORDER BY m.quota_balance DESC, m.created_at DESC`;
+    const countSql=`SELECT COUNT(*) total FROM merchants m ${where}`;
+    const data=await paged(sql,countSql,ps,req,r=>({...publicMerchant(r), userCount:r.user_count, imageCount:r.image_count}));
+    res.json(data);
+  });
+  
+  app.get('/api/admin/merchants/:id', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    const [[m]]=await pool.query('SELECT * FROM merchants WHERE id=?',[req.params.id]);
+    if(!m) return res.status(404).json({message:'商家不存在'});
+    const [users]=await pool.query('SELECT * FROM users WHERE merchant_id=? ORDER BY FIELD(role,"MERCHANT_OWNER","MERCHANT_ADMIN","STAFF","TRIAL"), created_at DESC',[req.params.id]);
+    const [logs]=await pool.query('SELECT * FROM quota_logs WHERE merchant_id=? ORDER BY created_at DESC LIMIT 50',[req.params.id]);
+    res.json({merchant:publicMerchant(m), users:users.map(publicUser), quotaLogs:logs});
+  });
+  
+  app.patch('/api/admin/merchants/:id/status', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    const status=req.body.status==='DISABLED'?'DISABLED':'ACTIVE';
+    await pool.query('UPDATE merchants SET status=? WHERE id=?',[status,req.params.id]);
+    if(req.body.announce) await addAnnouncement({title:'账户状态变更通知',content:`商家账户已被${status==='DISABLED'?'禁用':'启用'}。`,audience:'MERCHANT',createdBy:req.user.id});
+    res.json({message:'商家状态已更新'});
+  });
+  
+  app.patch('/api/admin/merchants/:id/config', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(req.body.quotaDelta!==undefined && Number(req.body.quotaDelta)!==0){
+      const delta=Number(req.body.quotaDelta);
+      await pool.query('UPDATE merchants SET quota_balance=quota_balance+? WHERE id=?',[delta,req.params.id]);
+      await pool.query('INSERT INTO quota_logs(id,merchant_id,related_user_id,operator_user_id,amount,type,balance_after,remark) VALUES(?,?,?,?,?,?,(SELECT quota_balance FROM merchants WHERE id=?),?)',[uuid(),req.params.id,null,req.user.id,delta,'MANUAL_ADJUST',req.params.id,'后台调整门店算力']);
+    }
+    if(req.body.announce) await addAnnouncement({title:req.body.announcementTitle||'商家配置调整通知',content:req.body.announcementContent||'您的商家账户配置已调整。',audience:'MERCHANT',createdBy:req.user.id});
+    res.json({message:'商家配置已更新'});
+  });
+  
+  app.get('/api/admin/ai/tasks', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    res.json(await getAdminAiTasks(req));
+  });
+  
+  app.get('/api/admin/task-images', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    const wh=['i.source_type="AI_GENERATED"','i.status="ACTIVE"']; const ps=[];
+    if(req.query.operation){ wh.push('t.feature_key=?'); ps.push(req.query.operation); }
+    if(req.query.keyword){ wh.push('(i.id LIKE ? OR t.id LIKE ? OR m.company_name LIKE ? OR u.display_name LIKE ? OR u.username LIKE ? OR u.phone LIKE ? OR t.feature_key LIKE ?)'); ps.push(like(req.query.keyword),like(req.query.keyword),like(req.query.keyword),like(req.query.keyword),like(req.query.keyword),like(req.query.keyword),like(req.query.keyword)); }
+    if(req.query.startDate){ wh.push('DATE(i.created_at)>=?'); ps.push(req.query.startDate); }
+    if(req.query.endDate){ wh.push('DATE(i.created_at)<=?'); ps.push(req.query.endDate); }
+    const where='WHERE '+wh.join(' AND ');
+    const base=`FROM images i LEFT JOIN ai_task_outputs ato ON ato.image_id=i.id LEFT JOIN ai_tasks t ON t.id=ato.task_id LEFT JOIN ai_task_prompts tp ON tp.task_id=t.id LEFT JOIN ai_task_options opt ON opt.task_id=t.id LEFT JOIN image_relations rel ON rel.target_image_id=i.id AND rel.relation_type='GENERATED_FROM' LEFT JOIN images src ON src.id=rel.source_image_id LEFT JOIN users u ON u.id=i.user_id LEFT JOIN merchants m ON m.id=i.merchant_id ${where}`;
+    const sql=`SELECT i.id,i.merchant_id merchantId,i.user_id userId,rel.source_image_id sourceImageId,i.url,i.source_type kind,tp.final_prompt prompt,tp.user_prompt userPrompt,t.cost quotaUsed,opt.options_json settingsJson,i.created_at createdAt,src.url sourceUrl,src.original_name sourceOriginalName,u.display_name userName,u.username,u.phone,m.company_name companyName ${base} ORDER BY i.created_at DESC`;
+    const countSql=`SELECT COUNT(*) total ${base}`;
+    res.json(await paged(sql,countSql,ps,req,x=>x));
+  });
+  
+  app.get('/api/admin/task-images/:id', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    const [[img]]=await pool.query(`SELECT i.id,i.merchant_id merchantId,i.user_id userId,rel.source_image_id sourceImageId,i.original_name originalName,i.url,i.source_type kind,tp.final_prompt prompt,tp.user_prompt userPrompt,t.cost quotaUsed,opt.options_json settingsJson,0 freeRegenUsed,i.created_at createdAt,src.url sourceUrl,src.original_name sourceOriginalName,u.display_name userName,u.username,u.phone,m.company_name companyName FROM images i LEFT JOIN ai_task_outputs ato ON ato.image_id=i.id LEFT JOIN ai_tasks t ON t.id=ato.task_id LEFT JOIN ai_task_prompts tp ON tp.task_id=t.id LEFT JOIN ai_task_options opt ON opt.task_id=t.id LEFT JOIN image_relations rel ON rel.target_image_id=i.id AND rel.relation_type='GENERATED_FROM' LEFT JOIN images src ON src.id=rel.source_image_id LEFT JOIN users u ON u.id=i.user_id LEFT JOIN merchants m ON m.id=i.merchant_id WHERE i.id=?`,[req.params.id]);
+    if(!img) return res.status(404).json({message:'图片不存在'});
+    res.json(img);
+  });
+
+  app.get('/api/admin/ai-logs', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    const wh=[]; const ps=[];
+    if(req.query.operation){ wh.push('t.feature_key=?'); ps.push(req.query.operation); }
+    if(req.query.status){ wh.push('l.status=?'); ps.push(req.query.status); }
+    if(req.query.keyword){ wh.push('(m.company_name LIKE ? OR u.username LIKE ? OR u.phone LIKE ? OR u.display_name LIKE ? OR t.id LIKE ?)'); ps.push(like(req.query.keyword),like(req.query.keyword),like(req.query.keyword),like(req.query.keyword),like(req.query.keyword)); }
+    if(req.query.startDate){ wh.push('DATE(l.created_at)>=?'); ps.push(req.query.startDate); }
+    if(req.query.endDate){ wh.push('DATE(l.created_at)<=?'); ps.push(req.query.endDate); }
+    const where=wh.length?'WHERE '+wh.join(' AND '):'';
+    const base=`FROM ai_model_call_logs l LEFT JOIN ai_tasks t ON t.id=l.task_id LEFT JOIN users u ON u.id=l.user_id LEFT JOIN merchants m ON m.id=l.merchant_id ${where}`;
+    res.json(await paged(`
+      SELECT l.*,t.feature_key operation,t.cost quota_used,t.final_prompt prompt,u.display_name userName,u.username,u.phone,m.company_name companyName
+      ${base}
+      ORDER BY l.created_at DESC
+    `,`SELECT COUNT(*) total ${base}`,ps,req,x=>x));
+  });
+  
+  app.get('/api/admin/finance', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    const wh=[]; const ps=[];
+    if(req.query.type){ wh.push('f.type=?'); ps.push(req.query.type); }
+    if(req.query.keyword){ wh.push('(f.title LIKE ? OR m.company_name LIKE ?)'); ps.push(like(req.query.keyword),like(req.query.keyword)); }
+    if(req.query.startDate){ wh.push('DATE(f.created_at)>=?'); ps.push(req.query.startDate); }
+    if(req.query.endDate){ wh.push('DATE(f.created_at)<=?'); ps.push(req.query.endDate); }
+    const where=wh.length?'WHERE '+wh.join(' AND '):'';
+    const base=`FROM finance_logs f LEFT JOIN merchants m ON m.id=f.merchant_id ${where}`;
+    res.json(await paged(`SELECT f.*,m.company_name companyName ${base} ORDER BY f.created_at DESC`,`SELECT COUNT(*) total ${base}`,ps,req,x=>x));
+  });
+  
+  app.get('/api/admin/ai-config', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    const cfg=await getAiConfig({includeSecret:false});
+    res.json({
+      provider:cfg.providerConfig.provider,
+      modelName:cfg.providerConfig.defaultModel,
+      endpoint:cfg.providerConfig.baseUrl,
+      enabled:cfg.providerConfig.enabled,
+      note:cfg.providerConfig.safetyNote||'',
+      updatedAt:null
+    });
+  });
+  
+  app.patch('/api/admin/ai-config', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    const {provider='mock',modelName='local-mock-model',apiKey='',endpoint='',enabled=0,note=''}=req.body;
+    const current=await getAiConfig({includeSecret:false});
+    await saveAiConfig({
+      ...current,
+      providerConfig:{
+        ...current.providerConfig,
+        provider,
+        baseUrl:endpoint||current.providerConfig.baseUrl||'',
+        apiKey,
+        defaultModel:modelName,
+        enabled:!!enabled,
+        safetyNote:note
+      },
+      features:(current.features||[]).map(f=>({
+        ...f,
+        provider:f.provider||provider,
+        modelName:f.modelName||modelName,
+        enabled:f.enabled!==false
+      }))
+    },req.user);
+    await pool.query('UPDATE app_settings SET setting_value=?,updated_by=? WHERE setting_key="ai_generation_enabled"',[enabled?'1':'0',req.user.id]);
+    if(req.body.announce) await addAnnouncement({title:req.body.announcementTitle||'AI功能调整通知',content:req.body.announcementContent||`平台AI生成功能已${enabled?'启用':'禁用'}。`,audience:req.body.audience||'MERCHANT',createdBy:req.user.id});
+    res.json({message:'AI配置已更新'});
+  });
+  
+  app.get('/api/admin/resources', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    const wh=['i.status<>"DELETED"','(imc.scope="SYSTEM" OR (icb.image_id IS NULL AND i.merchant_id IS NULL))']; const ps=[];
+    if(req.query.status){ wh.push('i.status=?'); ps.push(req.query.status); }
+    if(req.query.mainCategory){
+      if(req.query.mainCategory==='未分类') wh.push('icb.image_id IS NULL');
+      else { wh.push('imc.name=?'); ps.push(req.query.mainCategory); }
+    }
+    if(req.query.subCategory){ wh.push('isc.name=?'); ps.push(req.query.subCategory); }
+    if(req.query.resourceType){
+      if(req.query.resourceType==='material') wh.push('imc.name IN ("材质","软体")');
+      else if(req.query.resourceType==='scene') wh.push('imc.name="场景模板"');
+      else wh.push('imc.name IN ("产品","未分类")');
+    }
+    if(req.query.keyword){ wh.push('(i.display_name LIKE ? OR i.original_name LIKE ? OR imc.name LIKE ? OR isc.name LIKE ?)'); ps.push(like(req.query.keyword),like(req.query.keyword),like(req.query.keyword),like(req.query.keyword)); }
+    const where='WHERE '+wh.join(' AND ');
+    const base=`FROM images i
+      LEFT JOIN image_category_bindings icb ON icb.image_id=i.id
+      LEFT JOIN image_sub_categories isc ON isc.id=icb.sub_category_id
+      LEFT JOIN image_main_categories imc ON imc.id=isc.main_category_id
+      ${where}`;
+    const map=r=>({
+      id:r.id,
+      name:r.display_name||r.original_name||`资源-${String(r.id).slice(0,8)}`,
+      resourceType:r.resourceType,
+      objectName:r.mainCategoryName||'未分类',
+      colorName:Number(r.isMainOnly||0)?'':(r.subCategoryName||''),
+      mainCategoryName:r.mainCategoryName||'未分类',
+      subCategoryName:Number(r.isMainOnly||0)?'':(r.subCategoryName||''),
+      imageUrl:r.url,
+      status:r.status,
+      createdAt:r.created_at,
+      scope:'SYSTEM'
+    });
+    res.json(await paged(`SELECT i.*,imc.name mainCategoryName,isc.name subCategoryName,isc.is_main_only isMainOnly,
+      CASE WHEN imc.name IN ('材质','软体') THEN 'material' WHEN imc.name='场景模板' THEN 'scene' ELSE 'user_reference' END resourceType ${base} ORDER BY i.created_at DESC`,
+      `SELECT COUNT(*) total ${base}`,ps,req,map));
+  });
+  
+  app.post('/api/admin/resources', requireAuth, upload.single('image'), async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    const {name,objectName='',colorName='',imageUrl=''}=req.body;
+    if(!name) return res.status(400).json({message:'资源名称不能为空'});
+    const uploadedUrl = saveUploadedFile(req.file,{kind:'resource',userId:req.user.id});
+    const finalUrl=uploadedUrl || imageUrl || '';
+    if(!finalUrl) return res.status(400).json({message:'请上传资源图片或填写图片URL'});
+    const id=uuid();
+    const meta=getLocalFileMeta(finalUrl);
+    const subId=await ensureSystemSubCategory({mainName:objectName,subName:colorName,createdBy:req.user.id});
+    await pool.query('INSERT INTO images(id,user_id,display_name,original_name,url,source_type,status,storage_provider,storage_key,file_name,mime_type,size_bytes,width,height) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',[id,req.user.id,name,req.file?.originalname||name,finalUrl,'RESOURCE','ACTIVE',meta.storageProvider||'local',meta.storageKey||finalUrl,meta.fileName||req.file?.filename||'',meta.mimeType||req.file?.mimetype||'',Number(meta.sizeBytes||req.file?.size||0),meta.width||null,meta.height||null]);
+    if(subId){
+      await pool.query('INSERT INTO image_category_bindings(image_id,sub_category_id) VALUES(?,?) ON DUPLICATE KEY UPDATE sub_category_id=VALUES(sub_category_id)',[id,subId]);
+    }
+    res.json({message:'资源已创建',id});
+  });
+  
+  app.patch('/api/admin/resources/:id', requireAuth, upload.single('image'), async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    const {name,objectName,colorName,status}=req.body;
+    const fields=[]; const vals=[];
+    if(name!==undefined){fields.push('display_name=?'); vals.push(name||null);}
+    if(status!==undefined){fields.push('status=?'); vals.push(status);}
+    if(fields.length){ vals.push(req.params.id); await pool.query(`UPDATE images SET ${fields.join(',')} WHERE id=?`,vals); }
+    if(objectName!==undefined || colorName!==undefined){
+      const subId=await ensureSystemSubCategory({mainName:objectName||'',subName:colorName||'',createdBy:req.user.id});
+      if(subId) await pool.query('INSERT INTO image_category_bindings(image_id,sub_category_id) VALUES(?,?) ON DUPLICATE KEY UPDATE sub_category_id=VALUES(sub_category_id)',[req.params.id,subId]);
+      else await pool.query('DELETE FROM image_category_bindings WHERE image_id=?',[req.params.id]);
+    }
+    res.json({message:'操作成功'});
+  });
+  
+  app.delete('/api/admin/resources/:id', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    await pool.query('UPDATE images SET status="DELETED",deleted_at=NOW() WHERE id=?',[req.params.id]);
+    res.json({message:'操作成功'});
+  });
+  
+  app.get('/api/admin/feedbacks', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    const wh=[]; const ps=[];
+    if(req.query.status){ wh.push('f.status=?'); ps.push(req.query.status); }
+    if(req.query.keyword){ wh.push('(f.title LIKE ? OR f.content LIKE ? OR u.display_name LIKE ? OR m.company_name LIKE ?)'); ps.push(like(req.query.keyword),like(req.query.keyword),like(req.query.keyword),like(req.query.keyword)); }
+    const where=wh.length?'WHERE '+wh.join(' AND '):'';
+    const base=`FROM feedbacks f LEFT JOIN users u ON u.id=f.user_id LEFT JOIN merchants m ON m.id=f.merchant_id ${where}`;
+    res.json(await paged(`SELECT f.*,f.contact,u.display_name userName,u.phone userPhone,u.username,m.company_name companyName ${base} ORDER BY FIELD(f.status,'PENDING','PROCESSING','RESOLVED','REJECTED'), f.created_at DESC`,`SELECT COUNT(*) total ${base}`,ps,req,r=>r));
+  });
+  
+  app.patch('/api/admin/feedbacks/:id', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    await pool.query('UPDATE feedbacks SET status=?,reply=?,handled_by=?,handled_at=NOW() WHERE id=?',[req.body.status||'PROCESSING',req.body.reply||'',req.user.id,req.params.id]);
+    res.json({message:'反馈已处理'});
+  });
+  
+  app.get('/api/admin/announcements', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    const wh=[]; const ps=[];
+    if(req.query.audience){ wh.push('audience=?'); ps.push(req.query.audience); }
+    if(req.query.keyword){ wh.push('(title LIKE ? OR content LIKE ?)'); ps.push(like(req.query.keyword),like(req.query.keyword)); }
+    const where=wh.length?'WHERE '+wh.join(' AND '):'';
+    res.json(await paged(`SELECT * FROM announcements ${where} ORDER BY created_at DESC`,`SELECT COUNT(*) total FROM announcements ${where}`,ps,req,r=>r));
+  });
+  
+  app.post('/api/admin/announcements', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    const {title,content,audience='ALL',validDays=30}=req.body;
+    if(!title||!content) return res.status(400).json({message:'公告标题和内容不能为空'});
+    await addAnnouncement({title,content:`${content}\n\n有效期：${validDays}天`,audience,createdBy:req.user.id});
+    res.json({message:'公告已发布'});
+  });
+  
+  app.get('/api/admin/redeem-codes', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    const wh=[]; const ps=[];
+    if(req.query.status){ wh.push('status=?'); ps.push(req.query.status); }
+    if(req.query.keyword){ wh.push('code LIKE ?'); ps.push(like(req.query.keyword)); }
+    const where=wh.length?'WHERE '+wh.join(' AND '):'';
+    res.json(await paged(`SELECT * FROM redeem_codes ${where} ORDER BY created_at DESC`,`SELECT COUNT(*) total FROM redeem_codes ${where}`,ps,req,r=>r));
+  });
+  
+  app.post('/api/admin/redeem-codes/batch', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    const count=Math.min(500,Math.max(1,Number(req.body.count||1)));
+    const quota=Math.max(1,Number(req.body.quota||10));
+    const maxUses=Math.max(1,Number(req.body.maxUses||1));
+    const targetScope=req.body.targetScope||'ALL';
+    const validDays=Math.max(1,Number(req.body.validDays||30));
+    const codes=[];
+    for(let i=0;i<count;i++){
+      const code=makeRedeemCode(); codes.push(code);
+      await pool.query('INSERT INTO redeem_codes(id,code,quota,max_uses,target_scope,valid_until,created_by) VALUES(?,?,?,?,?,DATE_ADD(NOW(), INTERVAL ? DAY),?)',[uuid(),code,quota,maxUses,targetScope,validDays,req.user.id]);
+    }
+    res.json({message:`已创建 ${count} 个兑换码`,codes});
+  });
+  
+  app.get('/api/admin/quota-logs', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    const wh=[]; const ps=[];
+    if(req.query.type){ wh.push('q.type=?'); ps.push(req.query.type); }
+    if(req.query.keyword){ wh.push('(m.company_name LIKE ? OR tu.display_name LIKE ? OR tu.phone LIKE ? OR ou.display_name LIKE ?)'); ps.push(like(req.query.keyword),like(req.query.keyword),like(req.query.keyword),like(req.query.keyword)); }
+    const where=wh.length?'WHERE '+wh.join(' AND '):'';
+    const base=`FROM quota_logs q LEFT JOIN merchants m ON m.id=q.merchant_id LEFT JOIN users tu ON tu.id=q.related_user_id LEFT JOIN users ou ON ou.id=q.operator_user_id ${where}`;
+    res.json(await paged(`SELECT q.*,m.company_name companyName,tu.display_name targetName,tu.phone targetPhone,ou.display_name operatorName ${base} ORDER BY q.created_at DESC`,`SELECT COUNT(*) total ${base}`,ps,req,r=>r));
+  });
+  
+  app.get('/api/export/admin/:type', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    const type=req.params.type;
+    if(type==='redeem-codes'){
+      const [rows]=await pool.query('SELECT code,quota,max_uses maxUses,used_count usedCount,target_scope targetScope,status,valid_until validUntil,created_at createdAt FROM redeem_codes ORDER BY created_at DESC LIMIT 2000');
+      return sendCsv(res,'redeem-codes.csv',[{key:'code',label:'兑换码'},{key:'quota',label:'额度'},{key:'maxUses',label:'可兑换次数'},{key:'usedCount',label:'已使用'},{key:'targetScope',label:'对象'},{key:'status',label:'状态'},{key:'validUntil',label:'有效期'},{key:'createdAt',label:'创建时间'}],rows);
+    }
+    if(type==='feedbacks'){
+      const [rows]=await pool.query('SELECT title,content,contact,status,reply,created_at createdAt FROM feedbacks ORDER BY created_at DESC LIMIT 2000');
+      return sendCsv(res,'feedbacks.csv',[{key:'title',label:'标题'},{key:'content',label:'内容'},{key:'contact',label:'联系方式'},{key:'status',label:'状态'},{key:'reply',label:'处理说明'},{key:'createdAt',label:'提交时间'}],rows);
+    }
+    res.status(404).json({message:'不支持导出'});
+  });
+}

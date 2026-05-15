@@ -1,0 +1,106 @@
+/* 任务详情弹窗：右侧固定底部按钮、内容内部滚动、参考图独立显示 */
+.taskPreviewWindowMode .taskPreviewBody{
+  height:calc(100vh - 78px);
+  overflow:hidden !important;
+  align-items:stretch;
+}
+.taskPreviewWindowMode .taskComparePanel,
+.taskPreviewWindowMode .taskInfoPanel{
+  height:calc(100vh - 118px);
+  min-height:0 !important;
+}
+.taskPreviewWindowMode .taskComparePanel{
+  overflow:hidden;
+}
+.taskPreviewWindowMode .taskInfoPanel{
+  display:flex !important;
+  flex-direction:column !important;
+  overflow:hidden !important;
+  padding:26px 22px 18px !important;
+}
+.taskPreviewWindowMode .taskInfoPanel>h3{
+  flex:0 0 auto;
+}
+.taskPreviewWindowMode .taskInfoScroll{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding-right:8px;
+  scrollbar-color:rgba(242,213,140,.55) transparent;
+}
+.taskPreviewWindowMode .taskInfoScroll::-webkit-scrollbar{
+  width:8px;
+}
+.taskPreviewWindowMode .taskInfoScroll::-webkit-scrollbar-thumb{
+  background:rgba(242,213,140,.45);
+  border-radius:999px;
+}
+.taskPreviewWindowMode .taskDetailActions{
+  flex:0 0 auto;
+  margin-top:14px !important;
+  padding-top:16px;
+  border-top:1px solid rgba(255,255,255,.12);
+}
+.taskPreviewWindowMode .infoRows b{
+  line-height:1.45;
+}
+.taskPreviewWindowMode .promptBox{
+  margin:18px 0;
+}
+.taskPreviewWindowMode .promptBox p{
+  max-height:none !important;
+  min-height:110px;
+  overflow:visible !important;
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+.taskReferenceBlock{
+  border-top:1px solid rgba(255,255,255,.12);
+  margin-top:18px;
+  padding-top:18px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(118px,1fr));
+  gap:12px;
+}
+.taskReferenceItem{
+  min-width:0;
+}
+.taskReferenceItem span{
+  display:block;
+  color:#aaa;
+  font-size:14px;
+  margin-bottom:8px;
+}
+.taskReferenceItem img{
+  width:100%;
+  aspect-ratio:1/1;
+  object-fit:cover;
+  display:block;
+  border-radius:12px;
+  border:1px solid rgba(242,213,140,.28);
+  background:#f7f5ef;
+}
+.taskReferenceItem b{
+  display:block;
+  margin-top:8px;
+  color:#fff;
+  font-size:13px;
+  line-height:1.35;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+@media(max-width:1200px){
+  .taskPreviewWindowMode .taskPreviewBody{
+    height:auto;
+    overflow:auto !important;
+  }
+  .taskPreviewWindowMode .taskComparePanel,
+  .taskPreviewWindowMode .taskInfoPanel{
+    height:auto;
+  }
+  .taskPreviewWindowMode .taskInfoScroll{
+    max-height:65vh;
+  }
+}

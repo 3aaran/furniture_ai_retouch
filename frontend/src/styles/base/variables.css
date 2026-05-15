@@ -1,0 +1,22 @@
+/* 全局设计变量：后续新增/拆分样式优先使用这里 */
+:root{
+  --color-primary:#f0d68a;
+  --color-danger:#ef4444;
+  --color-success:#22c55e;
+  --bg-page:#0b0c0d;
+  --bg-card:#161718;
+  --border-soft:rgba(255,255,255,.12);
+  --text-main:#f6f6f6;
+  --text-muted:#cfc7b8;
+  --app-bg:#0b0c0d;
+  --panel-bg:#161718;
+  --panel-bg-soft:#1b1b1b;
+  --gold:#f0d68a;
+  --gold-2:#e2cb8a;
+  --text:#f6f6f6;
+  --text-soft:#cfc7b8;
+  --border:rgba(255,255,255,.12);
+  --radius-lg:20px;
+  --radius-md:14px;
+  --shadow-modal:0 40px 120px rgba(0,0,0,.68);
+}
