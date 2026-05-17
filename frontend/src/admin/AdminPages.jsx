@@ -9,12 +9,12 @@ export const adminNav=adminPages;
 export const adminNavGroups=configuredAdminNavGroups;
 
 const AI_MODEL_OPTIONS=[
-  {label:'鏈湴妯℃嫙',provider:'mock',modelName:'local-mock-model',baseUrl:'',apiPath:''},
-  {label:'鏅鸿氨 CogView-3-Flash',provider:'zhipu',modelName:'cogview-3-flash',baseUrl:'https://open.bigmodel.cn',apiPath:'/api/paas/v4/images/generations'},
+  {label:'本地模拟',provider:'mock',modelName:'local-mock-model',baseUrl:'',apiPath:''},
+  {label:'智谱 CogView-3-Flash',provider:'zhipu',modelName:'cogview-3-flash',baseUrl:'https://open.bigmodel.cn',apiPath:'/api/paas/v4/images/generations'},
   {label:'GPT Image 2',provider:'gpt-image-2',modelName:'gpt-image-2',baseUrl:'https://api.lk888.ai',apiPath:'/v1/media/generate'},
-  {label:'闃块噷浜戦€氫箟涓囩浉',provider:'aliyun',modelName:'wanx2.1-imageedit',baseUrl:'',apiPath:''},
-  {label:'鍗虫ⅵ鍥剧墖妯″瀷',provider:'jimeng',modelName:'jimeng-image',baseUrl:'',apiPath:''},
-  {label:'鑷畾涔?HTTP',provider:'custom',modelName:'custom-image-model',baseUrl:'',apiPath:''}
+  {label:'阿里云通义万相',provider:'aliyun',modelName:'wanx2.1-imageedit',baseUrl:'',apiPath:''},
+  {label:'即梦图片模型',provider:'jimeng',modelName:'jimeng-image',baseUrl:'',apiPath:''},
+  {label:'自定义 HTTP',provider:'custom',modelName:'custom-image-model',baseUrl:'',apiPath:''}
 ];
 const modelOptionValue=o=>`${o.provider}::${o.modelName}`;
 function findModelOption(provider,modelName){
