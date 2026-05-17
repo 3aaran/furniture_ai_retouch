@@ -6,7 +6,7 @@ import { getAiConfig, getFeatureConfig } from './configService.js';
 import { buildAiPrompt, buildPromptParts, featureNameMap } from './promptService.js';
 import { normalizeTaskParams, validateTaskParams } from './taskParamService.js';
 import { callImageModel } from './providerService.js';
-import { urlToDiskPath, getStoredFileMeta, MIN_GENERATION_STORAGE_BYTES, assertUserStorageAvailable, applyUserStorageDelta, deleteStoredFile, getUserStorageSummary } from '../services/storageService.js';
+import { urlToDiskPath, getStoredFileMeta, MIN_GENERATION_STORAGE_BYTES, assertUserStorageAvailable, applyUserStorageDelta, deleteStoredFile, getUserStorageSummary, getImageAccessUrl } from '../services/storageService.js';
 import { writeSystemLog } from '../services/loggerService.js';
 import { bindImageToResourceCategory } from '../services/resourceBindingService.js';
 
@@ -79,6 +79,13 @@ function toPublicUrl(urlPath = '') {
   if (/^https?:\/\//i.test(raw)) return raw;
   const base = String(process.env.PUBLIC_BASE_URL || '').trim().replace(/\/$/, '').replace(/\/api$/i, '');
   return base ? `${base}${raw.startsWith('/') ? raw : `/${raw}`}` : '';
+}
+
+function toModelImageUrl(imageOrUrl = '') {
+  const raw = typeof imageOrUrl === 'string' ? imageOrUrl : (imageOrUrl.url || '');
+  if (!raw) return '';
+  const signed = getImageAccessUrl(imageOrUrl, { expires: Number(process.env.AI_IMAGE_URL_EXPIRES || 3600) });
+  return toPublicUrl(signed || raw);
 }
 
 function safeParseJson(v, fallback = []) {
@@ -495,6 +502,7 @@ export async function runAiTask(taskId) {
       SELECT
         t.*,
         img.url AS originUrl,
+        img.storage_key AS originStorageKey,
         img.original_name AS originName
       FROM ai_tasks t
       LEFT JOIN images img ON img.id = t.origin_image_id
@@ -523,7 +531,12 @@ export async function runAiTask(taskId) {
       );
       refs = rows || [];
     }
-    const imageBPath = taskParams.selectedResource?.url || taskParams.selectedResource?.imageUrl || null;
+    let selectedResourceImage = null;
+    if (taskParams.selectedResource?.imageId) {
+      const [[resourceImage]] = await pool.query('SELECT * FROM images WHERE id=? LIMIT 1', [taskParams.selectedResource.imageId]);
+      selectedResourceImage = resourceImage || null;
+    }
+    const imageBPath = selectedResourceImage?.url || taskParams.selectedResource?.url || taskParams.selectedResource?.imageUrl || null;
     const referenceImagePaths = [
       imageBPath ? toDiskPath(imageBPath) : null,
       ...refs.map((r) => toDiskPath(r.url))
@@ -535,6 +548,21 @@ export async function runAiTask(taskId) {
       resolution: full.resolution,
       ratio: full.ratio,
       taskParams
+    });
+
+    const modelImageUrl = toModelImageUrl({ url: full.originUrl, storage_key: full.originStorageKey });
+    const modelReferenceUrls = [
+      selectedResourceImage ? toModelImageUrl(selectedResourceImage) : (imageBPath ? toModelImageUrl(imageBPath) : ''),
+      ...refs.map((r) => toModelImageUrl(r))
+    ].filter(Boolean);
+    await writeSystemLog(pool, {
+      level: 'INFO',
+      module: 'ai',
+      action: 'MODEL_IMAGE_INPUTS',
+      message: `AI task ${taskId} image inputs prepared`,
+      userId: full.user_id,
+      merchantId: full.merchant_id,
+      metadata: { taskId, hasImageUrl: !!modelImageUrl, referenceCount: modelReferenceUrls.length }
     });
 
     const callStartedAt = Date.now();
@@ -551,12 +579,9 @@ export async function runAiTask(taskId) {
       featureConfig: feature,
       featureKey: full.feature_key,
       imagePath: toDiskPath(full.originUrl),
-      imageUrl: toPublicUrl(full.originUrl),
+      imageUrl: modelImageUrl,
       referenceImagePaths,
-      referenceImageUrls: [
-        imageBPath ? toPublicUrl(imageBPath) : '',
-        ...refs.map((r) => toPublicUrl(r.url))
-      ].filter(Boolean),
+      referenceImageUrls: modelReferenceUrls,
       prompt: runtimePrompt,
       resolution: full.resolution,
       ratio: full.ratio,
