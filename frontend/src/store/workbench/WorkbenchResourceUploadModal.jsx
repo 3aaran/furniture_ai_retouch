@@ -25,16 +25,18 @@ export default function WorkbenchResourceUploadModal({
       <div className="resourceUploadBodyV3">
         <label className="resourceDropV3">
           <input type="file" accept="image/*" onChange={e=>chooseWorkbenchResourceFile(e.target.files?.[0])}/>
-          {resourceUploadPreview?<img src={resourceUploadPreview} alt="preview"/>:<>
-            <ImageIcon size={46}/>
-            <b>拖拽图片到这里，或选择文件</b>
-            <span>用于材质替换或场景融合资源</span>
-            <em>选择文件</em>
-          </>}
+          {resourceUploadPreview?
+            <img src={resourceUploadPreview} alt="preview"/>
+            :
+            <>
+              <ImageIcon size={46}/>
+              <b>拖拽图片到这里，或选择文件</b>
+              <em>选择文件</em>
+            </>}
         </label>
         <div className="resourceUploadSettingsV3">
           <h3>上传设置</h3>
-          <p><b>空间：</b><span>{isStoreAdmin?'门店空间':'个人空间'}</span><small>{isStoreAdmin?' 当前门店共享使用':' 仅当前账号使用'}</small></p>
+          <p><b>空间：</b><span>{isStoreAdmin?'门店空间':'个人空间'}</span></p>
           <input placeholder="资源名称" value={resourceUpload.name} onChange={e=>setResourceUpload({...resourceUpload,name:e.target.value})}/>
           <select value={resourceUpload.resourceType} onChange={e=>changeWorkbenchUploadType(e.target.value)}>
             <option value="material">材质替换</option>

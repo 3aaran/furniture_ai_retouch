@@ -1,6 +1,4 @@
-/* 智能工作台页面样式。以后 .wb* 相关样式放这里。
-   当前最新项目原有样式仍从 styles/legacy 中加载，保证功能和视觉不变。
-*/
+﻿
 
 .wbSourceHead{
   display:flex;
@@ -439,7 +437,7 @@
 .wmProcessFrame span{left:10px}
 .wmProcessFrame em{left:58px}
 .wmProcessFrame img{
-  /* 放大 25%（原 30% / 42% -> 37.5% / 52.5%） */
+  
   max-width:37.5%;
   max-height:52.5%;
   object-fit:contain;
@@ -529,10 +527,7 @@
   color:#2b210f;
 }
 
-/* =====================================================================
-   图片处理弹窗样式升级：对齐后续截图的大尺寸、双栏、裁剪编辑器样式
-   只覆盖 .wmProcess* 相关样式，不影响其他工作台页面。
-   ===================================================================== */
+
 
 .wmProcessMask{
   padding:22px!important;
@@ -616,7 +611,7 @@
   min-height:0!important;
 }
 
-/* 左上角图片信息标识 */
+
 .wmProcessFrame span,
 .wmProcessFrame em{
   top:12px!important;
@@ -637,7 +632,7 @@
 .wmProcessFrame span{left:16px!important}
 .wmProcessFrame em{left:auto!important;right:auto!important;margin-left:0!important}
 
-/* 普通预览图也按后续截图居中放大 */
+
 .wmProcessFrame img{
   max-width:min(52%, calc(100% - 72px))!important;
   max-height:calc(100% - 72px)!important;
@@ -647,7 +642,7 @@
   justify-self:center!important;
 }
 
-/* 裁剪状态：整体画布放大居中，周围灰色遮罩由裁剪框负责 */
+
 .wmCropStage{
   box-sizing:border-box!important;
   width:var(--wm-stage-w,360px)!important;
@@ -750,7 +745,7 @@
   flex:0 0 auto!important;
 }
 
-/* 裁剪的宽高输入区域。如果你的 JSX 已经生成宽高输入，会按这个样式对齐。 */
+
 .wmProcessOptions input[type="number"],
 .wmProcessOptions .wmCropInput,
 .wmProcessOptions .cropSizeInput{
@@ -795,3 +790,4 @@
   .wmProcessBody{grid-template-columns:1fr!important;overflow:auto!important}
   .wmProcessOptions{min-height:260px!important}
 }
+

@@ -1,4 +1,4 @@
-import React,{useEffect,useState}from'react';
+﻿import React,{useEffect,useState}from'react';
 import{Download,Eye}from'lucide-react';
 import{API,token,req,fmt,usePaged,Pagination,Toolbar}from'../../appShared.jsx';
 import{featureName}from'../../config/uiText.js';
@@ -12,7 +12,7 @@ export default function StoreTasks({me,setMsg,TaskDetailModal,goPage}){
   const taskItems=data.items||[];
   function batch(){taskItems.slice(0,20).forEach((i,n)=>setTimeout(()=>window.open(`${API}/api/images/${i.id}/download?token=${token()}`,'_blank'),n*180))}
   return <div className="adminLogPage">
-    <section className="pageHero"><div><h1>历史任务</h1><p>{me.role==='MERCHANT_OWNER'||me.role==='MERCHANT_ADMIN'?'查看本门店所有生成任务。':'仅查看本人生成任务。'}</p></div><button className="primary" onClick={batch}><Download size={17}/>批量下载</button></section>
+    <section className="pageHero"><div><h1>历史任务</h1><p></p></div><button className="primary" onClick={batch}><Download size={17}/>批量下载</button></section>
     <section className="panel">
       <Toolbar onSearch={()=>setQuery(q=>({...q,page:1}))} onExport={batch}>
         <input placeholder="任务ID/功能/用户" value={query.keyword} onChange={e=>setQuery({...query,keyword:e.target.value})}/>

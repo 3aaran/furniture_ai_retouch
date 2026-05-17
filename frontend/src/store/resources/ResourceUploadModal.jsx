@@ -33,23 +33,28 @@ export default function ResourceUploadModal({
           onDrop={onDrop}
         >
           <input type="file" accept="image/*" multiple onChange={choose}/>
-          {preview?<><img src={preview} alt="preview"/>{files.length>1&&<span>已选择 {files.length} 张图片</span>}</>:<>
-            <ImageIcon size={46}/>
-            <b>拖拽图片到这里，或选择文件</b>
-            <span>支持批量上传，最多 50 个文件，仅支持图片</span>
-            <em>选择文件</em>
-          </>}
+          {preview?
+            <>
+              <img src={preview} alt="preview"/>
+              {files.length>1&&<span>已选择 {files.length} 张图片</span>}
+            </>
+            :
+            <>
+              <ImageIcon size={46}/>
+              <b>拖拽图片到这里，或选择文件</b>
+              <em>选择文件</em>
+            </>}
         </label>
 
         <div className="resourceUploadSettingsV3">
           <h3>上传设置</h3>
-          <p><b>空间：</b><span>{categoryScope==='SYSTEM'?'系统空间':categoryScope==='MERCHANT'?'门店空间':'个人空间'}</span><small>{categoryScope==='MERCHANT'?' 当前门店共享使用':categoryScope==='SYSTEM'?' 平台资源全局可用':' 仅当前账号使用'}</small></p>
+          <p><b>空间：</b><span>{categoryScope==='SYSTEM'?'系统空间':categoryScope==='MERCHANT'?'门店空间':'个人空间'}</span></p>
 
           <input placeholder={files.length>1?'批量上传将使用图片原名':'资源名称（可选，默认使用图片原名）'} value={f.name} disabled={files.length>1} onChange={e=>setF({...f,name:e.target.value})}/>
 
           <select value={uploadMain} onChange={e=>changeUploadMain(e.target.value)}>
             <option value="">不分类</option>
-            {categoryGroups.map(v=><option key={v.name} value={v.name}>{v.name}　用于：{v.useLabel}</option>)}
+            {categoryGroups.map(v=><option key={v.name} value={v.name}>{v.name}</option>)}
           </select>
 
           <select value={f.colorName} disabled={!uploadMain} onChange={e=>setF({...f,colorName:e.target.value})}>

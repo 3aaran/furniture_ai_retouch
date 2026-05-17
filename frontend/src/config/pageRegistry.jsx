@@ -1,4 +1,4 @@
-import {
+﻿import {
   LayoutDashboard,
   FileText,
   Building2,
@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 export const adminPages = [
-  ['dashboard', '运营情况', LayoutDashboard],
+  ['dashboard', '运营概况', LayoutDashboard],
   ['logs', 'AI日志', ClipboardList],
   ['applications', '申请审核', FileText],
   ['feedbacks', '问题反馈', MessageSquare],
@@ -40,7 +40,6 @@ export const storeAdminPages = [
   ['users', '用户管理', Users],
   ['images', '历史任务', Image],
   ['promotion', '推广邀请', Ticket],
-  // ['quota', '额度明细', WalletCards]
 ];
 
 export const staffPages = [
@@ -48,3 +47,4 @@ export const staffPages = [
   ['resources', '资源库', Layers],
   ['images', '历史任务', Image]
 ];
+

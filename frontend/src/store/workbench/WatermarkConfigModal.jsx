@@ -141,9 +141,7 @@ export function WatermarkConfigModal({open,onClose,setMsg}){
 
         {!canConfigure?
           <div className="watermarkBody">
-            <section className="watermarkControls">
-              <p className="watermarkHint">只有门店管理员可以配置门店水印。</p>
-            </section>
+            <section className="watermarkControls"/>
           </div>
           :
           <div className="watermarkBody">
@@ -153,7 +151,6 @@ export function WatermarkConfigModal({open,onClose,setMsg}){
                 <button type="button" className={config.mode==='image'?'active':''} onClick={()=>update('mode','image')}>图片水印</button>
                 <button type="button" className={config.mode==='text'?'active':''} onClick={()=>update('mode','text')}>文字水印</button>
               </div>
-              <p className="watermarkHint">图片水印和文字水印会同时保存，但下载时只应用当前选中的一种。</p>
 
               {config.mode==='text'?
                 <div className="watermarkTextFields">
@@ -183,7 +180,6 @@ export function WatermarkConfigModal({open,onClose,setMsg}){
                       :
                       <><b>+</b><span>{uploading?'上传中':'上传'}</span></>}
                   </label>
-                  <p className="watermarkHint">支持 PNG、JPG、JPEG、WebP，最大 5MB。上传后会同步进入资源库。</p>
                 </>}
 
               <div className="watermarkFieldTitle">位置</div>

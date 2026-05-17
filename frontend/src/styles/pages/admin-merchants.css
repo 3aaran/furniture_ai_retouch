@@ -1,0 +1,51 @@
+﻿.adminModernPage{display:grid;gap:18px}
+.adminHeroV9{min-height:150px;border:1px solid rgba(240,210,125,.18);border-radius:22px;padding:26px 30px;display:flex;align-items:flex-end;justify-content:space-between;gap:22px;background:radial-gradient(circle at 18% 0,rgba(240,210,125,.22),transparent 34%),linear-gradient(135deg,#14171d,#0b0d10 64%,#18120d);box-shadow:0 24px 70px rgba(0,0,0,.32)}
+.adminHeroV9 span{display:inline-flex;color:#f2d58c;font-weight:800;margin-bottom:8px}
+.adminHeroV9 h1{margin:0;color:#fff;font-size:38px;line-height:1.08}
+.adminHeroV9 p{margin:9px 0 0;color:#b9c0cc;font-size:16px}
+.adminHeroV9 button{height:46px;border-radius:14px;border:1px solid rgba(242,213,140,.38);background:rgba(242,213,140,.12);color:#f5de9d;font-weight:800}
+.adminHeroStatsV9{width:128px;height:98px;border-radius:20px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);display:grid;place-items:center;color:#fff}
+.adminHeroStatsV9 b{font-size:36px;color:#f2d58c}.adminHeroStatsV9 small{color:#c8d0dd;margin-top:-18px}
+.adminPanelV9{border:1px solid rgba(255,255,255,.1);border-radius:22px;background:linear-gradient(180deg,rgba(22,25,30,.96),rgba(13,15,18,.98));padding:20px;box-shadow:0 18px 52px rgba(0,0,0,.25)}
+.adminFiltersV9{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.adminSearchV9{height:46px;min-width:320px;flex:1;display:flex;align-items:center;gap:10px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:#0e1115;padding:0 14px;color:#f2d58c}
+.adminSearchV9 input,.adminFiltersV9 select{height:46px;border:0;background:transparent;color:#fff;outline:0}
+.adminFiltersV9 select{border:1px solid rgba(255,255,255,.12);border-radius:14px;background:#0e1115;padding:0 14px}
+.adminBatchBarV9{min-height:54px;border:1px solid rgba(242,213,140,.14);border-radius:16px;background:rgba(242,213,140,.06);display:flex;align-items:center;gap:12px;padding:10px 14px;margin-bottom:16px;flex-wrap:wrap}
+.adminBatchBarV9 em{color:#f2d58c;font-style:normal;margin-right:auto}
+.adminCheckV9{display:inline-flex;align-items:center;gap:8px;color:#cfd6e2;font-weight:700}.adminCheckV9 input{display:none}.adminCheckV9 span{width:20px;height:20px;border-radius:7px;border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.06)}.adminCheckV9 input:checked+span{background:#f2d58c;border-color:#f2d58c}.adminCheckV9 input:checked+span:after{content:"";color:#111;font-weight:900;display:grid;place-items:center;height:100%}.adminCheckV9.floating{position:absolute;left:14px;top:14px}
+.reviewCardsV9,.merchantGridV9{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.reviewCardV9,.merchantCardV9{position:relative;border:1px solid rgba(255,255,255,.1);border-radius:20px;background:linear-gradient(180deg,rgba(28,31,38,.98),rgba(16,18,22,.98));box-shadow:0 16px 38px rgba(0,0,0,.25);padding:18px;transition:.18s ease}
+.reviewCardV9:hover,.merchantCardV9:hover{transform:translateY(-2px);border-color:rgba(242,213,140,.42);box-shadow:0 24px 55px rgba(0,0,0,.34)}
+.reviewIconV9,.merchantAvatarV9{width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,#f2d58c,#b8873d);display:grid;place-items:center;color:#111;font-weight:900}
+.reviewCardV9{display:grid;grid-template-columns:56px 1fr auto;gap:14px;align-items:start}.reviewMainV9 h3,.merchantCardV9 h3{margin:0;color:#fff;font-size:20px}.reviewMainV9 p{margin:8px 0 12px;color:#aeb6c4;line-height:1.5}.reviewMainV9 div,.merchantInfoV9{display:flex;flex-wrap:wrap;gap:10px;color:#cbd2dc}.reviewMainV9 span,.merchantInfoV9 span{display:inline-flex;align-items:center;gap:5px}.reviewSideV9{display:grid;justify-items:end;gap:10px}.reviewSideV9 small{color:#98a2b3}.reviewActionsV9{display:flex;gap:8px}
+.merchantCardV9 header{display:flex;align-items:center;gap:12px}.merchantCardV9 header .badge{margin-left:auto}.merchantCardV9 header span{color:#9ca6b6}.merchantInfoV9{margin:18px 0}.merchantCardV9 footer{display:flex;gap:10px}.merchantCardV9 footer button{flex:1;justify-content:center}
+.adminModalMaskV9{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.68);backdrop-filter:blur(10px);display:grid;place-items:center;padding:24px}
+.adminReviewModalV9,.merchantDetailModalV9{position:relative;width:min(560px,94vw);border-radius:24px;border:1px solid rgba(255,255,255,.14);background:linear-gradient(180deg,#1c2027,#111318);box-shadow:0 34px 120px rgba(0,0,0,.72);padding:28px;color:#fff}
+.modalCloseV9{position:absolute;right:18px;top:18px;width:38px;height:38px;border-radius:13px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:#fff}
+.modalBadgeV9{width:64px;height:64px;border-radius:22px;display:grid;place-items:center;margin-bottom:14px}.modalBadgeV9 svg{width:34px;height:34px}.modalBadgeV9.approve{background:rgba(77,190,120,.16);color:#61d68e}.modalBadgeV9.reject{background:rgba(238,91,91,.16);color:#ff7474}
+.adminReviewModalV9 h2{margin:0 0 8px;font-size:28px}.adminReviewModalV9 p{color:#aeb6c4}.adminReviewModalV9 label,.quotaAdjustV9 label,.settingsGridV9 label{display:grid;gap:8px;color:#dbe1ea;font-weight:800}.adminReviewModalV9 input,.adminReviewModalV9 textarea,.quotaAdjustV9 input,.settingsGridV9 input{border:1px solid rgba(255,255,255,.12);border-radius:14px;background:#0d1014;color:#fff;padding:13px 14px;outline:0}.adminReviewModalV9 textarea{min-height:110px;resize:vertical}.modalActionsV9{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+.merchantDetailModalV9{width:min(1180px,96vw);max-height:90vh;overflow:auto}.merchantDetailHeadV9{display:flex;align-items:center;gap:14px;margin-bottom:18px}.merchantDetailHeadV9 h2{margin:0;color:#fff}.merchantDetailHeadV9 p{margin:6px 0 0;color:#aeb6c4}.merchantAvatarV9.large{width:70px;height:70px;border-radius:24px;font-size:28px}.merchantDetailHeadV9 .badge{margin-left:auto}
+.merchantMetricGridV9{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}.merchantMetricGridV9 div{border:1px solid rgba(255,255,255,.1);border-radius:18px;background:rgba(255,255,255,.05);padding:16px}.merchantMetricGridV9 span{color:#9da7b6}.merchantMetricGridV9 b{display:block;margin-top:8px;font-size:22px;color:#f2d58c}
+.quotaAdjustV9{display:flex;gap:12px;align-items:end;margin:14px 0 20px}.quotaAdjustV9 label{flex:1}.quotaAdjustV9 button{height:48px}.modalSplitV9{display:grid;grid-template-columns:1fr 1fr;gap:16px}.modalSplitV9 h3{color:#fff}
+.settingsHeroV9{background:radial-gradient(circle at 12% 12%,rgba(94,178,255,.18),transparent 28%),radial-gradient(circle at 82% 0,rgba(242,213,140,.22),transparent 30%),linear-gradient(135deg,#121721,#0a0c10 66%,#1b130b)}
+.settingsHeroNoteV9{width:136px;height:104px;border-radius:24px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.075);display:grid;place-items:center;color:#fff}
+.settingsHeroNoteV9 b{font-size:36px;color:#f2d58c}.settingsHeroNoteV9 small{color:#c9d2df;margin-top:-20px}
+.settingsLayoutV9{display:grid;grid-template-columns:1.05fr 1.35fr;gap:18px;align-items:start}
+.settingsGroupV9{position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.1);border-radius:24px;background:linear-gradient(180deg,rgba(24,28,35,.96),rgba(13,15,19,.98));padding:22px;box-shadow:0 18px 48px rgba(0,0,0,.24)}
+.settingsGroupV9:before{content:'';position:absolute;inset:0 0 auto;height:5px;background:#f2d58c}
+.settingsGroupV9.green:before{background:#61d68e}.settingsGroupV9.blue:before{background:#64b5ff}.settingsGroupV9.rose:before{background:#ff8686}
+.settingsGroupV9 header{display:flex;align-items:flex-start;gap:14px;margin-bottom:18px}
+.settingsGroupIconV9{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;background:rgba(242,213,140,.14);color:#f2d58c}
+.settingsGroupV9.green .settingsGroupIconV9{background:rgba(97,214,142,.13);color:#61d68e}.settingsGroupV9.blue .settingsGroupIconV9{background:rgba(100,181,255,.13);color:#64b5ff}.settingsGroupV9.rose .settingsGroupIconV9{background:rgba(255,134,134,.13);color:#ff8686}
+.settingsGroupV9 h2{margin:0;color:#fff;font-size:22px}.settingsGroupV9 p{margin:6px 0 0;color:#aeb8c8;line-height:1.5}
+.settingsFieldsV9{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+.settingsFieldV9{min-height:132px;border:1px solid rgba(255,255,255,.1);border-radius:18px;background:rgba(255,255,255,.045);padding:14px;display:grid;grid-template-rows:auto 46px 1fr;gap:9px}
+.settingsFieldV9 span{color:#f2f5f9;font-weight:900}.settingsFieldV9 input{width:100%;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:#090c10;color:#fff;padding:0 13px;font-weight:900;outline:0}
+.settingsFieldV9 input:focus{border-color:rgba(242,213,140,.7);box-shadow:0 0 0 3px rgba(242,213,140,.12)}.settingsFieldV9 small{color:#8f9aaa;line-height:1.45}
+.settingsGroupV9:nth-child(2){grid-row:span 2}
+.settingsSaveBarV9{position:sticky;bottom:16px;z-index:5;border:1px solid rgba(242,213,140,.22);border-radius:20px;background:rgba(17,19,23,.88);backdrop-filter:blur(12px);box-shadow:0 18px 48px rgba(0,0,0,.36);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.settingsSaveBarV9 p{margin:0;color:#b8c2d2}.settingsSaveBarV9 .submit{margin:0;white-space:nowrap}
+@media(max-width:980px){.settingsLayoutV9{grid-template-columns:1fr}.settingsGroupV9:nth-child(2){grid-row:auto}.settingsSaveBarV9{position:static;display:grid}.settingsHeroNoteV9{display:none}}
+@media(max-width:860px){.reviewCardV9{grid-template-columns:1fr}.reviewSideV9{justify-items:start}.merchantMetricGridV9,.modalSplitV9{grid-template-columns:1fr}.quotaAdjustV9{display:grid}.adminSearchV9{min-width:100%}}
+

@@ -1,4 +1,4 @@
-/* 门店管理员：用户管理页面 V2 */
+﻿
 .storeUsersV2{
   color:#f6f6f6;
   display:grid;
@@ -413,7 +413,7 @@
 }
 
 
-/* ===== 门店用户管理补丁：编辑、充值、体验账号弹窗 ===== */
+
 .storeUserActionsV2{gap:8px}
 .storeUserActionsV2 button svg{width:17px;height:17px}
 .storeUserModalV2.small{width:min(520px,92vw)}
@@ -538,7 +538,7 @@
 }
 
 
-/* ===== 用户管理布局修复：操作列不再和过期时间重叠 ===== */
+
 .storeUsersTablePanelV2{
   overflow-x:auto !important;
 }
@@ -580,7 +580,7 @@
   font-weight:800;
 }
 
-/* ===== 全局操作提示：悬浮显示，不挤占页面空间 ===== */
+
 .globalToastV2{
   position:fixed;
   top:22px;
@@ -628,3 +628,4 @@
   font-weight:900;
   cursor:pointer;
 }
+

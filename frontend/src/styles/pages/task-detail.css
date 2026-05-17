@@ -1,4 +1,4 @@
-/* 任务详情弹窗：右侧固定底部按钮、内容内部滚动、参考图独立显示 */
+﻿
 .taskPreviewWindowMode .taskPreviewBody{
   height:calc(100vh - 78px);
   overflow:hidden !important;
@@ -104,3 +104,4 @@
     max-height:65vh;
   }
 }
+

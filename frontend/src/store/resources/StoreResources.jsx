@@ -483,10 +483,7 @@ function StoreResources({me,setMsg}){
     {activeResourcePanel&&<section className={activeResourcePanel==='category'?'resourceActionPanelV7 categoryDrawerV7':activeResourcePanel==='detail'?'resourceActionPanelV7 detailDrawerV7':'resourceActionPanelV7'}>
       {activeResourcePanel==='category'&&<div className="resourceActionContentV7">
         <div className="resourceCategoryDrawerHeadV7">
-          <div>
-            <h2>分类管理</h2>
-            <span>全部分类会在这里统一展示，可新增、重命名或删除可管理分类。</span>
-          </div>
+          <div><h2>分类管理</h2></div>
           <div className="resourceCategoryDrawerActionsV7">
             {canCreateCategory&&<button type="button" className="primary" onClick={()=>createMainCategory('user_reference')}><Plus size={16}/>创建主分类</button>}
             <button type="button" className="iconOnly" title="刷新" aria-label="刷新" onClick={loadCategories}><RotateCcw size={17}/></button>
@@ -751,5 +748,6 @@ function StoreResources({me,setMsg}){
 }
 
 export default StoreResources;
+
 
 

@@ -1,11 +1,11 @@
-/* 资源库页面：系统空间 / 门店空间 + 上传弹窗 */
+﻿
 .resourcePageV3{
   display:grid;
   gap:18px;
   color:#f6f6f6;
 }
 
-/* 顶部筛选栏 */
+
 .resourceToolbarV3{
   display:grid;
   grid-template-columns:minmax(320px,1fr) 220px 180px 150px 180px;
@@ -79,7 +79,7 @@
   margin-right:8px;
 }
 
-/* 空间切换 */
+
 .resourceSpaceTabsV3{
   height:58px;
   border-top:1px solid rgba(255,255,255,.08);
@@ -124,7 +124,7 @@
   background:#f0d68a;
 }
 
-/* 资源网格 */
+
 .resourceGridPanelV3{
   background:#111214;
   border:1px solid rgba(255,255,255,.10);
@@ -201,7 +201,7 @@
 }
 
 .resourceSelectV3 input:checked+span:after{
-  content:'✓';
+  content:"";
   height:100%;
   color:#111;
   font-weight:1000;
@@ -283,7 +283,7 @@
   grid-column:1/-1;
 }
 
-/* 分页 */
+
 .resourcePagerV3{
   min-height:76px;
   border-top:1px solid rgba(255,255,255,.08);
@@ -355,7 +355,7 @@
   text-align:center;
 }
 
-/* 上传弹窗 */
+
 .resourceUploadMaskV3{
   position:fixed;
   inset:0;
@@ -513,7 +513,7 @@
 }
 
 .resourceCategorySectionTitleV3:after{
-  content:'';
+  content:"";
   height:1px;
   flex:1;
   background:rgba(255,255,255,.12);
@@ -1063,15 +1063,15 @@
 }
 
 
-/* ===== generated image resource card label ===== */
-/* 生成图片已经作为 PRODUCT 产品资源进入门店空间；这里仅做轻微兼容，不改变页面布局 */
+
+
 .resourceInfoV3 small{
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
 }
 
-/* Simple inline action area. It stays in normal page flow to avoid overlay conflicts. */
+
 .resourceActionPanelV7{
   border:1px solid rgba(255,255,255,.12);
   border-radius:14px;
@@ -1648,7 +1648,7 @@
   }
 }
 
-/* Inline side panel implementation: no overlay, no fixed drawer. */
+
 .resourceInlineLayoutV6{
   display:grid;
   grid-template-columns:minmax(0,1fr);
@@ -1958,3 +1958,4 @@
     max-height:none;
   }
 }
+

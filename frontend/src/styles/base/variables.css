@@ -1,4 +1,4 @@
-/* 全局设计变量：后续新增/拆分样式优先使用这里 */
+﻿
 :root{
   --color-primary:#f0d68a;
   --color-danger:#ef4444;
@@ -20,3 +20,4 @@
   --radius-md:14px;
   --shadow-modal:0 40px 120px rgba(0,0,0,.68);
 }
+

@@ -1,9 +1,7 @@
-/* 临时修复区。最后加载，优先级最高。稳定后再移动到对应页面文件。
-   当前最新项目原有样式仍从 styles/legacy 中加载，保证功能和视觉不变。
-*/
+﻿
 
 
-/* ===== 额度明细页面 V2 ===== */
+
 .quotaPageV2{
   width:min(1480px,calc(100vw - 96px));
   margin:0 auto;
@@ -184,7 +182,7 @@
   font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 }
 
-/* ===== 问题反馈弹窗 ===== */
+
 .feedbackModalMaskV2{
   position:fixed;
   inset:0;
@@ -314,7 +312,7 @@
   }
 }
 
-/* ===== AI 接入配置与异步任务卡片 ===== */
+
 .aiConfigBoxV2{
   display:grid;
   gap:18px;
@@ -400,7 +398,7 @@
 }
 
 
-/* ===== AI 模型配置页面补强 ===== */
+
 .aiConfigPageV2{display:grid;gap:18px;}
 .aiConfigBoxV2 h3{margin:0 0 10px;color:#f0d68a;font-size:20px;}
 .aiFeatureRowV2 span{display:grid;gap:3px;}
@@ -425,7 +423,7 @@
   background:rgba(240,214,138,.18);
 }
 
-/* ===== 门店水印配置窗口 ===== */
+
 .watermarkMask{
   align-items:center;
   overflow:auto;
@@ -675,7 +673,7 @@
   .watermarkSliderGrid{grid-template-columns:1fr}
 }
 
-/* ===== 任务详情水印开关与预览 ===== */
+
 .taskImageFrame{
   position:relative;
   overflow:hidden;
@@ -806,7 +804,7 @@
   background:#2b210f;
 }
 
-/* ===== 工作台资源上传弹窗层级与表单收敛 ===== */
+
 .resourceUploadMaskV3{
   position:fixed!important;
   inset:0!important;
@@ -821,3 +819,4 @@
 .resourceUploadSettingsV3 textarea{
   display:none!important;
 }
+

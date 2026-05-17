@@ -1,28 +1,21 @@
-/* 样式总入口：App.jsx 只需要引入这个文件 */
+﻿
 
-/* 1. 基础层 */
+
 @import './base/variables.css';
 @import './base/reset.css';
 
-/* 2. 最新项目原始样式，先原样保留，保证页面效果不变 */
+
 @import './legacy/style.css';
 @import './legacy/workbench-fixes.css';
 
-/* 3. 后续按布局、组件、页面拆分维护 */
-@import './layout/top-nav.css';
-@import './layout/page-layout.css';
 
-@import './components/modal.css';
-@import './components/table.css';
-@import './components/pagination.css';
-@import './components/upload.css';
-
+@import './pages/auth.css';
 @import './pages/workbench.css';
 @import './pages/resources.css';
 @import './pages/task-detail.css';
-@import './pages/admin-logs.css';
+@import './pages/admin-merchants.css';
 @import './pages/users.css';
-@import './pages/history.css';
 
-/* 4. 临时修复最后加载 */
+
 @import './overrides/final-fixes.css';
+

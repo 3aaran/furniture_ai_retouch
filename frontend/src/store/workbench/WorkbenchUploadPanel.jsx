@@ -42,7 +42,6 @@ export function WorkbenchUploadPanel({
         </div> : <div className="wbUploadInner">
           <div className="wbUploadCircle">+</div>
           <b>点击上传家具图片</b>
-          <span>支持 JPG/PNG，拖拽也可上传</span>
           <em>或</em>
           <button type="button" onClick={e => { e.preventDefault(); openResourceModal('source'); }}>从资源库选择</button>
         </div>}
@@ -53,7 +52,6 @@ export function WorkbenchUploadPanel({
       <div className="wbRefHeader">
         <div>
           <b>参考图（可选）</b>
-          <span>用于补充风格、构图或局部细节，非必传</span>
         </div>
         <strong>{reference ? '已添加' : '未添加'}</strong>
       </div>
