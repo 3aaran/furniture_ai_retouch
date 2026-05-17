@@ -1,11 +1,11 @@
-import bcrypt from 'bcryptjs';
+﻿import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
 import { pool, publicUser, publicMerchant, publicApplication } from '../db.js';
 import { requireAuth } from '../auth.js';
 import { requireSystemAdmin } from '../middleware/roleMiddleware.js';
 import { getAiConfig, saveAiConfig } from '../ai/configService.js';
 import { getAdminAiTasks } from '../ai/taskService.js';
-import { getLocalFileMeta, saveUploadedImage } from '../services/storageService.js';
+import { getStoredFileMeta, normalizeUploadedFileName, saveUploadedImage } from '../services/storageService.js';
 
 function isSystemAdmin(u){ return u?.role === 'SYSTEM_ADMIN'; }
 function random6Digit(){ return String(Math.floor(100000+Math.random()*900000)); }
@@ -31,11 +31,23 @@ function sendCsv(res, filename, headers, rows){
 }
 async function getSettingsMap(){ const [rows]=await pool.query('SELECT setting_key,setting_value FROM app_settings'); return Object.fromEntries(rows.map(r=>[r.setting_key,r.setting_value])); }
 async function addAnnouncement({title,content,audience,createdBy}){ await pool.query('INSERT INTO announcements(id,title,content,audience,created_by) VALUES(?,?,?,?,?)',[uuid(),title,content,audience,createdBy]); }
-function saveUploadedFile(file, options = {}){
-  const saved = saveUploadedImage(file, options);
+async function saveUploadedFile(file, options = {}){
+  const saved = await saveUploadedImage(file, options);
   return saved?.url || '';
 }
 function makeRedeemCode(){ return 'DH'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).slice(2,6).toUpperCase(); }
+function parseStorageLimitBytes(value) {
+  const raw = String(value ?? '').trim();
+  if (!raw) return null;
+  const match = raw.match(/^(\d+(?:\.\d+)?)(b|kb|mb|gb|tb)?$/i);
+  if (!match) throw new Error('瀛樺偍涓婇檺鏍煎紡涓嶆纭紝璇峰～鍐欏瓧鑺傛暟鎴?5GB銆?00MB 杩欑被鏍煎紡');
+  const n = Number(match[1]);
+  const unit = String(match[2] || 'b').toLowerCase();
+  const multiplier = unit === 'tb' ? 1024 ** 4 : unit === 'gb' ? 1024 ** 3 : unit === 'mb' ? 1024 ** 2 : unit === 'kb' ? 1024 : 1;
+  const bytes = Math.floor(n * multiplier);
+  if (!Number.isFinite(bytes) || bytes < 0) throw new Error('瀛樺偍涓婇檺涓嶈兘灏忎簬 0');
+  return bytes;
+}
 const fixedMainPurpose = { '材质':1, '软体':1, '产品':3, '场景模板':2 };
 async function ensureSystemSubCategory({mainName='',subName='',createdBy=null}){
   const main=String(mainName||'').trim();
@@ -69,11 +81,14 @@ function resourceTypeFromMain(main){
   if(main==='场景模板') return 'scene';
   return 'user_reference';
 }
+function stripImageExt(name=''){
+  return String(name||'').trim().replace(/\.(jpe?g|png|webp|gif|bmp)$/i,'');
+}
 
 export function registerAdminRoutes(app,{upload}){
   const adminOnly = [requireAuth, requireSystemAdmin];
   app.get('/api/admin/overview', ...adminOnly, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     const [[m]]=await pool.query('SELECT COUNT(*) total, SUM(status="ACTIVE") active, SUM(status="DISABLED") disabled FROM merchants');
     const [[a]]=await pool.query('SELECT COUNT(*) total, SUM(status="PENDING") pending FROM merchant_applications');
     const [[i]]=await pool.query('SELECT COUNT(*) totalImages FROM images');
@@ -83,7 +98,7 @@ export function registerAdminRoutes(app,{upload}){
   });
   
   app.get('/api/admin/stats', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     const range = ['year','quarter','month'].includes(req.query.range) ? req.query.range : 'month';
     const days = range==='year'?365:range==='quarter'?90:30;
     const [trend]=await pool.query(`SELECT DATE(created_at) day, SUM(CASE WHEN type='INCOME' THEN amount ELSE 0 END) income, SUM(CASE WHEN type='COST' THEN amount ELSE 0 END) cost FROM finance_logs WHERE created_at>=DATE_SUB(CURDATE(), INTERVAL ? DAY) GROUP BY DATE(created_at) ORDER BY day`,[days]);
@@ -99,12 +114,12 @@ export function registerAdminRoutes(app,{upload}){
   });
   
   app.get('/api/admin/settings', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     res.json(await getSettingsMap());
   });
   
   app.patch('/api/admin/settings', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     const allowed=['recharge_ratio','income_per_quota','cost_per_ai_quota','cost_remove_bg','cost_replace_bg','cost_enhance','cost_material','cost_multiview','cost_lineart','resolution_multiplier_1k','resolution_multiplier_2k','resolution_multiplier_4k','cost_resolution_1k','cost_resolution_2k','cost_resolution_4k','invite_new_store_reward_ratio','invite_source_store_reward_ratio','trial_account_hours'];
     for(const k of allowed){ if(req.body[k]!==undefined) await pool.query('UPDATE app_settings SET setting_value=?,updated_by=? WHERE setting_key=?',[String(req.body[k]),req.user.id,k]); }
     if(req.body.announce){ await addAnnouncement({title:req.body.announcementTitle||'系统配置调整通知',content:req.body.announcementContent||'平台配置已更新，请关注后续使用规则。',audience:req.body.audience||'MERCHANT',createdBy:req.user.id}); }
@@ -112,18 +127,18 @@ export function registerAdminRoutes(app,{upload}){
   });
   
   app.get('/api/admin/ai/config', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     res.json(await getAiConfig({includeSecret:false}));
   });
   
   app.post('/api/admin/ai/config', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     await saveAiConfig(req.body,req.user);
     res.json({message:'AI模型配置已保存',config:await getAiConfig({includeSecret:false})});
   });
   
   app.get('/api/admin/applications', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     const wh=[]; const ps=[];
     if(req.query.status){ wh.push('status=?'); ps.push(req.query.status); }
     if(req.query.keyword){ wh.push('(company_name LIKE ? OR contact_name LIKE ? OR phone LIKE ?)'); ps.push(like(req.query.keyword),like(req.query.keyword),like(req.query.keyword)); }
@@ -133,7 +148,7 @@ export function registerAdminRoutes(app,{upload}){
   });
   
   app.post('/api/admin/applications/:id/approve', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     const quota=Math.max(0,Number(req.body.quota||500));
     const settings=await getSettingsMap();
     const conn=await pool.getConnection();
@@ -165,19 +180,19 @@ export function registerAdminRoutes(app,{upload}){
       await conn.query('UPDATE merchant_applications SET status="APPROVED",reviewer_id=?,reviewed_at=NOW(),merchant_id=? WHERE id=?',[req.user.id,mid,req.params.id]);
       await conn.query('INSERT INTO finance_logs(id,merchant_id,type,amount,title) VALUES(?,?,?,?,?)',[uuid(),mid,'INCOME',Number(settings.income_per_quota||0.1)*finalQuota,'新门店初始额度']);
       await conn.commit();
-      res.json({message:'已通过申请',account:{phone:appRow.phone,password,merchantCode,quota:finalQuota}});
+      res.json({message:'宸查€氳繃鐢宠',account:{phone:appRow.phone,password,merchantCode,quota:finalQuota}});
     }catch(e){ await conn.rollback(); res.status(400).json({message:e.message}); }
     finally{ conn.release(); }
   });
   
   app.post('/api/admin/applications/:id/reject', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     await pool.query('UPDATE merchant_applications SET status="REJECTED",reject_reason=?,reviewer_id=?,reviewed_at=NOW() WHERE id=? AND status="PENDING"',[req.body.reason||'未通过审核',req.user.id,req.params.id]);
     res.json({message:'已驳回申请'});
   });
   
   app.get('/api/admin/merchants', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     const wh=[]; const ps=[];
     if(req.query.status){ wh.push('m.status=?'); ps.push(req.query.status); }
     if(req.query.keyword){ wh.push('(m.company_name LIKE ? OR m.contact_name LIKE ? OR m.phone LIKE ?)'); ps.push(like(req.query.keyword),like(req.query.keyword),like(req.query.keyword)); }
@@ -189,7 +204,7 @@ export function registerAdminRoutes(app,{upload}){
   });
   
   app.get('/api/admin/merchants/:id', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     const [[m]]=await pool.query('SELECT * FROM merchants WHERE id=?',[req.params.id]);
     if(!m) return res.status(404).json({message:'商家不存在'});
     const [users]=await pool.query('SELECT * FROM users WHERE merchant_id=? ORDER BY FIELD(role,"MERCHANT_OWNER","MERCHANT_ADMIN","STAFF","TRIAL"), created_at DESC',[req.params.id]);
@@ -198,7 +213,7 @@ export function registerAdminRoutes(app,{upload}){
   });
   
   app.patch('/api/admin/merchants/:id/status', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     const status=req.body.status==='DISABLED'?'DISABLED':'ACTIVE';
     await pool.query('UPDATE merchants SET status=? WHERE id=?',[status,req.params.id]);
     if(req.body.announce) await addAnnouncement({title:'账户状态变更通知',content:`商家账户已被${status==='DISABLED'?'禁用':'启用'}。`,audience:'MERCHANT',createdBy:req.user.id});
@@ -206,7 +221,7 @@ export function registerAdminRoutes(app,{upload}){
   });
   
   app.patch('/api/admin/merchants/:id/config', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     if(req.body.quotaDelta!==undefined && Number(req.body.quotaDelta)!==0){
       const delta=Number(req.body.quotaDelta);
       await pool.query('UPDATE merchants SET quota_balance=quota_balance+? WHERE id=?',[delta,req.params.id]);
@@ -215,14 +230,27 @@ export function registerAdminRoutes(app,{upload}){
     if(req.body.announce) await addAnnouncement({title:req.body.announcementTitle||'商家配置调整通知',content:req.body.announcementContent||'您的商家账户配置已调整。',audience:'MERCHANT',createdBy:req.user.id});
     res.json({message:'商家配置已更新'});
   });
+
+  app.patch('/api/admin/users/:id/storage-limit', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
+    const limitBytes = req.body.limitBytes !== undefined
+      ? Number(req.body.limitBytes)
+      : parseStorageLimitBytes(req.body.limit || req.body.storageLimit);
+    if(!Number.isFinite(limitBytes) || limitBytes < 0) return res.status(400).json({message:'瀛樺偍涓婇檺涓嶈兘灏忎簬 0'});
+    const [[user]]=await pool.query('SELECT * FROM users WHERE id=? AND status<>"DELETED" LIMIT 1',[req.params.id]);
+    if(!user) return res.status(404).json({message:'用户不存在'});
+    await pool.query('UPDATE users SET storage_limit_bytes=? WHERE id=?',[Math.floor(limitBytes),req.params.id]);
+    const [[fresh]]=await pool.query('SELECT * FROM users WHERE id=?',[req.params.id]);
+    res.json({message:'用户图片存储上限已更新',user:publicUser(fresh)});
+  });
   
   app.get('/api/admin/ai/tasks', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     res.json(await getAdminAiTasks(req));
   });
   
   app.get('/api/admin/task-images', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     const wh=['i.source_type="AI_GENERATED"','i.status="ACTIVE"']; const ps=[];
     if(req.query.operation){ wh.push('t.feature_key=?'); ps.push(req.query.operation); }
     if(req.query.keyword){ wh.push('(i.id LIKE ? OR t.id LIKE ? OR m.company_name LIKE ? OR u.display_name LIKE ? OR u.username LIKE ? OR u.phone LIKE ? OR t.feature_key LIKE ?)'); ps.push(like(req.query.keyword),like(req.query.keyword),like(req.query.keyword),like(req.query.keyword),like(req.query.keyword),like(req.query.keyword),like(req.query.keyword)); }
@@ -236,14 +264,14 @@ export function registerAdminRoutes(app,{upload}){
   });
   
   app.get('/api/admin/task-images/:id', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     const [[img]]=await pool.query(`SELECT i.id,i.merchant_id merchantId,i.user_id userId,rel.source_image_id sourceImageId,i.original_name originalName,i.url,i.source_type kind,tp.final_prompt prompt,tp.user_prompt userPrompt,t.cost quotaUsed,opt.options_json settingsJson,0 freeRegenUsed,i.created_at createdAt,src.url sourceUrl,src.original_name sourceOriginalName,u.display_name userName,u.username,u.phone,m.company_name companyName FROM images i LEFT JOIN ai_task_outputs ato ON ato.image_id=i.id LEFT JOIN ai_tasks t ON t.id=ato.task_id LEFT JOIN ai_task_prompts tp ON tp.task_id=t.id LEFT JOIN ai_task_options opt ON opt.task_id=t.id LEFT JOIN image_relations rel ON rel.target_image_id=i.id AND rel.relation_type='GENERATED_FROM' LEFT JOIN images src ON src.id=rel.source_image_id LEFT JOIN users u ON u.id=i.user_id LEFT JOIN merchants m ON m.id=i.merchant_id WHERE i.id=?`,[req.params.id]);
     if(!img) return res.status(404).json({message:'图片不存在'});
     res.json(img);
   });
 
   app.get('/api/admin/ai-logs', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     const wh=[]; const ps=[];
     if(req.query.operation){ wh.push('t.feature_key=?'); ps.push(req.query.operation); }
     if(req.query.status){ wh.push('l.status=?'); ps.push(req.query.status); }
@@ -260,7 +288,7 @@ export function registerAdminRoutes(app,{upload}){
   });
   
   app.get('/api/admin/finance', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     const wh=[]; const ps=[];
     if(req.query.type){ wh.push('f.type=?'); ps.push(req.query.type); }
     if(req.query.keyword){ wh.push('(f.title LIKE ? OR m.company_name LIKE ?)'); ps.push(like(req.query.keyword),like(req.query.keyword)); }
@@ -272,7 +300,7 @@ export function registerAdminRoutes(app,{upload}){
   });
   
   app.get('/api/admin/ai-config', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     const cfg=await getAiConfig({includeSecret:false});
     res.json({
       provider:cfg.providerConfig.provider,
@@ -285,7 +313,7 @@ export function registerAdminRoutes(app,{upload}){
   });
   
   app.patch('/api/admin/ai-config', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     const {provider='mock',modelName='local-mock-model',apiKey='',endpoint='',enabled=0,note=''}=req.body;
     const current=await getAiConfig({includeSecret:false});
     await saveAiConfig({
@@ -312,7 +340,7 @@ export function registerAdminRoutes(app,{upload}){
   });
   
   app.get('/api/admin/resources', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     const wh=['i.status<>"DELETED"','(imc.scope="SYSTEM" OR (icb.image_id IS NULL AND i.merchant_id IS NULL))']; const ps=[];
     if(req.query.status){ wh.push('i.status=?'); ps.push(req.query.status); }
     if(req.query.mainCategory){
@@ -334,7 +362,7 @@ export function registerAdminRoutes(app,{upload}){
       ${where}`;
     const map=r=>({
       id:r.id,
-      name:r.display_name||r.original_name||`资源-${String(r.id).slice(0,8)}`,
+      name:stripImageExt(r.display_name||r.original_name||`资源-${String(r.id).slice(0,8)}`),
       resourceType:r.resourceType,
       objectName:r.mainCategoryName||'未分类',
       colorName:Number(r.isMainOnly||0)?'':(r.subCategoryName||''),
@@ -350,25 +378,32 @@ export function registerAdminRoutes(app,{upload}){
       `SELECT COUNT(*) total ${base}`,ps,req,map));
   });
   
-  app.post('/api/admin/resources', requireAuth, upload.single('image'), async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+  app.post('/api/admin/resources', requireAuth, upload.array('image',50), async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     const {name,objectName='',colorName='',imageUrl=''}=req.body;
-    if(!name) return res.status(400).json({message:'资源名称不能为空'});
-    const uploadedUrl = saveUploadedFile(req.file,{kind:'resource',userId:req.user.id});
-    const finalUrl=uploadedUrl || imageUrl || '';
-    if(!finalUrl) return res.status(400).json({message:'请上传资源图片或填写图片URL'});
-    const id=uuid();
-    const meta=getLocalFileMeta(finalUrl);
+    const files=Array.isArray(req.files)?req.files:[];
+    if(!files.length && !imageUrl) return res.status(400).json({message:'请上传资源图片或填写图片URL'});
     const subId=await ensureSystemSubCategory({mainName:objectName,subName:colorName,createdBy:req.user.id});
-    await pool.query('INSERT INTO images(id,user_id,display_name,original_name,url,source_type,status,storage_provider,storage_key,file_name,mime_type,size_bytes,width,height) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',[id,req.user.id,name,req.file?.originalname||name,finalUrl,'RESOURCE','ACTIVE',meta.storageProvider||'local',meta.storageKey||finalUrl,meta.fileName||req.file?.filename||'',meta.mimeType||req.file?.mimetype||'',Number(meta.sizeBytes||req.file?.size||0),meta.width||null,meta.height||null]);
-    if(subId){
-      await pool.query('INSERT INTO image_category_bindings(image_id,sub_category_id) VALUES(?,?) ON DUPLICATE KEY UPDATE sub_category_id=VALUES(sub_category_id)',[id,subId]);
+    const targets=files.length?files:[null];
+    const ids=[];
+    for(const file of targets){
+      const uploadedUrl = file ? await saveUploadedFile(file,{kind:'resource',userId:req.user.id}) : '';
+      const finalUrl=uploadedUrl || imageUrl || '';
+      const originalName=normalizeUploadedFileName(file?.originalname)||String(finalUrl).split('/').pop()||'资源图片';
+      const displayName=String(name||'').trim()||stripImageExt(originalName);
+      const id=uuid();
+      const meta=await getStoredFileMeta(finalUrl);
+      await pool.query('INSERT INTO images(id,user_id,display_name,original_name,url,source_type,resource_scope,status,storage_provider,storage_key,file_name,mime_type,size_bytes,width,height) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',[id,req.user.id,displayName,originalName,finalUrl,'RESOURCE','SYSTEM','ACTIVE',meta.storageProvider||'local',meta.storageKey||finalUrl,meta.fileName||file?.filename||'',meta.mimeType||file?.mimetype||'',Number(meta.sizeBytes||file?.size||0),meta.width||null,meta.height||null]);
+      if(subId){
+        await pool.query('INSERT INTO image_category_bindings(image_id,sub_category_id) VALUES(?,?) ON DUPLICATE KEY UPDATE sub_category_id=VALUES(sub_category_id)',[id,subId]);
+      }
+      ids.push(id);
     }
-    res.json({message:'资源已创建',id});
+    res.json({message:'资源已创建',ids,id:ids[0],count:ids.length});
   });
   
   app.patch('/api/admin/resources/:id', requireAuth, upload.single('image'), async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     const {name,objectName,colorName,status}=req.body;
     const fields=[]; const vals=[];
     if(name!==undefined){fields.push('display_name=?'); vals.push(name||null);}
@@ -379,17 +414,17 @@ export function registerAdminRoutes(app,{upload}){
       if(subId) await pool.query('INSERT INTO image_category_bindings(image_id,sub_category_id) VALUES(?,?) ON DUPLICATE KEY UPDATE sub_category_id=VALUES(sub_category_id)',[req.params.id,subId]);
       else await pool.query('DELETE FROM image_category_bindings WHERE image_id=?',[req.params.id]);
     }
-    res.json({message:'操作成功'});
+    res.json({message:'鎿嶄綔鎴愬姛'});
   });
   
   app.delete('/api/admin/resources/:id', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     await pool.query('UPDATE images SET status="DELETED",deleted_at=NOW() WHERE id=?',[req.params.id]);
-    res.json({message:'操作成功'});
+    res.json({message:'鎿嶄綔鎴愬姛'});
   });
   
   app.get('/api/admin/feedbacks', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     const wh=[]; const ps=[];
     if(req.query.status){ wh.push('f.status=?'); ps.push(req.query.status); }
     if(req.query.keyword){ wh.push('(f.title LIKE ? OR f.content LIKE ? OR u.display_name LIKE ? OR m.company_name LIKE ?)'); ps.push(like(req.query.keyword),like(req.query.keyword),like(req.query.keyword),like(req.query.keyword)); }
@@ -399,13 +434,13 @@ export function registerAdminRoutes(app,{upload}){
   });
   
   app.patch('/api/admin/feedbacks/:id', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     await pool.query('UPDATE feedbacks SET status=?,reply=?,handled_by=?,handled_at=NOW() WHERE id=?',[req.body.status||'PROCESSING',req.body.reply||'',req.user.id,req.params.id]);
     res.json({message:'反馈已处理'});
   });
   
   app.get('/api/admin/announcements', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     const wh=[]; const ps=[];
     if(req.query.audience){ wh.push('audience=?'); ps.push(req.query.audience); }
     if(req.query.keyword){ wh.push('(title LIKE ? OR content LIKE ?)'); ps.push(like(req.query.keyword),like(req.query.keyword)); }
@@ -414,7 +449,7 @@ export function registerAdminRoutes(app,{upload}){
   });
   
   app.post('/api/admin/announcements', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     const {title,content,audience='ALL',validDays=30}=req.body;
     if(!title||!content) return res.status(400).json({message:'公告标题和内容不能为空'});
     await addAnnouncement({title,content:`${content}\n\n有效期：${validDays}天`,audience,createdBy:req.user.id});
@@ -422,7 +457,7 @@ export function registerAdminRoutes(app,{upload}){
   });
   
   app.get('/api/admin/redeem-codes', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     const wh=[]; const ps=[];
     if(req.query.status){ wh.push('status=?'); ps.push(req.query.status); }
     if(req.query.keyword){ wh.push('code LIKE ?'); ps.push(like(req.query.keyword)); }
@@ -431,7 +466,7 @@ export function registerAdminRoutes(app,{upload}){
   });
   
   app.post('/api/admin/redeem-codes/batch', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     const count=Math.min(500,Math.max(1,Number(req.body.count||1)));
     const quota=Math.max(1,Number(req.body.quota||10));
     const maxUses=Math.max(1,Number(req.body.maxUses||1));
@@ -446,7 +481,7 @@ export function registerAdminRoutes(app,{upload}){
   });
   
   app.get('/api/admin/quota-logs', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     const wh=[]; const ps=[];
     if(req.query.type){ wh.push('q.type=?'); ps.push(req.query.type); }
     if(req.query.keyword){ wh.push('(m.company_name LIKE ? OR tu.display_name LIKE ? OR tu.phone LIKE ? OR ou.display_name LIKE ?)'); ps.push(like(req.query.keyword),like(req.query.keyword),like(req.query.keyword),like(req.query.keyword)); }
@@ -456,7 +491,7 @@ export function registerAdminRoutes(app,{upload}){
   });
   
   app.get('/api/export/admin/:type', requireAuth, async (req,res)=>{
-    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'需要系统管理员权限'});
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:'闇€瑕佺郴缁熺鐞嗗憳鏉冮檺'});
     const type=req.params.type;
     if(type==='redeem-codes'){
       const [rows]=await pool.query('SELECT code,quota,max_uses maxUses,used_count usedCount,target_scope targetScope,status,valid_until validUntil,created_at createdAt FROM redeem_codes ORDER BY created_at DESC LIMIT 2000');

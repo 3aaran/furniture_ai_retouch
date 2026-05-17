@@ -4,14 +4,14 @@ import { saveBufferToStorage, downloadImageToStorage } from '../../services/stor
 
 export function outputUrl(file) { return `/outputs/${file}`; }
 
-export function saveBuffer(buffer, op = 'ai-result', ext = 'png', context = {}) {
-  return saveBufferToStorage(buffer, {
+export async function saveBuffer(buffer, op = 'ai-result', ext = 'png', context = {}) {
+  return (await saveBufferToStorage(buffer, {
     merchantId: context.merchantId,
     userId: context.userId,
     kind: context.kind || 'generated',
     op,
     ext
-  }).url;
+  })).url;
 }
 
 export async function downloadImage(url, op = 'ai-result', context = {}) {

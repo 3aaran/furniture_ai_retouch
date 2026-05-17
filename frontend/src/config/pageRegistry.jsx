@@ -45,5 +45,6 @@ export const storeAdminPages = [
 
 export const staffPages = [
   ['workbench', 'AI 工作台', Brush],
+  ['resources', '资源库', Layers],
   ['images', '历史任务', Image]
 ];

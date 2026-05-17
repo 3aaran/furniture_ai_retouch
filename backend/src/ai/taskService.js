@@ -6,7 +6,7 @@ import { getAiConfig, getFeatureConfig } from './configService.js';
 import { buildAiPrompt, buildPromptParts, featureNameMap } from './promptService.js';
 import { normalizeTaskParams, validateTaskParams } from './taskParamService.js';
 import { callImageModel } from './providerService.js';
-import { urlToDiskPath, getLocalFileMeta, MIN_GENERATION_STORAGE_BYTES, assertUserStorageAvailable, applyUserStorageDelta, deleteLocalStoredFile, getUserStorageSummary } from '../services/storageService.js';
+import { urlToDiskPath, getStoredFileMeta, MIN_GENERATION_STORAGE_BYTES, assertUserStorageAvailable, applyUserStorageDelta, deleteStoredFile, getUserStorageSummary } from '../services/storageService.js';
 import { writeSystemLog } from '../services/loggerService.js';
 import { bindImageToResourceCategory } from '../services/resourceBindingService.js';
 
@@ -572,13 +572,13 @@ export async function runAiTask(taskId) {
       await conn2.beginTransaction();
 
       // 这里一定写 process_settings，不要写 settings_json
-      const resultMeta = getLocalFileMeta(resultUrl);
+      const resultMeta = await getStoredFileMeta(resultUrl);
       try {
         await assertUserStorageAvailable(conn2, full.user_id, resultMeta.sizeBytes, {
           label: '生成结果图片'
         });
       } catch (storageErr) {
-        deleteLocalStoredFile(resultUrl);
+        await deleteStoredFile({ url: resultUrl, storageKey: resultMeta.storageKey });
         throw storageErr;
       }
 
@@ -911,7 +911,7 @@ export async function deleteAiTask(taskId, user) {
     await conn.commit();
 
     for (const url of deletedFiles) {
-      deleteLocalStoredFile(url);
+      await deleteStoredFile(url);
     }
 
     return {

@@ -15,12 +15,12 @@ export const permissionMatrix = {
     actions: ['ai:create', 'merchantUser:manageLower', 'merchantResource:manage', 'quota:allocate', 'feedback:create']
   },
   STAFF: {
-    pages: ['workbench', 'images', 'quota', 'profile', 'feedback', 'redeem'],
+    pages: ['workbench', 'resources', 'images', 'quota', 'profile', 'feedback', 'redeem'],
     dataScope: 'SELF',
     actions: ['ai:create', 'feedback:create']
   },
   TRIAL: {
-    pages: ['workbench', 'images', 'quota', 'profile', 'feedback'],
+    pages: ['workbench', 'resources', 'images', 'quota', 'profile', 'feedback'],
     dataScope: 'SELF',
     actions: ['ai:create', 'feedback:create']
   }

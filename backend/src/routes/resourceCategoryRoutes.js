@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import { pool } from '../db.js';
 import { requireAuth } from '../auth.js';
-import { getLocalFileMeta } from '../services/storageService.js';
+import { getStoredFileMeta } from '../services/storageService.js';
 
 const purposeMap = {
   product: { id: 3, name: '产品参考', key: 'user_reference' },
@@ -64,8 +64,8 @@ async function loadSub(id) {
 async function resourceAccessWhere(user, id) {
   if (isSystemAdmin(user)) return { sql: 'i.id=?', params: [id] };
   return {
-    sql: 'i.id=? AND (i.user_id=? OR i.merchant_id=? OR imc.scope="SYSTEM")',
-    params: [id, user.id, user.merchant_id || '']
+    sql: 'i.id=? AND (COALESCE(imc.scope,i.resource_scope)="SYSTEM" OR (COALESCE(imc.scope,i.resource_scope)="MERCHANT" AND i.merchant_id=?) OR (COALESCE(imc.scope,i.resource_scope)="USER" AND i.user_id=?) OR (icb.image_id IS NULL AND i.resource_scope IS NULL AND i.user_id=?))',
+    params: [id, user.merchant_id || '', user.id, user.id]
   };
 }
 
@@ -243,7 +243,7 @@ export function registerResourceCategoryRoutes(app) {
     `, access.params);
     if (!image) return res.status(404).json({ message: '资源不存在或无权查看' });
     if ((!image.width || !image.height || !Number(image.size_bytes || 0)) && image.url) {
-      const meta = getLocalFileMeta(image.url);
+      const meta = await getStoredFileMeta(image);
       if (meta.width || meta.height || meta.sizeBytes) {
         image.width = image.width || meta.width;
         image.height = image.height || meta.height;

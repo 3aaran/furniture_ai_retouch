@@ -12,7 +12,7 @@ import { runAi, applyWatermark, quotaCost } from './aiService.js';
 import { submitAiTask, getAiTaskStatus, getAiTaskDetail, getRecentAiTasks, deleteAiTask } from './ai/taskService.js';
 import { getAiConfig, getFeatureConfig } from './ai/configService.js';
 import { callImageModel } from './ai/providerService.js';
-import { STORAGE_ROOT, storageTempDir, saveUploadedImage, saveBufferToStorage, urlToDiskPath, getLocalFileMeta, MIN_GENERATION_STORAGE_BYTES, getUserStorageSummary, assertUserStorageAvailable, addUserStorageUsage, applyUserStorageDelta, deleteLocalStoredFile } from './services/storageService.js';
+import { STORAGE_ROOT, storageTempDir, saveUploadedImage, saveBufferToStorage, urlToDiskPath, getLocalFileMeta, MIN_GENERATION_STORAGE_BYTES, getUserStorageSummary, assertUserStorageAvailable, addUserStorageUsage, applyUserStorageDelta, deleteStoredFile, normalizeUploadedFileName } from './services/storageService.js';
 import { registerAdminRoutes } from './routes/adminRoutes.js';
 import { registerMerchantRoutes } from './routes/merchantRoutes.js';
 import { registerResourceCategoryRoutes } from './routes/resourceCategoryRoutes.js';
@@ -86,8 +86,8 @@ async function generateInternalAccount(merchantId, role){
 }
 function hoursSince(t){ return t ? (Date.now() - new Date(t).getTime())/36e5 : 9999; }
 
-function saveUploadedFile(file, options = {}){
-  const saved = saveUploadedImage(file, options);
+async function saveUploadedFile(file, options = {}){
+  const saved = await saveUploadedImage(file, options);
   return saved?.url || '';
 }
 
@@ -269,10 +269,10 @@ app.post('/api/images/upload', requireAuth, (req,res)=>{
         id:uuid(),
         merchantId:req.user.merchant_id||null,
         userId:req.user.id,
-        originalName:req.file.originalname||'',
+        originalName:normalizeUploadedFileName(req.file.originalname)||'',
         kind:'original'
       };
-      saved = saveUploadedImage(req.file,{merchantId:img.merchantId,userId:img.userId,kind:'original'});
+      saved = await saveUploadedImage(req.file,{merchantId:img.merchantId,userId:img.userId,kind:'original'});
       img.url = saved.url;
       img.storageProvider = saved.storageProvider;
       img.storageKey = saved.storageKey;
@@ -302,7 +302,7 @@ app.post('/api/images/upload', requireAuth, (req,res)=>{
       res.json({...img,storage,createdAt:new Date().toISOString()});
     }catch(e){
       if(req.file?.path && fs.existsSync(req.file.path)) fs.rmSync(req.file.path,{force:true});
-      if(saved?.url) deleteLocalStoredFile(saved.url);
+      if(saved?.url) await deleteStoredFile(saved);
       console.error('[upload:image] handler error',e);
       res.status(400).json({message:e.message||'图片上传失败'});
     }
@@ -558,7 +558,7 @@ app.delete('/api/images/:id', requireAuth, async (req,res)=>{
     }
 
     await conn.commit();
-    for(const row of rowsToDelete){ deleteLocalStoredFile(row.url); }
+    for(const row of rowsToDelete){ await deleteStoredFile(row); }
     res.json({message:'删除成功',deleted:rowsToDelete.length,freedBytes:totalBytes,storage:await getUserStorageSummary(pool,req.user.id)});
   }catch(e){
     await conn.rollback();
@@ -580,7 +580,7 @@ async function normalizeWatermarkConfigForSave(config, reqUser) {
   const header = raw.slice(0, comma);
   const ext = header.includes('jpeg') || header.includes('jpg') ? 'jpg' : header.includes('webp') ? 'webp' : 'png';
   const buffer = Buffer.from(raw.slice(comma + 1), 'base64');
-  const saved = saveBufferToStorage(buffer, {
+  const saved = await saveBufferToStorage(buffer, {
     merchantId: reqUser.merchant_id || null,
     userId: reqUser.id,
     kind: 'resource',
@@ -623,9 +623,9 @@ app.post('/api/watermark/image', requireAuth, (req,res)=>{
       if(!isMerchantPower(req.user)) return res.status(403).json({message:'只有门店管理员可以配置门店水印'});
       if(!req.user.merchant_id) return res.status(400).json({message:'当前账号未绑定门店'});
       if(!req.file) return res.status(400).json({message:'请上传水印图片'});
-      const saved=saveUploadedImage(req.file,{merchantId:req.user.merchant_id,userId:req.user.id,kind:'resource'});
+      const saved=await saveUploadedImage(req.file,{merchantId:req.user.merchant_id,userId:req.user.id,kind:'resource'});
       const id=uuid();
-      const displayName=req.file.originalname||'门店水印';
+      const displayName=normalizeUploadedFileName(req.file.originalname)||'门店水印';
       await pool.query(
         'INSERT INTO images(id,merchant_id,user_id,display_name,original_name,file_name,mime_type,size_bytes,width,height,storage_provider,storage_key,url,source_type,status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
         [id,req.user.merchant_id,req.user.id,displayName,displayName,saved.fileName,saved.mimeType,saved.sizeBytes,saved.width||null,saved.height||null,saved.storageProvider,saved.storageKey,saved.url,'WATERMARK','ACTIVE']

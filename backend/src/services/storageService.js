@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import axios from 'axios';
+import OSS from 'ali-oss';
 import { v4 as uuid } from 'uuid';
 
 // STORAGE_DRIVER 控制图片存储方式：local 使用本机目录；oss/cos 需要接入对应上传 SDK 后启用。
@@ -23,6 +24,32 @@ const KIND_DIR_MAP = {
   temp: 'temp',
   trash: 'trash'
 };
+let ossClient = null;
+
+function isOssStorage() {
+  return String(STORAGE_PROVIDER || '').toLowerCase() === 'oss';
+}
+
+function getOssClient() {
+  if (!isOssStorage()) return null;
+  if (ossClient) return ossClient;
+  const region = process.env.OSS_REGION;
+  const bucket = process.env.OSS_BUCKET;
+  const accessKeyId = process.env.OSS_ACCESS_KEY_ID;
+  const accessKeySecret = process.env.OSS_ACCESS_KEY_SECRET;
+  if (!region || !bucket || !accessKeyId || !accessKeySecret) {
+    throw new Error('OSS 配置不完整：请设置 OSS_REGION、OSS_BUCKET、OSS_ACCESS_KEY_ID、OSS_ACCESS_KEY_SECRET');
+  }
+  ossClient = new OSS({
+    region,
+    bucket,
+    accessKeyId,
+    accessKeySecret,
+    secure: true,
+    endpoint: process.env.OSS_ENDPOINT || undefined
+  });
+  return ossClient;
+}
 
 export function ensureStorageRoot() {
   fs.mkdirSync(STORAGE_ROOT, { recursive: true });
@@ -56,15 +83,27 @@ function safeExtFromName(name = '', fallback = '.png') {
   return IMAGE_EXTS.has(ext) ? ext : fallback;
 }
 
+export function normalizeUploadedFileName(name = '') {
+  const raw = path.basename(String(name || '').replace(/\\/g, '/')).trim();
+  if (!raw) return '';
+  try {
+    const decoded = Buffer.from(raw, 'latin1').toString('utf8');
+    const cjkCount = value => (String(value).match(/[\u4e00-\u9fff]/g) || []).length;
+    if (decoded && decoded !== raw && !decoded.includes('\uFFFD') && cjkCount(decoded) > cjkCount(raw)) {
+      return decoded;
+    }
+  } catch {}
+  return raw;
+}
+
 function safeSegment(v, fallback) {
   const s = String(v ?? '').trim();
   if (!s) return fallback;
   return s.replace(/[^a-zA-Z0-9_-]/g, '_');
 }
 
-function readImageDimensions(filePath = '') {
+function readImageDimensionsFromBuffer(buffer) {
   try {
-    const buffer = fs.readFileSync(filePath);
     if (buffer.length >= 24 && buffer.toString('ascii', 1, 4) === 'PNG') {
       return { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) };
     }
@@ -103,6 +142,13 @@ function readImageDimensions(filePath = '') {
   return { width: null, height: null };
 }
 
+function readImageDimensions(filePath = '') {
+  try {
+    return readImageDimensionsFromBuffer(fs.readFileSync(filePath));
+  } catch {}
+  return { width: null, height: null };
+}
+
 export function buildImageStorageKey({ merchantId, userId, kind = 'original', fileName }) {
   const k = normalizeKind(kind);
   const dirName = KIND_DIR_MAP[k];
@@ -122,6 +168,10 @@ export function buildImageStorageKey({ merchantId, userId, kind = 'original', fi
 
 export function publicUrlFromStorageKey(storageKey = '') {
   const clean = String(storageKey || '').replace(/^\/+/, '');
+  if (isOssStorage()) {
+    const base = OSS_PUBLIC_BASE_URL || `https://${process.env.OSS_BUCKET}.${process.env.OSS_REGION}.aliyuncs.com`;
+    return `${String(base).replace(/\/$/, '')}/${clean}`;
+  }
   return `${FILES_BASE_PATH.replace(/\/$/, '')}/${clean}`;
 }
 
@@ -190,13 +240,60 @@ export function getLocalFileMeta(urlPath = '') {
   };
 }
 
-export function saveUploadedImage(file, { merchantId = null, userId = null, kind = 'original' } = {}) {
+export async function getStoredFileMeta(imageOrUrl = '') {
+  const url = typeof imageOrUrl === 'string' ? imageOrUrl : (imageOrUrl.url || '');
+  const storageKey = typeof imageOrUrl === 'object' ? imageOrUrl.storage_key || imageOrUrl.storageKey || '' : '';
+  if (isOssStorage()) {
+    const key = storageKey || storageKeyFromUrl(url);
+    const fileName = path.posix.basename(key || String(url || ''));
+    if (!key) {
+      return { storageProvider: STORAGE_PROVIDER, storageKey: '', fileName, sizeBytes: 0, mimeType: '' };
+    }
+    try {
+      const head = await getOssClient().head(key);
+      const headers = head?.res?.headers || {};
+      return {
+        storageProvider: STORAGE_PROVIDER,
+        storageKey: key,
+        fileName,
+        sizeBytes: Number(headers['content-length'] || 0),
+        mimeType: headers['content-type'] || '',
+        width: null,
+        height: null
+      };
+    } catch {
+      return { storageProvider: STORAGE_PROVIDER, storageKey: key, fileName, sizeBytes: 0, mimeType: '', width: null, height: null };
+    }
+  }
+  return getLocalFileMeta(url);
+}
+
+export async function saveUploadedImage(file, { merchantId = null, userId = null, kind = 'original' } = {}) {
   if (!file) return null;
 
-  const ext = safeExtFromName(file.originalname, '.png');
+  const ext = safeExtFromName(normalizeUploadedFileName(file.originalname), '.png');
   const fileName = `${Date.now()}-${normalizeKind(kind)}-${uuid()}${ext}`;
   const storageKey = buildImageStorageKey({ merchantId, userId, kind, fileName });
   const finalPath = diskPathFromStorageKey(storageKey);
+  const sizeBytes = Number(file.size || fs.statSync(file.path).size || 0);
+  const dimensions = readImageDimensions(file.path);
+
+  if (isOssStorage()) {
+    await getOssClient().put(storageKey, file.path, {
+      mime: file.mimetype || undefined,
+      headers: file.mimetype ? { 'Content-Type': file.mimetype } : undefined
+    });
+    fs.rmSync(file.path, { force: true });
+    return {
+      storageProvider: STORAGE_PROVIDER,
+      storageKey,
+      url: publicUrlFromStorageKey(storageKey),
+      fileName,
+      mimeType: file.mimetype || '',
+      sizeBytes,
+      ...dimensions
+    };
+  }
 
   fs.mkdirSync(path.dirname(finalPath), { recursive: true });
   fs.renameSync(file.path, finalPath);
@@ -207,17 +304,36 @@ export function saveUploadedImage(file, { merchantId = null, userId = null, kind
     url: publicUrlFromStorageKey(storageKey),
     fileName,
     mimeType: file.mimetype || '',
-    sizeBytes: Number(file.size || fs.statSync(finalPath).size || 0),
+    sizeBytes,
     ...readImageDimensions(finalPath)
   };
 }
 
-export function saveBufferToStorage(buffer, { merchantId = null, userId = null, kind = 'generated', op = 'ai-result', ext = 'png' } = {}) {
+export async function saveBufferToStorage(buffer, { merchantId = null, userId = null, kind = 'generated', op = 'ai-result', ext = 'png' } = {}) {
   const safeExt = String(ext || 'png').replace(/^\./, '').toLowerCase() || 'png';
   const cleanOp = safeSegment(op, 'ai-result');
   const fileName = `${Date.now()}-${cleanOp}-${uuid()}.${safeExt}`;
   const storageKey = buildImageStorageKey({ merchantId, userId, kind, fileName });
   const finalPath = diskPathFromStorageKey(storageKey);
+  const mimeType = `image/${safeExt === 'jpg' ? 'jpeg' : safeExt}`;
+  const sizeBytes = Number(buffer?.length || 0);
+  const dimensions = readImageDimensionsFromBuffer(buffer || Buffer.alloc(0));
+
+  if (isOssStorage()) {
+    await getOssClient().put(storageKey, buffer, {
+      mime: mimeType,
+      headers: { 'Content-Type': mimeType }
+    });
+    return {
+      storageProvider: STORAGE_PROVIDER,
+      storageKey,
+      url: publicUrlFromStorageKey(storageKey),
+      fileName,
+      mimeType,
+      sizeBytes,
+      ...dimensions
+    };
+  }
 
   fs.mkdirSync(path.dirname(finalPath), { recursive: true });
   fs.writeFileSync(finalPath, buffer);
@@ -227,7 +343,7 @@ export function saveBufferToStorage(buffer, { merchantId = null, userId = null, 
     storageKey,
     url: publicUrlFromStorageKey(storageKey),
     fileName,
-    mimeType: `image/${safeExt === 'jpg' ? 'jpeg' : safeExt}`,
+    mimeType,
     sizeBytes: Number(buffer?.length || fs.statSync(finalPath).size || 0),
     ...readImageDimensions(finalPath)
   };
@@ -309,6 +425,37 @@ export async function addUserStorageUsage(conn, userId, deltaBytes = 0) {
 export async function applyUserStorageDelta(conn, userId, deltaBytes = 0, log = {}) {
   const summary = await addUserStorageUsage(conn, userId, deltaBytes);
   return summary;
+}
+
+export async function deleteStoredFile(imageOrUrl = '') {
+  const url = typeof imageOrUrl === 'string' ? imageOrUrl : (imageOrUrl.url || '');
+  const storageKey = typeof imageOrUrl === 'object' ? imageOrUrl.storage_key || imageOrUrl.storageKey || '' : '';
+  if (isOssStorage()) {
+    const key = storageKey || storageKeyFromUrl(url);
+    if (!key) return false;
+    try {
+      await getOssClient().delete(key);
+      return true;
+    } catch (err) {
+      if (err?.code === 'NoSuchKey') return false;
+      console.warn('[storage] 删除 OSS 图片文件失败：', key, err.message);
+      return false;
+    }
+  }
+  return deleteLocalStoredFile(imageOrUrl);
+}
+
+function storageKeyFromUrl(url = '') {
+  const raw = String(url || '');
+  if (!raw) return '';
+  const ossBase = OSS_PUBLIC_BASE_URL || '';
+  if (ossBase && raw.startsWith(ossBase.replace(/\/$/, '') + '/')) {
+    return raw.slice(ossBase.replace(/\/$/, '').length + 1).replace(/^\/+/, '');
+  }
+  const filesPrefix = `${FILES_BASE_PATH.replace(/\/$/, '')}/`;
+  if (raw.startsWith(filesPrefix)) return raw.slice(filesPrefix.length).replace(/^\/+/, '');
+  const match = raw.match(/^https?:\/\/[^/]+\/(.+)$/i);
+  return match ? decodeURIComponent(match[1]) : '';
 }
 
 export function deleteLocalStoredFile(imageOrUrl = '') {

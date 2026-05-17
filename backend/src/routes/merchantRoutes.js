@@ -1,9 +1,9 @@
-import { v4 as uuid } from 'uuid';
+﻿import { v4 as uuid } from 'uuid';
 import { pool, publicApplication } from '../db.js';
 import { requireAuth } from '../auth.js';
 import { requireMerchantAccount, requireMerchantManager } from '../middleware/roleMiddleware.js';
 import { registerInternalUserRoutes } from './merchant/internalUserRoutes.js';
-import { getLocalFileMeta } from '../services/storageService.js';
+import { getStoredFileMeta, normalizeUploadedFileName } from '../services/storageService.js';
 
 export function registerMerchantRoutes(app,deps){
   const {
@@ -67,13 +67,18 @@ export function registerMerchantRoutes(app,deps){
     return 'user_reference';
   }
 
+  function stripImageExt(name=''){
+    return String(name||'').trim().replace(/\.(jpe?g|png|webp|gif|bmp)$/i,'');
+  }
+
   function mapResourceRow(r){
     const mainCategoryName=r.mainCategoryName || r.object_name || '未分类';
     const subCategoryName=Number(r.isMainOnly||0)?'':(r.subCategoryName || r.color_name || '');
+    const displayName=r.display_name || r.name || r.original_name || `资源-${String(r.id||'').slice(0,8)}`;
     return {
       id:r.id,
       merchantId:r.merchant_id,
-      name:r.display_name || r.name || r.original_name || `资源-${String(r.id||'').slice(0,8)}`,
+      name:stripImageExt(displayName),
       resourceType:r.resource_type || resourceTypeFromMain(mainCategoryName),
       objectName:mainCategoryName,
       colorName:subCategoryName,
@@ -82,11 +87,30 @@ export function registerMerchantRoutes(app,deps){
       description:r.description || '',
       imageUrl:r.url || r.image_url,
       status:r.status,
-      scope:r.scope,
+      scope:r.scope || r.resource_scope,
       createdById:r.user_id || r.created_by,
       createdByName:r.createdByName,
       createdAt:r.created_at,
       source:r.source || r.source_type || 'RESOURCE'
+    };
+  }
+
+  function normalizeResourceScope(input, user) {
+    const requested = String(input || '').trim().toUpperCase();
+    if (isMerchantPower(user) && requested === 'MERCHANT') return 'MERCHANT';
+    return 'USER';
+  }
+
+  function resourceWriteAccessSql(user) {
+    if (isMerchantPower(user)) {
+      return {
+        sql: `i.id=? AND ((COALESCE(imc.scope,i.resource_scope)="MERCHANT" AND i.merchant_id=?) OR ((COALESCE(imc.scope,i.resource_scope)="USER" OR (imc.scope IS NULL AND i.resource_scope IS NULL)) AND i.user_id=?))`,
+        params: [user.merchant_id || '', user.id]
+      };
+    }
+    return {
+      sql: `i.id=? AND ((COALESCE(imc.scope,i.resource_scope)="USER" OR (imc.scope IS NULL AND i.resource_scope IS NULL)) AND i.user_id=?)`,
+      params: [user.id]
     };
   }
 
@@ -172,8 +196,8 @@ export function registerMerchantRoutes(app,deps){
     const type=String(req.query.resourceType||'').trim();
     const params=[];
     const wh=['i.status="ACTIVE"'];
-    wh.push('(imc.scope="SYSTEM" OR (imc.scope="MERCHANT" AND i.merchant_id=?) OR (imc.scope="USER" AND i.user_id=?) OR (icb.image_id IS NULL AND (i.user_id=? OR i.merchant_id=?)))');
-    params.push(req.user.merchant_id||'',req.user.id,req.user.id,req.user.merchant_id||'');
+    wh.push('(COALESCE(imc.scope,i.resource_scope)="SYSTEM" OR (COALESCE(imc.scope,i.resource_scope)="MERCHANT" AND i.merchant_id=?) OR (COALESCE(imc.scope,i.resource_scope)="USER" AND i.user_id=?) OR (icb.image_id IS NULL AND i.resource_scope IS NULL AND i.user_id=?))');
+    params.push(req.user.merchant_id||'',req.user.id,req.user.id);
     if(keyword){ wh.push('(i.display_name LIKE ? OR i.original_name LIKE ? OR imc.name LIKE ? OR isc.name LIKE ?)'); params.push(like(keyword),like(keyword),like(keyword),like(keyword)); }
     if(type){
       if(type==='material') wh.push('imc.name IN ("材质","软体")');
@@ -181,7 +205,7 @@ export function registerMerchantRoutes(app,deps){
       else wh.push('imc.name IN ("产品","未分类")');
     }
     const [rows]=await pool.query(`
-      SELECT i.*,u.display_name createdByName,imc.name mainCategoryName,isc.name subCategoryName,isc.is_main_only isMainOnly,imc.scope,
+      SELECT i.*,u.display_name createdByName,imc.name mainCategoryName,isc.name subCategoryName,isc.is_main_only isMainOnly,COALESCE(imc.scope,i.resource_scope) scope,
              CASE WHEN imc.name IN ('材质','软体') THEN 'material' WHEN imc.name='场景模板' THEN 'scene' ELSE 'user_reference' END resource_type
       FROM images i
       LEFT JOIN image_category_bindings icb ON icb.image_id=i.id
@@ -203,17 +227,14 @@ export function registerMerchantRoutes(app,deps){
     const scope=String(req.query.scope||'').trim();
     const params=[];
     const wh=[];
-    if(isMerchantPower(req.user)){
-      if(scope==='USER'){
-        wh.push('((imc.scope="USER" AND i.user_id=?) OR (icb.image_id IS NULL AND i.user_id=?))');
-        params.push(req.user.id,req.user.id);
-      }else{
-        wh.push('((imc.scope="MERCHANT" AND i.merchant_id=?) OR (icb.image_id IS NULL AND i.merchant_id=?))');
-        params.push(req.user.merchant_id,req.user.merchant_id);
-      }
-    }else{
-      wh.push('((imc.scope="USER" AND i.user_id=?) OR (icb.image_id IS NULL AND i.user_id=?))');
+    if(scope==='MERCHANT'){
+      wh.push('((COALESCE(imc.scope,i.resource_scope)="MERCHANT" AND i.merchant_id=?) OR (icb.image_id IS NULL AND i.resource_scope IS NULL AND i.merchant_id=? AND i.user_id<>?))');
+      params.push(req.user.merchant_id,req.user.merchant_id,req.user.id);
+    }else if(scope==='USER'){
+      wh.push('((COALESCE(imc.scope,i.resource_scope)="USER" AND i.user_id=?) OR (icb.image_id IS NULL AND i.resource_scope IS NULL AND i.user_id=?))');
       params.push(req.user.id,req.user.id);
+    }else{
+      wh.push('(COALESCE(imc.scope,i.resource_scope)="SYSTEM")');
     }
     if(status){ wh.push('i.status=?'); params.push(status); } else wh.push('i.status="ACTIVE"');
     if(mainCategory){
@@ -229,48 +250,64 @@ export function registerMerchantRoutes(app,deps){
       LEFT JOIN image_main_categories imc ON imc.id=isc.main_category_id
       LEFT JOIN users u ON u.id=i.user_id
       ${where}`;
-    const sql=`SELECT i.*,u.display_name createdByName,imc.name mainCategoryName,isc.name subCategoryName,isc.is_main_only isMainOnly,imc.scope,
+    const sql=`SELECT i.*,u.display_name createdByName,imc.name mainCategoryName,isc.name subCategoryName,isc.is_main_only isMainOnly,COALESCE(imc.scope,i.resource_scope) scope,
         CASE WHEN imc.name IN ('材质','软体') THEN 'material' WHEN imc.name='场景模板' THEN 'scene' ELSE 'user_reference' END resource_type ${base} ORDER BY i.created_at DESC`;
     const countSql=`SELECT COUNT(*) total ${base}`;
     res.json(await paged(sql,countSql,params,req,mapResourceRow));
   });
   
   app.post('/api/merchant/resources', requireAuth, (req,res)=>{
-    upload.single('image')(req,res,async err=>{
+    upload.array('image',50)(req,res,async err=>{
       if(err) return res.status(400).json({message:err.message||'操作失败'});
       try{
         await assertMerchantActive(req.user);
         const {name,objectName='',colorName='',imageUrl=''}=req.body;
-        if(!name) return res.status(400).json({message:'资源名称不能为空'});
-        const uploadedUrl=saveUploadedFile(req.file,{kind:'resource',merchantId:req.user.merchant_id,userId:req.user.id});
-        const finalUrl=uploadedUrl||imageUrl;
-        if(!finalUrl) return res.status(400).json({message:'请上传资源图片或填写图片URL'});
-        const id=uuid();
-        const meta=getLocalFileMeta(finalUrl);
-        const scope=isMerchantPower(req.user)?'MERCHANT':'USER';
+        const files=Array.isArray(req.files)?req.files:[];
+        if(!files.length && !imageUrl) return res.status(400).json({message:'请上传资源图片或填写图片URL'});
+        const scope=normalizeResourceScope(req.body.scope, req.user);
         const subId=await ensureImageSubCategory({mainName:objectName,subName:colorName,scope,merchantId:req.user.merchant_id,userId:req.user.id,createdBy:req.user.id});
-        await pool.query('INSERT INTO images(id,merchant_id,user_id,display_name,original_name,url,source_type,status,storage_provider,storage_key,file_name,mime_type,size_bytes,width,height) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',[id,req.user.merchant_id||null,req.user.id,name,req.file?.originalname||name,finalUrl,'RESOURCE','ACTIVE',meta.storageProvider||'local',meta.storageKey||finalUrl,meta.fileName||req.file?.filename||'',meta.mimeType||req.file?.mimetype||'',Number(meta.sizeBytes||req.file?.size||0),meta.width||null,meta.height||null]);
-        if(subId){
-          await pool.query('INSERT INTO image_category_bindings(image_id,sub_category_id) VALUES(?,?) ON DUPLICATE KEY UPDATE sub_category_id=VALUES(sub_category_id)',[id,subId]);
+        const targets=files.length?files:[null];
+        const ids=[];
+        for(const file of targets){
+          const uploadedUrl=file?await saveUploadedFile(file,{kind:'resource',merchantId:req.user.merchant_id,userId:req.user.id}):'';
+          const finalUrl=uploadedUrl||imageUrl;
+          const originalName=normalizeUploadedFileName(file?.originalname)||String(finalUrl).split('/').pop()||'资源图片';
+          const displayName=String(name||'').trim()||stripImageExt(originalName);
+          const id=uuid();
+          const meta=await getStoredFileMeta(finalUrl);
+          await pool.query('INSERT INTO images(id,merchant_id,user_id,display_name,original_name,url,source_type,resource_scope,status,storage_provider,storage_key,file_name,mime_type,size_bytes,width,height) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',[id,req.user.merchant_id||null,req.user.id,displayName,originalName,finalUrl,'RESOURCE',scope,'ACTIVE',meta.storageProvider||'local',meta.storageKey||finalUrl,meta.fileName||file?.filename||'',meta.mimeType||file?.mimetype||'',Number(meta.sizeBytes||file?.size||0),meta.width||null,meta.height||null]);
+          if(subId){
+            await pool.query('INSERT INTO image_category_bindings(image_id,sub_category_id) VALUES(?,?) ON DUPLICATE KEY UPDATE sub_category_id=VALUES(sub_category_id)',[id,subId]);
+          }
+          ids.push(id);
         }
-        res.json({message:'资源已创建',id});
+        res.json({message:'资源已创建',ids,id:ids[0],count:ids.length});
       }catch(e){ res.status(400).json({message:e.message||'操作失败'}); }
     });
   });
   
   app.patch('/api/merchant/resources/:id', requireAuth, upload.single('image'), async (req,res)=>{
     const {name,objectName,colorName,status}=req.body;
-    const isPower=isMerchantPower(req.user);
-    const access=isPower?'i.merchant_id=?':'i.user_id=?';
-    const accessId=isPower?req.user.merchant_id:req.user.id;
-    const [[img]]=await pool.query(`SELECT i.* FROM images i WHERE i.id=? AND ${access}`,[req.params.id,accessId]);
+    const access=resourceWriteAccessSql(req.user);
+    const [[img]]=await pool.query(`
+      SELECT i.*,COALESCE(imc.scope,i.resource_scope) scope
+      FROM images i
+      LEFT JOIN image_category_bindings icb ON icb.image_id=i.id
+      LEFT JOIN image_sub_categories isc ON isc.id=icb.sub_category_id
+      LEFT JOIN image_main_categories imc ON imc.id=isc.main_category_id
+      WHERE ${access.sql}
+      LIMIT 1
+    `,[req.params.id,...access.params]);
     if(!img) return res.status(404).json({message:'图片不存在或无权操作'});
     const fields=[]; const vals=[];
     if(name!==undefined){fields.push('display_name=?'); vals.push(name||null);}
     if(status!==undefined){fields.push('status=?'); vals.push(status);}
     if(fields.length){ vals.push(req.params.id); await pool.query(`UPDATE images SET ${fields.join(',')} WHERE id=?`,vals); }
     if(objectName!==undefined || colorName!==undefined){
-      const subId=await ensureImageSubCategory({mainName:objectName||'',subName:colorName||'',scope:isPower?'MERCHANT':'USER',merchantId:req.user.merchant_id,userId:req.user.id,createdBy:req.user.id});
+      const requestedScope=normalizeResourceScope(req.body.scope, req.user);
+      const scope=img.scope==='MERCHANT'||requestedScope==='MERCHANT'?'MERCHANT':'USER';
+      await pool.query('UPDATE images SET resource_scope=? WHERE id=?',[scope,req.params.id]);
+      const subId=await ensureImageSubCategory({mainName:objectName||'',subName:colorName||'',scope,merchantId:req.user.merchant_id,userId:req.user.id,createdBy:req.user.id});
       if(subId) await pool.query('INSERT INTO image_category_bindings(image_id,sub_category_id) VALUES(?,?) ON DUPLICATE KEY UPDATE sub_category_id=VALUES(sub_category_id)',[req.params.id,subId]);
       else await pool.query('DELETE FROM image_category_bindings WHERE image_id=?',[req.params.id]);
     }
@@ -278,10 +315,16 @@ export function registerMerchantRoutes(app,deps){
   });
   
   app.delete('/api/merchant/resources/:id', requireAuth, async (req,res)=>{
-    const isPower=isMerchantPower(req.user);
-    const access=isPower?'merchant_id=?':'user_id=?';
-    const accessId=isPower?req.user.merchant_id:req.user.id;
-    await pool.query(`UPDATE images SET status="DELETED",deleted_at=NOW() WHERE id=? AND ${access}`,[req.params.id,accessId]);
+    const access=resourceWriteAccessSql(req.user);
+    const [result]=await pool.query(`
+      UPDATE images i
+      LEFT JOIN image_category_bindings icb ON icb.image_id=i.id
+      LEFT JOIN image_sub_categories isc ON isc.id=icb.sub_category_id
+      LEFT JOIN image_main_categories imc ON imc.id=isc.main_category_id
+      SET i.status="DELETED",i.deleted_at=NOW()
+      WHERE ${access.sql}
+    `,[req.params.id,...access.params]);
+    if(!result.affectedRows) return res.status(404).json({message:'图片不存在或无权操作'});
     res.json({message:'操作成功'});
   });
   

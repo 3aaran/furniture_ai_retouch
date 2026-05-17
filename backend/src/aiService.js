@@ -25,14 +25,14 @@ export const quotaCost = {
   watermark: 0
 };
 
-function saveBuffer(buffer, op, ext = 'png', context = {}) {
-  return saveBufferToStorage(buffer, {
+async function saveBuffer(buffer, op, ext = 'png', context = {}) {
+  return (await saveBufferToStorage(buffer, {
     merchantId: context.merchantId,
     userId: context.userId,
     kind: context.kind || 'generated',
     op,
     ext
-  }).url;
+  })).url;
 }
 
 async function copyMock(inputPath, op, context = {}) {
@@ -223,8 +223,6 @@ export async function runAi({ operation, imagePath, prompt, merchantId = null, u
 
 
 export async function applyWatermark({ imagePath, config }) {
-  const outputMeta = saveBufferToStorage(Buffer.alloc(0), { kind:'generated', op:'watermark', merchantId:null, userId:null, ext:'png' });
-  const output = urlToDiskPath(outputMeta.url);
   const meta = await sharp(imagePath).metadata();
   const width = meta.width || 1000;
   const height = meta.height || 800;
@@ -257,8 +255,8 @@ export async function applyWatermark({ imagePath, config }) {
     const input=markOpacity<1
       ? await sharp(resized).composite([{input:Buffer.from([255,255,255,Math.round(markOpacity*255)]),raw:{width:1,height:1,channels:4},tile:true,blend:'dest-in'}]).png().toBuffer()
       : resized;
-    await sharp(imagePath).composite([{input,left:Math.max(0,left),top:Math.max(0,top)}]).png().toFile(output);
-    return outputMeta.url;
+    const out = await sharp(imagePath).composite([{input,left:Math.max(0,left),top:Math.max(0,top)}]).png().toBuffer();
+    return saveBuffer(out, 'watermark', 'png', { kind: 'generated' });
   }
   const text = String(config.text || readAppConfigValue('watermarkText', '家具修图')).replace(/[<>&]/g, '');
   const subText = String(config.subText || '').replace(/[<>&]/g, '');
@@ -321,6 +319,6 @@ export async function applyWatermark({ imagePath, config }) {
         ${subText?`<text x="${x}" y="${y+fontSize*1.55}" font-size="${fontSize*.42}" fill="${accent}" font-family="Arial, Microsoft YaHei">${subText}</text>`:''}
       </g></svg>`;
   }
-  await sharp(imagePath).composite([{ input: Buffer.from(svg), top: 0, left: 0 }]).png().toFile(output);
-  return outputMeta.url;
+  const out = await sharp(imagePath).composite([{ input: Buffer.from(svg), top: 0, left: 0 }]).png().toBuffer();
+  return saveBuffer(out, 'watermark', 'png', { kind: 'generated' });
 }

@@ -135,6 +135,13 @@
 @media (max-width:980px){.wbScreen{grid-template-columns:1fr}.wbSidePanel,.wbCenterPanel,.wbRightPanel{min-height:auto}.wbResourceGrid{grid-template-columns:1fr 1fr}.wbBottomBar{align-items:flex-start}.wbActionGroup{margin-left:0;justify-items:start}}
 @media (max-width:640px){.wbFeatureGrid,.wbResourceGrid{grid-template-columns:1fr}.wbSearchRow{flex-direction:column}.wbBottomBar{flex-direction:column;align-items:flex-start}.wbActionGroup{width:100%}.wbGenerateBtn{width:100%}.wbRefBody{flex-direction:column;align-items:flex-start}}
 
+.topApp .wbCategoryNav{flex:0 0 auto!important;display:flex!important;flex-direction:column!important;gap:10px!important;margin:0 0 12px!important}
+.topApp .wbCategoryTabs{display:flex!important;gap:10px!important;overflow-x:auto!important;padding-bottom:3px!important}
+.topApp .wbCategoryTabs button{flex:0 0 auto!important;height:34px!important;padding:0 13px!important;border-radius:8px!important;border:1px solid rgba(255,255,255,.16)!important;background:#171819!important;color:#d8d0c1!important;font-size:14px!important;cursor:pointer!important}
+.topApp .wbCategoryTabs.main button{border-color:transparent!important;background:transparent!important;border-radius:0!important;color:#aaa49b!important;font-size:16px!important}
+.topApp .wbCategoryTabs.main button.active{color:#e7cf88!important;box-shadow:inset 0 -2px 0 #e7cf88!important}
+.topApp .wbCategoryTabs.sub button.active{background:#e7cf88!important;border-color:#e7cf88!important;color:#17120a!important}
+
 /* v3.2 workbench drag-drop + layout stabilization */
 .wbScreen{width:100%;max-width:none;grid-template-columns:minmax(300px,340px) minmax(640px,1fr) minmax(260px,300px);align-items:start}
 .wbScreen>*{min-width:0}
@@ -2049,3 +2056,10 @@ body:has(.wbScreen){
 .taskPreviewBody{
   overflow:auto !important;
 }
+
+.topApp .wbCategoryNav{flex:0 0 auto!important;display:flex!important;flex-direction:column!important;gap:10px!important;margin:0 0 12px!important}
+.topApp .wbCategoryTabs{display:flex!important;gap:10px!important;overflow-x:auto!important;padding-bottom:3px!important}
+.topApp .wbCategoryTabs button{flex:0 0 auto!important;height:34px!important;padding:0 13px!important;border-radius:8px!important;border:1px solid rgba(255,255,255,.16)!important;background:#171819!important;color:#d8d0c1!important;font-size:14px!important;cursor:pointer!important}
+.topApp .wbCategoryTabs.main button{border-color:transparent!important;background:transparent!important;border-radius:0!important;color:#aaa49b!important;font-size:16px!important}
+.topApp .wbCategoryTabs.main button.active{color:#e7cf88!important;box-shadow:inset 0 -2px 0 #e7cf88!important}
+.topApp .wbCategoryTabs.sub button.active{background:#e7cf88!important;border-color:#e7cf88!important;color:#17120a!important}

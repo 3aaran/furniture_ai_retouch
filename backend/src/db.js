@@ -30,6 +30,16 @@ function envFlag(name, fallback = false) {
   return ['1', 'true', 'yes', 'on'].includes(String(raw).toLowerCase());
 }
 
+async function ensureColumn(table, column, definition, afterColumn = '') {
+  const [rows] = await pool.query(
+    'SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=? AND COLUMN_NAME=?',
+    [table, column]
+  );
+  if (!rows.length) {
+    await pool.query(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}${afterColumn ? ` AFTER ${afterColumn}` : ''}`);
+  }
+}
+
 export async function initDb(){
   // AUTO_INIT_DB=false 用于线上：启动服务时不自动建库、删旧表或写入演示数据。
   if (!envFlag('AUTO_INIT_DB', true)) {
@@ -84,6 +94,8 @@ export async function initDb(){
     INDEX idx_phone(phone),
     CONSTRAINT fk_users_merchant FOREIGN KEY(merchant_id) REFERENCES merchants(id) ON DELETE SET NULL
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`);
+  await ensureColumn('users', 'storage_limit_bytes', `BIGINT NOT NULL DEFAULT ${DEFAULT_USER_STORAGE_LIMIT_BYTES}`, 'quota_balance');
+  await ensureColumn('users', 'storage_used_bytes', 'BIGINT NOT NULL DEFAULT 0', 'storage_limit_bytes');
   await pool.query(`CREATE TABLE IF NOT EXISTS merchant_applications (
     id VARCHAR(36) PRIMARY KEY,
     company_name VARCHAR(160) NOT NULL,
@@ -144,6 +156,7 @@ export async function initDb(){
     storage_key VARCHAR(700) NOT NULL,
     url VARCHAR(800) NOT NULL,
     source_type ENUM('UPLOAD','AI_GENERATED','WATERMARK','PROCESS_RESULT','RESOURCE','PHOTO','OTHER') NOT NULL DEFAULT 'UPLOAD',
+    resource_scope ENUM('SYSTEM','MERCHANT','USER') NULL,
     status ENUM('ACTIVE','DELETED') NOT NULL DEFAULT 'ACTIVE',
     deleted_at DATETIME NULL,
     trial_expire_at DATETIME NULL,
@@ -223,6 +236,25 @@ export async function initDb(){
     INDEX idx_merchant(merchant_id),
     CONSTRAINT fk_watermarks_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`);
+  await ensureColumn('images', 'file_name', 'VARCHAR(255) NULL', 'original_name');
+  await ensureColumn('images', 'mime_type', 'VARCHAR(80) NULL', 'file_name');
+  await ensureColumn('images', 'size_bytes', 'BIGINT NOT NULL DEFAULT 0', 'mime_type');
+  await ensureColumn('images', 'width', 'INT NULL', 'size_bytes');
+  await ensureColumn('images', 'height', 'INT NULL', 'width');
+  await ensureColumn('images', 'storage_provider', "VARCHAR(30) NOT NULL DEFAULT 'local'", 'height');
+  await ensureColumn('images', 'storage_key', "VARCHAR(700) NOT NULL DEFAULT ''", 'storage_provider');
+  await ensureColumn('images', 'resource_scope', "ENUM('SYSTEM','MERCHANT','USER') NULL", 'source_type');
+  await pool.query(`
+    UPDATE images i
+    LEFT JOIN image_category_bindings icb ON icb.image_id=i.id
+    SET i.resource_scope=CASE
+      WHEN i.source_type='RESOURCE' AND i.merchant_id IS NULL THEN 'SYSTEM'
+      WHEN i.source_type='RESOURCE' AND i.merchant_id IS NOT NULL THEN 'MERCHANT'
+      WHEN i.source_type='RESOURCE' THEN 'USER'
+      ELSE i.resource_scope
+    END
+    WHERE i.resource_scope IS NULL AND i.source_type='RESOURCE' AND icb.image_id IS NULL
+  `);
   const [userQuotaColumns] = await pool.query(
     "SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='users' AND COLUMN_NAME='quota_balance'"
   );
