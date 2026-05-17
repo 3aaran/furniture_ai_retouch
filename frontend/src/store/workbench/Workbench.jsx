@@ -1,6 +1,6 @@
 ﻿import React,{useEffect,useRef,useState}from'react';
 import{Layers,Users as UsersIcon,Brush,Download,Trash2,Eye,Search,Plus,Power,RotateCcw}from'lucide-react';
-import{API,token,req,reqForm,fmt,resTypeName}from'../../appShared.jsx';
+import{API,token,req,reqForm,fmt,resTypeName,imageViewUrl}from'../../appShared.jsx';
 import{featureConfig}from'../../config/featureConfig.jsx';
 import WorkbenchUploadPanel from'./WorkbenchUploadPanel.jsx';
 import GenerationControls from'./GenerationControls.jsx';
@@ -9,10 +9,11 @@ import WorkbenchResourceUploadModal from'./WorkbenchResourceUploadModal.jsx';
 import WatermarkConfigModal from'./WatermarkConfigModal.jsx';
 
 function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
-  function imgSrc(url){
-    if(!url)return '';
-    if(url.startsWith('http'))return url;
-    return API+url;
+  function imgSrc(input){
+    if(!input)return '';
+    if(typeof input==='object')return imageViewUrl(input);
+    if(String(input).startsWith('http'))return input;
+    return API+input;
   }
 
   const ops=Object.fromEntries(Object.entries(featureConfig).map(([key,item])=>[key,{label:item.name,desc:item.desc,cost:item.defaultCost}]));
@@ -102,6 +103,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
     try{
       const d=await req(`/api/images/${item.id}/source`);
       const next={
+        sourceId:d.sourceId,
         sourceUrl:d.sourceUrl || item.sourceUrl || item.url,
         sourceOriginalName:d.sourceOriginalName || '原图'
       };
@@ -112,6 +114,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
         if(!prev||prev.id!==item.id) return prev;
         return {
           ...prev,
+          sourceId:next.sourceId,
           url:next.sourceUrl,
           sourceOriginalName:next.sourceOriginalName,
           loading:false
@@ -567,7 +570,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
             <b>上传</b>
           </button>
           {resourceItems.map(r=><button key={r.scope+r.id} className={selectedResource===String(r.id)?'wbResourceCard active':'wbResourceCard'} onClick={()=>setSelectedResource(String(r.id))}>
-            {r.imageUrl?<img src={imgSrc(r.imageUrl)} alt={r.name}/>:<div className="wbResourcePlaceholder">{resTypeName[r.resourceType]}</div>}
+            {r.imageUrl?<img src={imgSrc(r)} alt={r.name}/>:<div className="wbResourcePlaceholder">{resTypeName[r.resourceType]}</div>}
             <b>{r.name}</b>
             <span>{r.scope==='SYSTEM'?'系统':'门店'} / {r.mainCategoryName||r.objectName||resTypeName[r.resourceType]}{(r.subCategoryName||r.colorName)?` / ${r.subCategoryName||r.colorName}`:''}</span>
           </button>)}
@@ -666,7 +669,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
           onMouseLeave={()=>{setRecentHoverId(prev=>prev===item.id?'':prev);hideRecentOriginal();}}
           onClick={()=>openRecentTask(item)}
         >
-          <div className="wbRecentThumb"><img src={imgSrc(item.url||item.previewUrl||item.sourceUrl)} alt="最近生成"/>{running&&<i className="wbSpin"/>}{failed&&<em>失败</em>}</div>
+          <div className="wbRecentThumb"><img src={imgSrc(item)} alt="最近生成"/>{running&&<i className="wbSpin"/>}{failed&&<em>失败</em>}</div>
           <div className="wbRecentInfo"><b>{ops[item.kind||item.featureKey]?.label||item.featureName||item.kind}</b><span>{running?'生成中...':failed?'失败，已退回算力':fmt(item.createdAt||item.submittedAt)}</span><small>{item.id}</small></div>
           {!running&&!failed&&<div
             style={{
@@ -729,13 +732,13 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
       {recentSourcePreview.loading?'正在读取原图...':`${recentSourcePreview.title} 原图`}
     </div>
     <img
-      src={imgSrc(recentSourcePreview.url)}
+      src={imgSrc({id:recentSourcePreview.sourceId||recentSourcePreview.id,url:recentSourcePreview.url})}
       alt="原图预览"
       style={{width:'100%',height:'100%',objectFit:'cover',display:'block',background:'#fff'}}
       onError={(e)=>{
         if(e.currentTarget.dataset.fallback!=='1'){
           e.currentTarget.dataset.fallback='1';
-          e.currentTarget.src=imgSrc(recentSourcePreview.fallback);
+          e.currentTarget.src=imgSrc({id:recentSourcePreview.id,url:recentSourcePreview.fallback});
         }
       }}
     />

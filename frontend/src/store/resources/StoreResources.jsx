@@ -1,6 +1,6 @@
 ﻿import React,{useEffect,useState}from'react';
 import{Trash2,Plus,RotateCcw,Pencil,X}from'lucide-react';
-import{API,req,reqForm,fmt,usePaged,resTypeName}from'../../appShared.jsx';
+import{API,req,reqForm,fmt,usePaged,resTypeName,imageViewUrl}from'../../appShared.jsx';
 import{featureName}from'../../config/uiText.js';
 import ConfirmDialog from'../../components/ConfirmDialog.jsx';
 import ResourceCard from'./ResourceCard.jsx';
@@ -285,7 +285,7 @@ function StoreResources({me,setMsg}){
 
   function imgUrl(r){
     if(!r.imageUrl)return '';
-    return r.imageUrl.startsWith('http')?r.imageUrl:API+r.imageUrl;
+    return imageViewUrl(r);
   }
 
   function triggerSearch(){

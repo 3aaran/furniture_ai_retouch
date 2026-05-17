@@ -3,7 +3,7 @@ import { pool, publicApplication } from '../db.js';
 import { requireAuth } from '../auth.js';
 import { requireMerchantAccount, requireMerchantManager } from '../middleware/roleMiddleware.js';
 import { registerInternalUserRoutes } from './merchant/internalUserRoutes.js';
-import { getStoredFileMeta, normalizeUploadedFileName } from '../services/storageService.js';
+import { deleteStoredFile, getStoredFileMeta, normalizeUploadedFileName } from '../services/storageService.js';
 
 export function registerMerchantRoutes(app,deps){
   const {
@@ -316,6 +316,15 @@ export function registerMerchantRoutes(app,deps){
   
   app.delete('/api/merchant/resources/:id', requireAuth, async (req,res)=>{
     const access=resourceWriteAccessSql(req.user);
+    const [[img]]=await pool.query(`
+      SELECT i.* FROM images i
+      LEFT JOIN image_category_bindings icb ON icb.image_id=i.id
+      LEFT JOIN image_sub_categories isc ON isc.id=icb.sub_category_id
+      LEFT JOIN image_main_categories imc ON imc.id=isc.main_category_id
+      WHERE ${access.sql}
+      LIMIT 1
+    `,[req.params.id,...access.params]);
+    if(!img) return res.status(404).json({message:'图片不存在或无权操作'});
     const [result]=await pool.query(`
       UPDATE images i
       LEFT JOIN image_category_bindings icb ON icb.image_id=i.id
@@ -325,6 +334,7 @@ export function registerMerchantRoutes(app,deps){
       WHERE ${access.sql}
     `,[req.params.id,...access.params]);
     if(!result.affectedRows) return res.status(404).json({message:'图片不存在或无权操作'});
+    await deleteStoredFile(img);
     res.json({message:'操作成功'});
   });
   

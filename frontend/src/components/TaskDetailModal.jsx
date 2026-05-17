@@ -1,7 +1,7 @@
 import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createPortal}from'react-dom';
 import{ChevronLeft,ChevronRight,Copy,Download,FileText,Flag,Hash,RefreshCw,Trash2,User,WalletCards}from'lucide-react';
-import{API,token,req,fmt}from'../appShared.jsx';
+import{API,token,req,fmt,imageViewUrl}from'../appShared.jsx';
 import WatermarkConfigModal from'../store/workbench/WatermarkConfigModal.jsx';
 
 const statusMap={
@@ -190,6 +190,8 @@ function TaskDetailModal({
   const sourceImageId=detail.originImage?.id||detail.sourceImageId;
   const resultUrl=detail.resultUrl||detail.url||detail.resultImage?.url;
   const sourceUrl=detail.sourceUrl||detail.originImage?.url;
+  const resultImageSrc=imageViewUrl({id:imageId,url:resultUrl});
+  const sourceImageSrc=imageViewUrl({id:sourceImageId,url:sourceUrl});
 
   const optionLabels=useMemo(()=>optionTextList(featureKey,options,userPrompt),[detail?.id,featureKey,userPrompt]);
   const extraText=optionLabels.join(' / ')||'未选择额外功能选项';
@@ -253,7 +255,7 @@ function TaskDetailModal({
   const wmReady=!!watermark.configured;
   const resultPreviewSrc=useWatermark&&wmReady&&imageId&&!previewFailed
     ? `${API}/api/images/${imageId}/watermark-preview?token=${token()}&v=${Date.now()}`
-    : imageSrc(resultUrl);
+    : resultImageSrc;
 
   return createPortal(<div className="taskPreviewOverlay taskPreviewWindowMode">
     <div className="taskPreviewTop">
@@ -268,7 +270,7 @@ function TaskDetailModal({
       <div className="taskComparePanel">
         <div className="compareCol">
           <div className="compareHead"><h3>产品图片</h3>{!isAdmin&&<button onClick={()=>continueWith({id:sourceImageId,url:sourceUrl,originalName:detail.sourceOriginalName})}>以此图继续创作</button>}</div>
-          <div className="taskImageFrame">{sourceUrl?<img src={imageSrc(sourceUrl)}/>:<span>无原图</span>}</div>
+          <div className="taskImageFrame">{sourceUrl?<img src={sourceImageSrc}/>:<span>无原图</span>}</div>
         </div>
         <div className="compareCol">
           <div className="compareHead"><h3>生成结果</h3>{!isAdmin&&<button onClick={()=>continueWith({id:imageId,url:resultUrl,originalName:detail.originalName})}>以此图继续创作</button>}</div>
@@ -291,7 +293,7 @@ function TaskDetailModal({
           {referenceImages.length>0&&<div className="taskReferenceBlock">
             {referenceImages.map(img=><div className="taskReferenceItem" key={img.id}>
               <span>{img.roleLabel}</span>
-              <img src={imageSrc(img.url)} alt={img.title||img.roleLabel}/>
+              <img src={imageViewUrl(img)} alt={img.title||img.roleLabel}/>
               {img.title&&<b>{img.title}</b>}
             </div>)}
           </div>}

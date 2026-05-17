@@ -175,6 +175,19 @@ export function publicUrlFromStorageKey(storageKey = '') {
   return `${FILES_BASE_PATH.replace(/\/$/, '')}/${clean}`;
 }
 
+export function getImageAccessUrl(imageOrUrl = '', { expires } = {}) {
+  const url = typeof imageOrUrl === 'string' ? imageOrUrl : (imageOrUrl.url || '');
+  const storageKey = typeof imageOrUrl === 'object' ? imageOrUrl.storage_key || imageOrUrl.storageKey || '' : '';
+  if (isOssStorage()) {
+    const key = storageKey || storageKeyFromUrl(url);
+    if (!key) return url;
+    return getOssClient().signatureUrl(key, {
+      expires: Number(expires || process.env.OSS_SIGNED_URL_EXPIRES || 900)
+    });
+  }
+  return url || publicUrlFromStorageKey(storageKey);
+}
+
 export function diskPathFromStorageKey(storageKey = '') {
   const clean = String(storageKey || '').replace(/^\/+/, '');
   return path.join(STORAGE_ROOT, clean);

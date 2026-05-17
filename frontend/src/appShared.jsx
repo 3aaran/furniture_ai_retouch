@@ -9,6 +9,19 @@ export const audName=audienceName;
 export const resTypeName=resourceTypeName;
 export const getStatusName=v=>statusName[String(v)]||v;
 export function token(){return localStorage.getItem('token')}
+export function imageViewUrl(image){
+  if(typeof image==='string'){
+    if(!image)return '';
+    if(image.startsWith('http')||image.startsWith('data:'))return image;
+    if(image.startsWith('/'))return API+image;
+    return `${API}/api/images/${image}/view?token=${encodeURIComponent(token()||'')}`;
+  }
+  const id=image?.id||image?.imageId;
+  if(id)return `${API}/api/images/${id}/view?token=${encodeURIComponent(token()||'')}`;
+  const url=image?.url||image?.imageUrl||'';
+  if(!url)return '';
+  return String(url).startsWith('http')?url:API+url;
+}
 export async function req(url,opt={}){
   const r=await fetch(API+url,{...opt,headers:{'Content-Type':'application/json',Authorization:token()?`Bearer ${token()}`:'',...(opt.headers||{})}});
   const t=await r.text();

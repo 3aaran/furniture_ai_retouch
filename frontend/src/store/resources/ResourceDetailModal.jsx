@@ -1,6 +1,6 @@
 import React from'react';
 import{X}from'lucide-react';
-import{API,fmt}from'../../appShared.jsx';
+import{API,fmt,imageViewUrl}from'../../appShared.jsx';
 import{featureName}from'../../config/uiText.js';
 
 function imgSrc(url){
@@ -27,7 +27,7 @@ export default function ResourceDetailModal({detail,onClose,onUse}){
       </header>
       <main className="resourceDetailBodyV3">
         <section className="resourceDetailPreviewV3">
-          {image.url?<img src={imgSrc(image.url)} alt={image.name}/>:<div>暂无图片</div>}
+          {image.url?<img src={imageViewUrl(image)} alt={image.name}/>:<div>暂无图片</div>}
         </section>
         <aside className="resourceDetailInfoV3">
           <h3>{image.name}</h3>
@@ -39,7 +39,7 @@ export default function ResourceDetailModal({detail,onClose,onUse}){
           </dl>
           <div className="resourceDetailActionsV3">
             <button className="primary" type="button" onClick={()=>onUse&&onUse(image)}>智能工作台</button>
-            <button type="button" onClick={()=>image.url&&window.open(imgSrc(image.url),'_blank')}>图片处理</button>
+            <button type="button" onClick={()=>image.url&&window.open(imageViewUrl(image),'_blank')}>图片处理</button>
           </div>
           <section className="resourceRelatedTasksV3">
             <h4>关联生成记录（{tasks.length}）</h4>

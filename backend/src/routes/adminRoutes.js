@@ -5,7 +5,7 @@ import { requireAuth } from '../auth.js';
 import { requireSystemAdmin } from '../middleware/roleMiddleware.js';
 import { getAiConfig, saveAiConfig } from '../ai/configService.js';
 import { getAdminAiTasks } from '../ai/taskService.js';
-import { getStoredFileMeta, normalizeUploadedFileName, saveUploadedImage } from '../services/storageService.js';
+import { deleteStoredFile, getStoredFileMeta, normalizeUploadedFileName, saveUploadedImage } from '../services/storageService.js';
 import { ensureSystemSubCategory, parseStorageLimitBytes, resourceTypeFromMain, stripImageExt } from './admin/resourceHelpers.js';
 
 function isSystemAdmin(u){ return u?.role === 'SYSTEM_ADMIN'; }
@@ -372,7 +372,10 @@ export function registerAdminRoutes(app,{upload}){
   
   app.delete('/api/admin/resources/:id', requireAuth, async (req,res)=>{
     if(!isSystemAdmin(req.user)) return res.status(403).json({message:SYSTEM_ADMIN_REQUIRED_MESSAGE});
+    const [[img]]=await pool.query('SELECT * FROM images WHERE id=? LIMIT 1',[req.params.id]);
+    if(!img) return res.status(404).json({message:'图片不存在'});
     await pool.query('UPDATE images SET status="DELETED",deleted_at=NOW() WHERE id=?',[req.params.id]);
+    await deleteStoredFile(img);
     res.json({message:'鎿嶄綔鎴愬姛'});
   });
   

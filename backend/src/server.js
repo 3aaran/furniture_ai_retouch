@@ -12,7 +12,7 @@ import { runAi, applyWatermark, quotaCost } from './aiService.js';
 import { submitAiTask, getAiTaskStatus, getAiTaskDetail, getRecentAiTasks, deleteAiTask } from './ai/taskService.js';
 import { getAiConfig, getFeatureConfig } from './ai/configService.js';
 import { callImageModel } from './ai/providerService.js';
-import { STORAGE_ROOT, storageTempDir, saveUploadedImage, saveBufferToStorage, urlToDiskPath, getLocalFileMeta, MIN_GENERATION_STORAGE_BYTES, getUserStorageSummary, assertUserStorageAvailable, addUserStorageUsage, applyUserStorageDelta, deleteStoredFile, normalizeUploadedFileName } from './services/storageService.js';
+import { STORAGE_ROOT, storageTempDir, saveUploadedImage, saveBufferToStorage, urlToDiskPath, getLocalFileMeta, MIN_GENERATION_STORAGE_BYTES, getUserStorageSummary, assertUserStorageAvailable, addUserStorageUsage, applyUserStorageDelta, deleteStoredFile, normalizeUploadedFileName, getImageAccessUrl } from './services/storageService.js';
 import { registerAdminRoutes } from './routes/adminRoutes.js';
 import { registerMerchantRoutes } from './routes/merchantRoutes.js';
 import { registerResourceCategoryRoutes } from './routes/resourceCategoryRoutes.js';
@@ -678,9 +678,39 @@ app.put('/api/watermark/settings', requireAuth, async (req,res)=>{
   await pool.query('INSERT INTO watermarks(id,merchant_id,user_id,name,config) VALUES(?,?,?,?,?)',[uuid(),req.user.merchant_id,req.user.id,name,JSON.stringify({...config,enabled})]);
   res.json({message:'水印配置已保存',enabled,name,config:{...config,enabled}});
 });
+
+app.get('/api/images/:id/view', requireAuth, async (req,res)=>{
+  try{
+    const [[img]]=await pool.query(
+      `SELECT i.* FROM images i
+       LEFT JOIN image_category_bindings icb ON icb.image_id=i.id
+       LEFT JOIN image_sub_categories isc ON isc.id=icb.sub_category_id
+       LEFT JOIN image_main_categories imc ON imc.id=isc.main_category_id
+       WHERE i.id=? AND i.status="ACTIVE"
+         AND (
+           ?
+           OR i.user_id=?
+           OR COALESCE(imc.scope,i.resource_scope)="SYSTEM"
+           OR (i.merchant_id=? AND (COALESCE(imc.scope,i.resource_scope)="MERCHANT" OR i.source_type="AI_GENERATED"))
+         )
+       LIMIT 1`,
+      [req.params.id,isSystemAdmin(req.user),req.user.id,req.user.merchant_id]
+    );
+    if(!img) return res.status(404).json({message:'图片不存在'});
+    const url=getImageAccessUrl(img);
+    if(!url) return res.status(404).json({message:'图片地址不存在'});
+    res.setHeader('Cache-Control','private, max-age=60');
+    return res.redirect(url);
+  }catch(e){
+    return res.status(400).json({message:e.message||'图片预览失败'});
+  }
+});
+
 app.get('/api/images/:id/download', requireAuth, async (req,res)=>{
   const [[img]]=await pool.query('SELECT * FROM images WHERE id=? AND (? OR user_id=? OR merchant_id=?)',[req.params.id,isSystemAdmin(req.user),req.user.id,req.user.merchant_id]);
   if(!img) return res.status(404).json({message:'图片不存在'});
+  const directUrl=getImageAccessUrl(img);
+  if(/^https?:\/\//i.test(directUrl)) return res.redirect(directUrl);
   let filePath=urlToDiskPath(img.url);
   let downloadName=`${APP_NAME}-${img.source_type||'image'}-${img.id}.png`;
   if(String(req.query.watermark||'')==='1'){
