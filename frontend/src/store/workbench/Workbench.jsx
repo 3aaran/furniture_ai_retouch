@@ -58,7 +58,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
     try{
       const img=JSON.parse(raw);
       if(img?.id&&img?.url){
-        setOrigin({...img,imageUrl:img.imageUrl||imgSrc(img.url)});
+        setOrigin({...img,imageUrl:img.imageUrl||imgSrc(img)});
         setMsg('已将图片放入产品原图');
       }
     }catch{}
@@ -188,7 +188,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
       const uploadedImage={
         ...d,
         url:d.url,
-        imageUrl:imgSrc(d.url)
+        imageUrl:imgSrc(d)
       };
 
       console.log('[upload success]',uploadedImage);
@@ -222,7 +222,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
 
   function continueWithImage(img){
     if(!img?.id||!img?.url)return setMsg('当前图片不可继续创作');
-    setOrigin({...img,imageUrl:img.imageUrl||imgSrc(img.url)});
+    setOrigin({...img,imageUrl:img.imageUrl||imgSrc(img)});
     setTaskDetail(null);
     goPage&&goPage('workbench');
     setMsg('已将图片放入产品原图');
@@ -253,12 +253,20 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
 
   async function chooseResourceImage(r){
     try{
-      const url=r.imageUrl?.startsWith('http')?r.imageUrl:API+r.imageUrl;
-      const resp=await fetch(url);
-      const blob=await resp.blob();
-      const ext=(blob.type||'image/png').split('/')[1]||'png';
-      const file=new File([blob], `${r.name||'resource'}.${ext}`, {type:blob.type||'image/png'});
-      await uploadFile(file,resourceModal.target);
+      const picked={
+        ...r,
+        id:r.id,
+        url:r.imageUrl||r.url,
+        imageUrl:imgSrc(r),
+        originalName:r.name||r.originalName||'resource'
+      };
+      if(resourceModal.target==='source'){
+        setOrigin(picked);
+        setMsg('已选择产品原图');
+      }else{
+        setReference(picked);
+        setMsg('已选择参考图');
+      }
       setResourceModal(m=>({...m,open:false}));
     }catch(e){setMsg('资源选择失败：'+e.message)}
   }
