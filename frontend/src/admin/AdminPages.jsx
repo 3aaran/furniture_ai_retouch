@@ -1,4 +1,4 @@
-import React,{useEffect,useState}from'react';
+﻿import React,{useEffect,useState}from'react';
 import{Bell,BrainCircuit,Building2,CheckCircle2,Download,Eye,Image as ImageIcon,Phone,Plus,Power,Search,SlidersHorizontal,Ticket,Trash2,UserRound,WalletCards,X,XCircle}from'lucide-react';
 import{API,token,req,reqForm,fmt,Badge,usePaged,Pagination,Table,Toolbar,roleName,audName,resTypeName,getStatusName}from'../appShared.jsx';
 import{adminPages,adminNavGroups as configuredAdminNavGroups}from'../config/pageRegistry.jsx';
@@ -9,12 +9,12 @@ export const adminNav=adminPages;
 export const adminNavGroups=configuredAdminNavGroups;
 
 const AI_MODEL_OPTIONS=[
-  {label:'本地模拟',provider:'mock',modelName:'local-mock-model',baseUrl:'',apiPath:''},
-  {label:'智谱 CogView-3-Flash',provider:'zhipu',modelName:'cogview-3-flash',baseUrl:'https://open.bigmodel.cn',apiPath:'/api/paas/v4/images/generations'},
+  {label:'鏈湴妯℃嫙',provider:'mock',modelName:'local-mock-model',baseUrl:'',apiPath:''},
+  {label:'鏅鸿氨 CogView-3-Flash',provider:'zhipu',modelName:'cogview-3-flash',baseUrl:'https://open.bigmodel.cn',apiPath:'/api/paas/v4/images/generations'},
   {label:'GPT Image 2',provider:'gpt-image-2',modelName:'gpt-image-2',baseUrl:'https://api.lk888.ai',apiPath:'/v1/media/generate'},
-  {label:'阿里云通义万相',provider:'aliyun',modelName:'wanx2.1-imageedit',baseUrl:'',apiPath:''},
-  {label:'即梦图片模型',provider:'jimeng',modelName:'jimeng-image',baseUrl:'',apiPath:''},
-  {label:'自定义 HTTP',provider:'custom',modelName:'custom-image-model',baseUrl:'',apiPath:''}
+  {label:'闃块噷浜戦€氫箟涓囩浉',provider:'aliyun',modelName:'wanx2.1-imageedit',baseUrl:'',apiPath:''},
+  {label:'鍗虫ⅵ鍥剧墖妯″瀷',provider:'jimeng',modelName:'jimeng-image',baseUrl:'',apiPath:''},
+  {label:'鑷畾涔?HTTP',provider:'custom',modelName:'custom-image-model',baseUrl:'',apiPath:''}
 ];
 const modelOptionValue=o=>`${o.provider}::${o.modelName}`;
 function findModelOption(provider,modelName){
@@ -75,13 +75,12 @@ function Applications({setMsg}){
       <div className="reviewCardsV9">{(data.items||[]).length?(data.items||[]).map(a=><article className="reviewCardV9" key={a.id}><label className="adminCheckV9 floating"><input type="checkbox" disabled={a.status!=='PENDING'} checked={selected.includes(a.id)} onChange={()=>toggle(a.id)}/><span></span></label><div className="reviewIconV9"><Building2 size={24}/></div><div className="reviewMainV9"><h3>{a.companyName}</h3><p>{a.note||'未填写申请说明'}</p><div><span><UserRound size={14}/>{a.contactName}</span><span><Phone size={14}/>{a.phone}</span><span>邀请码：{a.inviteCode||'-'}</span></div></div><div className="reviewSideV9"><Badge v={a.status}/><small>{fmt(a.createdAt)}</small>{a.status==='PENDING'?<div className="reviewActionsV9"><button className="primary" onClick={()=>openApprove(a.id)}>通过</button><button className="danger" onClick={()=>openReject(a.id)}>驳回</button></div>:<b>已处理</b>}</div></article>):<div className="empty big">暂无申请</div>}</div>
       <Pagination data={data} setQuery={setQuery}/>
     </section>
-    {review&&<ReviewModal review={review} quota={quota} setQuota={setQuota} reason={reason} setReason={setReason} onClose={()=>setReview(null)} onSubmit={submitReview}/>}
+    {review&&<ReviewModal review={review} quota={quota} setQuota={setQuota} reason={reason} setReason={setReason} onClose={()=>setReview(null)} onSubmit={submitReview}/>}  
   </div>;
 }
 function ReviewModal({review,quota,setQuota,reason,setReason,onClose,onSubmit}){
   return <div className="adminModalMaskV9" onMouseDown={e=>{if(e.target===e.currentTarget)onClose()}}><div className="adminReviewModalV9"><button className="modalCloseV9" onClick={onClose}><X size={22}/></button><div className={review.type==='approve'?'modalBadgeV9 approve':'modalBadgeV9 reject'}>{review.type==='approve'?<CheckCircle2/>:<XCircle/>}</div><h2>{review.type==='approve'?'审核通过':'驳回申请'}</h2>{review.type==='approve'?<label>发放初始额度<input type="number" value={quota} onChange={e=>setQuota(e.target.value)} autoFocus/></label>:<label>驳回原因<textarea value={reason} onChange={e=>setReason(e.target.value)} autoFocus/></label>}<div className="modalActionsV9"><button onClick={onClose}>取消</button><button className={review.type==='approve'?'primary':'danger'} onClick={onSubmit}>{review.type==='approve'?'确认通过':'确认驳回'}</button></div></div></div>;
 }
-
 function Merchants({setMsg}){
   const{query,setQuery,data,load}=usePaged('/api/admin/merchants',{status:'',keyword:'',pageSize:10});
   const[detail,setDetail]=useState(null),[delta,setDelta]=useState(0),[loadingDetail,setLoadingDetail]=useState(false);
@@ -91,17 +90,45 @@ function Merchants({setMsg}){
   return <div className="adminModernPage merchantsPageV9">
     <section className="adminHeroV9 merchantHeroV9"><div><span>商家运营</span><h1>商家管理</h1></div><button onClick={()=>window.open(API+'/api/export/merchants?token='+token())}><Download size={17}/>导出商家</button></section>
     <section className="adminPanelV9">
-      <div className="adminFiltersV9"><div className="adminSearchV9"><Search size={18}/><input placeholder="名称 / 联系人 / 手机号" value={query.keyword} onChange={e=>setQuery({...query,keyword:e.target.value,page:1})}/></div><select value={query.status} onChange={e=>setQuery({...query,status:e.target.value,page:1})}><option value="">全部状态</option><option value="ACTIVE">启用</option><option value="DISABLED">禁用</option></select><button className="primary" onClick={()=>setQuery(q=>({...q,page:1}))}><Search size={16}/>查询</button></div>
+      <div className="adminFiltersV9 merchantFiltersV9"><div className="adminSearchV9"><Search size={18}/><input placeholder="名称 / 联系人 / 手机号" value={query.keyword} onChange={e=>setQuery({...query,keyword:e.target.value,page:1})}/></div><select value={query.status} onChange={e=>setQuery({...query,status:e.target.value,page:1})}><option value="">全部状态</option><option value="ACTIVE">启用</option><option value="DISABLED">禁用</option></select><button className="primary" onClick={()=>setQuery(q=>({...q,page:1}))}><Search size={16}/>查询</button></div>
       <div className="merchantGridV9">{(data.items||[]).length?(data.items||[]).map(m=><article className="merchantCardV9" key={m.id}><header><div className="merchantAvatarV9">{String(m.companyName||'商').slice(0,1)}</div><div><h3>{m.companyName}</h3><span>编号 {m.merchantCode}</span></div><Badge v={m.status}/></header><div className="merchantInfoV9"><span><UserRound size={15}/>{m.contactName||'-'}</span><span><Phone size={15}/>{m.phone||'-'}</span><span><WalletCards size={15}/>{m.quota} 算力</span></div><footer><button onClick={()=>open(m.id)}><Eye size={16}/>详情</button><button onClick={()=>status(m)}><Power size={16}/>{m.status==='ACTIVE'?'禁用':'启用'}</button></footer></article>):<div className="empty big">暂无商家</div>}</div>
       <Pagination data={data} setQuery={setQuery}/>
     </section>
-    {(detail||loadingDetail)&&<MerchantDetailModal loading={loadingDetail} detail={detail} delta={delta} setDelta={setDelta} onClose={()=>setDetail(null)} onSave={saveConfig}/>}
+    {(detail||loadingDetail)&&<MerchantDetailModal loading={loadingDetail} detail={detail} delta={delta} setDelta={setDelta} onClose={()=>setDetail(null)} onSave={saveConfig}/>} 
   </div>;
 }
 function MerchantDetailModal({loading,detail,delta,setDelta,onClose,onSave}){
-  return <div className="adminModalMaskV9" onMouseDown={e=>{if(e.target===e.currentTarget)onClose()}}><div className="merchantDetailModalV9">{loading?<div className="empty big">加载中...</div>:<><button className="modalCloseV9" onClick={onClose}><X size={22}/></button><header className="merchantDetailHeadV9"><div className="merchantAvatarV9 large">{String(detail.merchant.companyName||'商').slice(0,1)}</div><div><h2>{detail.merchant.companyName}</h2><p>商家编号 {detail.merchant.merchantCode}</p></div><Badge v={detail.merchant.status}/></header><div className="merchantMetricGridV9"><div><span>剩余额度</span><b>{detail.merchant.quota}</b></div><div><span>联系人</span><b>{detail.merchant.contactName||'-'}</b></div><div><span>手机号</span><b>{detail.merchant.phone||'-'}</b></div></div><div className="quotaAdjustV9"><label>发放/扣减额度<input type="number" value={delta} onChange={e=>setDelta(e.target.value)} placeholder="可输入负数"/></label><button className="primary" onClick={onSave}><SlidersHorizontal size={16}/>保存调整并公告</button></div><div className="modalSplitV9"><section><h3>商家下账号</h3><Table cols={['账号','姓名','角色','额度','状态']}>{(detail.users||[]).map(u=><tr key={u.id}><td>{u.phone||u.username}</td><td>{u.displayName}</td><td>{roleName[u.role]}</td><td>{u.quota}</td><td><Badge v={u.status}/></td></tr>)}</Table></section><section><h3>最近额度记录</h3><Table cols={['类型','额度','时间']}>{(detail.quotaLogs||[]).map(l=><tr key={l.id}><td>{getStatusName(l.type)}</td><td>{l.amount}</td><td>{fmt(l.created_at)}</td></tr>)}</Table></section></div></>}</div></div>;
+  const[tab,setTab]=useState('users');
+  return <div className="adminModalMaskV9" onMouseDown={e=>{if(e.target===e.currentTarget)onClose()}}>
+    <div className="merchantDetailModalV9">
+      {loading?<div className="empty big">加载中...</div>:<>
+        <button className="modalCloseV9" onClick={onClose}><X size={22}/></button>
+        <div className="merchantDetailScrollV9">
+          <header className="merchantDetailHeadV9">
+            <div className="merchantAvatarV9 large">{String(detail.merchant.companyName||'商').slice(0,1)}</div>
+            <div><h2>{detail.merchant.companyName}</h2><p>商家编号 {detail.merchant.merchantCode}</p></div>
+            <Badge v={detail.merchant.status}/>
+          </header>
+          <div className="merchantMetricGridV9">
+            <div><span>剩余额度</span><b>{detail.merchant.quota}</b></div>
+            <div><span>联系人</span><b>{detail.merchant.contactName||'-'}</b></div>
+            <div><span>手机号</span><b>{detail.merchant.phone||'-'}</b></div>
+          </div>
+          <div className="quotaAdjustV9"><label>发放/扣减额度<input type="number" value={delta} onChange={e=>setDelta(e.target.value)} placeholder="可输入负数"/></label><button className="primary" onClick={onSave}><SlidersHorizontal size={16}/>保存调整并公告</button></div>
+          <div className="merchantDetailTabsV9">
+            <button type="button" className={tab==='users'?'active':''} onClick={()=>setTab('users')}>商家下账号</button>
+            <button type="button" className={tab==='quota'?'active':''} onClick={()=>setTab('quota')}>最近额度记录</button>
+          </div>
+          <section className="merchantDetailTabPanelV9">
+            {tab==='users'
+              ? <Table cols={['账号','姓名','角色','额度','状态']}>{(detail.users||[]).map(u=><tr key={u.id}><td>{u.phone||u.username}</td><td>{u.displayName}</td><td>{roleName[u.role]}</td><td>{u.quota}</td><td><Badge v={u.status}/></td></tr>)}</Table>
+              : <Table cols={['类型','额度','时间']}>{(detail.quotaLogs||[]).map(l=><tr key={l.id}><td>{getStatusName(l.type)}</td><td>{l.amount}</td><td>{fmt(l.created_at)}</td></tr>)}</Table>}
+          </section>
+        </div>
+      </>}
+    </div>
+  </div>;
 }
-
 function AiConfig({setMsg}){
   const[ai,setAi]=useState(null);
   useEffect(()=>{req('/api/admin/ai/config').then(setAi).catch(e=>setMsg(e.message))},[]);
@@ -132,29 +159,7 @@ function SettingsPage({setMsg}){
     {key:'invite',title:'推广奖励',icon:<Ticket size={22}/>,tone:'rose',items:[['invite_new_store_reward_ratio','新注册门店奖励比例'],['invite_source_store_reward_ratio','邀请门店奖励比例']]}
   ];
   const update=(key,value)=>setS({...s,[key]:value});
-  return <section className="adminModernPage settingsPageV9">
-    <div className="adminHeroV9 settingsHeroV9">
-      <div><span>平台规则</span><h1>系统配置</h1></div>
-      <div className="settingsHeroNoteV9"><b>{groups.reduce((n,g)=>n+g.items.length,0)}</b><small>项业务参数</small></div>
-    </div>
-    <div className="settingsLayoutV9">
-      {groups.map(group=><section className={`settingsGroupV9 ${group.tone}`} key={group.key}>
-        <header>
-          <div className="settingsGroupIconV9">{group.icon}</div>
-          <div><h2>{group.title}</h2></div>
-        </header>
-        <div className="settingsFieldsV9">
-          {group.items.map(([k,label])=><label className="settingsFieldV9" key={k}>
-            <span>{label}</span>
-            <input value={s[k]||''} onChange={e=>update(k,e.target.value)}/>
-          </label>)}
-        </div>
-      </section>)}
-    </div>
-    <div className="settingsSaveBarV9">
-      <button className="submit" onClick={save}>保存配置</button>
-    </div>
-  </section>;
+  return <section className="adminModernPage settingsPageV9"><div className="adminHeroV9 settingsHeroV9"><div><span>平台规则</span><h1>系统配置</h1></div><div className="settingsHeroNoteV9"><b>{groups.reduce((n,g)=>n+g.items.length,0)}</b><small>项业务参数</small></div></div><div className="settingsLayoutV9">{groups.map(group=><section className={`settingsGroupV9 ${group.tone}`} key={group.key}><header><div className="settingsGroupIconV9">{group.icon}</div><div><h2>{group.title}</h2></div></header><div className="settingsFieldsV9">{group.items.map(([k,label])=><label className="settingsFieldV9" key={k}><span>{label}</span><input value={s[k]||''} onChange={e=>update(k,e.target.value)}/></label>)}</div></section>)}</div><div className="settingsSaveBarV9"><button className="submit" onClick={save}>保存配置</button></div></section>;
 }
 
 function AdminLogs({setMsg}){
@@ -171,5 +176,7 @@ function AdminLogs({setMsg}){
 function Feedbacks({setMsg}){const{query,setQuery,data,load}=usePaged('/api/admin/feedbacks',{status:'',keyword:''});async function handle(id,status){const reply=prompt('处理说明/回复内容')||'';try{await req('/api/admin/feedbacks/'+id,{method:'PATCH',body:JSON.stringify({status,reply})});setMsg('反馈已处理');load()}catch(e){setMsg(e.message)}}return <section className="panel"><Toolbar onSearch={()=>setQuery(q=>({...q,page:1}))} onExport={()=>window.open(API+'/api/export/admin/feedbacks?token='+token())}><input placeholder="标题/内容/用户/商家" value={query.keyword} onChange={e=>setQuery({...query,keyword:e.target.value})}/><select value={query.status} onChange={e=>setQuery({...query,status:e.target.value})}><option value="">全部状态</option><option value="PENDING">待处理</option><option value="PROCESSING">处理中</option><option value="RESOLVED">已解决</option><option value="REJECTED">已驳回</option></select></Toolbar><Table cols={['商家','用户','联系方式','标题','内容','状态','回复','提交时间','操作']}>{(data.items||[]).map(f=><tr key={f.id}><td>{f.companyName||'-'}</td><td>{f.userName||f.userPhone||'-'}</td><td>{f.contact||'-'}</td><td>{f.title}</td><td>{f.content}</td><td><Badge v={f.status}/></td><td>{f.reply||'-'}</td><td>{fmt(f.created_at)}</td><td><button onClick={()=>handle(f.id,'PROCESSING')}>处理中</button><button className="primary" onClick={()=>handle(f.id,'RESOLVED')}>解决</button><button className="danger" onClick={()=>handle(f.id,'REJECTED')}>驳回</button></td></tr>)}</Table><Pagination data={data} setQuery={setQuery}/></section>}
 function Announcements({setMsg}){const{query,setQuery,data,load}=usePaged('/api/admin/announcements',{audience:'',keyword:''});const[f,setF]=useState({title:'',content:'',audience:'ALL',validDays:30});async function create(){try{await req('/api/admin/announcements',{method:'POST',body:JSON.stringify(f)});setMsg('公告已发布');setF({title:'',content:'',audience:'ALL',validDays:30});load()}catch(e){setMsg(e.message)}}return <div className="stack"><section className="panel"><h2><Bell/>发布公告</h2><div className="grid2"><input placeholder="公告标题" value={f.title} onChange={e=>setF({...f,title:e.target.value})}/><select value={f.audience} onChange={e=>setF({...f,audience:e.target.value})}>{Object.entries(audName).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select><input type="number" value={f.validDays} onChange={e=>setF({...f,validDays:e.target.value})} placeholder="有效天数"/></div><textarea placeholder="公告内容" value={f.content} onChange={e=>setF({...f,content:e.target.value})}/><button className="primary" onClick={create}>发布公告</button></section><section className="panel"><Toolbar onSearch={()=>setQuery(q=>({...q,page:1}))}><input placeholder="标题/内容" value={query.keyword} onChange={e=>setQuery({...query,keyword:e.target.value})}/><select value={query.audience} onChange={e=>setQuery({...query,audience:e.target.value})}><option value="">全部对象</option>{Object.entries(audName).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></Toolbar><Table cols={['标题','对象','内容','发布时间']}>{(data.items||[]).map(a=><tr key={a.id}><td>{a.title}</td><td>{audName[a.audience]||a.audience}</td><td>{a.content}</td><td>{fmt(a.created_at)}</td></tr>)}</Table><Pagination data={data} setQuery={setQuery}/></section></div>}
 function RedeemCodes({setMsg}){const{query,setQuery,data,load}=usePaged('/api/admin/redeem-codes',{status:'',keyword:''});const[f,setF]=useState({count:10,quota:50,maxUses:1,targetScope:'ALL',validDays:30});const[codes,setCodes]=useState([]);async function create(){try{const d=await req('/api/admin/redeem-codes/batch',{method:'POST',body:JSON.stringify(f)});setMsg(d.message);setCodes(d.codes||[]);load()}catch(e){setMsg(e.message)}}return <div className="stack"><section className="panel"><h2><Ticket/>批量创建兑换码</h2><div className="grid2"><label>数量<input type="number" value={f.count} onChange={e=>setF({...f,count:e.target.value})}/></label><label>每个额度<input type="number" value={f.quota} onChange={e=>setF({...f,quota:e.target.value})}/></label><label>可兑换次数<input type="number" value={f.maxUses} onChange={e=>setF({...f,maxUses:e.target.value})}/></label><label>有效天数<input type="number" value={f.validDays} onChange={e=>setF({...f,validDays:e.target.value})}/></label><label>使用对象<select value={f.targetScope} onChange={e=>setF({...f,targetScope:e.target.value})}><option value="ALL">全部</option><option value="MERCHANT_OWNER">门店管理员</option><option value="MERCHANT_USER">门店人员</option><option value="TRIAL">体验账户</option></select></label></div><button className="primary" onClick={create}>创建兑换码</button>{codes.length>0&&<textarea readOnly value={codes.join('\n')}/>}</section><section className="panel"><Toolbar onSearch={()=>setQuery(q=>({...q,page:1}))} onExport={()=>window.open(API+'/api/export/admin/redeem-codes?token='+token())}><input placeholder="兑换码" value={query.keyword} onChange={e=>setQuery({...query,keyword:e.target.value})}/><select value={query.status} onChange={e=>setQuery({...query,status:e.target.value})}><option value="">全部状态</option><option value="ACTIVE">启用</option><option value="DISABLED">禁用</option><option value="EXPIRED">过期</option></select></Toolbar><Table cols={['兑换码','额度','次数','对象','状态','有效期','创建时间']}>{(data.items||[]).map(c=><tr key={c.id}><td>{c.code}</td><td>{c.quota}</td><td>{c.used_count}/{c.max_uses}</td><td>{c.target_scope}</td><td><Badge v={c.status}/></td><td>{fmt(c.valid_until)}</td><td>{fmt(c.created_at)}</td></tr>)}</Table><Pagination data={data} setQuery={setQuery}/></section></div>}
-
 export{Dashboard,Applications,Merchants,AiConfig,Resources,SettingsPage,AdminLogs,Feedbacks,Announcements,RedeemCodes};
+
+
+
