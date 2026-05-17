@@ -16,7 +16,7 @@ export function imageViewUrl(image){
     if(image.startsWith('/'))return API+image;
     return `${API}/api/images/${image}/view?token=${encodeURIComponent(token()||'')}`;
   }
-  const id=image?.id||image?.imageId;
+  const id=image?.resultImage?.id||image?.imageId||image?.sourceId||(image?.itemType==='task'?image?.originImage?.id:image?.id);
   if(id)return `${API}/api/images/${id}/view?token=${encodeURIComponent(token()||'')}`;
   const url=image?.url||image?.imageUrl||'';
   if(!url)return '';
