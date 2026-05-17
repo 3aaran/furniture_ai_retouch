@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import { pool } from '../../db.js';
 
-const fixedMainPurpose = { '材质':1, '软体':1, '产品':3, '场景模板':2 };
+const fixedMainPurpose = { '材质':1, '软体':1, '产品':3, '产品参考':3, '场景模板':2 };
 
 export function parseStorageLimitBytes(value) {
   const raw = String(value ?? '').trim();

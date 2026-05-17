@@ -4,6 +4,7 @@ const FIXED_MAIN_PURPOSE = {
   '材质': 1,
   '软体': 1,
   '产品': 3,
+  '产品参考': 3,
   '场景模板': 2
 };
 
@@ -31,6 +32,7 @@ async function ensureImageSubCategory(conn, {
   const sub = cleanText(subName);
   const normalizedScope = scope === 'MERCHANT' ? 'MERCHANT' : scope === 'SYSTEM' ? 'SYSTEM' : 'USER';
   const purposeId = FIXED_MAIN_PURPOSE[main] || 3;
+  const fixedForMerchant = normalizedScope === 'MERCHANT' && main === '产品';
   const ownerClause = normalizedScope === 'SYSTEM'
     ? 'scope="SYSTEM"'
     : normalizedScope === 'MERCHANT'
@@ -50,7 +52,7 @@ async function ensureImageSubCategory(conn, {
   if (!mainRow) {
     const id = uuid();
     await conn.query(
-      'INSERT INTO image_main_categories(id,purpose_id,merchant_id,owner_user_id,scope,name,is_fixed,created_by) VALUES(?,?,?,?,?,?,0,?)',
+      'INSERT INTO image_main_categories(id,purpose_id,merchant_id,owner_user_id,scope,name,is_fixed,created_by) VALUES(?,?,?,?,?,?,?,?)',
       [
         id,
         purposeId,
@@ -58,6 +60,7 @@ async function ensureImageSubCategory(conn, {
         normalizedScope === 'USER' ? (userId || createdBy || null) : null,
         normalizedScope,
         main,
+        fixedForMerchant ? 1 : 0,
         createdBy || null
       ]
     );
@@ -72,8 +75,8 @@ async function ensureImageSubCategory(conn, {
     if (!subRow) {
       const id = uuid();
       await conn.query(
-        'INSERT INTO image_sub_categories(id,main_category_id,name,is_main_only,is_fixed,created_by) VALUES(?,?,NULL,1,0,?)',
-        [id, mainRow.id, createdBy || null]
+        'INSERT INTO image_sub_categories(id,main_category_id,name,is_main_only,is_fixed,created_by) VALUES(?,?,NULL,1,?,?)',
+        [id, mainRow.id, fixedForMerchant ? 1 : 0, createdBy || null]
       );
       subRow = { id };
     }
@@ -87,8 +90,8 @@ async function ensureImageSubCategory(conn, {
   if (!subRow) {
     const id = uuid();
     await conn.query(
-      'INSERT INTO image_sub_categories(id,main_category_id,name,is_main_only,is_fixed,created_by) VALUES(?,?,?,0,0,?)',
-      [id, mainRow.id, sub, createdBy || null]
+      'INSERT INTO image_sub_categories(id,main_category_id,name,is_main_only,is_fixed,created_by) VALUES(?,?,?,0,?,?)',
+      [id, mainRow.id, sub, fixedForMerchant ? 1 : 0, createdBy || null]
     );
     subRow = { id };
   }

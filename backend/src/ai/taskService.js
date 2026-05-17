@@ -1,4 +1,4 @@
-import path from 'path';
+﻿import path from 'path';
 import { v4 as uuid } from 'uuid';
 import { pool } from '../db.js';
 import { quotaCost } from '../aiService.js';
@@ -114,7 +114,7 @@ async function getTaskForUser(taskId, user) {
   );
 
   if (!task) return null;
-  if (!canSeeTask(task, user)) return null;
+    if (!canSeeTask(task, user)) throw new Error('无权删除该任务');
   return task;
 }
 
@@ -286,7 +286,7 @@ export async function submitAiTask(payload, user) {
       [originImageId, user.id, user.merchant_id]
     );
     if (!origin) {
-      throw new Error('原图不存在或无权限使用');
+      throw new Error('原图不存在或无权使用');
     }
 
     await assertUserStorageAvailable(conn, user.id, MIN_GENERATION_STORAGE_BYTES, {
@@ -428,7 +428,7 @@ export async function submitAiTask(payload, user) {
     );
 
     await addEvent(conn, taskId, 'submit', '用户提交 AI 生成任务');
-    await addEvent(conn, taskId, 'deduct', `已扣除 ${cost} 算力`);
+    await addEvent(conn, taskId, 'deduct', `宸叉墸闄?${cost} 绠楀姏`);
 
     await writeSystemLog(conn, {
       module: 'ai_task',
@@ -446,7 +446,7 @@ export async function submitAiTask(payload, user) {
     conn.release();
   }
 
-  // 异步执行
+  // 寮傛鎵ц
   setImmediate(() => {
     runAiTask(taskId).catch((e) => {
       console.error('[runAiTask] error:', e);
@@ -472,7 +472,7 @@ export async function runAiTask(taskId) {
   const [[task]] = await pool.query('SELECT * FROM ai_tasks WHERE id=?', [taskId]);
   if (!task || !['queued', 'running'].includes(task.status)) return;
 
-  // 标记 running
+  // 鏍囪 running
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
@@ -571,8 +571,7 @@ export async function runAiTask(taskId) {
     try {
       await conn2.beginTransaction();
 
-      // 这里一定写 process_settings，不要写 settings_json
-      const resultMeta = await getStoredFileMeta(resultUrl);
+            const resultMeta = await getStoredFileMeta(resultUrl);
       try {
         await assertUserStorageAvailable(conn2, full.user_id, resultMeta.sizeBytes, {
           label: '生成结果图片'
@@ -594,7 +593,7 @@ export async function runAiTask(taskId) {
           imageId,
           full.merchant_id || null,
           full.user_id,
-          `AI??-${imageId.slice(0,8)}`,
+          `AI生成-${imageId.slice(0,8)}`,
           resultMeta.fileName,
           resultMeta.fileName,
           resultMeta.mimeType,
@@ -616,6 +615,15 @@ export async function runAiTask(taskId) {
         message: 'AI generation result saved'
       });
 
+      const generatedCategoryMap = {
+        material: '材质替换生成',
+        replace_bg: '场景融合生成',
+        remove_bg: '背景净化生成',
+        enhance: '摄影增强生成',
+        lineart: '线稿图生成',
+        multiview: '多角度视图生成'
+      };
+
       await bindImageToResourceCategory(conn2, {
         imageId,
         merchantId: full.merchant_id || null,
@@ -623,7 +631,7 @@ export async function runAiTask(taskId) {
         createdBy: full.user_id,
         scope: full.merchant_id ? 'MERCHANT' : 'USER',
         mainName: '产品',
-        subName: 'AI生成'
+        subName: generatedCategoryMap[full.feature_key] || '材质替换生成'
       });
 
       await conn2.query(
@@ -815,7 +823,7 @@ export async function getRecentAiTasks(user, { pageSize = 20, keyword = '' } = {
   const params = [];
 
   if (isSystemAdmin(user)) {
-    // 查看全部
+    // 鏌ョ湅鍏ㄩ儴
   } else if (isMerchantPower(user)) {
     whereParts.push('t.merchant_id = ?');
     params.push(user.merchant_id);
@@ -1007,3 +1015,5 @@ export default {
   getRecentAiTasks,
   getAdminAiTasks
 };
+
+

@@ -1,4 +1,4 @@
-import mysql from 'mysql2/promise';
+﻿import mysql from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
 
@@ -41,7 +41,7 @@ async function ensureColumn(table, column, definition, afterColumn = '') {
 }
 
 export async function initDb(){
-  // AUTO_INIT_DB=false 用于线上：启动服务时不自动建库、删旧表或写入演示数据。
+  // AUTO_INIT_DB=false 用于线上跳过自动初始化。
   if (!envFlag('AUTO_INIT_DB', true)) {
     console.log('[db] AUTO_INIT_DB=false，跳过自动数据库初始化');
     return;
@@ -49,7 +49,7 @@ export async function initDb(){
 
   await createDatabaseIfNeeded();
 
-  // RESET_LEGACY_TABLES 只用于本地重构迁移。生产环境不要开启，避免误删历史表。
+  // RESET_LEGACY_TABLES 仅用于本地重构迁移，生产环境不要开启。
   if (envFlag('RESET_LEGACY_TABLES', false)) {
     for (const legacyTable of ['resources','resource_categories','ai_logs','image_task_details','ai_provider_config','ai_feature_config','scene_templates','storage_logs','ai_model_configs','merchant_resources','system_resources']) {
       await pool.query(`DROP TABLE IF EXISTS ${legacyTable}`);
@@ -273,11 +273,11 @@ export async function initDb(){
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`);
 
-  await pool.query(`INSERT IGNORE INTO resource_purposes(id,purpose_key,purpose_name,description,sort_order) VALUES
+  await pool.query(`INSERT INTO resource_purposes(id,purpose_key,purpose_name,description,sort_order) VALUES
     (1,'material','材质替换','用于材质替换功能的图片资源',1),
     (2,'scene','场景融合','用于场景融合功能的图片资源',2),
-    (3,'user_reference','用户参考','用于上传图、AI生成图、水印图和个人图片管理',3)`);
-
+    (3,'user_reference','产品参考','用于上传图、AI生成图、水印图和个人图片管理',3)
+    ON DUPLICATE KEY UPDATE purpose_name=VALUES(purpose_name),description=VALUES(description),sort_order=VALUES(sort_order),status='ACTIVE'`);
   await pool.query(`CREATE TABLE IF NOT EXISTS image_main_categories (
     id VARCHAR(36) PRIMARY KEY,
     purpose_id TINYINT UNSIGNED NOT NULL,
@@ -339,21 +339,10 @@ export async function initDb(){
     ['main_scene_template',2,'SYSTEM','场景模板',1,40,'sub_scene_main']
   ];
   for(const [id,purposeId,scope,name,isFixed,sortOrder,subId] of fixedCategories){
-    await pool.query('INSERT IGNORE INTO image_main_categories(id,purpose_id,scope,name,is_fixed,sort_order,status) VALUES(?,?,?,?,?,?,"ACTIVE")',[id,purposeId,scope,name,isFixed,sortOrder]);
+    await pool.query('INSERT INTO image_main_categories(id,purpose_id,scope,name,is_fixed,sort_order,status) VALUES(?,?,?,?,?,?,"ACTIVE") ON DUPLICATE KEY UPDATE purpose_id=VALUES(purpose_id),scope=VALUES(scope),name=VALUES(name),is_fixed=VALUES(is_fixed),sort_order=VALUES(sort_order),status="ACTIVE"',[id,purposeId,scope,name,isFixed,sortOrder]);
     if(subId!=='0') await pool.query('INSERT IGNORE INTO image_sub_categories(id,main_category_id,name,is_main_only,is_fixed,status) VALUES(?,?,NULL,1,1,"ACTIVE")',[subId,id]);
   }
-  const aiGeneratedSubs=[
-    ['sub_product_material','材质替换生成',10],
-    ['sub_product_scene','场景融合生成',20],
-    ['sub_product_remove_bg','背景净化生成',30],
-    ['sub_product_enhance','摄影增强生成',40],
-    ['sub_product_lineart','线稿图生成',50],
-    ['sub_product_multiview','多角度生成',60]
-  ];
-  for(const [id,name,sortOrder] of aiGeneratedSubs){
-    await pool.query('INSERT IGNORE INTO image_sub_categories(id,main_category_id,name,is_main_only,is_fixed,sort_order,status) VALUES(?,"main_product",?,0,1,?,"ACTIVE")',[id,name,sortOrder]);
-  }
-
+  await pool.query('UPDATE image_sub_categories SET status="DELETED" WHERE main_category_id="main_product" AND id IN ("sub_product_material","sub_product_scene","sub_product_remove_bg","sub_product_enhance","sub_product_lineart","sub_product_multiview")');
 
   await pool.query(`CREATE TABLE IF NOT EXISTS feedbacks (
     id VARCHAR(36) PRIMARY KEY,
@@ -614,6 +603,99 @@ export async function initDb(){
       uuid(),mid,'INCOME',298,'示例商家充值', uuid(),mid,'COST',46,'AI处理成本', uuid(),mid,'INCOME',198,'示例加购额度'
     ]);
   }
+
+  await ensureMerchantGeneratedCategories();
+}
+
+async function ensureMerchantGeneratedCategories(){
+  await pool.query('UPDATE image_main_categories SET name="材质" WHERE name IN ("鏉愯川")');
+  await pool.query('UPDATE image_main_categories SET name="软体" WHERE name IN ("杞綋")');
+  await pool.query('UPDATE image_main_categories SET name="场景模板" WHERE name IN ("鍦烘櫙妯℃澘")');
+  await pool.query('UPDATE image_sub_categories SET name="材质替换生成" WHERE name IN ("鏉愯川鏇挎崲鐢熸垚")');
+  await pool.query('UPDATE image_sub_categories SET name="场景融合生成" WHERE name IN ("鍦烘櫙铻嶅悎鐢熸垚")');
+  const [merchants] = await pool.query('SELECT id FROM merchants WHERE status<>"DELETED"');
+  const generatedSubs=[
+    ['材质替换生成',10],
+    ['场景融合生成',20],
+    ['背景净化生成',30],
+    ['摄影增强生成',40],
+    ['线稿图生成',50],
+    ['多角度视图生成',60]
+  ];
+  for(const merchant of merchants){
+    const [[existingProduct]] = await pool.query(
+      'SELECT id FROM image_main_categories WHERE scope="MERCHANT" AND merchant_id=? AND name="产品" AND status<>"DELETED" LIMIT 1',
+      [merchant.id]
+    );
+    if(existingProduct){
+      await pool.query('UPDATE image_main_categories SET status="DELETED" WHERE scope="MERCHANT" AND merchant_id=? AND name IN ("浜у搧")',[merchant.id]);
+    }else{
+      await pool.query('UPDATE image_main_categories SET name="产品" WHERE scope="MERCHANT" AND merchant_id=? AND name IN ("浜у搧")',[merchant.id]);
+    }
+    let [[main]] = await pool.query(
+      'SELECT id FROM image_main_categories WHERE scope="MERCHANT" AND merchant_id=? AND name="产品" AND status<>"DELETED" LIMIT 1',
+      [merchant.id]
+    );
+    if(!main){
+      const id=uuid();
+      await pool.query(
+        'INSERT INTO image_main_categories(id,purpose_id,merchant_id,scope,name,is_fixed,sort_order,status) VALUES(?,3,?,"MERCHANT","产品",1,10,"ACTIVE")',
+        [id, merchant.id]
+      );
+      main={id};
+    }else{
+      await pool.query('UPDATE image_main_categories SET purpose_id=3,is_fixed=1,sort_order=10,status="ACTIVE" WHERE id=?',[main.id]);
+    }
+    const subIds = new Map();
+    for(const [name,sortOrder] of generatedSubs){
+      let [[sub]] = await pool.query(
+        'SELECT id FROM image_sub_categories WHERE main_category_id=? AND name=? AND status<>"DELETED" LIMIT 1',
+        [main.id,name]
+      );
+      if(!sub){
+        await pool.query(
+          'INSERT INTO image_sub_categories(id,main_category_id,name,is_main_only,is_fixed,sort_order,status) VALUES(?,?,?,0,1,?,"ACTIVE")',
+          [uuid(),main.id,name,sortOrder]
+        );
+        [[sub]] = await pool.query(
+          'SELECT id FROM image_sub_categories WHERE main_category_id=? AND name=? AND status<>"DELETED" LIMIT 1',
+          [main.id,name]
+        );
+      }else{
+        await pool.query('UPDATE image_sub_categories SET is_fixed=1,sort_order=?,status="ACTIVE" WHERE id=?',[sortOrder,sub.id]);
+      }
+      if(sub?.id) subIds.set(name, sub.id);
+    }
+    const featureToSubName={
+      material:'材质替换生成',
+      replace_bg:'场景融合生成',
+      remove_bg:'背景净化生成',
+      enhance:'摄影增强生成',
+      lineart:'线稿图生成',
+      multiview:'多角度视图生成'
+    };
+    const [generatedImages] = await pool.query(`
+      SELECT i.id,t.feature_key
+      FROM images i
+      LEFT JOIN ai_task_outputs ato ON ato.image_id=i.id
+      LEFT JOIN ai_tasks t ON t.id=ato.task_id
+      WHERE i.merchant_id=? AND i.source_type='AI_GENERATED' AND i.status<>'DELETED'
+    `,[merchant.id]);
+    for(const image of generatedImages){
+      const subName = featureToSubName[image.feature_key] || '材质替换生成';
+      const subId = subIds.get(subName);
+      if(subId){
+        await pool.query(
+          'INSERT INTO image_category_bindings(image_id,sub_category_id) VALUES(?,?) ON DUPLICATE KEY UPDATE sub_category_id=VALUES(sub_category_id)',
+          [image.id,subId]
+        );
+      }
+    }
+    await pool.query(
+      'UPDATE image_sub_categories SET status="DELETED" WHERE main_category_id=? AND name IN ("AI生成","AI鐢熸垚")',
+      [main.id]
+    );
+  }
 }
 
 export function publicUser(u){
@@ -657,3 +739,4 @@ export function publicApplication(a){
 export async function findUserByUsername(username){ const [r]=await pool.query('SELECT * FROM users WHERE (username=? OR phone=?) AND status<>\"DELETED\"',[username,username]); return r[0]; }
 export async function findUserByPhone(phone){ const [r]=await pool.query('SELECT * FROM users WHERE phone=? AND status<>\"DELETED\"',[phone]); return r[0]; }
 export async function findUserById(id){ const [r]=await pool.query('SELECT * FROM users WHERE id=? AND status<>\"DELETED\"',[id]); return r[0]; }
+

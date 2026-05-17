@@ -1,4 +1,4 @@
-import { v4 as uuid } from 'uuid';
+﻿import { v4 as uuid } from 'uuid';
 import { pool } from '../db.js';
 import { requireAuth } from '../auth.js';
 import { getStoredFileMeta } from '../services/storageService.js';
@@ -27,6 +27,7 @@ function normalizeScope(scope, user) {
 
 function canManageCategory(row, user) {
   if (!row) return false;
+  if (Number(row.is_fixed || 0)) return false;
   if (row.scope === 'SYSTEM') return isSystemAdmin(user);
   if (row.scope === 'MERCHANT') return isMerchantManager(user) && row.merchant_id === user.merchant_id;
   return row.owner_user_id === user.id;
@@ -134,7 +135,6 @@ export function registerResourceCategoryRoutes(app) {
     const sortOrder = Math.max(0, Number(req.body.sortOrder || 0));
     if (!name) return res.status(400).json({ message: '分类名称不能为空' });
     if (!purpose) return res.status(400).json({ message: '请选择功能类型/用途' });
-    const owner = ownerWhere(scope, req.user, '');
     const [exists] = await pool.query(`SELECT id FROM image_main_categories WHERE name=? AND ${owner.sql} AND status<>"DELETED" LIMIT 1`, [name, ...owner.params]);
     if (exists.length) return res.status(400).json({ message: '主分类已存在' });
     const id = uuid();
@@ -229,7 +229,6 @@ export function registerResourceCategoryRoutes(app) {
     }
     res.json({ message: '排序已更新' });
   });
-
   app.get('/api/resources/:id/detail', requireAuth, async (req, res) => {
     const access = await resourceAccessWhere(req.user, req.params.id);
     const [[image]] = await pool.query(`
@@ -288,3 +287,7 @@ export function registerResourceCategoryRoutes(app) {
     });
   });
 }
+
+
+
+
