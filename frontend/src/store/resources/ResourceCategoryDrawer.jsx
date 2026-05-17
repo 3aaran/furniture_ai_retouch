@@ -35,7 +35,7 @@ function CategoryForm({type,initial,onCancel,onSubmit}){
         <button className="primary" type="button" disabled={disabled} onClick={()=>onSubmit({...form,name:form.name.trim(),sortOrder:Number(form.sortOrder||0)})}>保存</button>
       </footer>
     </div>
-  </div>
+  </div>;
 }
 
 const emptyPurposes=[
@@ -203,5 +203,5 @@ export default function ResourceCategoryDrawer({purposes=[],scope,canCreateMain,
     </aside>
     {dialog?.type==='main'&&<CategoryForm type="main" onCancel={()=>setDialog(null)} onSubmit={saveMain}/>}
     {dialog?.type==='sub'&&<CategoryForm type="sub" onCancel={()=>setDialog(null)} onSubmit={form=>saveSub(dialog.main,form)}/>}
-  </div>
+  </div>;
 }

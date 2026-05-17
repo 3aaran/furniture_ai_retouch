@@ -52,5 +52,5 @@ export default function ResourceDetailModal({detail,onClose,onUse}){
         </aside>
       </main>
     </div>
-  </div>
+  </div>;
 }

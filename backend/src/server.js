@@ -181,7 +181,7 @@ app.post('/api/auth/login', async (req,res)=>{
 
 app.post('/api/auth/send-code', async (req,res)=>{
   const phone=String(req.body.phone||'').trim();
-  if(!validPhone(phone)) return res.status(400).json({message:'璇疯緭鍏ユ纭墜鏈哄彿'});
+  if(!validPhone(phone)) return res.status(400).json({message:'请输入正确手机号'});
   const [rows]=await pool.query('SELECT * FROM users WHERE phone=? AND role="MERCHANT_OWNER" AND status<>"DELETED" LIMIT 1',[phone]);
   if(!rows[0]) return res.status(404).json({message:'该手机号未开通门店管理员账号'});
   const code=String(Math.floor(100000 + Math.random()*900000));
@@ -209,7 +209,7 @@ app.get('/api/storage/me', requireAuth, async (req,res)=>{
   try{
     res.json(await getUserStorageSummary(pool, req.user.id));
   }catch(e){
-    res.status(400).json({message:e.message||'璇诲彇瀛樺偍绌洪棿澶辫触'});
+    res.status(400).json({message:e.message||'读取存储空间失败'});
   }
 });
 
@@ -387,7 +387,7 @@ app.post('/api/ai/tasks', requireAuth, async (req,res)=>{
     const d=await submitAiTask(req.body,req.user);
     const [[fresh]]=await pool.query('SELECT * FROM users WHERE id=?',[req.user.id]);
     res.json({...d,user:await publicMe(fresh)});
-  }catch(e){ res.status(400).json({message:e.message||'浠诲姟鎻愪氦澶辫触'}); }
+  }catch(e){ res.status(400).json({message:e.message||'任务提交失败'}); }
 });
 app.get('/api/ai/tasks/:id/status', requireAuth, async (req,res)=>{
   try{
@@ -405,7 +405,7 @@ app.delete('/api/ai/tasks/:id', requireAuth, async (req,res)=>{
   try{
     res.json(await deleteAiTask(req.params.id,req.user));
   }catch(e){
-    res.status(400).json({message:e.message||'浠诲姟鍒犻櫎澶辫触'});
+    res.status(400).json({message:e.message||'任务删除失败'});
   }
 });
 
@@ -588,7 +588,7 @@ async function normalizeWatermarkConfigForSave(config, reqUser) {
     ext
   });
   const imageId = uuid();
-  const displayName = next.fileName || '闂ㄥ簵姘村嵃';
+  const displayName = next.fileName || '门店水印';
   await pool.query(
     'INSERT INTO images(id,merchant_id,user_id,display_name,original_name,file_name,mime_type,size_bytes,width,height,storage_provider,storage_key,url,source_type,status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
     [
