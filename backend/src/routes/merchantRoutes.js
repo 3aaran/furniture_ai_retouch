@@ -3,7 +3,7 @@ import { pool, publicApplication } from '../db.js';
 import { requireAuth } from '../auth.js';
 import { requireMerchantAccount, requireMerchantManager } from '../middleware/roleMiddleware.js';
 import { registerInternalUserRoutes } from './merchant/internalUserRoutes.js';
-import { deleteStoredFile, getStoredFileMeta, normalizeUploadedFileName } from '../services/storageService.js';
+import { assertUserStorageAvailable, applyUserStorageDelta, deleteStoredFile, getStoredFileMeta, normalizeUploadedFileName } from '../services/storageService.js';
 
 export function registerMerchantRoutes(app,deps){
   const {
@@ -268,6 +268,11 @@ export function registerMerchantRoutes(app,deps){
         const subId=await ensureImageSubCategory({mainName:objectName,subName:colorName,scope,merchantId:req.user.merchant_id,userId:req.user.id,createdBy:req.user.id});
         const targets=files.length?files:[null];
         const ids=[];
+        if(files.length){
+          const totalIncoming=files.reduce((sum,file)=>sum+Number(file.size||0),0);
+          await assertUserStorageAvailable(pool, req.user.id, totalIncoming, {label:'资源上传'});
+        }
+        let totalSavedBytes=0;
         for(const file of targets){
           const uploadedUrl=file?await saveUploadedFile(file,{kind:'resource',merchantId:req.user.merchant_id,userId:req.user.id}):'';
           const finalUrl=uploadedUrl||imageUrl;
@@ -275,12 +280,14 @@ export function registerMerchantRoutes(app,deps){
           const displayName=String(name||'').trim()||stripImageExt(originalName);
           const id=uuid();
           const meta=await getStoredFileMeta(finalUrl);
+          totalSavedBytes+=Number(meta.sizeBytes||file?.size||0);
           await pool.query('INSERT INTO images(id,merchant_id,user_id,display_name,original_name,url,source_type,resource_scope,status,storage_provider,storage_key,file_name,mime_type,size_bytes,width,height) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',[id,req.user.merchant_id||null,req.user.id,displayName,originalName,finalUrl,'RESOURCE',scope,'ACTIVE',meta.storageProvider||'local',meta.storageKey||finalUrl,meta.fileName||file?.filename||'',meta.mimeType||file?.mimetype||'',Number(meta.sizeBytes||file?.size||0),meta.width||null,meta.height||null]);
           if(subId){
             await pool.query('INSERT INTO image_category_bindings(image_id,sub_category_id) VALUES(?,?) ON DUPLICATE KEY UPDATE sub_category_id=VALUES(sub_category_id)',[id,subId]);
           }
           ids.push(id);
         }
+        if(totalSavedBytes>0) await applyUserStorageDelta(pool, req.user.id, totalSavedBytes, {merchantId:req.user.merchant_id,action:'RESOURCE_UPLOAD',message:'resource upload'});
         res.json({message:'资源已创建',ids,id:ids[0],count:ids.length});
       }catch(e){ res.status(400).json({message:e.message||'操作失败'}); }
     });
@@ -334,6 +341,7 @@ export function registerMerchantRoutes(app,deps){
       WHERE ${access.sql}
     `,[req.params.id,...access.params]);
     if(!result.affectedRows) return res.status(404).json({message:'图片不存在或无权操作'});
+    if(img.user_id&&Number(img.size_bytes||0)>0) await applyUserStorageDelta(pool,img.user_id,-Number(img.size_bytes||0),{merchantId:img.merchant_id,action:'RESOURCE_DELETE',message:'resource deleted'});
     await deleteStoredFile(img);
     res.json({message:'操作成功'});
   });

@@ -12,6 +12,7 @@ export function registerInternalUserRoutes(app,deps){
     validSubRoles,
     canManageRole,
     validPhone,
+    getSettingsMap,
     publicMe,
     paged,
     like
@@ -53,6 +54,8 @@ export function registerInternalUserRoutes(app,deps){
       if(!m || m.status!=='ACTIVE') throw new Error('所属门店已被平台禁用');
       if(amount>Number(m.quota_balance||0)) throw new Error('门店额度不足，无法分配给用户');
       if(amount>0) await conn.query('UPDATE merchants SET quota_balance=quota_balance-? WHERE id=?',[amount,req.user.merchant_id]);
+      const settings=await getSettingsMap();
+      const storageLimitBytes=Number(settings.user_storage_limit_bytes || 5 * 1024 * 1024 * 1024);
   
       let id=uuid();
       if(finalPhone){
@@ -61,9 +64,9 @@ export function registerInternalUserRoutes(app,deps){
         if(old && old.status!=='DELETED') throw new Error('该账户有过注册记录，无法注册');
         if(old && old.status==='DELETED'){
           id=old.id;
-          await conn.query('UPDATE users SET merchant_id=?, username=?, display_name=?, company_name=?, password_hash=?, role=?, quota_balance=?, status="ACTIVE", deleted_at=NULL, trial_expire_at=NULL WHERE id=?',[req.user.merchant_id,account,String(displayName||account).trim(),req.user.company_name,await bcrypt.hash(finalPassword,10),role,amount,id]);
+          await conn.query('UPDATE users SET merchant_id=?, username=?, display_name=?, company_name=?, password_hash=?, role=?, quota_balance=?, storage_limit_bytes=?, status="ACTIVE", deleted_at=NULL, trial_expire_at=NULL WHERE id=?',[req.user.merchant_id,account,String(displayName||account).trim(),req.user.company_name,await bcrypt.hash(finalPassword,10),role,amount,storageLimitBytes,id]);
         }else{
-          await conn.query('INSERT INTO users(id,merchant_id,phone,username,display_name,company_name,password_hash,role,quota_balance,status) VALUES(?,?,?,?,?,?,?,?,?,?)',[id,req.user.merchant_id,finalPhone,account,String(displayName||account).trim(),req.user.company_name,await bcrypt.hash(finalPassword,10),role,amount,'ACTIVE']);
+          await conn.query('INSERT INTO users(id,merchant_id,phone,username,display_name,company_name,password_hash,role,quota_balance,status,storage_limit_bytes) VALUES(?,?,?,?,?,?,?,?,?,?,?)',[id,req.user.merchant_id,finalPhone,account,String(displayName||account).trim(),req.user.company_name,await bcrypt.hash(finalPassword,10),role,amount,'ACTIVE',storageLimitBytes]);
         }
       }
       if(amount>0){

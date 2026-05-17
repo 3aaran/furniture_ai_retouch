@@ -573,6 +573,7 @@ export async function initDb(){
     ['invite_new_store_reward_ratio','0.10'],
     ['invite_source_store_reward_ratio','0.05'],
     ['trial_account_hours','72'],
+    ['user_storage_limit_bytes',String(DEFAULT_USER_STORAGE_LIMIT_BYTES)],
     ['ai_generation_enabled','1'],
     ['notice_mail_enabled','1']
   ];

@@ -1,6 +1,6 @@
 import React,{useEffect,useState}from'react';
 import{createPortal}from'react-dom';
-import{ArrowRight,Building2,LockKeyhole,MessageSquare,Phone,Ticket,UserRound}from'lucide-react';
+import{ArrowRight,Building2,HardDrive,LockKeyhole,MessageSquare,Phone,Ticket,UserRound}from'lucide-react';
 import{req,roleName}from'../appShared.jsx';
 import{APP_NAME,LOGIN_SUBTITLE,LOGO_TEXT}from'../config/appConfig.js';
 
@@ -130,9 +130,10 @@ function RedeemModal({onClose,setMsg}){
 function Profile({me,setMe,setMsg}){
   const[info,setInfo]=useState({displayName:me.displayName});
   const[pwd,setPwd]=useState({oldPassword:'',newPassword:'',confirm:''});
+  const[storage,setStorage]=useState(null);
+  useEffect(()=>{req('/api/storage/me').then(setStorage).catch(()=>{})},[]);
   async function saveInfo(){try{const d=await req('/api/me/profile',{method:'PATCH',body:JSON.stringify(info)});setMe(d.user);setMsg('已保存')}catch(e){setMsg(e.message)}}
   async function savePwd(){if(pwd.newPassword!==pwd.confirm)return setMsg('两次密码不一致');try{await req('/api/me/password',{method:'PATCH',body:JSON.stringify(pwd)});setMsg('密码已修改')}catch(e){setMsg(e.message)}}
-  return <div className="stack"><section className="panel"><h2>个人资料</h2><div className="grid2"><label>账号<input value={me.phone||me.username} disabled/></label><label>角色<input value={roleName[me.role]} disabled/></label><label>名称<input value={info.displayName} onChange={e=>setInfo({...info,displayName:e.target.value})}/></label></div><button className="primary" onClick={saveInfo}>保存</button></section><section className="panel"><h2>修改密码</h2><div className="grid2"><input type="password" placeholder="原密码" value={pwd.oldPassword} onChange={e=>setPwd({...pwd,oldPassword:e.target.value})}/><input type="password" placeholder="新密码" value={pwd.newPassword} onChange={e=>setPwd({...pwd,newPassword:e.target.value})}/><input type="password" placeholder="确认新密码" value={pwd.confirm} onChange={e=>setPwd({...pwd,confirm:e.target.value})}/></div><button className="submit" onClick={savePwd}>修改密码</button></section></div>;
+  return <div className="stack"><section className="panel"><h2>个人资料</h2><div className="grid2"><label>账号<input value={me.phone||me.username} disabled/></label><label>角色<input value={roleName[me.role]} disabled/></label><label>名称<input value={info.displayName} onChange={e=>setInfo({...info,displayName:e.target.value})}/></label></div><button className="primary" onClick={saveInfo}>保存</button></section><section className="panel profileStoragePanel"><h2><HardDrive size={20}/>图片存储空间</h2>{storage?<><div className="storageSummary"><div><span>已使用</span><b>{storage.usedText}</b></div><div><span>总上限</span><b>{storage.limitText}</b></div><div><span>剩余</span><b>{storage.remainingText}</b></div></div><div className="storageBar"><i style={{width:(storage.percent||0)+'%'}}/></div><p>{storage.percent||0}% 已使用，上传图片和 AI 生图都会占用该空间。</p></>:<div className="empty">正在读取存储空间...</div>}</section><section className="panel"><h2>修改密码</h2><div className="grid2"><input type="password" placeholder="原密码" value={pwd.oldPassword} onChange={e=>setPwd({...pwd,oldPassword:e.target.value})}/><input type="password" placeholder="新密码" value={pwd.newPassword} onChange={e=>setPwd({...pwd,newPassword:e.target.value})}/><input type="password" placeholder="确认新密码" value={pwd.confirm} onChange={e=>setPwd({...pwd,confirm:e.target.value})}/></div><button className="submit" onClick={savePwd}>修改密码</button></section></div>;
 }
-
 export{Login,UserFeedback,FeedbackModal,RedeemModal,Profile};

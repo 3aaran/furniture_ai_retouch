@@ -18,6 +18,9 @@ function pageParams(req){
   return {page,pageSize,offset:(page-1)*pageSize};
 }
 function like(v){ return `%${String(v||'').trim()}%`; }
+function settingStorageLimitBytes(settings){
+  return parseStorageLimitBytes(settings.user_storage_limit_bytes || '5GB') || 0;
+}
 async function paged(sql,countSql,params,req,map=x=>x){
   const {page,pageSize,offset}=pageParams(req);
   const [[c]]=await pool.query(countSql,params);
@@ -73,8 +76,16 @@ export function registerAdminRoutes(app,{upload}){
   
   app.patch('/api/admin/settings', requireAuth, async (req,res)=>{
     if(!isSystemAdmin(req.user)) return res.status(403).json({message:SYSTEM_ADMIN_REQUIRED_MESSAGE});
-    const allowed=['recharge_ratio','income_per_quota','cost_per_ai_quota','cost_remove_bg','cost_replace_bg','cost_enhance','cost_material','cost_multiview','cost_lineart','resolution_multiplier_1k','resolution_multiplier_2k','resolution_multiplier_4k','cost_resolution_1k','cost_resolution_2k','cost_resolution_4k','invite_new_store_reward_ratio','invite_source_store_reward_ratio','trial_account_hours'];
-    for(const k of allowed){ if(req.body[k]!==undefined) await pool.query('UPDATE app_settings SET setting_value=?,updated_by=? WHERE setting_key=?',[String(req.body[k]),req.user.id,k]); }
+    const allowed=['recharge_ratio','income_per_quota','cost_per_ai_quota','cost_remove_bg','cost_replace_bg','cost_enhance','cost_material','cost_multiview','cost_lineart','resolution_multiplier_1k','resolution_multiplier_2k','resolution_multiplier_4k','cost_resolution_1k','cost_resolution_2k','cost_resolution_4k','invite_new_store_reward_ratio','invite_source_store_reward_ratio','trial_account_hours','user_storage_limit_bytes'];
+    for(const k of allowed){
+      if(req.body[k]!==undefined){
+        const parsedLimit=k==='user_storage_limit_bytes'?parseStorageLimitBytes(req.body[k]):null;
+        if(k==='user_storage_limit_bytes' && parsedLimit===null) throw new Error('请填写图片存储上限，例如 5GB');
+        const value=k==='user_storage_limit_bytes'?String(parsedLimit):String(req.body[k]);
+        await pool.query('UPDATE app_settings SET setting_value=?,updated_by=? WHERE setting_key=?',[value,req.user.id,k]);
+        if(k==='user_storage_limit_bytes') await pool.query('UPDATE users SET storage_limit_bytes=? WHERE role<>"SYSTEM_ADMIN"',[Number(value)]);
+      }
+    }
     if(req.body.announce){ await addAnnouncement({title:req.body.announcementTitle||'系统配置调整通知',content:req.body.announcementContent||'平台配置已更新，请关注后续使用规则。',audience:req.body.audience||'MERCHANT',createdBy:req.user.id}); }
     res.json({message:'配置已更新'});
   });
@@ -129,7 +140,7 @@ export function registerAdminRoutes(app,{upload}){
       await conn.query('INSERT INTO merchants(id,company_name,contact_name,phone,merchant_code,invite_code,note,quota_balance,status,approved_at) VALUES(?,?,?,?,?,?,?,?,?,NOW())',[mid,appRow.company_name,appRow.contact_name,appRow.phone,merchantCode,merchantCode,appRow.note,finalQuota,'ACTIVE']);
       const password = '000000';
       const uid=uuid();
-      await conn.query('INSERT INTO users(id,merchant_id,phone,username,display_name,company_name,password_hash,role,status) VALUES(?,?,?,?,?,?,?,?,?)',[uid,mid,appRow.phone,appRow.phone,appRow.contact_name,appRow.company_name,await bcrypt.hash(password,10),'MERCHANT_OWNER','ACTIVE']);
+      await conn.query('INSERT INTO users(id,merchant_id,phone,username,display_name,company_name,password_hash,role,status,storage_limit_bytes) VALUES(?,?,?,?,?,?,?,?,?,?)',[uid,mid,appRow.phone,appRow.phone,appRow.contact_name,appRow.company_name,await bcrypt.hash(password,10),'MERCHANT_OWNER','ACTIVE',settingStorageLimitBytes(settings)]);
       await conn.query('UPDATE merchant_applications SET status="APPROVED",reviewer_id=?,reviewed_at=NOW(),merchant_id=? WHERE id=?',[req.user.id,mid,req.params.id]);
       await conn.query('INSERT INTO finance_logs(id,merchant_id,type,amount,title) VALUES(?,?,?,?,?)',[uuid(),mid,'INCOME',Number(settings.income_per_quota||0.1)*finalQuota,'新门店初始额度']);
       await conn.commit();
