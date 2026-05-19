@@ -97,6 +97,29 @@ function safeParseJson(v, fallback = []) {
   }
 }
 
+function publicFailureMessage(task) {
+  const text = String(task?.error_message || '');
+  let reason = '模型服务异常';
+  if (/timeout|timed\s*out|超时|ETIMEDOUT|ECONNRESET|ECONNREFUSED|ENOTFOUND|network|fetch failed|socket|网络/i.test(text)) {
+    reason = '网络较差';
+  } else if (/base64|data:|公网|public.*url|public_base_url|download|图片地址|URL|无法访问|access|reachable|fetch.*image|读取图片|image.*url/i.test(text)) {
+    reason = '图片地址无法访问';
+  } else if (/format|mime|类型|格式|unsupported|不支持|JPG|JPEG|PNG|WEBP|webp/i.test(text)) {
+    reason = '图片格式不支持';
+  } else if (/api[_ -]?key|apikey|secret|密钥|未配置|配置|unauthorized|401|403|鉴权|权限|quota.*provider/i.test(text)) {
+    reason = '模型服务配置异常';
+  } else if (/quota|余额|算力|额度|insufficient|not enough/i.test(text)) {
+    reason = '算力余额不足';
+  } else if (/content|policy|safety|违规|敏感|审核|blocked|reject/i.test(text)) {
+    reason = '图片内容未通过审核';
+  } else if (/storage|空间|磁盘|保存|write|存储/i.test(text)) {
+    reason = '存储空间不足';
+  } else if (/rate.?limit|too many|频率|限流|429/i.test(text)) {
+    reason = '请求过于频繁';
+  }
+  return `生成图片失败：${reason}`;
+}
+
 async function getTaskForUser(taskId, user) {
   const [[task]] = await pool.query(
     `
@@ -165,7 +188,7 @@ function publicTask(task) {
     modelName: task.model_name || '',
     apiPath: task.api_path || '',
 
-    errorMessage: task.error_message || '',
+    errorMessage: task.status === 'failed' ? publicFailureMessage(task) : '',
     failureCode: task.failure_code || '',
     failureStage: task.failure_stage || '',
     statusLabel:
@@ -175,7 +198,7 @@ function publicTask(task) {
       task.status === 'failed' ? '生成失败' : task.status,
     statusMessage:
       task.status === 'failed'
-        ? (task.error_message || '生成失败，系统已记录失败原因')
+        ? publicFailureMessage(task)
         : task.status === 'running'
           ? '模型正在生成图片'
           : task.status === 'queued'

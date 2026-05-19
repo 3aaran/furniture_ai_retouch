@@ -1,8 +1,9 @@
 import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createPortal}from'react-dom';
-import{ChevronLeft,ChevronRight,Copy,Download,FileText,Flag,Hash,RefreshCw,Trash2,User,WalletCards}from'lucide-react';
+import{ChevronLeft,ChevronRight,Copy,Download,FileText,Flag,Hash,RefreshCw,SlidersHorizontal,Trash2,User,WalletCards}from'lucide-react';
 import{API,token,req,fmt,imageViewUrl}from'../appShared.jsx';
 import WatermarkConfigModal from'../store/workbench/WatermarkConfigModal.jsx';
+import ConfirmDialog from'./ConfirmDialog.jsx';
 
 const statusMap={
   SUCCESS:'\u5df2\u5b8c\u6210',
@@ -129,6 +130,26 @@ function buildReferenceImages({detail={},taskParams={},selectedResource={},featu
   return list;
 }
 
+async function copyText(text){
+  const value=String(text||'');
+  if(navigator.clipboard?.writeText){
+    await navigator.clipboard.writeText(value);
+    return;
+  }
+  const area=document.createElement('textarea');
+  area.value=value;
+  area.setAttribute('readonly','');
+  area.style.position='fixed';
+  area.style.left='-9999px';
+  document.body.appendChild(area);
+  area.select();
+  try{
+    if(!document.execCommand('copy'))throw new Error('copy failed');
+  }finally{
+    document.body.removeChild(area);
+  }
+}
+
 function TaskDetailModal({
   detail,
   onClose,
@@ -147,6 +168,7 @@ function TaskDetailModal({
   const [watermark,setWatermark]=useState({loading:true,enabled:false,configured:false,canConfigure:false});
   const [watermarkConfigOpen,setWatermarkConfigOpen]=useState(false);
   const [previewFailed,setPreviewFailed]=useState(false);
+  const [confirmAction,setConfirmAction]=useState(null);
 
   function loadWatermark(){
     if(isAdmin){
@@ -186,6 +208,7 @@ function TaskDetailModal({
   const quotaUsed=Number(detail.quotaUsed||detail.costUsed||detail.cost||settings.cost||0);
   const userPrompt=(detail.userPrompt||detail.detailUserPrompt||settings.customText||settings.userPrompt||'').trim();
   const finalPrompt=(detail.prompt||detail.finalPrompt||settings.finalPrompt||settings.prompt||userPrompt||'').trim();
+  const displayPrompt=userPrompt;
   const imageId=detail.resultImage?.id||detail.imageId||detail.id;
   const sourceImageId=detail.originImage?.id||detail.sourceImageId;
   const resultUrl=detail.resultUrl||detail.url||detail.resultImage?.url;
@@ -214,9 +237,13 @@ function TaskDetailModal({
     window.open(`${API}/api/images/${imageId}/download?token=${token()}${wm}`,'_blank');
   }
 
-  function copyPrompt(){
-    navigator.clipboard?.writeText(finalPrompt||'');
-    setMsg&&setMsg('提示词已复制');
+  async function copyPrompt(){
+    try{
+      await copyText(displayPrompt||'');
+      setMsg&&setMsg('要求已复制');
+    }catch(e){
+      setMsg&&setMsg('复制失败，请检查浏览器剪贴板权限');
+    }
   }
 
   function continueWith(img){
@@ -230,7 +257,7 @@ function TaskDetailModal({
   }
 
   async function deleteImage(){
-    if(!imageId||!confirm('确定删除这张生成图片吗？'))return;
+    if(!imageId)return;
     try{
       setBusy('delete');
       await req('/api/images/'+imageId,{method:'DELETE'});
@@ -242,7 +269,7 @@ function TaskDetailModal({
   }
 
   async function regenerateImage(){
-    if(!imageId||!confirm('将按原提示词免费重新生成，并直接替换当前图片，确定继续吗？'))return;
+    if(!imageId)return;
     try{
       setBusy('regen');
       const d=await req('/api/images/'+imageId+'/regenerate',{method:'POST'});
@@ -298,7 +325,7 @@ function TaskDetailModal({
             </div>)}
           </div>}
 
-          <div className="promptBox"><div><span>最终提示词</span><button onClick={copyPrompt}><Copy size={14}/>复制</button></div><p>{finalPrompt||'暂无提示词'}</p></div>
+          <div className="promptBox"><div><span>用户要求</span><button onClick={copyPrompt} disabled={!displayPrompt}><Copy size={14}/>复制</button></div><p>{displayPrompt||'无'}</p></div>
           {!isAdmin&&<div className="taskWatermarkControl">
             <div>
               <b>{'\u4f7f\u7528\u6c34\u5370'}</b>
@@ -314,17 +341,34 @@ function TaskDetailModal({
           </div>}
         </div>
         <div className="taskDetailActions">
-          <button className="outlineGold" onClick={()=>setProcessOpen(true)}>图片处理</button>
-          <button className="primary" onClick={download}><Download size={16}/>下载原图</button>
+          <button className="outlineGold iconOnly" title="图片处理" aria-label="图片处理" onClick={()=>setProcessOpen(true)}><SlidersHorizontal size={18}/></button>
+          <button className="primary iconOnly" title="下载原图" aria-label="下载原图" onClick={download}><Download size={18}/></button>
           {!isAdmin&&<>
-            <button onClick={regenerateImage} disabled={!!busy}><RefreshCw size={16}/>{busy==='regen'?'重新生成中...':'免费重新生成'}</button>
-            <button className="danger" onClick={deleteImage} disabled={!!busy}><Trash2 size={16}/>{busy==='delete'?'删除中...':'删除图片'}</button>
+            <button className="iconOnly" title={busy==='regen'?'重新生成中':'免费重新生成'} aria-label="免费重新生成" onClick={()=>setConfirmAction('regen')} disabled={!!busy}><RefreshCw size={18}/></button>
+            <button className="danger iconOnly" title={busy==='delete'?'删除中':'删除图片'} aria-label="删除图片" onClick={()=>setConfirmAction('delete')} disabled={!!busy}><Trash2 size={18}/></button>
           </>}
         </div>
       </div>
     </div>
     {processOpen&&<ImageProcessModal detail={{...detail,id:imageId,url:resultUrl}} onClose={()=>setProcessOpen(false)} setMsg={setMsg}/>}
     <WatermarkConfigModal open={watermarkConfigOpen} onClose={()=>{setWatermarkConfigOpen(false);loadWatermark();}} setMsg={setMsg}/>
+    <ConfirmDialog
+      open={confirmAction==='delete'}
+      title="删除图片"
+      message="确认删除这张生成图片吗？删除后将无法恢复。"
+      confirmText="确认删除"
+      danger
+      onClose={()=>setConfirmAction(null)}
+      onConfirm={()=>{setConfirmAction(null);deleteImage();}}
+    />
+    <ConfirmDialog
+      open={confirmAction==='regen'}
+      title="免费重新生成"
+      message="将按原提示词免费重新生成，并直接替换当前图片，确定继续吗？"
+      confirmText="确认生成"
+      onClose={()=>setConfirmAction(null)}
+      onConfirm={()=>{setConfirmAction(null);regenerateImage();}}
+    />
   </div>,document.body)
 }
 

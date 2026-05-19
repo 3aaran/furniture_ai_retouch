@@ -9,6 +9,56 @@ export const audName=audienceName;
 export const resTypeName=resourceTypeName;
 export const getStatusName=v=>statusName[String(v)]||v;
 export function token(){return localStorage.getItem('token')}
+export function recordClientFailure(source,detail){
+  try{
+    const key='clientFailureLogs';
+    const list=JSON.parse(localStorage.getItem(key)||'[]');
+    list.unshift({
+      time:new Date().toISOString(),
+      source:String(source||'client'),
+      detail:String(detail||'').slice(0,3000)
+    });
+    localStorage.setItem(key,JSON.stringify(list.slice(0,50)));
+  }catch{}
+}
+export function userFriendlyMessage(message,fallback='操作失败请稍后重试'){
+  const text=String(message?.message||message||'').trim();
+  if(!text)return fallback;
+  if(/timeout|timed\s*out|超时|ETIMEDOUT|ECONNRESET|ECONNREFUSED|ENOTFOUND|network|fetch failed|socket|网络/i.test(text)){
+    return '生成图片失败：网络较差';
+  }
+  if(/base64|data:|公网|public.*url|public_base_url|download|图片地址|URL|无法访问|access|reachable|fetch.*image|读取图片|image.*url/i.test(text)){
+    return '生成图片失败：图片地址无法访问';
+  }
+  if(/format|mime|类型|格式|unsupported|不支持|JPG|JPEG|PNG|WEBP|webp/i.test(text)){
+    return '生成图片失败：图片格式不支持';
+  }
+  if(/api[_ -]?key|apikey|secret|密钥|未配置|配置|unauthorized|401|403|鉴权|权限|quota.*provider/i.test(text)){
+    return '生成图片失败：模型服务配置异常';
+  }
+  if(/quota|余额|算力|额度|insufficient|not enough/i.test(text)){
+    return '生成图片失败：算力余额不足';
+  }
+  if(/content|policy|safety|违规|敏感|审核|blocked|reject/i.test(text)){
+    return '生成图片失败：图片内容未通过审核';
+  }
+  if(/storage|空间|磁盘|保存|write|存储/i.test(text)){
+    return '生成图片失败：存储空间不足';
+  }
+  if(/rate.?limit|too many|频率|限流|429/i.test(text)){
+    return '生成图片失败：请求过于频繁';
+  }
+  if(/任务不存在|图片不存在|原图不存在|无权/.test(text)){
+    return text;
+  }
+  const rawLike=/[{}[\]\\]|base64|data:|https?:\/\/|task[_ ]?id|GPT\s*Image|JSON|Payload|Error|failed|unsupported|接口请求失败|命中字段|不支持.*格式/i.test(text);
+  if(rawLike){
+    if(/生成|AI|GPT|模型|接口|base64|image/i.test(text))return '生成图片失败：模型服务异常';
+    if(/upload|file|图片|image/i.test(text))return '图片处理失败：请重新上传';
+    return fallback;
+  }
+  return text.length>48?`${text.slice(0,48)}…`:text;
+}
 export function imageViewUrl(image){
   if(typeof image==='string'){
     if(!image)return '';
@@ -27,7 +77,13 @@ export async function req(url,opt={}){
   const t=await r.text();
   let d={};
   try{d=t?JSON.parse(t):{}}catch{d={message:t}}
-  if(!r.ok)throw new Error(d.message||messageText.requestFailed);
+  if(!r.ok){
+    const raw=d.message||messageText.requestFailed;
+    const err=new Error(userFriendlyMessage(raw,messageText.requestFailed));
+    err.rawMessage=raw;
+    recordClientFailure(url,raw);
+    throw err;
+  }
   return d;
 }
 export async function reqForm(url,form){
@@ -35,7 +91,13 @@ export async function reqForm(url,form){
   const t=await r.text();
   let d={};
   try{d=t?JSON.parse(t):{}}catch{d={message:t}}
-  if(!r.ok)throw new Error(d.message||messageText.requestFailed);
+  if(!r.ok){
+    const raw=d.message||messageText.requestFailed;
+    const err=new Error(userFriendlyMessage(raw,messageText.requestFailed));
+    err.rawMessage=raw;
+    recordClientFailure(url,raw);
+    throw err;
+  }
   return d;
 }
 export function qs(o){

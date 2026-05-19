@@ -7,6 +7,7 @@ import GenerationControls from'./GenerationControls.jsx';
 import ResourcePickerModal from'./ResourcePickerModal.jsx';
 import WorkbenchResourceUploadModal from'./WorkbenchResourceUploadModal.jsx';
 import WatermarkConfigModal from'./WatermarkConfigModal.jsx';
+import ConfirmDialog from'../../components/ConfirmDialog.jsx';
 
 function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   function imgSrc(input){
@@ -47,6 +48,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   const [sourcePreviewCache,setSourcePreviewCache]=useState({});
   const [costSettings,setCostSettings]=useState({});
   const [recentHoverId,setRecentHoverId]=useState('');
+  const [deleteTarget,setDeleteTarget]=useState(null);
   const recentPreviewHideTimer=useRef(null);
 
   useEffect(()=>{req('/api/resources?pageSize=999').then(d=>setResources(d.items||[])).catch(()=>{})},[]);
@@ -166,7 +168,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
         }
         if(d.status==='failed'){
           clearInterval(timer);
-          setMsg(d.refunded?'生成失败，算力已退回':'生成失败');
+          setMsg(d.statusMessage||d.errorMessage||'生成图片失败：模型服务异常');
           refreshRecent();
         }
       }catch(e){clearInterval(timer);setMsg(e.message)}
@@ -431,16 +433,24 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
     e?.stopPropagation?.();
     const taskId=String(item?.id||'').trim();
     if(!taskId) return;
-    const ok=window.confirm('确认删除这张生成图片吗？删除后将无法恢复。');
-    if(!ok) return;
+    setDeleteTarget(item);
+  }
+
+  async function confirmDeleteRecentTask(){
+    const item=deleteTarget;
+    const taskId=String(item?.id||'').trim();
+    if(!taskId) return;
     try{
       const d=await req('/api/ai/tasks/'+taskId,{method:'DELETE'});
       setRecent(prev=>prev.filter(x=>x.id!==taskId));
       if(taskDetail?.id===taskId) setTaskDetail(null);
+      setDeleteTarget(null);
       setMsg(d.message||'图片已删除');
       refreshRecent();
     }catch(err){
       setMsg(err.message||'删除失败');
+    }finally{
+      setDeleteTarget(null);
     }
   }
 
@@ -469,7 +479,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
 
   async function openRecentTask(item){
     try{
-      if(item.status&&item.status!=='succeeded')return setMsg(item.errorMessage||'Task is still generating');
+      if(item.status&&item.status!=='succeeded')return setMsg(item.statusMessage||item.errorMessage||(item.status==='failed'?'生成图片失败：模型服务异常':'任务正在生成'));
       setTaskDetailLoading(true);
       setTaskDetail(await req(item.itemType==='task'||item.status?('/api/ai/tasks/'+item.id):('/api/images/'+item.id+'/detail-rich')));
     }catch(e){
@@ -768,6 +778,15 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
 
   <ResourcePickerModal resourceModal={resourceModal} setResourceModal={setResourceModal} modalItems={modalItems} chooseResourceImage={chooseResourceImage} imgSrc={imgSrc}/>
   <WatermarkConfigModal open={watermarkOpen} onClose={()=>setWatermarkOpen(false)} setMsg={setMsg}/>
+  <ConfirmDialog
+    open={!!deleteTarget}
+    title="删除图片"
+    message="确认删除这张生成图片吗？删除后将无法恢复。"
+    confirmText="确认删除"
+    danger
+    onClose={()=>setDeleteTarget(null)}
+    onConfirm={confirmDeleteRecentTask}
+  />
   {resourceUploadOpen&&<WorkbenchResourceUploadModal
     me={me}
     resourceUpload={resourceUpload}

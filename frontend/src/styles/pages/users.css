@@ -583,49 +583,78 @@
 
 .globalToastV2{
   position:fixed;
-  top:22px;
+  top:18px;
   left:50%;
   transform:translateX(-50%);
   z-index:2147483647;
-  max-width:min(760px,calc(100vw - 48px));
-  min-height:54px;
-  padding:0 16px;
-  border-radius:14px;
-  background:linear-gradient(135deg,#2f9d46,#55c56a);
-  color:#061b0c;
-  box-shadow:0 22px 80px rgba(0,0,0,.45);
+  width:max-content;
+  max-width:min(760px,calc(100vw - 36px));
+  min-height:58px;
+  padding:10px 12px 10px 14px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(22,24,27,.94);
+  color:#f7f4ec;
+  box-shadow:0 18px 52px rgba(0,0,0,.46), inset 0 1px 0 rgba(255,255,255,.06);
+  backdrop-filter:blur(12px);
   display:flex;
   align-items:center;
   gap:12px;
   pointer-events:auto;
+  animation:globalToastEnter .22s ease-out both;
 }
 
 .globalToastV2 span{
-  width:26px;
-  height:26px;
+  flex:0 0 auto;
+  width:36px;
+  height:36px;
   display:grid;
   place-items:center;
   border-radius:50%;
-  border:2px solid currentColor;
-  font-weight:1000;
+  background:rgba(255,255,255,.08);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
 }
 
 .globalToastV2 b{
-  font-size:15px;
+  min-width:0;
+  max-width:620px;
+  color:#f9f4e8;
+  font-size:16px;
+  font-weight:900;
   line-height:1.45;
   word-break:break-word;
+  letter-spacing:0;
 }
 
 .globalToastV2 button{
   margin-left:8px;
-  width:30px;
-  height:30px;
+  flex:0 0 auto;
+  width:34px;
+  height:34px;
   border:0;
-  border-radius:8px;
-  background:rgba(0,0,0,.12);
-  color:inherit;
-  font-size:20px;
-  font-weight:900;
+  padding:0;
+  border-radius:10px;
+  background:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.82);
   cursor:pointer;
+  display:grid;
+  place-items:center;
+  transition:background .16s ease,color .16s ease,transform .16s ease;
 }
 
+.globalToastV2 button:hover{
+  background:rgba(255,255,255,.14);
+  color:#fff;
+  transform:translateY(-1px);
+}
+
+@keyframes globalToastEnter{
+  from{
+    opacity:0;
+    transform:translate(-50%,-10px) scale(.98);
+  }
+  to{
+    opacity:1;
+    transform:translate(-50%,0) scale(1);
+  }
+}

@@ -41,6 +41,19 @@
   margin-top:14px !important;
   padding-top:16px;
   border-top:1px solid rgba(255,255,255,.12);
+  justify-content:flex-start;
+  flex-wrap:wrap;
+}
+.taskPreviewWindowMode .taskDetailActions button.iconOnly{
+  width:54px;
+  min-width:54px;
+  padding:0;
+  display:inline-grid;
+  place-items:center;
+  flex:0 0 54px;
+}
+.taskPreviewWindowMode .taskDetailActions button.iconOnly svg{
+  margin:0;
 }
 .taskPreviewWindowMode .infoRows b{
   line-height:1.45;
@@ -50,7 +63,7 @@
 }
 .taskPreviewWindowMode .promptBox p{
   max-height:none !important;
-  min-height:110px;
+  min-height:76px;
   overflow:visible !important;
   white-space:pre-wrap;
   word-break:break-word;

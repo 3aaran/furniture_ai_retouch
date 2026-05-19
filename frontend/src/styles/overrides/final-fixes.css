@@ -723,12 +723,24 @@
 }
 
 .globalToastV2.success{
-  background:linear-gradient(135deg,#2f9d46,#55c56a);
-  color:#061b0c;
+  border-color:rgba(83,211,111,.42);
+  background:linear-gradient(135deg,rgba(31,63,42,.96),rgba(24,29,27,.96));
+  color:#eaffef;
+}
+.globalToastV2.success span{
+  color:#63df7b;
+  background:rgba(83,211,111,.16);
+  box-shadow:inset 0 0 0 1px rgba(83,211,111,.22),0 0 24px rgba(83,211,111,.12);
 }
 .globalToastV2.error{
-  background:linear-gradient(135deg,#b83b3b,#ff6262);
-  color:#270707;
+  border-color:rgba(255,95,95,.44);
+  background:linear-gradient(135deg,rgba(76,31,32,.97),rgba(28,24,25,.97));
+  color:#fff1f1;
+}
+.globalToastV2.error span{
+  color:#ff7474;
+  background:rgba(255,95,95,.16);
+  box-shadow:inset 0 0 0 1px rgba(255,95,95,.24),0 0 24px rgba(255,95,95,.14);
 }
 .infoRows em.success{
   background:#46bd58;

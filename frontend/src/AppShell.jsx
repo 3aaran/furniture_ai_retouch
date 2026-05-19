@@ -1,11 +1,11 @@
 import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createPortal}from'react-dom';
-import{LogOut,MessageSquare,Ticket,WalletCards,ShieldCheck}from'lucide-react';
+import{AlertCircle,CheckCircle2,LogOut,MessageSquare,Ticket,WalletCards,ShieldCheck,X}from'lucide-react';
 import{adminNav,adminNavGroups,Dashboard,Applications,Merchants,AiConfig,SettingsPage,AdminLogs,Feedbacks,Announcements,RedeemCodes}from'./admin/AdminPages.jsx';
 import{storeAdminNav,staffNav,Workbench,StoreResources,StoreUsers,StoreTasks,Promotion,QuotaLogs}from'./store/StorePages.jsx';
 import{UserFeedback,FeedbackModal,RedeemModal,Profile}from'./account/AccountPages.jsx';
 import{TaskDetailModal}from'./components/TaskDetailModal.jsx';
-import{roleName}from'./appShared.jsx';
+import{roleName,userFriendlyMessage,recordClientFailure}from'./appShared.jsx';
 import{APP_NAME,APP_SUBTITLE,LOGO_TEXT}from'./config/appConfig.js';
 
 function roleNav(role){
@@ -37,10 +37,11 @@ function Shell({me,setMe}){
 
   useEffect(()=>{document.title=APP_NAME},[]);
 
-  const toastText=typeof msg==='object'?(msg.text||msg.message||''):String(msg||'');
+  const rawToastText=typeof msg==='object'?(msg.text||msg.message||''):String(msg||'');
+  const toastText=userFriendlyMessage(rawToastText,rawToastText||'操作失败请稍后重试');
   const toastKind=typeof msg==='object'
     ? (msg.kind||msg.type||'success')
-    : (/失败|错误|报错|不能|未配置|Payload|Error|failed|too large/i.test(toastText)?'error':'success');
+    : (/失败|错误|报错|不能|未配置|Payload|Error|failed|too large/i.test(rawToastText)?'error':'success');
 
   const map={
     dashboard:Dashboard,
@@ -85,6 +86,7 @@ function Shell({me,setMe}){
   function adminGroupActive(g){return g.items.some(([k])=>k===page)}
 
   useEffect(()=>{if(!msg)return;const t=setTimeout(()=>setMsg(''),2600);return()=>clearTimeout(t)},[msg]);
+  useEffect(()=>{if(rawToastText&&rawToastText!==toastText)recordClientFailure('toast',rawToastText)},[rawToastText,toastText]);
   useEffect(()=>()=>menuTimer.current&&clearTimeout(menuTimer.current),[]);
   useEffect(()=>{if(window.location.hash!==`#/${page}`)window.history.replaceState(null,'',`#/${page}`)},[]);
   useEffect(()=>{
@@ -139,7 +141,7 @@ function Shell({me,setMe}){
 
     <main className="topMain">
       {!(page==='workbench'&&!isAdmin)&&<div className="pageHead"><h1>{nav.find(n=>n[0]===page)?.[1]||(fallbackTitle[page]||'管理页面')}</h1></div>}
-      {msg&&createPortal(<div className={`globalToastV2 ${toastKind==='error'?'error':'success'}`}><span>{toastKind==='error'?'!':'✓'}</span><b>{toastText}</b><button onClick={()=>setMsg('')}>×</button></div>,document.body)}
+      {msg&&createPortal(<div className={`globalToastV2 ${toastKind==='error'?'error':'success'}`}><span>{toastKind==='error'?<AlertCircle size={20}/>:<CheckCircle2 size={20}/>}</span><b>{toastText}</b><button aria-label="关闭提示" onClick={()=>setMsg('')}><X size={18}/></button></div>,document.body)}
       <Comp me={me} setMe={setMe} setMsg={setMsg} goPage={go} TaskDetailModal={TaskDetailModal}/>
     </main>
 
