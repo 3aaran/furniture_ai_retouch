@@ -78,6 +78,7 @@ export async function initDb(){
     phone VARCHAR(20) UNIQUE NULL,
     username VARCHAR(80) UNIQUE NULL,
     display_name VARCHAR(80) NULL,
+    avatar_url VARCHAR(500) NULL,
     company_name VARCHAR(160) NULL,
     password_hash VARCHAR(255) NULL,
     role ENUM('SYSTEM_ADMIN','MERCHANT_OWNER','MERCHANT_ADMIN','STAFF','TRIAL') NOT NULL,
@@ -94,6 +95,7 @@ export async function initDb(){
     INDEX idx_phone(phone),
     CONSTRAINT fk_users_merchant FOREIGN KEY(merchant_id) REFERENCES merchants(id) ON DELETE SET NULL
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`);
+  await ensureColumn('users', 'avatar_url', 'VARCHAR(500) NULL', 'display_name');
   await ensureColumn('users', 'storage_limit_bytes', `BIGINT NOT NULL DEFAULT ${DEFAULT_USER_STORAGE_LIMIT_BYTES}`, 'quota_balance');
   await ensureColumn('users', 'storage_used_bytes', 'BIGINT NOT NULL DEFAULT 0', 'storage_limit_bytes');
   await pool.query(`CREATE TABLE IF NOT EXISTS merchant_applications (
@@ -707,6 +709,7 @@ export function publicUser(u){
     phone:u.phone,
     username:u.username || u.phone,
     displayName:u.display_name || u.displayName || u.username || u.phone,
+    avatarUrl:u.avatar_url || u.avatarUrl || '',
     companyName:u.company_name || u.companyName || null,
     role:u.role,
     quota:Number(u.quota_balance ?? u.quota ?? 0),

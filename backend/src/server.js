@@ -777,6 +777,24 @@ app.patch('/api/me/profile', requireAuth, async (req,res)=>{
   const [[u]]=await pool.query('SELECT * FROM users WHERE id=?',[req.user.id]);
   res.json({message:'个人资料已保存',user:publicUser(u)});
 });
+
+app.post('/api/me/avatar', requireAuth, (req,res)=>{
+  upload.single('avatar')(req,res,async err=>{
+    if(err) return res.status(400).json({message:err.code==='LIMIT_FILE_SIZE'?'头像图片不能超过 30MB':(err.message||'头像上传失败')});
+    try{
+      if(!req.file) return res.status(400).json({message:'请上传头像图片'});
+      const [[current]]=await pool.query('SELECT avatar_url FROM users WHERE id=?',[req.user.id]);
+      const saved=await saveUploadedImage(req.file,{merchantId:req.user.merchant_id||null,userId:req.user.id,kind:'avatar'});
+      await pool.query('UPDATE users SET avatar_url=? WHERE id=?',[saved.url,req.user.id]);
+      if(current?.avatar_url) await deleteStoredFile({url:current.avatar_url}).catch(()=>{});
+      const [[u]]=await pool.query('SELECT * FROM users WHERE id=?',[req.user.id]);
+      res.json({message:'头像已更新',avatarUrl:saved.url,user:publicUser(u)});
+    }catch(e){
+      if(req.file?.path && fs.existsSync(req.file.path)) fs.rmSync(req.file.path,{force:true});
+      res.status(400).json({message:e.message||'头像上传失败'});
+    }
+  });
+});
 app.patch('/api/me/password', requireAuth, async (req,res)=>{
   const oldPassword=String(req.body.oldPassword||'');
   const newPassword=String(req.body.newPassword||'');

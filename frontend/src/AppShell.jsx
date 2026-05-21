@@ -5,7 +5,7 @@ import{adminNav,adminNavGroups,Dashboard,Applications,Merchants,AiConfig,Setting
 import{storeAdminNav,staffNav,Workbench,StoreResources,StoreUsers,StoreTasks,Promotion,QuotaLogs}from'./store/StorePages.jsx';
 import{UserFeedback,FeedbackModal,RedeemModal,Profile}from'./account/AccountPages.jsx';
 import{TaskDetailModal}from'./components/TaskDetailModal.jsx';
-import{roleName,userFriendlyMessage,recordClientFailure}from'./appShared.jsx';
+import{API,roleName,userFriendlyMessage,recordClientFailure}from'./appShared.jsx';
 import{APP_NAME,APP_SUBTITLE,LOGO_TEXT}from'./config/appConfig.js';
 
 function roleNav(role){
@@ -84,6 +84,7 @@ function Shell({me,setMe}){
     menuTimer.current=setTimeout(()=>setMenu(false),260);
   }
   function adminGroupActive(g){return g.items.some(([k])=>k===page)}
+  const avatarUrl=me.avatarUrl?(String(me.avatarUrl).startsWith('http')?me.avatarUrl:API+me.avatarUrl):'';
 
   useEffect(()=>{if(!msg)return;const t=setTimeout(()=>setMsg(''),2600);return()=>clearTimeout(t)},[msg]);
   useEffect(()=>{if(rawToastText&&rawToastText!==toastText)recordClientFailure('toast',rawToastText)},[rawToastText,toastText]);
@@ -127,8 +128,8 @@ function Shell({me,setMe}){
       </nav>
 
       <div className="topRight" onMouseEnter={openProfileMenu} onMouseLeave={closeProfileMenuSoon}>
-        <button className="quotaPill" onClick={()=>go('quota')}><WalletCards size={17}/>{me.quota} 算力</button>
-        <button className="avatarBtn" type="button"><span>{(me.displayName||me.phone||me.username||'用').slice(0,1)}</span><div><b>{me.displayName}</b><small>{roleName[me.role]}</small></div></button>
+        <button className="quotaPill" onClick={()=>go('quota')}><WalletCards size={17}/>{isAdmin?'额度明细':`${me.quota} 算力`}</button>
+        <button className="avatarBtn" type="button"><span>{avatarUrl?<img src={avatarUrl} alt="头像"/>:(me.displayName||me.phone||me.username||'用').slice(0,1)}</span><div><b>{me.displayName}</b><small>{roleName[me.role]}</small></div></button>
         {menu&&<div className="profileMenu">
           <button onClick={()=>go('profile')}><ShieldCheck size={18}/>个人中心</button>
           <button onClick={()=>go('quota')}><WalletCards size={18}/>额度明细</button>

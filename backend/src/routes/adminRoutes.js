@@ -18,6 +18,31 @@ function pageParams(req){
   return {page,pageSize,offset:(page-1)*pageSize};
 }
 function like(v){ return `%${String(v||'').trim()}%`; }
+function normalizeQuotaPeriod(v){
+  return ['week','month','quarter'].includes(String(v||'')) ? String(v) : 'week';
+}
+function quotaPeriodSql(dateExpr, period){
+  if(period === 'month'){
+    return {
+      key:`DATE_FORMAT(${dateExpr},"%Y-%m")`,
+      start:`DATE_FORMAT(${dateExpr},"%Y-%m-01")`,
+      end:`LAST_DAY(${dateExpr})`
+    };
+  }
+  if(period === 'quarter'){
+    const start = `STR_TO_DATE(CONCAT(YEAR(${dateExpr}),'-',LPAD(((QUARTER(${dateExpr})-1)*3+1),2,'0'),'-01'),'%Y-%m-%d')`;
+    return {
+      key:`CONCAT(YEAR(${dateExpr}),'-Q',QUARTER(${dateExpr}))`,
+      start,
+      end:`LAST_DAY(DATE_ADD(${start}, INTERVAL 2 MONTH))`
+    };
+  }
+  return {
+    key:`YEARWEEK(${dateExpr},3)`,
+    start:`DATE_SUB(${dateExpr}, INTERVAL WEEKDAY(${dateExpr}) DAY)`,
+    end:`DATE_ADD(DATE_SUB(${dateExpr}, INTERVAL WEEKDAY(${dateExpr}) DAY), INTERVAL 6 DAY)`
+  };
+}
 function settingStorageLimitBytes(settings){
   return parseStorageLimitBytes(settings.user_storage_limit_bytes || '5GB') || 0;
 }
@@ -141,6 +166,9 @@ export function registerAdminRoutes(app,{upload}){
       const password = '000000';
       const uid=uuid();
       await conn.query('INSERT INTO users(id,merchant_id,phone,username,display_name,company_name,password_hash,role,status,storage_limit_bytes) VALUES(?,?,?,?,?,?,?,?,?,?)',[uid,mid,appRow.phone,appRow.phone,appRow.contact_name,appRow.company_name,await bcrypt.hash(password,10),'MERCHANT_OWNER','ACTIVE',settingStorageLimitBytes(settings)]);
+      if(finalQuota>0){
+        await conn.query('INSERT INTO quota_logs(id,merchant_id,related_user_id,operator_user_id,amount,type,balance_after,remark) VALUES(?,?,?,?,?,?,?,?)',[uuid(),mid,null,req.user.id,finalQuota,'MANUAL_ADJUST',finalQuota,'新门店初始额度']);
+      }
       await conn.query('UPDATE merchant_applications SET status="APPROVED",reviewer_id=?,reviewed_at=NOW(),merchant_id=? WHERE id=?',[req.user.id,mid,req.params.id]);
       await conn.query('INSERT INTO finance_logs(id,merchant_id,type,amount,title) VALUES(?,?,?,?,?)',[uuid(),mid,'INCOME',Number(settings.income_per_quota||0.1)*finalQuota,'新门店初始额度']);
       await conn.commit();
@@ -449,12 +477,157 @@ export function registerAdminRoutes(app,{upload}){
   
   app.get('/api/admin/quota-logs', requireAuth, async (req,res)=>{
     if(!isSystemAdmin(req.user)) return res.status(403).json({message:SYSTEM_ADMIN_REQUIRED_MESSAGE});
-    const wh=[]; const ps=[];
-    if(req.query.type){ wh.push('q.type=?'); ps.push(req.query.type); }
-    if(req.query.keyword){ wh.push('(m.company_name LIKE ? OR tu.display_name LIKE ? OR tu.phone LIKE ? OR ou.display_name LIKE ?)'); ps.push(like(req.query.keyword),like(req.query.keyword),like(req.query.keyword),like(req.query.keyword)); }
-    const where=wh.length?'WHERE '+wh.join(' AND '):'';
-    const base=`FROM quota_logs q LEFT JOIN merchants m ON m.id=q.merchant_id LEFT JOIN users tu ON tu.id=q.related_user_id LEFT JOIN users ou ON ou.id=q.operator_user_id ${where}`;
-    res.json(await paged(`SELECT q.*,m.company_name companyName,tu.display_name targetName,tu.phone targetPhone,ou.display_name operatorName ${base} ORDER BY q.created_at DESC`,`SELECT COUNT(*) total ${base}`,ps,req,r=>r));
+    const view=String(req.query.view||'usage')==='recharge'?'recharge':'usage';
+    const period=normalizeQuotaPeriod(req.query.period);
+    const page=Math.max(1,Number(req.query.page||1));
+    const pageSize=Math.min(50,Math.max(5,Number(req.query.pageSize||12)));
+    const offset=(page-1)*pageSize;
+    const startDate=String(req.query.startDate||'').trim();
+    const endDate=String(req.query.endDate||'').trim();
+    const keyword=String(req.query.keyword||'').trim();
+
+    const usageDate='DATE(COALESCE(t.finished_at,t.submitted_at))';
+    const rechargeDate='DATE(q.created_at)';
+    const usagePeriod=quotaPeriodSql(usageDate,period);
+    const rechargePeriod=quotaPeriodSql(rechargeDate,period);
+    const usagePeriodKey=`CAST(${usagePeriod.key} AS CHAR)`;
+    const rechargePeriodKey=`CAST(${rechargePeriod.key} AS CHAR)`;
+    const successTaskWhere='(t.status="succeeded" OR t.result_image_id IS NOT NULL OR EXISTS (SELECT 1 FROM ai_model_call_logs ml WHERE ml.task_id=t.id AND ml.status="SUCCESS"))';
+
+    const usageWh=['t.merchant_id IS NOT NULL',successTaskWhere];
+    const usagePs=[];
+    if(startDate){usageWh.push(`${usageDate}>=?`);usagePs.push(startDate);}
+    if(endDate){usageWh.push(`${usageDate}<=?`);usagePs.push(endDate);}
+    if(keyword){usageWh.push('(m.company_name LIKE ? OR u.display_name LIKE ? OR u.phone LIKE ? OR t.id LIKE ?)');usagePs.push(like(keyword),like(keyword),like(keyword),like(keyword));}
+    const usageWhere='WHERE '+usageWh.join(' AND ');
+    const usageBase=`FROM ai_tasks t LEFT JOIN merchants m ON m.id=t.merchant_id LEFT JOIN users u ON u.id=t.user_id ${usageWhere}`;
+
+    const rechargeWh=['q.merchant_id IS NOT NULL','q.amount>0','q.related_user_id IS NULL','q.type IN ("RECHARGE","MANUAL_ADJUST")'];
+    const rechargePs=[];
+    if(startDate){rechargeWh.push('DATE(q.created_at)>=?');rechargePs.push(startDate);}
+    if(endDate){rechargeWh.push('DATE(q.created_at)<=?');rechargePs.push(endDate);}
+    if(keyword){rechargeWh.push('(m.company_name LIKE ? OR ou.display_name LIKE ? OR ou.phone LIKE ? OR q.remark LIKE ?)');rechargePs.push(like(keyword),like(keyword),like(keyword),like(keyword));}
+    const rechargeWhere='WHERE '+rechargeWh.join(' AND ');
+    const rechargeBase=`FROM quota_logs q LEFT JOIN merchants m ON m.id=q.merchant_id LEFT JOIN users ou ON ou.id=q.operator_user_id ${rechargeWhere}`;
+
+    const [[usageSummary]]=await pool.query(
+      `SELECT COUNT(DISTINCT t.id) successCalls, IFNULL(SUM(t.cost),0) usageQuota ${usageBase}`,
+      usagePs
+    );
+    const [[rechargeSummary]]=await pool.query(
+      `SELECT COUNT(*) rechargeCount, IFNULL(SUM(q.amount),0) rechargeQuota ${rechargeBase}`,
+      rechargePs
+    );
+
+    if(view==='recharge'){
+      const [[countRow]]=await pool.query(
+        `SELECT COUNT(*) total FROM (SELECT q.merchant_id,${rechargePeriodKey} periodKey ${rechargeBase} GROUP BY q.merchant_id,${rechargePeriodKey}) x`,
+        rechargePs
+      );
+      const [rows]=await pool.query(
+        `SELECT q.merchant_id merchantId,
+                COALESCE(MAX(m.company_name),'未绑定门店') companyName,
+                ${rechargePeriodKey} periodKey,
+                DATE_FORMAT(MIN(${rechargePeriod.start}),'%Y-%m-%d') periodStart,
+                DATE_FORMAT(MAX(${rechargePeriod.end}),'%Y-%m-%d') periodEnd,
+                CONCAT(DATE_FORMAT(MIN(${rechargePeriod.start}),'%Y/%m/%d'),' - ',DATE_FORMAT(MAX(${rechargePeriod.end}),'%Y/%m/%d')) periodLabel,
+                COUNT(*) rechargeCount,
+                IFNULL(SUM(q.amount),0) rechargeQuota,
+                MIN(q.created_at) firstAt,
+                MAX(q.created_at) lastAt
+         ${rechargeBase}
+         GROUP BY q.merchant_id,${rechargePeriodKey}
+         ORDER BY periodStart DESC,lastAt DESC
+         LIMIT ? OFFSET ?`,
+        [...rechargePs,pageSize,offset]
+      );
+      return res.json({
+        items:rows,
+        page,
+        pageSize,
+        total:Number(countRow?.total||0),
+        view,
+        period,
+        summary:{
+          successCalls:Number(usageSummary?.successCalls||0),
+          usageQuota:Number(usageSummary?.usageQuota||0),
+          rechargeCount:Number(rechargeSummary?.rechargeCount||0),
+          rechargeQuota:Number(rechargeSummary?.rechargeQuota||0)
+        }
+      });
+    }
+
+    const [[countRow]]=await pool.query(
+      `SELECT COUNT(*) total FROM (SELECT t.merchant_id,${usagePeriodKey} periodKey ${usageBase} GROUP BY t.merchant_id,${usagePeriodKey}) x`,
+      usagePs
+    );
+    const [rows]=await pool.query(
+      `SELECT t.merchant_id merchantId,
+              COALESCE(MAX(m.company_name),'未绑定门店') companyName,
+              ${usagePeriodKey} periodKey,
+              DATE_FORMAT(MIN(${usagePeriod.start}),'%Y-%m-%d') periodStart,
+              DATE_FORMAT(MAX(${usagePeriod.end}),'%Y-%m-%d') periodEnd,
+              CONCAT(DATE_FORMAT(MIN(${usagePeriod.start}),'%Y/%m/%d'),' - ',DATE_FORMAT(MAX(${usagePeriod.end}),'%Y/%m/%d')) periodLabel,
+              COUNT(DISTINCT t.id) successCalls,
+              IFNULL(SUM(t.cost),0) usageQuota,
+              MIN(COALESCE(t.finished_at,t.submitted_at)) firstAt,
+              MAX(COALESCE(t.finished_at,t.submitted_at)) lastAt
+       ${usageBase}
+       GROUP BY t.merchant_id,${usagePeriodKey}
+       ORDER BY periodStart DESC,lastAt DESC
+       LIMIT ? OFFSET ?`,
+      [...usagePs,pageSize,offset]
+    );
+    res.json({
+      items:rows,
+      page,
+      pageSize,
+      total:Number(countRow?.total||0),
+      view,
+      period,
+      summary:{
+        successCalls:Number(usageSummary?.successCalls||0),
+        usageQuota:Number(usageSummary?.usageQuota||0),
+        rechargeCount:Number(rechargeSummary?.rechargeCount||0),
+        rechargeQuota:Number(rechargeSummary?.rechargeQuota||0)
+      }
+    });
+  });
+
+  app.get('/api/admin/quota-logs/detail', requireAuth, async (req,res)=>{
+    if(!isSystemAdmin(req.user)) return res.status(403).json({message:SYSTEM_ADMIN_REQUIRED_MESSAGE});
+    const view=String(req.query.view||'usage')==='recharge'?'recharge':'usage';
+    const period=normalizeQuotaPeriod(req.query.period);
+    const merchantId=String(req.query.merchantId||'').trim();
+    const periodKey=String(req.query.periodKey||'').trim();
+    if(!merchantId||!periodKey)return res.status(400).json({message:'缺少门店或统计周期'});
+    if(view==='recharge'){
+      const rechargeDate='DATE(q.created_at)';
+      const rechargePeriod=quotaPeriodSql(rechargeDate,period);
+      const [rows]=await pool.query(
+        `SELECT q.*,m.company_name companyName,ou.display_name operatorName,ou.phone operatorPhone
+         FROM quota_logs q
+         LEFT JOIN merchants m ON m.id=q.merchant_id
+         LEFT JOIN users ou ON ou.id=q.operator_user_id
+         WHERE q.merchant_id=? AND CAST(${rechargePeriod.key} AS CHAR)=? AND q.amount>0 AND q.related_user_id IS NULL AND q.type IN ("RECHARGE","MANUAL_ADJUST")
+         ORDER BY q.created_at DESC`,
+        [merchantId,periodKey]
+      );
+      return res.json({view,period,merchantId,periodKey,items:rows});
+    }
+    const usageDate='DATE(COALESCE(t.finished_at,t.submitted_at))';
+    const usagePeriod=quotaPeriodSql(usageDate,period);
+    const successTaskWhere='(t.status="succeeded" OR t.result_image_id IS NOT NULL OR EXISTS (SELECT 1 FROM ai_model_call_logs ml WHERE ml.task_id=t.id AND ml.status="SUCCESS"))';
+    const [rows]=await pool.query(
+      `SELECT t.id,t.feature_key featureKey,t.cost,t.model_name modelName,t.provider,t.submitted_at submittedAt,t.finished_at finishedAt,u.display_name userName,u.phone userPhone,m.company_name companyName
+       FROM ai_tasks t
+       LEFT JOIN users u ON u.id=t.user_id
+       LEFT JOIN merchants m ON m.id=t.merchant_id
+       WHERE t.merchant_id=? AND CAST(${usagePeriod.key} AS CHAR)=? AND ${successTaskWhere}
+       ORDER BY COALESCE(t.finished_at,t.submitted_at) DESC`,
+      [merchantId,periodKey]
+    );
+    res.json({view,period,merchantId,periodKey,items:rows});
   });
   
   app.get('/api/export/admin/:type', requireAuth, async (req,res)=>{
