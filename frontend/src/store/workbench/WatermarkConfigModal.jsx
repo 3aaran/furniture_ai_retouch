@@ -1,7 +1,7 @@
 import React,{useEffect,useMemo,useState}from'react';
 import{createPortal}from'react-dom';
 import{X}from'lucide-react';
-import{API,req,reqForm}from'../../appShared.jsx';
+import{assetUrl,req,reqForm}from'../../appShared.jsx';
 import{WATERMARK_TEXT,WATERMARK_SUB_TEXT}from'../../config/appConfig.js';
 
 const defaultConfig={
@@ -32,8 +32,7 @@ const positions=[
 ];
 
 function srcOf(url=''){
-  if(!url)return '';
-  return String(url).startsWith('http')||String(url).startsWith('data:')?url:API+url;
+  return assetUrl(url);
 }
 
 function placementStyle(config){

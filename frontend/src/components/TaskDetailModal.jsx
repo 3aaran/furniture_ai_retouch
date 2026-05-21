@@ -1,7 +1,7 @@
 import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createPortal}from'react-dom';
 import{ChevronLeft,ChevronRight,Copy,Download,FileText,Flag,Hash,RefreshCw,SlidersHorizontal,Trash2,User,WalletCards}from'lucide-react';
-import{API,token,req,fmt,imageViewUrl}from'../appShared.jsx';
+import{API,token,req,fmt,imageViewUrl,assetUrl}from'../appShared.jsx';
 import WatermarkConfigModal from'../store/workbench/WatermarkConfigModal.jsx';
 import ConfirmDialog from'./ConfirmDialog.jsx';
 
@@ -59,15 +59,14 @@ function WatermarkOverlay({config}){
     </div>;
   }
   if(config.image){
-    const src=String(config.image).startsWith('http')||String(config.image).startsWith('data:')?config.image:API+config.image;
+    const src=assetUrl(config.image);
     return <img className="taskWatermarkImage" src={src} alt="\u6c34\u5370" style={{...baseStyle,width:`${config.widthPercent||23.5}%`}}/>;
   }
   return null;
 }
 
 function imageSrc(url){
-  if(!url)return '';
-  return String(url).startsWith('http')?url:API+url;
+  return assetUrl(url);
 }
 
 function getTaskFeature(detail={}){
@@ -251,7 +250,7 @@ function TaskDetailModal({
     onContinueImage?.({
       id:img.id,
       url:img.url,
-      imageUrl:img.url?.startsWith('http')?img.url:API+img.url,
+      imageUrl:assetUrl(img.url),
       originalName:img.originalName||detail.originalName||''
     });
   }
@@ -453,7 +452,7 @@ function ImageProcessModal({detail,onClose,setMsg}){
     }catch(e){setMsg&&setMsg(e.message||'图片处理失败')}
     finally{setProcessing(false)}
   }
-  const previewUrl=result?.url?API+result.url:(detail.url?.startsWith('http')?detail.url:API+detail.url);
+  const previewUrl=assetUrl(result?.url||detail.url);
   const hasResult=!!result;
   return <div className="cropShotMask">
     <div className="cropShotPanel">
@@ -463,7 +462,7 @@ function ImageProcessModal({detail,onClose,setMsg}){
         <div className="cropShotSide">
           <div className="cropShotCard"><h3>基础处理</h3>{[['none','不处理','保持原图不做基础处理'],['crop','裁剪','拖动裁剪框调整截取区域']].map(([k,b,s])=><button key={k} type="button" className={basicMode===k?'cropShotOption active':'cropShotOption'} onClick={()=>setBasicMode(k)}><div><b>{b}</b><small>{s}</small></div><span>{basicMode===k?'●':'○'}</span></button>)}{basicMode==='crop'&&<><div className="cropShotFields"><label><span>裁剪宽度(px)</span><input type="number" value={cropW||''} onChange={e=>updateCropByPixel('w',e.target.value)}/></label><label><span>裁剪高度(px)</span><input type="number" value={cropH||''} onChange={e=>updateCropByPixel('h',e.target.value)}/></label></div><div className="cropShotFields"><label><span>X 坐标</span><input type="number" value={cropX} readOnly /></label><label><span>Y 坐标</span><input type="number" value={cropY} readOnly /></label></div><div className="cropShotRatio"><span>快捷比例</span><div>{['free','1:1','4:3','3:4','16:9'].map(x=><button key={x} type="button" onClick={()=>applyRatio(x)}>{x==='free'?'自由':x}</button>)}</div></div></>}</div>
           <div className="cropShotCard"><h3>高级处理</h3>{[['none','不处理','不开启高级处理'],['remove_bg','智能抠图（透明背景）','适合白底/浅色背景'],['compress','图片压缩','重新编码并缩小尺寸'],['convert','格式转换','输出 PNG / JPG / WebP']].map(([k,b,s])=><button key={k} type="button" className={advancedMode===k?'cropShotOption active':'cropShotOption'} onClick={()=>setAdvancedMode(k)}><div><b>{b}</b><small>{s}</small></div><span>{advancedMode===k?'●':'○'}</span></button>)}{(basicMode==='crop'||advancedMode==='compress'||advancedMode==='convert')&&<label className="cropShotSingle"><span>输出格式</span><select value={format} onChange={e=>setFormat(e.target.value)}><option value="png">PNG</option><option value="jpg">JPG</option><option value="webp">WebP</option></select></label>}{(advancedMode==='compress'||advancedMode==='convert'||format!=='png')&&<label className="cropShotSingle"><span>输出质量：{quality}%</span><input type="range" min="30" max="100" value={quality} onChange={e=>setQuality(e.target.value)}/></label>}{advancedMode==='compress'&&<label className="cropShotSingle"><span>最大宽度：{maxWidth}px</span><input type="range" min="800" max="2400" step="100" value={maxWidth} onChange={e=>setMaxWidth(Number(e.target.value))}/></label>}<div className="cropShotTip"><p>处理后会生成新图，并自动写入生成记录。</p></div></div>
-          {hasResult&&<div className="cropShotCard cropShotResult"><h3>处理结果</h3><p>输出尺寸：{result.width} × {result.height}</p><button className="primary" onClick={()=>window.open(API+result.url,'_blank')}>下载处理后的图片</button></div>}
+          {hasResult&&<div className="cropShotCard cropShotResult"><h3>处理结果</h3><p>输出尺寸：{result.width} × {result.height}</p><button className="primary" onClick={()=>window.open(assetUrl(result.url),'_blank')}>下载处理后的图片</button></div>}
         </div>
       </main>
       <footer className="cropShotFooter"><p>{processing?'正在处理，请稍候...':(hasResult?'处理完成，结果已写入记录。':'选择处理方式后，点击“开始处理”。')}</p><div><button type="button" className="cropShotGhost" onClick={onClose}>关闭</button><button type="button" className="cropShotPrimary" disabled={processing} onClick={submitProcess}>{processing?'处理中...':'开始处理'}</button></div></footer>

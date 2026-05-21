@@ -367,7 +367,7 @@ function StoreResources({me,setMsg}){
 
   const hasSidePanel=categoryOpen||detail||renameTarget;
   const detailImage=detail?.image||null;
-  const detailUrl=detailImage?.url?(detailImage.url.startsWith('http')?detailImage.url:API+detailImage.url):'';
+  const detailUrl=detailImage?imageViewUrl(detailImage):'';
   const detailCategory=detailImage?[detailImage.mainCategoryName,detailImage.subCategoryName].filter(Boolean).join(' / ')||'未分类':'';
   const categorySections=categoryTree.length?categoryTree:[
     {purposeKey:'user_reference',purposeName:'产品参考',mains:[]},

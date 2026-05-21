@@ -1,6 +1,6 @@
 ﻿import React,{useEffect,useRef,useState}from'react';
 import{Layers,Users as UsersIcon,Brush,Download,Trash2,Eye,Search,Plus,Power,RotateCcw}from'lucide-react';
-import{API,token,req,reqForm,fmt,resTypeName,imageViewUrl}from'../../appShared.jsx';
+import{API,token,req,reqForm,fmt,resTypeName,imageViewUrl,assetUrl}from'../../appShared.jsx';
 import{featureConfig}from'../../config/featureConfig.jsx';
 import WorkbenchUploadPanel from'./WorkbenchUploadPanel.jsx';
 import GenerationControls from'./GenerationControls.jsx';
@@ -14,7 +14,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
     if(!input)return '';
     if(typeof input==='object')return imageViewUrl(input);
     if(String(input).startsWith('http'))return input;
-    return API+input;
+    return assetUrl(input);
   }
 
   const ops=Object.fromEntries(Object.entries(featureConfig).map(([key,item])=>[key,{label:item.name,desc:item.desc,cost:item.defaultCost}]));

@@ -1,12 +1,7 @@
 import React from'react';
 import{X}from'lucide-react';
-import{API,fmt,imageViewUrl}from'../../appShared.jsx';
+import{fmt,imageViewUrl}from'../../appShared.jsx';
 import{featureName}from'../../config/uiText.js';
-
-function imgSrc(url){
-  if(!url)return '';
-  return String(url).startsWith('http')?url:API+url;
-}
 
 function fileSize(bytes){
   const n=Number(bytes||0);

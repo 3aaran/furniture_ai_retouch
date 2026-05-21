@@ -21,6 +21,7 @@ const KIND_DIR_MAP = {
   reference: 'references',
   resource: 'resources',
   generated: 'generated',
+  avatar: 'avatars',
   temp: 'temp',
   trash: 'trash'
 };
@@ -102,6 +103,10 @@ function safeSegment(v, fallback) {
   return s.replace(/[^a-zA-Z0-9_-]/g, '_');
 }
 
+export function avatarStorageKey(userId) {
+  return path.posix.join('images', 'avatars', safeSegment(userId, 'system'), 'avatar');
+}
+
 function readImageDimensionsFromBuffer(buffer) {
   try {
     if (buffer.length >= 24 && buffer.toString('ascii', 1, 4) === 'PNG') {
@@ -154,6 +159,10 @@ export function buildImageStorageKey({ merchantId, userId, kind = 'original', fi
   const dirName = KIND_DIR_MAP[k];
   const m = safeSegment(merchantId, 'public');
   const u = safeSegment(userId, 'system');
+
+  if (k === 'avatar') {
+    return isOssStorage() ? avatarStorageKey(userId) : path.posix.join('images', 'avatars', u, fileName);
+  }
 
   if (k === 'resource') {
     return path.posix.join('images', 'resources', m, datePath(), fileName);
@@ -284,8 +293,10 @@ export async function getStoredFileMeta(imageOrUrl = '') {
 export async function saveUploadedImage(file, { merchantId = null, userId = null, kind = 'original' } = {}) {
   if (!file) return null;
 
+  const normalizedKind = normalizeKind(kind);
   const ext = safeExtFromName(normalizeUploadedFileName(file.originalname), '.png');
-  const fileName = `${Date.now()}-${normalizeKind(kind)}-${uuid()}${ext}`;
+  const avatarMode = normalizedKind === 'avatar';
+  const fileName = avatarMode ? (isOssStorage() ? 'avatar' : `avatar${ext}`) : `${Date.now()}-${normalizedKind}-${uuid()}${ext}`;
   const storageKey = buildImageStorageKey({ merchantId, userId, kind, fileName });
   const finalPath = diskPathFromStorageKey(storageKey);
   const sizeBytes = Number(file.size || fs.statSync(file.path).size || 0);
@@ -300,7 +311,7 @@ export async function saveUploadedImage(file, { merchantId = null, userId = null
     return {
       storageProvider: STORAGE_PROVIDER,
       storageKey,
-      url: publicUrlFromStorageKey(storageKey),
+      url: avatarMode ? `${publicUrlFromStorageKey(storageKey)}?v=${Date.now()}` : publicUrlFromStorageKey(storageKey),
       fileName,
       mimeType: file.mimetype || '',
       sizeBytes,
@@ -309,12 +320,22 @@ export async function saveUploadedImage(file, { merchantId = null, userId = null
   }
 
   fs.mkdirSync(path.dirname(finalPath), { recursive: true });
+  if (avatarMode) {
+    try {
+      for (const name of fs.readdirSync(path.dirname(finalPath))) {
+        if (name.startsWith('avatar') && path.join(path.dirname(finalPath), name) !== finalPath) {
+          fs.rmSync(path.join(path.dirname(finalPath), name), { force: true });
+        }
+      }
+      if (fs.existsSync(finalPath)) fs.rmSync(finalPath, { force: true });
+    } catch {}
+  }
   fs.renameSync(file.path, finalPath);
 
   return {
     storageProvider: STORAGE_PROVIDER,
     storageKey,
-    url: publicUrlFromStorageKey(storageKey),
+    url: avatarMode ? `${publicUrlFromStorageKey(storageKey)}?v=${Date.now()}` : publicUrlFromStorageKey(storageKey),
     fileName,
     mimeType: file.mimetype || '',
     sizeBytes,
@@ -458,8 +479,8 @@ export async function deleteStoredFile(imageOrUrl = '') {
   return deleteLocalStoredFile(imageOrUrl);
 }
 
-function storageKeyFromUrl(url = '') {
-  const raw = String(url || '');
+export function storageKeyFromUrl(url = '') {
+  const raw = String(url || '').split('#')[0].split('?')[0];
   if (!raw) return '';
   const ossBase = OSS_PUBLIC_BASE_URL || '';
   if (ossBase && raw.startsWith(ossBase.replace(/\/$/, '') + '/')) {

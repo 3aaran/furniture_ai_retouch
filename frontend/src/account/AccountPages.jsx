@@ -1,7 +1,7 @@
 import React,{useEffect,useRef,useState}from'react';
 import{createPortal}from'react-dom';
 import{ArrowRight,Building2,Camera,HardDrive,LockKeyhole,MessageSquare,Phone,ShieldCheck,Ticket,UserRound}from'lucide-react';
-import{API,req,reqForm,roleName}from'../appShared.jsx';
+import{avatarViewUrl,req,reqForm,roleName}from'../appShared.jsx';
 import{APP_NAME,LOGIN_SUBTITLE,LOGO_TEXT}from'../config/appConfig.js';
 
 function Login(){
@@ -134,7 +134,7 @@ function Profile({me,setMe,setMsg}){
   const[avatarBusy,setAvatarBusy]=useState(false);
   const fileRef=useRef(null);
   useEffect(()=>{req('/api/storage/me').then(setStorage).catch(()=>{})},[]);
-  const avatarUrl=me.avatarUrl?(String(me.avatarUrl).startsWith('http')?me.avatarUrl:API+me.avatarUrl):'';
+  const avatarUrl=avatarViewUrl(me);
   const initials=String(me.displayName||me.phone||me.username||'用').slice(0,1);
   async function saveInfo(){
     try{

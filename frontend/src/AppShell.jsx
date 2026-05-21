@@ -5,7 +5,7 @@ import{adminNav,adminNavGroups,Dashboard,Applications,Merchants,AiConfig,Setting
 import{storeAdminNav,staffNav,Workbench,StoreResources,StoreUsers,StoreTasks,Promotion,QuotaLogs}from'./store/StorePages.jsx';
 import{UserFeedback,FeedbackModal,RedeemModal,Profile}from'./account/AccountPages.jsx';
 import{TaskDetailModal}from'./components/TaskDetailModal.jsx';
-import{API,roleName,userFriendlyMessage,recordClientFailure}from'./appShared.jsx';
+import{avatarViewUrl,roleName,userFriendlyMessage,recordClientFailure}from'./appShared.jsx';
 import{APP_NAME,APP_SUBTITLE,LOGO_TEXT}from'./config/appConfig.js';
 
 function roleNav(role){
@@ -84,7 +84,7 @@ function Shell({me,setMe}){
     menuTimer.current=setTimeout(()=>setMenu(false),260);
   }
   function adminGroupActive(g){return g.items.some(([k])=>k===page)}
-  const avatarUrl=me.avatarUrl?(String(me.avatarUrl).startsWith('http')?me.avatarUrl:API+me.avatarUrl):'';
+  const avatarUrl=avatarViewUrl(me);
 
   useEffect(()=>{if(!msg)return;const t=setTimeout(()=>setMsg(''),2600);return()=>clearTimeout(t)},[msg]);
   useEffect(()=>{if(rawToastText&&rawToastText!==toastText)recordClientFailure('toast',rawToastText)},[rawToastText,toastText]);

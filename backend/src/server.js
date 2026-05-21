@@ -12,7 +12,7 @@ import { runAi, applyWatermark, quotaCost } from './aiService.js';
 import { submitAiTask, getAiTaskStatus, getAiTaskDetail, getRecentAiTasks, deleteAiTask } from './ai/taskService.js';
 import { getAiConfig, getFeatureConfig } from './ai/configService.js';
 import { callImageModel } from './ai/providerService.js';
-import { STORAGE_ROOT, storageTempDir, saveUploadedImage, saveBufferToStorage, urlToDiskPath, getLocalFileMeta, MIN_GENERATION_STORAGE_BYTES, getUserStorageSummary, assertUserStorageAvailable, addUserStorageUsage, applyUserStorageDelta, deleteStoredFile, normalizeUploadedFileName, getImageAccessUrl } from './services/storageService.js';
+import { STORAGE_ROOT, storageTempDir, saveUploadedImage, saveBufferToStorage, urlToDiskPath, getLocalFileMeta, MIN_GENERATION_STORAGE_BYTES, getUserStorageSummary, assertUserStorageAvailable, addUserStorageUsage, applyUserStorageDelta, deleteStoredFile, normalizeUploadedFileName, getImageAccessUrl, storageKeyFromUrl, avatarStorageKey } from './services/storageService.js';
 import { registerAdminRoutes } from './routes/adminRoutes.js';
 import { registerMerchantRoutes } from './routes/merchantRoutes.js';
 import { registerResourceCategoryRoutes } from './routes/resourceCategoryRoutes.js';
@@ -37,9 +37,12 @@ app.use(cors({
 }));
 app.use(express.json({limit:'8mb'}));
 app.use('/files', express.static(STORAGE_ROOT));
+app.use('/api/files', express.static(STORAGE_ROOT));
 // 兼容旧数据：历史图片仍可能存放在 /uploads 或 /outputs。
 app.use('/uploads', express.static(legacyUploadDir));
 app.use('/outputs', express.static(legacyOutputDir));
+app.use('/api/uploads', express.static(legacyUploadDir));
+app.use('/api/outputs', express.static(legacyOutputDir));
 app.use((req,res,next)=>{
   if(['/api/images/upload','/api/merchant/resources','/api/admin/resources'].includes(req.path)){
     console.log('[upload:request]',req.method,req.path,'auth=',req.headers.authorization?'yes':'no','type=',req.headers['content-type']||'');
@@ -727,6 +730,19 @@ app.get('/api/images/:id/download', requireAuth, async (req,res)=>{
   res.download(filePath, downloadName);
 });
 
+app.get('/api/users/:id/avatar', requireAuth, async (req,res)=>{
+  const [[u]]=await pool.query('SELECT id,merchant_id,avatar_url FROM users WHERE id=? AND status="ACTIVE" LIMIT 1',[req.params.id]);
+  if(!u?.avatar_url) return res.status(404).json({message:'头像不存在'});
+  const canView=isSystemAdmin(req.user)||req.user.id===u.id||(req.user.merchant_id&&req.user.merchant_id===u.merchant_id);
+  if(!canView) return res.status(403).json({message:'无权查看头像'});
+  const storedKey=storageKeyFromUrl(u.avatar_url);
+  const fallbackKey=String(u.avatar_url).startsWith('/api/users/')?avatarStorageKey(u.id):'';
+  const directUrl=getImageAccessUrl({url:u.avatar_url,storage_key:storedKey||fallbackKey},{expires:300});
+  if(!directUrl) return res.status(404).json({message:'头像地址不存在'});
+  res.setHeader('Cache-Control','private, max-age=60');
+  return res.redirect(directUrl);
+});
+
 app.get('/api/images/:id/watermark-preview', requireAuth, async (req,res)=>{
   let originalPath='';
   try{
@@ -785,10 +801,13 @@ app.post('/api/me/avatar', requireAuth, (req,res)=>{
       if(!req.file) return res.status(400).json({message:'请上传头像图片'});
       const [[current]]=await pool.query('SELECT avatar_url FROM users WHERE id=?',[req.user.id]);
       const saved=await saveUploadedImage(req.file,{merchantId:req.user.merchant_id||null,userId:req.user.id,kind:'avatar'});
-      await pool.query('UPDATE users SET avatar_url=? WHERE id=?',[saved.url,req.user.id]);
-      if(current?.avatar_url) await deleteStoredFile({url:current.avatar_url}).catch(()=>{});
+      const nextAvatarUrl=`/api/users/${req.user.id}/avatar?v=${Date.now()}`;
+      await pool.query('UPDATE users SET avatar_url=? WHERE id=?',[nextAvatarUrl,req.user.id]);
+      const currentKey=storageKeyFromUrl(current?.avatar_url||'');
+      const nextKey=saved.storageKey||storageKeyFromUrl(saved.url);
+      if(currentKey&&currentKey!==nextKey) await deleteStoredFile({url:current.avatar_url}).catch(()=>{});
       const [[u]]=await pool.query('SELECT * FROM users WHERE id=?',[req.user.id]);
-      res.json({message:'头像已更新',avatarUrl:saved.url,user:publicUser(u)});
+      res.json({message:'头像已更新',avatarUrl:nextAvatarUrl,user:publicUser(u)});
     }catch(e){
       if(req.file?.path && fs.existsSync(req.file.path)) fs.rmSync(req.file.path,{force:true});
       res.status(400).json({message:e.message||'头像上传失败'});

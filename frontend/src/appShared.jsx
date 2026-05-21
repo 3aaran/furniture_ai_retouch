@@ -4,6 +4,7 @@ import{roleName,audienceName,resourceTypeName,statusName,messageText}from'./conf
 
 const apiBase=(import.meta.env.VITE_API_BASE_URL||'/api').replace(/\/$/,'');
 export const API=apiBase==='/api'?'':apiBase;
+export const ASSET_BASE=API.replace(/\/api$/i,'');
 export {roleName};
 export const audName=audienceName;
 export const resTypeName=resourceTypeName;
@@ -63,14 +64,36 @@ export function imageViewUrl(image){
   if(typeof image==='string'){
     if(!image)return '';
     if(image.startsWith('http')||image.startsWith('data:'))return image;
-    if(image.startsWith('/'))return API+image;
+    if(image.startsWith('/'))return assetUrl(image);
     return `${API}/api/images/${image}/view?token=${encodeURIComponent(token()||'')}`;
   }
   const id=image?.resultImage?.id||image?.imageId||image?.sourceId||(image?.itemType==='task'?image?.originImage?.id:image?.id);
   if(id)return `${API}/api/images/${id}/view?token=${encodeURIComponent(token()||'')}`;
   const url=image?.url||image?.imageUrl||'';
   if(!url)return '';
-  return String(url).startsWith('http')?url:API+url;
+  return assetUrl(url);
+}
+export function assetUrl(url){
+  if(!url)return '';
+  const text=String(url);
+  if(text.startsWith('http')||text.startsWith('data:')||text.startsWith('blob:'))return text;
+  if(/^\/(files|uploads|outputs)\//.test(text))return `${API}/api${text}`;
+  if(text.startsWith('/'))return ASSET_BASE+text;
+  return `${ASSET_BASE}/${text.replace(/^\/+/,'')}`;
+}
+export function avatarViewUrl(user){
+  const raw=user?.avatarUrl||'';
+  if(!raw)return '';
+  const version=String(raw).match(/[?&]v=([^&]+)/)?.[1]||'';
+  if(user?.id){
+    const qs=new URLSearchParams();
+    const tk=token();
+    if(tk)qs.set('token',tk);
+    if(version)qs.set('v',version);
+    const suffix=qs.toString()?`?${qs.toString()}`:'';
+    return `${API}/api/users/${encodeURIComponent(user.id)}/avatar${suffix}`;
+  }
+  return assetUrl(raw);
 }
 export async function req(url,opt={}){
   const r=await fetch(API+url,{...opt,headers:{'Content-Type':'application/json',Authorization:token()?`Bearer ${token()}`:'',...(opt.headers||{})}});
