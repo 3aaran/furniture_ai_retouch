@@ -19,6 +19,7 @@ import { registerResourceCategoryRoutes } from './routes/resourceCategoryRoutes.
 import { registerProfileRoutes } from './routes/profileRoutes.js';
 import { recycleExpiredTrialAccount } from './services/trialAccountService.js';
 import { bindImageToResourceCategory } from './services/resourceBindingService.js';
+import { processStoredImage, processTypeForOperation } from './services/imageProcessService.js';
 
 await initDb();
 const app = express();
@@ -456,6 +457,72 @@ app.get('/api/images/:id/source', requireAuth, async (req,res)=>{
   }
 });
 
+// 对生成图或上传图进行基础处理，处理结果继续走统一存储服务，OSS 模式下会自动上传到 OSS。
+app.post('/api/images/:id/process', requireAuth, async (req,res)=>{
+  let saved = null;
+  try{
+    const [[img]]=await pool.query(
+      'SELECT * FROM images WHERE id=? AND status="ACTIVE" AND (? OR user_id=? OR merchant_id=?) LIMIT 1',
+      [req.params.id,isSystemAdmin(req.user),req.user.id,req.user.merchant_id]
+    );
+    if(!img) return res.status(404).json({message:'图片不存在或无权操作'});
+
+    saved = await processStoredImage(img, req.body, {
+      merchantId: img.merchant_id || req.user.merchant_id || null,
+      userId: req.user.id
+    });
+
+    const id=uuid();
+    const displayName=`图片处理-${saved.operation}`;
+    const conn=await pool.getConnection();
+    try{
+      await conn.beginTransaction();
+      await assertUserStorageAvailable(conn, req.user.id, Number(saved.sizeBytes || 0), {
+        label:'图片处理结果'
+      });
+      await conn.query(
+        'INSERT INTO images(id,merchant_id,user_id,display_name,original_name,file_name,mime_type,size_bytes,width,height,storage_provider,storage_key,url,source_type,status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+        [id,img.merchant_id||req.user.merchant_id||null,req.user.id,displayName,saved.fileName||displayName,saved.fileName||'',saved.mimeType||'',Number(saved.sizeBytes||0),saved.width||null,saved.height||null,saved.storageProvider,saved.storageKey,saved.url,'PROCESS_RESULT','ACTIVE']
+      );
+      await conn.query(
+        'INSERT INTO image_relations(id,source_image_id,target_image_id,relation_type) VALUES(?,?,?,"GENERATED_FROM")',
+        [uuid(),img.id,id]
+      );
+      await conn.query(
+        'INSERT INTO image_process_tasks(id,merchant_id,user_id,process_type,source_image_id,result_image_id,status,process_options_json,finished_at) VALUES(?,?,?,?,?,?,"succeeded",?,NOW())',
+        [uuid(),img.merchant_id||req.user.merchant_id||null,req.user.id,processTypeForOperation(saved.operation),img.id,id,JSON.stringify(req.body||{})]
+      );
+      await applyUserStorageDelta(conn, req.user.id, Number(saved.sizeBytes||0), {
+        action:'IMAGE_PROCESS_RESULT',
+        imageId:id,
+        message:'image process result saved'
+      });
+      await conn.commit();
+    }catch(e){
+      await conn.rollback();
+      await deleteStoredFile({url:saved.url,storageKey:saved.storageKey});
+      saved=null;
+      throw e;
+    }finally{
+      conn.release();
+    }
+
+    return res.json({
+      id,
+      imageId:id,
+      url:saved.url,
+      originalName:displayName,
+      width:saved.width||null,
+      height:saved.height||null,
+      format:saved.format,
+      mimeType:saved.mimeType||''
+    });
+  }catch(e){
+    if(saved?.url) await deleteStoredFile({url:saved.url,storageKey:saved.storageKey});
+    return res.status(400).json({message:e.message||'图片处理失败'});
+  }
+});
+
 
 app.get('/api/images/:id/detail-rich', requireAuth, async (req,res)=>{
   const [[img]]=await pool.query(`
@@ -671,20 +738,6 @@ app.all('/api/watermark/settings', requireAuth, async (req,res,next)=>{
   }
 });
 
-app.get('/api/watermark/settings', requireAuth, async (req,res)=>{
-  const [rows]=await pool.query('SELECT * FROM watermarks WHERE user_id=? ORDER BY created_at DESC LIMIT 1',[req.user.id]);
-  if(rows[0]) return res.json({enabled:true, name:rows[0].name, config: typeof rows[0].config==='string'?JSON.parse(rows[0].config):rows[0].config});
-  res.json({enabled:false, name:'默认水印', config:{style:'signature', text:readAppConfigValue('watermarkText', `${APP_NAME}`), subText:readAppConfigValue('watermarkSubText', 'DESIGN'), position:'bottom-left', fontSize:46, opacity:.72, color:'#f1d88b', accent:'#ffffff', rotate:0, margin:42, gap:220}});
-});
-app.put('/api/watermark/settings', requireAuth, async (req,res)=>{
-  const config=req.body.config||{};
-  const enabled=!!req.body.enabled;
-  const name=String(req.body.name||'默认水印').slice(0,100);
-  await pool.query('DELETE FROM watermarks WHERE user_id=?',[req.user.id]);
-  await pool.query('INSERT INTO watermarks(id,merchant_id,user_id,name,config) VALUES(?,?,?,?,?)',[uuid(),req.user.merchant_id,req.user.id,name,JSON.stringify({...config,enabled})]);
-  res.json({message:'水印配置已保存',enabled,name,config:{...config,enabled}});
-});
-
 app.get('/api/images/:id/view', requireAuth, async (req,res)=>{
   try{
     const [[img]]=await pool.query(
@@ -713,45 +766,70 @@ app.get('/api/images/:id/view', requireAuth, async (req,res)=>{
 });
 
 app.get('/api/images/:id/download', requireAuth, async (req,res)=>{
-  const [[img]]=await pool.query('SELECT * FROM images WHERE id=? AND (? OR user_id=? OR merchant_id=?)',[req.params.id,isSystemAdmin(req.user),req.user.id,req.user.merchant_id]);
-  if(!img) return res.status(404).json({message:'图片不存在'});
-  const directUrl=getImageAccessUrl(img);
-  if(/^https?:\/\//i.test(directUrl)) return res.redirect(directUrl);
-  let filePath=urlToDiskPath(img.url);
-  let downloadName=`${APP_NAME}-${img.source_type||'image'}-${img.id}.png`;
-  if(String(req.query.watermark||'')==='1'){
-    const [rows]=await pool.query('SELECT * FROM watermarks WHERE merchant_id=? ORDER BY created_at DESC LIMIT 1',[req.user.merchant_id]);
-    if(rows[0]){
-      const config=typeof rows[0].config==='string'?JSON.parse(rows[0].config):rows[0].config;
-      if(config?.image||(config?.mode==='text'&&String(config?.text||'').trim())){
-        const wmUrl=await applyWatermark({imagePath:filePath, config});
-        filePath=String(wmUrl).startsWith('/files/') ? urlToDiskPath(wmUrl) : wmUrl;
-        downloadName=`${APP_NAME}-watermark-${img.id}.png`;
-      }
-    }
-  }
-  res.download(filePath, downloadName);
-});
-
-app.get('/api/images/:id/watermark-preview', requireAuth, async (req,res)=>{
-  let originalPath='';
   try{
     const [[img]]=await pool.query('SELECT * FROM images WHERE id=? AND (? OR user_id=? OR merchant_id=?)',[req.params.id,isSystemAdmin(req.user),req.user.id,req.user.merchant_id]);
     if(!img) return res.status(404).json({message:'图片不存在'});
-    originalPath=urlToDiskPath(img.url);
-    const [rows]=await pool.query('SELECT * FROM watermarks WHERE merchant_id=? ORDER BY created_at DESC LIMIT 1',[req.user.merchant_id]);
-    if(!rows[0]) return res.sendFile(originalPath);
+    const merchantId=img.merchant_id||req.user.merchant_id||null;
+    let finalUrl=getImageAccessUrl(img);
+    let downloadName=`${APP_NAME}-${img.source_type||'image'}-${img.id}.png`;
+    if(String(req.query.watermark||'')==='1'&&merchantId){
+      const [rows]=await pool.query('SELECT * FROM watermarks WHERE merchant_id=? ORDER BY created_at DESC LIMIT 1',[merchantId]);
+      if(rows[0]){
+        const config=typeof rows[0].config==='string'?JSON.parse(rows[0].config):rows[0].config;
+        if(config?.image||(config?.mode==='text'&&String(config?.text||'').trim())){
+          const sourceInput=/^https?:\/\//i.test(finalUrl)?finalUrl:urlToDiskPath(img.url);
+          const wmUrl=await applyWatermark({imagePath:sourceInput,config,merchantId,userId:req.user.id});
+          if(wmUrl&&wmUrl!==sourceInput){
+            finalUrl=getImageAccessUrl({url:wmUrl});
+            downloadName=`${APP_NAME}-watermark-${img.id}.png`;
+          }
+        }
+      }
+    }
+    if(/^https?:\/\//i.test(finalUrl)) return res.redirect(finalUrl);
+    return res.download(urlToDiskPath(finalUrl||img.url), downloadName);
+  }catch(e){
+    return res.status(400).json({message:e.message||'图片下载失败'});
+  }
+});
+
+app.get('/api/images/:id/watermark-preview', requireAuth, async (req,res)=>{
+  let fallbackUrl='';
+  try{
+    const [[img]]=await pool.query('SELECT * FROM images WHERE id=? AND (? OR user_id=? OR merchant_id=?)',[req.params.id,isSystemAdmin(req.user),req.user.id,req.user.merchant_id]);
+    if(!img) return res.status(404).json({message:'图片不存在'});
+    fallbackUrl=getImageAccessUrl(img);
+    const merchantId=img.merchant_id||req.user.merchant_id||null;
+    if(!merchantId){
+      if(/^https?:\/\//i.test(fallbackUrl)) return res.redirect(fallbackUrl);
+      return res.sendFile(urlToDiskPath(fallbackUrl||img.url));
+    }
+    const [rows]=await pool.query('SELECT * FROM watermarks WHERE merchant_id=? ORDER BY created_at DESC LIMIT 1',[merchantId]);
+    if(!rows[0]){
+      if(/^https?:\/\//i.test(fallbackUrl)) return res.redirect(fallbackUrl);
+      return res.sendFile(urlToDiskPath(fallbackUrl||img.url));
+    }
     const config=typeof rows[0].config==='string'?JSON.parse(rows[0].config):rows[0].config;
     if(!(config?.image || (config?.mode==='text' && String(config?.text||'').trim()))){
-      return res.sendFile(originalPath);
+      if(/^https?:\/\//i.test(fallbackUrl)) return res.redirect(fallbackUrl);
+      return res.sendFile(urlToDiskPath(fallbackUrl||img.url));
     }
-    const wmUrl=await applyWatermark({imagePath:originalPath,config});
-    const wmPath=String(wmUrl).startsWith('/files/') ? urlToDiskPath(wmUrl) : wmUrl;
+    const sourceInput=/^https?:\/\//i.test(fallbackUrl)?fallbackUrl:urlToDiskPath(img.url);
+    const wmUrl=await applyWatermark({imagePath:sourceInput,config,merchantId,userId:req.user.id});
+    if(!wmUrl||wmUrl===sourceInput){
+      if(/^https?:\/\//i.test(fallbackUrl)) return res.redirect(fallbackUrl);
+      return res.sendFile(urlToDiskPath(fallbackUrl||img.url));
+    }
+    const wmPath=getImageAccessUrl({url:wmUrl});
     res.setHeader('Cache-Control','no-store');
+    if(/^https?:\/\//i.test(wmPath)) return res.redirect(wmPath);
     res.type('png');
-    return res.sendFile(wmPath);
+    return res.sendFile(urlToDiskPath(wmPath));
   }catch(e){
-    if(originalPath) return res.sendFile(originalPath);
+    if(fallbackUrl){
+      if(/^https?:\/\//i.test(fallbackUrl)) return res.redirect(fallbackUrl);
+      return res.sendFile(urlToDiskPath(fallbackUrl));
+    }
     return res.status(400).json({message:e.message||'水印预览生成失败'});
   }
 });

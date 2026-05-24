@@ -52,6 +52,28 @@ function placementStyle(config){
   return map[config.position]||map.center;
 }
 
+function TextWatermarkPreview({config,watermarkStyle}){
+  if(config.style==='tile'){
+    const items=Array.from({length:40});
+    return <div
+      className="watermarkPreviewTile"
+      style={{
+        color:config.color,
+        opacity:Number(config.opacity||0)/100,
+        fontSize:`${Math.max(16,Number(config.fontSize||46)*0.34)}px`,
+        transform:`rotate(${Number(config.rotate||0)}deg)`,
+        gap:`${Math.max(14,Number(config.gap||220)*0.12)}px`
+      }}
+    >
+      {items.map((_,i)=><span key={i}>{config.text||'文字水印'}{config.subText?<small>{config.subText}</small>:null}</span>)}
+    </div>;
+  }
+  return <div className={`watermarkPreviewText ${config.style||'signature'}`} style={{...watermarkStyle,color:config.color,fontSize:`${Math.max(18,Number(config.fontSize||46)*0.55)}px`,transform:`${watermarkStyle.transform||''} rotate(${Number(config.rotate||0)}deg)`}}>
+    <b>{config.text||'文字水印'}</b>
+    {config.subText&&<small style={{color:config.accent}}>{config.subText}</small>}
+  </div>;
+}
+
 export function WatermarkConfigModal({open,onClose,setMsg}){
   const[config,setConfig]=useState(defaultConfig);
   const[canConfigure,setCanConfigure]=useState(true);
@@ -205,10 +227,7 @@ export function WatermarkConfigModal({open,onClose,setMsg}){
               <div className="watermarkPreviewStage">
                 <div className="watermarkPreviewImage"><span>示例图片</span></div>
                 {config.mode==='text'?
-                  <div className={`watermarkPreviewText ${config.style||'signature'}`} style={{...watermarkStyle,color:config.color,fontSize:`${Math.max(18,Number(config.fontSize||46)*0.55)}px`,transform:`${watermarkStyle.transform||''} rotate(${Number(config.rotate||0)}deg)`}}>
-                    <b>{config.text||'文字水印'}</b>
-                    {config.subText&&<small style={{color:config.accent}}>{config.subText}</small>}
-                  </div>
+                  <TextWatermarkPreview config={config} watermarkStyle={watermarkStyle}/>
                   :
                   config.image?
                   <img className="watermarkPreviewMark" src={srcOf(config.image)} alt="水印预览" style={watermarkStyle}/>

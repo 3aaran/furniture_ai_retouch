@@ -95,7 +95,6 @@ export const workbenchText = {
   uploadResource: '上传资源',
   download: '下载',
   delete: '删除',
-  regenerate: '重生成',
   confirmDeleteImage: '确定删除该图片？',
   uploadSuccess: '上传成功',
   deleteSuccess: '删除成功',

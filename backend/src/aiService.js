@@ -3,7 +3,7 @@ import path from 'path';
 import axios from 'axios';
 import sharp from 'sharp';
 import { v4 as uuid } from 'uuid';
-import { saveBufferToStorage, urlToDiskPath } from './services/storageService.js';
+import { getImageAccessUrl, saveBufferToStorage, storageKeyFromUrl, urlToDiskPath } from './services/storageService.js';
 
 function readAppConfigValue(key, fallback = '') {
   try {
@@ -33,6 +33,36 @@ async function saveBuffer(buffer, op, ext = 'png', context = {}) {
     op,
     ext
   })).url;
+}
+
+async function sharpReadableInput(input) {
+  const raw = String(input || '');
+  if (!raw) throw new Error('图片地址不存在');
+  if (/^https?:\/\//i.test(raw)) {
+    const signed = getImageAccessUrl({ url: raw, storage_key: storageKeyFromUrl(raw) });
+    const response = await axios.get(signed || raw, { responseType: 'arraybuffer', timeout: 120000 });
+    return Buffer.from(response.data);
+  }
+  return raw;
+}
+
+async function watermarkImageBuffer(input) {
+  const raw = String(input || '');
+  if (!raw) return null;
+  if (raw.startsWith('data:image/')) {
+    const comma = raw.indexOf(',');
+    return comma >= 0 ? Buffer.from(raw.slice(comma + 1), 'base64') : null;
+  }
+  if (/^https?:\/\//i.test(raw)) {
+    const signed = getImageAccessUrl({ url: raw, storage_key: storageKeyFromUrl(raw) });
+    const response = await axios.get(signed || raw, { responseType: 'arraybuffer', timeout: 120000 });
+    return Buffer.from(response.data);
+  }
+  if (raw.startsWith('/')) {
+    const localPath = urlToDiskPath(raw);
+    if (localPath && fs.existsSync(localPath)) return fs.readFileSync(localPath);
+  }
+  return null;
 }
 
 async function copyMock(inputPath, op, context = {}) {
@@ -222,20 +252,13 @@ export async function runAi({ operation, imagePath, prompt, merchantId = null, u
 }
 
 
-export async function applyWatermark({ imagePath, config }) {
-  const meta = await sharp(imagePath).metadata();
+export async function applyWatermark({ imagePath, config, merchantId = null, userId = null }) {
+  const baseInput = await sharpReadableInput(imagePath);
+  const meta = await sharp(baseInput).metadata();
   const width = meta.width || 1000;
   const height = meta.height || 800;
   if(config.mode !== 'text' && config.image){
-    const raw=String(config.image);
-    let markBuffer=null;
-    if(raw.startsWith('data:image/')){
-      const comma=raw.indexOf(',');
-      if(comma>=0) markBuffer=Buffer.from(raw.slice(comma+1),'base64');
-    }else if(raw.startsWith('/')){
-      const localPath=urlToDiskPath(raw);
-      if(localPath&&fs.existsSync(localPath)) markBuffer=fs.readFileSync(localPath);
-    }
+    const markBuffer=await watermarkImageBuffer(config.image);
     if(!markBuffer) return imagePath;
     const widthPercent=Math.max(5,Math.min(60,Number(config.widthPercent||23.5)));
     const markWidth=Math.max(1,Math.round(width*widthPercent/100));
@@ -255,31 +278,33 @@ export async function applyWatermark({ imagePath, config }) {
     const input=markOpacity<1
       ? await sharp(resized).composite([{input:Buffer.from([255,255,255,Math.round(markOpacity*255)]),raw:{width:1,height:1,channels:4},tile:true,blend:'dest-in'}]).png().toBuffer()
       : resized;
-    const out = await sharp(imagePath).composite([{input,left:Math.max(0,left),top:Math.max(0,top)}]).png().toBuffer();
-    return saveBuffer(out, 'watermark', 'png', { kind: 'generated' });
+    const out = await sharp(baseInput).composite([{input,left:Math.max(0,left),top:Math.max(0,top)}]).png().toBuffer();
+    return saveBuffer(out, 'watermark', 'png', { merchantId, userId, kind: 'generated' });
   }
   const text = String(config.text || readAppConfigValue('watermarkText', '家具修图')).replace(/[<>&]/g, '');
   const subText = String(config.subText || '').replace(/[<>&]/g, '');
   const fontSize = Number(config.fontSize || 42);
-  const opacity = Math.max(0, Math.min(1, Number(config.opacity ?? 0.36)));
+  const opacityRaw = Number(config.opacity ?? 36);
+  const opacity = Math.max(0, Math.min(1, opacityRaw > 1 ? opacityRaw / 100 : opacityRaw));
   const color = config.color || '#f1d88b';
   const accent = config.accent || '#ffffff';
   const pos = config.position || 'bottom-right';
   const style = config.style || 'signature';
   const rotate = Number(config.rotate || 0);
-  const margin = Math.max(24, Number(config.margin || 46));
+  const offsetX = Number(config.offsetX ?? config.margin ?? 46);
+  const offsetY = Number(config.offsetY ?? config.margin ?? 46);
   const gap = Math.max(80, Number(config.gap || 220));
 
   function xy(w, h) {
-    if (pos === 'top-left') return [margin, margin];
-    if (pos === 'top-center') return [(width - w) / 2, margin];
-    if (pos === 'top-right') return [width - w - margin, margin];
-    if (pos === 'middle-left' || pos === 'center-left') return [margin, (height - h) / 2];
-    if (pos === 'center') return [(width - w) / 2, (height - h) / 2];
-    if (pos === 'middle-right' || pos === 'center-right') return [width - w - margin, (height - h) / 2];
-    if (pos === 'bottom-left') return [margin, height - h - margin];
-    if (pos === 'bottom-center') return [(width - w) / 2, height - h - margin];
-    return [width - w - margin, height - h - margin];
+    if (pos === 'top-left') return [offsetX, offsetY];
+    if (pos === 'top-center') return [(width - w) / 2 + offsetX, offsetY];
+    if (pos === 'top-right') return [width - w - offsetX, offsetY];
+    if (pos === 'middle-left' || pos === 'center-left') return [offsetX, (height - h) / 2 + offsetY];
+    if (pos === 'center') return [(width - w) / 2 + offsetX, (height - h) / 2 + offsetY];
+    if (pos === 'middle-right' || pos === 'center-right') return [width - w - offsetX, (height - h) / 2 + offsetY];
+    if (pos === 'bottom-left') return [offsetX, height - h - offsetY];
+    if (pos === 'bottom-center') return [(width - w) / 2 + offsetX, height - h - offsetY];
+    return [width - w - offsetX, height - h - offsetY];
   }
 
   let svg = '';
@@ -290,7 +315,7 @@ export async function applyWatermark({ imagePath, config }) {
         <text x="20" y="${gap/2}" font-size="${fontSize}" fill="${color}" font-family="Arial, Microsoft YaHei" font-weight="800" opacity="${opacity}">${text}</text>
       </pattern></defs><rect width="100%" height="100%" fill="url(#${patternId})"/></svg>`;
   } else if (style === 'badge') {
-    const w = Math.min(width - margin*2, Math.max(260, text.length * fontSize * 0.72 + 110));
+    const w = Math.min(width - offsetX*2, Math.max(260, text.length * fontSize * 0.72 + 110));
     const h = subText ? fontSize * 2.35 : fontSize * 1.75;
     const [x,y]=xy(w,h);
     svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
@@ -319,6 +344,6 @@ export async function applyWatermark({ imagePath, config }) {
         ${subText?`<text x="${x}" y="${y+fontSize*1.55}" font-size="${fontSize*.42}" fill="${accent}" font-family="Arial, Microsoft YaHei">${subText}</text>`:''}
       </g></svg>`;
   }
-  const out = await sharp(imagePath).composite([{ input: Buffer.from(svg), top: 0, left: 0 }]).png().toBuffer();
-  return saveBuffer(out, 'watermark', 'png', { kind: 'generated' });
+  const out = await sharp(baseInput).composite([{ input: Buffer.from(svg), top: 0, left: 0 }]).png().toBuffer();
+  return saveBuffer(out, 'watermark', 'png', { merchantId, userId, kind: 'generated' });
 }

@@ -86,7 +86,7 @@ function Merchants({setMsg}){
   const[detail,setDetail]=useState(null),[delta,setDelta]=useState(0),[loadingDetail,setLoadingDetail]=useState(false);
   async function open(id){try{setLoadingDetail(true);const d=await req('/api/admin/merchants/'+id);setDetail(d);setDelta(0)}catch(e){setMsg(e.message)}finally{setLoadingDetail(false)}}
   async function status(m){try{await req('/api/admin/merchants/'+m.id+'/status',{method:'PATCH',body:JSON.stringify({status:m.status==='ACTIVE'?'DISABLED':'ACTIVE',announce:true})});setMsg('商家状态已更新');load();if(detail?.merchant?.id===m.id)open(m.id)}catch(e){setMsg(e.message)}}
-  async function saveConfig(){try{await req('/api/admin/merchants/'+detail.merchant.id+'/config',{method:'PATCH',body:JSON.stringify({quotaDelta:Number(delta),announce:true})});setMsg('商家额度已调整');setDelta(0);load();open(detail.merchant.id)}catch(e){setMsg(e.message)}}
+  async function saveConfig(){try{const d=await req('/api/admin/merchants/'+detail.merchant.id+'/config',{method:'PATCH',body:JSON.stringify({quotaDelta:Number(delta),announce:true})});setDelta(0);load();await open(detail.merchant.id);setMsg(d.message||'商家额度已调整')}catch(e){setMsg(e.message)}}
   return <div className="adminModernPage merchantsPageV9">
     <section className="adminHeroV9 merchantHeroV9"><div><span>商家运营</span><h1>商家管理</h1></div><button onClick={()=>window.open(API+'/api/export/merchants?token='+token())}><Download size={17}/>导出商家</button></section>
     <section className="adminPanelV9">

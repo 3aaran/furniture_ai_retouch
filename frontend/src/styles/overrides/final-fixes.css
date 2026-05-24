@@ -1229,6 +1229,30 @@
 .watermarkPreviewText.tile{
   opacity:.42!important;
 }
+.watermarkPreviewTile{
+  position:absolute;
+  inset:-18%;
+  z-index:2;
+  display:flex;
+  flex-wrap:wrap;
+  align-content:center;
+  justify-content:center;
+  overflow:hidden;
+  pointer-events:none;
+  font-weight:900;
+  line-height:1;
+  text-shadow:0 2px 8px rgba(0,0,0,.22);
+}
+.watermarkPreviewTile span{
+  display:inline-flex;
+  align-items:center;
+  gap:.45em;
+  white-space:nowrap;
+}
+.watermarkPreviewTile small{
+  font-size:.48em;
+  color:inherit;
+}
 .watermarkFoot{
   position:relative;
   z-index:2;

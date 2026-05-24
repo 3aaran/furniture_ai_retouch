@@ -1,5 +1,5 @@
 ﻿import React,{useEffect,useRef,useState}from'react';
-import{Layers,Users as UsersIcon,Brush,Download,Trash2,Eye,Search,Plus,Power,RotateCcw}from'lucide-react';
+import{Layers,Users as UsersIcon,Brush,Download,Trash2,Eye,Search,Plus,Power}from'lucide-react';
 import{API,token,req,reqForm,fmt,resTypeName,imageViewUrl,assetUrl}from'../../appShared.jsx';
 import{featureConfig}from'../../config/featureConfig.jsx';
 import WorkbenchUploadPanel from'./WorkbenchUploadPanel.jsx';
@@ -168,9 +168,24 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   }
 
   function refreshRecent(){
-    req('/api/ai/tasks/recent?pageSize=20').then(d=>setRecent(d.items||[])).catch(()=>{
-      req('/api/images/recent?pageSize=20').then(d=>setRecent((d.items||[]).filter(i=>i.kind!=='original'))).catch(()=>{});
-    });
+    Promise.allSettled([
+      req('/api/ai/tasks/recent?pageSize=20'),
+      req('/api/images/recent?pageSize=20')
+    ]).then(results=>{
+      const taskItems=results[0].status==='fulfilled'?(results[0].value.items||[]):[];
+      const imageItems=results[1].status==='fulfilled'?(results[1].value.items||[]).filter(i=>i.kind!=='original'):[];
+      const seen=new Set();
+      const items=[...taskItems,...imageItems]
+        .filter(item=>{
+          const id=String(item.resultImage?.id||item.imageId||item.id||'');
+          if(!id||seen.has(id))return false;
+          seen.add(id);
+          return true;
+        })
+        .sort((a,b)=>new Date(b.createdAt||b.submittedAt||0)-new Date(a.createdAt||a.submittedAt||0))
+        .slice(0,20);
+      setRecent(items);
+    }).catch(()=>{});
   }
 
   function pollAiTask(taskId){
@@ -720,7 +735,6 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
               zIndex:3
             }}
           >
-            {renderRecentActionButton(<RotateCcw size={14}/>,(e)=>{e.stopPropagation();setMsg('重生成按钮已预留，后续再接入逻辑');},'重生成',{disabled:true})}
             {renderRecentActionButton(<Download size={14}/>,(e)=>{e.stopPropagation();window.open(`${API}/api/images/${item.resultImage?.id||item.imageId}/download?token=${token()}`,'_blank');},'下载')}
             {renderRecentActionButton(<Trash2 size={14}/>,(e)=>deleteRecentTask(item,e),'删除',{danger:true})}
           </div>}

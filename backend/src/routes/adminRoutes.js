@@ -214,13 +214,18 @@ export function registerAdminRoutes(app,{upload}){
   
   app.patch('/api/admin/merchants/:id/config', requireAuth, async (req,res)=>{
     if(!isSystemAdmin(req.user)) return res.status(403).json({message:SYSTEM_ADMIN_REQUIRED_MESSAGE});
+    let message='商家配置已更新';
     if(req.body.quotaDelta!==undefined && Number(req.body.quotaDelta)!==0){
       const delta=Number(req.body.quotaDelta);
+      const [[merchant]]=await pool.query('SELECT quota_balance FROM merchants WHERE id=?',[req.params.id]);
+      if(!merchant) return res.status(404).json({message:'商家不存在'});
+      if(delta<0&&Number(merchant.quota_balance||0)<Math.abs(delta)) return res.status(400).json({message:'门店余额不足，无法扣减'});
       await pool.query('UPDATE merchants SET quota_balance=quota_balance+? WHERE id=?',[delta,req.params.id]);
-      await pool.query('INSERT INTO quota_logs(id,merchant_id,related_user_id,operator_user_id,amount,type,balance_after,remark) VALUES(?,?,?,?,?,?,(SELECT quota_balance FROM merchants WHERE id=?),?)',[uuid(),req.params.id,null,req.user.id,delta,'MANUAL_ADJUST',req.params.id,'后台调整门店算力']);
+      await pool.query('INSERT INTO quota_logs(id,merchant_id,related_user_id,operator_user_id,amount,type,balance_after,remark) VALUES(?,?,?,?,?,?,(SELECT quota_balance FROM merchants WHERE id=?),?)',[uuid(),req.params.id,null,req.user.id,delta,'MANUAL_ADJUST',req.params.id,delta>0?'平台管理员给门店充值':'平台管理员扣减门店算力']);
+      message=delta>0?'门店充值成功':'门店额度已扣减';
     }
     if(req.body.announce) await addAnnouncement({title:req.body.announcementTitle||'商家配置调整通知',content:req.body.announcementContent||'您的商家账户配置已调整。',audience:'MERCHANT',createdBy:req.user.id});
-    res.json({message:'商家配置已更新'});
+    res.json({message});
   });
 
   app.patch('/api/admin/users/:id/storage-limit', requireAuth, async (req,res)=>{
