@@ -1,6 +1,6 @@
 import React,{useEffect,useState}from'react';
 import{ChevronLeft,ChevronRight,Search,Download}from'lucide-react';
-import{roleName,audienceName,resourceTypeName,statusName,messageText}from'./config/uiText.js';
+import{roleName,audienceName,resourceTypeName,statusName,messageText,getDisplayStatusName}from'./config/uiText.js';
 
 const apiBase=(import.meta.env.VITE_API_BASE_URL||'/api').replace(/\/$/,'');
 export const API=apiBase==='/api'?'':apiBase;
@@ -8,7 +8,7 @@ export const ASSET_BASE=API.replace(/\/api$/i,'');
 export {roleName};
 export const audName=audienceName;
 export const resTypeName=resourceTypeName;
-export const getStatusName=v=>statusName[String(v)]||v;
+export const getStatusName=v=>statusName[String(v)]||getDisplayStatusName(v);
 export function token(){return localStorage.getItem('token')}
 export function recordClientFailure(source,detail){
   try{

@@ -1,7 +1,7 @@
 import React from'react';
 import{X}from'lucide-react';
 import{fmt,imageViewUrl}from'../../appShared.jsx';
-import{featureName}from'../../config/uiText.js';
+import{getDisplayStatusName,getFeatureDisplayName}from'../../config/uiText.js';
 
 function fileSize(bytes){
   const n=Number(bytes||0);
@@ -39,8 +39,8 @@ export default function ResourceDetailModal({detail,onClose,onUse}){
           <section className="resourceRelatedTasksV3">
             <h4>关联生成记录（{tasks.length}）</h4>
             {tasks.length?tasks.map(task=><article key={task.id}>
-              <b>{featureName[task.featureKey]||task.featureKey||'AI任务'}</b>
-              <span>{task.status} · {fmt(task.submittedAt)}</span>
+              <b>{getFeatureDisplayName(task.featureKey,'AI任务')}</b>
+              <span>{getDisplayStatusName(task.status)} · {fmt(task.submittedAt)}</span>
               <small>{task.id}</small>
             </article>):<p>暂无关联生成记录</p>}
           </section>

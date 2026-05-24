@@ -2,6 +2,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createPortal}from'react-dom';
 import{ChevronLeft,ChevronRight,Copy,Download,FileText,Flag,Hash,SlidersHorizontal,Trash2,User,WalletCards}from'lucide-react';
 import{API,token,req,fmt,imageViewUrl,assetUrl}from'../appShared.jsx';
+import{getDisplayStatusName,getFeatureDisplayName}from'../config/uiText.js';
 import WatermarkConfigModal from'../store/workbench/WatermarkConfigModal.jsx';
 import ConfirmDialog from'./ConfirmDialog.jsx';
 
@@ -200,9 +201,10 @@ function TaskDetailModal({
   const featureKey=getTaskFeature(detail);
   const spec=joinParts([detail.resolution||outputFormat.resolution||settings.resolution, detail.ratio||outputFormat.ratio||settings.ratio]);
   const userName=detail.userName||detail.userPhone||detail.phone||detail.username||'-';
-  const rawOp=ops?.[detail.kind||detail.featureKey];
-  const opLabel=(rawOp&&typeof rawOp==='object')?rawOp.label:(rawOp||detail.featureName||detail.kind||detail.featureKey||'-');
-  const status=statusMap[detail.status]||(detail.status||'\u5df2\u5b8c\u6210');
+  const opKey=detail.featureKey||detail.operation||detail.kind||featureKey;
+  const rawOp=ops?.[opKey]||ops?.[featureKey]||ops?.[detail.kind];
+  const opLabel=(rawOp&&typeof rawOp==='object')?rawOp.label:(rawOp||getFeatureDisplayName(detail.featureName,'')||getFeatureDisplayName(opKey,getFeatureDisplayName(detail.kind,'AI任务')));
+  const status=statusMap[detail.status]||getDisplayStatusName(detail.status,'已完成');
   const statusTone=String(detail.status||'').toUpperCase().includes('FAIL')?'failed':'success';
   const quotaUsed=Number(detail.quotaUsed||detail.costUsed||detail.cost||settings.cost||0);
   const userPrompt=(detail.userPrompt||detail.detailUserPrompt||settings.customText||settings.userPrompt||'').trim();
@@ -313,7 +315,7 @@ function TaskDetailModal({
             </div>)}
           </div>}
 
-          <div className="promptBox"><div><span>用户要求</span><button onClick={copyPrompt} disabled={!displayPrompt}><Copy size={14}/>复制</button></div><p>{displayPrompt||'无'}</p></div>
+          <div className="promptBox"><div><span>用户要求</span><button className="iconOnly" title="复制用户要求" aria-label="复制用户要求" onClick={copyPrompt} disabled={!displayPrompt}><Copy size={14}/></button></div><p>{displayPrompt||'无'}</p></div>
           {!isAdmin&&<div className="taskWatermarkControl">
             <div>
               <b>{'\u4f7f\u7528\u6c34\u5370'}</b>

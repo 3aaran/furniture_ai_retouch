@@ -1,7 +1,7 @@
 ﻿import React,{useEffect,useState}from'react';
 import{Trash2,Plus,RotateCcw,Pencil,X}from'lucide-react';
 import{API,req,reqForm,fmt,usePaged,resTypeName,imageViewUrl}from'../../appShared.jsx';
-import{featureName}from'../../config/uiText.js';
+import{getDisplayStatusName,getFeatureDisplayName}from'../../config/uiText.js';
 import ConfirmDialog from'../../components/ConfirmDialog.jsx';
 import ResourceCard from'./ResourceCard.jsx';
 import ResourceSpaceTabs from'./ResourceSpaceTabs.jsx';
@@ -542,8 +542,8 @@ function StoreResources({me,setMsg}){
         <section className="resourceRelatedTasksV6">
           <h4>关联生成记录（{(detail.relatedTasks||[]).length}）</h4>
           {(detail.relatedTasks||[]).length?(detail.relatedTasks||[]).map(t=><article key={t.id}>
-            <b>{featureName[t.featureKey]||t.featureKey||'AI任务'}</b>
-            <span>{t.status} · {fmt(t.submittedAt)}</span>
+            <b>{getFeatureDisplayName(t.featureKey,'AI任务')}</b>
+            <span>{getDisplayStatusName(t.status)} · {fmt(t.submittedAt)}</span>
           </article>):<div className="resourceCategoryEmptyV6">暂无关联生成记录</div>}
         </section>
       </div>}
@@ -710,8 +710,8 @@ function StoreResources({me,setMsg}){
         <section className="resourceRelatedTasksV6">
           <h4>关联生成记录（{(detail.relatedTasks||[]).length}）</h4>
           {(detail.relatedTasks||[]).length?(detail.relatedTasks||[]).map(t=><article key={t.id}>
-            <b>{featureName[t.featureKey]||t.featureKey||'AI任务'}</b>
-            <span>{t.status} · {fmt(t.submittedAt)}</span>
+            <b>{getFeatureDisplayName(t.featureKey,'AI任务')}</b>
+            <span>{getDisplayStatusName(t.status)} · {fmt(t.submittedAt)}</span>
           </article>):<div className="resourceCategoryEmptyV6">暂无关联生成记录</div>}
         </section>
       </div>}

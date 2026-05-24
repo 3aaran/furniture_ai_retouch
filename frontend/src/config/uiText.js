@@ -57,6 +57,31 @@ export const statusName = {
   AI_REFUND: 'AI失败退款'
 };
 
+export const imageSourceName = {
+  AI_GENERATED: 'AI生成图',
+  PROCESS_RESULT: '图片处理结果',
+  UPLOAD: '上传图片',
+  ORIGINAL: '原始图片',
+  RESOURCE: '资源图片',
+  MATERIAL: '材质图片',
+  SCENE: '场景图片',
+  USER_REFERENCE: '用户参考图',
+  WATERMARK: '水印图片',
+  AVATAR: '头像图片',
+  OTHER: '其他图片'
+};
+
+export const targetScopeName = {
+  ALL: '全部用户',
+  MERCHANT: '门店用户',
+  ADMIN: '平台管理员',
+  MERCHANT_OWNER: '门店管理员',
+  MERCHANT_ADMIN: '门店管理员',
+  MERCHANT_USER: '门店人员',
+  STAFF: '门店人员',
+  TRIAL: '体验账户'
+};
+
 export const buttonText = {
   search: '查询',
   export: '导出',
@@ -82,6 +107,27 @@ export const featureName = {
   lineart: '线稿图',
   multiview: '多角度视图'
 };
+
+function readableFallback(value,fallback='-'){
+  const text=String(value||'').trim();
+  if(!text)return fallback;
+  return /[\u4e00-\u9fa5]/.test(text)?text:fallback;
+}
+
+export function getDisplayStatusName(value,fallback='未知状态'){
+  const key=String(value||'');
+  return statusName[key]||statusName[key.toUpperCase()]||statusName[key.toLowerCase()]||readableFallback(value,fallback);
+}
+
+export function getFeatureDisplayName(value,fallback='AI任务'){
+  const key=String(value||'');
+  return featureName[key]||featureName[key.toLowerCase()]||imageSourceName[key]||imageSourceName[key.toUpperCase()]||readableFallback(value,fallback);
+}
+
+export function getTargetScopeDisplayName(value,fallback='未知对象'){
+  const key=String(value||'');
+  return targetScopeName[key]||targetScopeName[key.toUpperCase()]||readableFallback(value,fallback);
+}
 
 export const messageText = {
   requestFailed: '请求失败',

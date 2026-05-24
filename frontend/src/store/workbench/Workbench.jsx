@@ -1,6 +1,7 @@
 ﻿import React,{useEffect,useRef,useState}from'react';
 import{Layers,Users as UsersIcon,Brush,Download,Trash2,Eye,Search,Plus,Power}from'lucide-react';
 import{API,token,req,reqForm,fmt,resTypeName,imageViewUrl,assetUrl}from'../../appShared.jsx';
+import{getFeatureDisplayName}from'../../config/uiText.js';
 import{featureConfig}from'../../config/featureConfig.jsx';
 import WorkbenchUploadPanel from'./WorkbenchUploadPanel.jsx';
 import GenerationControls from'./GenerationControls.jsx';
@@ -89,6 +90,11 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
     return item?.resultImage?.id||item?.imageId||'';
   }
 
+  function recentTypeName(item){
+    const key=item?.featureKey||item?.operation||item?.kind;
+    return ops[key]?.label||getFeatureDisplayName(item?.featureName,'')||getFeatureDisplayName(key,'AI任务');
+  }
+
   function recentPreviewSrc(preview,useFallback=false){
     if(!preview)return '';
     if(useFallback){
@@ -110,7 +116,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
       id:item.id,
       sourceId:getRecentSourceId(item,cached),
       fallbackImageId:getRecentResultId(item),
-      title:ops[item.kind]?.label||item.kind,
+      title:recentTypeName(item),
       top,
       url:cached?.sourceUrl || item.sourceUrl || item.originImage?.url || item.url,
       fallback:item.resultUrl || item.url,
@@ -216,7 +222,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
       const d=await reqForm('/api/images/upload',fd);
 
       if(!d?.id||!d?.url){
-        setMsg('上传成功但后端没有返回图片ID或图片地址');
+        setMsg('上传成功但后端没有返回图片编号或图片地址');
         return;
       }
 
@@ -598,7 +604,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   const recentItems=recent.filter(i=>{
     const kw=recentKeyword.trim().toLowerCase();
     if(!kw)return true;
-    return String(i.id).toLowerCase().includes(kw)||(ops[i.kind]?.label||i.kind||'').toLowerCase().includes(kw);
+    return String(i.id).toLowerCase().includes(kw)||recentTypeName(i).toLowerCase().includes(kw);
   }).slice(0,12);
 
   function renderLeftPanel(){
@@ -707,7 +713,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
 
     <div className="wbRightPanel">
       <div className="wbRightHeader"><b>最近生成</b><button onClick={refreshRecent}>↻</button></div>
-      <div className="wbRecentSearch"><Search size={16}/><input placeholder="搜索任务ID..." value={recentKeyword} onChange={e=>setRecentKeyword(e.target.value)}/></div>
+      <div className="wbRecentSearch"><Search size={16}/><input placeholder="搜索任务编号..." value={recentKeyword} onChange={e=>setRecentKeyword(e.target.value)}/></div>
 
       <div className="wbRecentList">{recentItems.length?recentItems.map(item=>{
         const running=item.status==='queued'||item.status==='running';
@@ -721,7 +727,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
           onClick={()=>openRecentTask(item)}
         >
           <div className="wbRecentThumb"><img src={imgSrc(item)} alt="最近生成"/>{running&&<i className="wbSpin"/>}{failed&&<em>失败</em>}</div>
-          <div className="wbRecentInfo"><b>{ops[item.kind||item.featureKey]?.label||item.featureName||item.kind}</b><span>{running?'生成中...':failed?'失败，已退回算力':fmt(item.createdAt||item.submittedAt)}</span><small>{item.id}</small></div>
+          <div className="wbRecentInfo"><b>{recentTypeName(item)}</b><span>{running?'生成中...':failed?'失败，已退回算力':fmt(item.createdAt||item.submittedAt)}</span><small>{item.id}</small></div>
           {!running&&!failed&&<div
             style={{
               position:'absolute',

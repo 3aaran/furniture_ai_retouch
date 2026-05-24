@@ -1,7 +1,7 @@
 import React,{useMemo,useState}from'react';
 import{Building2,ChevronRight,Clock3,CreditCard,Eye,ListChecks,Search,Sparkles,WalletCards,X}from'lucide-react';
 import{req,fmt,usePaged,Pagination}from'../../appShared.jsx';
-import{featureName}from'../../config/uiText.js';
+import{featureName,getFeatureDisplayName}from'../../config/uiText.js';
 
 export default function QuotaLogs({me,setMsg,TaskDetailModal}){
   const isAdmin=me?.role==='SYSTEM_ADMIN';
@@ -12,7 +12,10 @@ export default function QuotaLogs({me,setMsg,TaskDetailModal}){
   const summary=data.summary||{};
 
   function taskId(v){return v?String(v).slice(0,18):'-'}
-  function merchantTypeText(t){return {AI_COST:'AI生成',AI_REFUND:'AI退款',RECHARGE:'人工充值',MANUAL_ADJUST:'人工充值',REDEEM:'自动充值',ACCOUNT_DELETE_RECYCLE:'自动充值'}[t]||t}
+  function merchantTypeText(t){
+    const text=String(t||'');
+    return {AI_COST:'AI生成',AI_REFUND:'AI退款',RECHARGE:'人工充值',MANUAL_ADJUST:'人工充值',REDEEM:'自动充值',ACCOUNT_DELETE_RECYCLE:'自动充值'}[text]||(/[\u4e00-\u9fa5]/.test(text)?text:'其他记录');
+  }
   async function openTask(id){
     if(!id)return;
     try{
@@ -148,7 +151,7 @@ function AdminQuotaDetailModal({detail,onClose}){
       <main>
         {detail.loading?<div className="empty big">正在读取明细...</div>:(detail.items||[]).length?(detail.items||[]).map(item=>isUsage
           ? <article className="adminQuotaDetailRowV4" key={item.id}>
-              <div><b>{featureName[item.featureKey]||item.featureKey||'AI任务'}</b><span><Clock3 size={14}/>{fmt(item.finishedAt||item.submittedAt)}</span></div>
+              <div><b>{getFeatureDisplayName(item.featureKey,'AI任务')}</b><span><Clock3 size={14}/>{fmt(item.finishedAt||item.submittedAt)}</span></div>
               <div><small>使用账号</small><b>{item.userName||item.userPhone||'-'}</b></div>
               <div><small>模型</small><b>{item.modelName||item.provider||'-'}</b></div>
               <strong>-{Number(item.cost||0)} 算力</strong>

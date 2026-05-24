@@ -1,5 +1,5 @@
 import React,{useState}from'react';
-import{Search,WalletCards,Plus,Trash2}from'lucide-react';
+import{Search,WalletCards,Plus,Trash2,Power,Pencil}from'lucide-react';
 import{req,fmt,roleName,usePaged}from'../../appShared.jsx';
 import{TrialAccountTicket}from'./TrialAccountTicket.jsx';
 
@@ -111,7 +111,7 @@ function StoreUsers({me,setMe,setMsg}){
           <td><b>{u.displayName||u.username||u.phone||'-'}</b></td><td>{u.phone||u.username||'-'}</td><td>{u.email||'-'}</td>
           <td><span className={'storeRoleBadgeV2 '+roleBadgeClass(u.role)}>{u.role==='STAFF'?'普通用户':roleName[u.role]}</span></td>
           <td><span className="storeTypeBadgeV2">{userType(u)}</span></td><td><strong className="storeQuotaTextV2">{quotaText(u)}</strong></td><td>{fmt(u.createdAt)}</td><td>{expireText(u)}</td>
-          <td><div className="storeUserActionsV2">{u.role==='MERCHANT_OWNER'?<span className="storeNoActionV2">主账号</span>:<><button title={u.status==='ACTIVE'?'禁用账号':'启用账号'} onClick={()=>status(u)}>{u.status==='ACTIVE'?'停':'启'}</button><button title="给用户充值" onClick={()=>openRecharge(u)}><WalletCards size={17}/></button><button title="编辑基础信息" onClick={()=>openEdit(u)}>改</button><button className="danger" title="删除账号" onClick={()=>del(u)}><Trash2 size={17}/></button></>}</div></td>
+          <td><div className="storeUserActionsV2">{u.role==='MERCHANT_OWNER'?<span className="storeNoActionV2">主账号</span>:<><button type="button" title={u.status==='ACTIVE'?'禁用账号':'启用账号'} aria-label={u.status==='ACTIVE'?'禁用账号':'启用账号'} onClick={()=>status(u)}><Power size={17}/></button><button type="button" title="给用户充值" aria-label="给用户充值" onClick={()=>openRecharge(u)}><WalletCards size={17}/></button><button type="button" title="编辑基础信息" aria-label="编辑基础信息" onClick={()=>openEdit(u)}><Pencil size={17}/></button><button type="button" className="danger" title="删除账号" aria-label="删除账号" onClick={()=>del(u)}><Trash2 size={17}/></button></>}</div></td>
         </tr>):<tr><td colSpan="9"><div className="empty big">暂无用户</div></td></tr>}</tbody>
       </table>
       <div className="storeUsersPagerV2"><span>每页显示</span><select value={data.pageSize||10} onChange={e=>setQuery(q=>({...q,page:1,pageSize:Number(e.target.value)}))}><option>10</option><option>20</option><option>50</option></select><b>{data.total?((data.page||1)-1)*(data.pageSize||10)+1:0}-{Math.min((data.page||1)*(data.pageSize||10),data.total||0)} / {data.total||0}</b><button disabled={(data.page||1)<=1} onClick={()=>setQuery(q=>({...q,page:(q.page||1)-1}))}>‹</button><button disabled={(data.page||1)>=totalPages} onClick={()=>setQuery(q=>({...q,page:(q.page||1)+1}))}>›</button></div>
