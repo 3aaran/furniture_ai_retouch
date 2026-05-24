@@ -81,26 +81,44 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
     }
   }
 
+  function getRecentSourceId(item,cached){
+    return cached?.sourceId||item?.originImage?.id||item?.sourceImageId||item?.originImageId||'';
+  }
+
+  function getRecentResultId(item){
+    return item?.resultImage?.id||item?.imageId||'';
+  }
+
+  function recentPreviewSrc(preview,useFallback=false){
+    if(!preview)return '';
+    if(useFallback){
+      if(preview.fallbackImageId)return imgSrc({id:preview.fallbackImageId,url:preview.fallback});
+      return imgSrc(preview.fallback);
+    }
+    if(preview.sourceId)return imgSrc({id:preview.sourceId,url:preview.url});
+    return imgSrc(preview.url);
+  }
+
   async function showRecentOriginal(item,e){
     clearRecentPreviewTimer();
     const rect=e.currentTarget.getBoundingClientRect();
     const top=Math.max(130,Math.min(window.innerHeight-150,rect.top+rect.height/2));
     const cached=sourcePreviewCache[item.id];
+    const isTaskItem=item.itemType==='task'||item.status;
 
     setRecentSourcePreview({
       id:item.id,
+      sourceId:getRecentSourceId(item,cached),
+      fallbackImageId:getRecentResultId(item),
       title:ops[item.kind]?.label||item.kind,
       top,
-      url:cached?.sourceUrl || item.sourceUrl || item.url,
-      fallback:item.url,
-      loading:!cached
+      url:cached?.sourceUrl || item.sourceUrl || item.originImage?.url || item.url,
+      fallback:item.resultUrl || item.url,
+      loading:!cached&&!isTaskItem
     });
 
     if(cached) return;
-    if(item.itemType==='task'||item.status){
-      setRecentSourcePreview(prev=>prev&&prev.id===item.id?{...prev,url:item.sourceUrl||item.url,fallback:item.url,loading:false}:prev);
-      return;
-    }
+    if(isTaskItem)return;
 
     try{
       const d=await req(`/api/images/${item.id}/source`);
@@ -125,7 +143,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
     }catch(err){
       setRecentSourcePreview(prev=>{
         if(!prev||prev.id!==item.id) return prev;
-        return {...prev,url:item.sourceUrl||item.url,fallback:item.url,loading:false};
+        return {...prev,url:item.sourceUrl||item.originImage?.url||item.url,fallback:item.resultUrl||item.url,loading:false};
       });
     }
   }
@@ -750,13 +768,13 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
       {recentSourcePreview.loading?'正在读取原图...':`${recentSourcePreview.title} 原图`}
     </div>
     <img
-      src={imgSrc({id:recentSourcePreview.sourceId||recentSourcePreview.id,url:recentSourcePreview.url})}
+      src={recentPreviewSrc(recentSourcePreview)}
       alt="原图预览"
       style={{width:'100%',height:'100%',objectFit:'cover',display:'block',background:'#fff'}}
       onError={(e)=>{
         if(e.currentTarget.dataset.fallback!=='1'){
           e.currentTarget.dataset.fallback='1';
-          e.currentTarget.src=imgSrc({id:recentSourcePreview.id,url:recentSourcePreview.fallback});
+          e.currentTarget.src=recentPreviewSrc(recentSourcePreview,true);
         }
       }}
     />
