@@ -85,3 +85,8 @@ test-results/
 .env.local
 .env.production
 .env.development
+
+# local Codex project notes
+skills/
+PROJECT_FILE_MAP.md
+agent.md
