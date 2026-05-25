@@ -526,7 +526,9 @@ export async function runAiTask(taskId) {
         t.*,
         img.url AS originUrl,
         img.storage_key AS originStorageKey,
-        img.original_name AS originName
+        img.original_name AS originName,
+        img.width AS originWidth,
+        img.height AS originHeight
       FROM ai_tasks t
       LEFT JOIN images img ON img.id = t.origin_image_id
       WHERE t.id = ?
@@ -578,6 +580,9 @@ export async function runAiTask(taskId) {
       selectedResourceImage ? toModelImageUrl(selectedResourceImage) : (imageBPath ? toModelImageUrl(imageBPath) : ''),
       ...refs.map((r) => toModelImageUrl(r))
     ].filter(Boolean);
+    const originMeta = Number(full.originWidth || 0) && Number(full.originHeight || 0)
+      ? { width: Number(full.originWidth || 0), height: Number(full.originHeight || 0) }
+      : await getStoredFileMeta({ url: full.originUrl, storage_key: full.originStorageKey }).catch(() => ({}));
     await writeSystemLog(pool, {
       level: 'INFO',
       module: 'ai',
@@ -608,6 +613,7 @@ export async function runAiTask(taskId) {
       prompt: runtimePrompt,
       resolution: full.resolution,
       ratio: full.ratio,
+      imageMeta: originMeta,
       merchantId: full.merchant_id || null,
       userId: full.user_id || null
     });

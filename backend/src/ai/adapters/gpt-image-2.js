@@ -3,13 +3,73 @@ import path from 'path';
 import axios from 'axios';
 import { downloadImage, saveBuffer } from './utils.js';
 
-function mapSize(ratio = '1:1') {
-  const r = String(ratio || '1:1').trim();
-  if (r === '16:9') return '1920x1088';
-  if (r === '9:16') return '1088x1920';
-  if (r === '4:3') return '1280x960';
-  if (r === '3:4') return '960x1280';
-  return '1024x1024';
+const SIZE_MAP = {
+  '1K': {
+    '1:1': '1024x1024',
+    '2:3': '1024x1536',
+    '3:2': '1536x1024',
+    '3:4': '960x1280',
+    '4:3': '1280x960',
+    '9:16': '1088x1920',
+    '16:9': '1920x1088'
+  },
+  '2K': {
+    '1:1': '2048x2048',
+    '2:3': '2048x3072',
+    '3:2': '3072x2048',
+    '3:4': '1920x2560',
+    '4:3': '2560x1920',
+    '9:16': '1440x2560',
+    '16:9': '2560x1440'
+  },
+  '4K': {
+    '1:1': '2880x2880',
+    '2:3': '2304x3456',
+    '3:2': '3456x2304',
+    '3:4': '2400x3200',
+    '4:3': '3200x2400',
+    '9:16': '2160x3840',
+    '16:9': '3840x2160'
+  }
+};
+
+const RATIO_VALUES = {
+  '1:1': 1,
+  '2:3': 2 / 3,
+  '3:2': 3 / 2,
+  '3:4': 3 / 4,
+  '4:3': 4 / 3,
+  '9:16': 9 / 16,
+  '16:9': 16 / 9
+};
+
+function normalizeResolution(resolution = '2K') {
+  const value = String(resolution || '2K').trim().toUpperCase();
+  if (value === '1K') return '1K';
+  if (value === '4K') return '4K';
+  return '2K';
+}
+
+function normalizeRatio(ratio = '') {
+  const value = String(ratio || '').trim();
+  if (!value || value === '自适应' || value.toLowerCase() === 'auto' || value.toLowerCase() === 'adaptive') return '';
+  return SIZE_MAP['2K'][value] ? value : '';
+}
+
+function closestRatioFromMeta(imageMeta = {}) {
+  const width = Number(imageMeta.width || 0);
+  const height = Number(imageMeta.height || 0);
+  if (!width || !height) return '1:1';
+  const actual = width / height;
+  return Object.entries(RATIO_VALUES)
+    .map(([ratio, value]) => ({ ratio, distance: Math.abs(Math.log(actual / value)) }))
+    .sort((a, b) => a.distance - b.distance)[0]?.ratio || '1:1';
+}
+
+export function mapImageSizeForGptImage2({ resolution = '2K', ratio = '自适应', imageMeta = null } = {}) {
+  const resolutionKey = normalizeResolution(resolution);
+  const ratioKey = normalizeRatio(ratio) || closestRatioFromMeta(imageMeta || {});
+  return SIZE_MAP[resolutionKey][ratioKey] || SIZE_MAP[resolutionKey]['1:1'];
 }
 
 function contentType(filePath = '') {
@@ -107,20 +167,20 @@ function assertPublicImages({ imagePath, imageUrl, referenceImageUrls = [] }) {
   return publicImages;
 }
 
-function buildLk888ParamsPayload({ modelName, finalPrompt, imagePath, imageUrl, referenceImageUrls, ratio }) {
+function buildLk888ParamsPayload({ modelName, finalPrompt, imagePath, imageUrl, referenceImageUrls, size }) {
   const images = assertPublicImages({ imagePath, imageUrl, referenceImageUrls });
   return {
     model: modelName || 'gpt-image-2',
     prompt: finalPrompt,
     params: {
-      size: mapSize(ratio),
+      size,
       quality: 'high',
       ...(images.length ? { images } : {})
     }
   };
 }
 
-function buildLk888FlatPayload({ modelName, finalPrompt, imagePath, imageUrl, referenceImageUrls, ratio }) {
+function buildLk888FlatPayload({ modelName, finalPrompt, imagePath, imageUrl, referenceImageUrls, size }) {
   const images = assertPublicImages({ imagePath, imageUrl, referenceImageUrls });
   return {
     background: 'opaque',
@@ -128,7 +188,7 @@ function buildLk888FlatPayload({ modelName, finalPrompt, imagePath, imageUrl, re
     n: 1,
     prompt: finalPrompt,
     quality: 'high',
-    size: mapSize(ratio),
+    size,
     ...(images.length ? { images } : {})
   };
 }
@@ -185,12 +245,12 @@ async function postLk888(endpoint, requestParams) {
   return await pollLk888Result(endpoint, taskId, requestParams);
 }
 
-function buildOpenAiJsonPayload({ modelName, finalPrompt, imagePath, ratio }) {
+function buildOpenAiJsonPayload({ modelName, finalPrompt, imagePath, size }) {
   const image = imageDataUrl(imagePath);
   return {
     model: modelName || 'gpt-image-2',
     prompt: finalPrompt,
-    size: mapSize(ratio),
+    size,
     n: 1,
     output_format: 'png',
     ...(image ? { image, images: [image] } : {})
@@ -205,11 +265,11 @@ async function postOpenAiJson(endpoint, requestParams) {
   return pickResult(res.data);
 }
 
-async function postOpenAiMultipart(endpoint, { apiKey, timeoutMs, modelName, finalPrompt, imagePath, ratio }) {
+async function postOpenAiMultipart(endpoint, { apiKey, timeoutMs, modelName, finalPrompt, imagePath, size }) {
   const form = new FormData();
   form.append('model', modelName || 'gpt-image-2');
   form.append('prompt', finalPrompt);
-  form.append('size', mapSize(ratio));
+  form.append('size', size);
 
   if (imagePath && fs.existsSync(imagePath)) {
     const buffer = fs.readFileSync(imagePath);
@@ -239,7 +299,9 @@ export async function generate(params = {}) {
     imageUrl,
     referenceImageUrls = [],
     prompt,
+    resolution,
     ratio,
+    imageMeta,
     merchantId = null,
     userId = null
   } = params;
@@ -248,7 +310,8 @@ export async function generate(params = {}) {
 
   const endpoint = normalizeEndpoint(baseUrl, apiPath);
   const finalPrompt = buildPrompt({ featureKey, prompt });
-  const requestParams = { apiKey, timeoutMs: params.timeoutMs, modelName, finalPrompt, imagePath, imageUrl, referenceImageUrls, ratio };
+  const size = mapImageSizeForGptImage2({ resolution, ratio, imageMeta });
+  const requestParams = { apiKey, timeoutMs: params.timeoutMs, modelName, finalPrompt, imagePath, imageUrl, referenceImageUrls, size };
 
   let result;
   try {

@@ -221,6 +221,7 @@ export async function callImageModel({
   prompt,
   resolution,
   ratio,
+  imageMeta = null,
   merchantId = null,
   userId = null
 }) {
@@ -248,6 +249,7 @@ export async function callImageModel({
     prompt,
     resolution,
     ratio,
+    imageMeta,
     merchantId,
     userId
   });
