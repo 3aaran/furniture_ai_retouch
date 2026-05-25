@@ -349,9 +349,117 @@ export function registerMerchantRoutes(app,deps){
   app.get('/api/merchant/promotion', requireAuth, async (req,res)=>{
     if(!req.user.merchant_id) return res.status(403).json({message:'需要门店账号'});
     const [[m]]=await pool.query('SELECT * FROM merchants WHERE id=?',[req.user.merchant_id]);
-    const wh=['invite_code=?']; const ps=[m?.merchant_code||m?.invite_code||''];
-    if(req.query.keyword){ wh.push('(company_name LIKE ? OR contact_name LIKE ? OR phone LIKE ?)'); ps.push(like(req.query.keyword),like(req.query.keyword),like(req.query.keyword)); }
-    const data=await paged(`SELECT * FROM merchant_applications WHERE ${wh.join(' AND ')} ORDER BY created_at DESC`,`SELECT COUNT(*) total FROM merchant_applications WHERE ${wh.join(' AND ')}`,ps,req,publicApplication);
-    res.json({merchantCode:m?.merchant_code,inviteCode:m?.invite_code||m?.merchant_code,inviteLink:`/apply?invite=${m?.merchant_code||''}`,...data});
+    const settings=await getSettingsMap();
+    const merchantCode=m?.merchant_code||'';
+    const inviteCode=m?.invite_code||merchantCode;
+    const shareRatio=Number(settings.invite_source_store_reward_ratio||0);
+    const newStoreRewardRatio=Number(settings.invite_new_store_reward_ratio||0);
+    const wh=['(a.invite_code=? OR a.invite_code=?)'];
+    const whereParams=[merchantCode,inviteCode];
+    if(req.query.status){ wh.push('a.status=?'); whereParams.push(req.query.status); }
+    if(req.query.startDate){ wh.push('DATE(a.created_at)>=?'); whereParams.push(req.query.startDate); }
+    if(req.query.endDate){ wh.push('DATE(a.created_at)<=?'); whereParams.push(req.query.endDate); }
+    if(req.query.keyword){
+      wh.push('(a.company_name LIKE ? OR a.contact_name LIKE ? OR a.phone LIKE ? OR invited.company_name LIKE ? OR invited.merchant_code LIKE ?)');
+      whereParams.push(like(req.query.keyword),like(req.query.keyword),like(req.query.keyword),like(req.query.keyword),like(req.query.keyword));
+    }
+    const where='WHERE '+wh.join(' AND ');
+    const firstQuotaAgg=`
+      SELECT merchant_id,
+             CAST(SUBSTRING_INDEX(GROUP_CONCAT(amount ORDER BY CASE WHEN remark="新门店初始额度" THEN 0 ELSE 1 END, created_at ASC), ",", 1) AS SIGNED) firstRechargeQuota,
+             SUBSTRING_INDEX(GROUP_CONCAT(created_at ORDER BY CASE WHEN remark="新门店初始额度" THEN 0 ELSE 1 END, created_at ASC), ",", 1) firstRechargeAt
+      FROM quota_logs
+      WHERE amount>0 AND related_user_id IS NULL AND type IN ("RECHARGE","MANUAL_ADJUST","REDEEM")
+      GROUP BY merchant_id
+    `;
+    const linkedQuotaAgg=`
+      SELECT related_order_id,merchant_id,SUM(amount) firstRechargeQuota,MIN(created_at) firstRechargeAt
+      FROM quota_logs
+      WHERE amount>0 AND related_user_id IS NULL AND type="MANUAL_ADJUST" AND remark="新门店初始额度" AND related_order_id IS NOT NULL
+      GROUP BY related_order_id,merchant_id
+    `;
+    const rewardAgg=`
+      SELECT related_order_id,merchant_id,SUM(amount) rewardQuota,MIN(created_at) rewardAt
+      FROM quota_logs
+      WHERE amount>0 AND type="MANUAL_ADJUST" AND remark="邀请奖励" AND related_order_id IS NOT NULL
+      GROUP BY related_order_id,merchant_id
+    `;
+    const baseParams=[req.user.merchant_id,...whereParams];
+    const base=`FROM merchant_applications a
+      LEFT JOIN merchants invited ON invited.id=a.merchant_id OR (COALESCE(a.merchant_id,"")="" AND invited.phone=a.phone AND invited.company_name=a.company_name)
+      LEFT JOIN (${firstQuotaAgg}) firstQuota ON firstQuota.merchant_id=invited.id
+      LEFT JOIN (${linkedQuotaAgg}) linkedQuota ON linkedQuota.related_order_id=a.id AND linkedQuota.merchant_id=invited.id
+      LEFT JOIN (${rewardAgg}) rewardLog ON rewardLog.related_order_id=a.id AND rewardLog.merchant_id=?
+      ${where}`;
+    function approvedQuotaFromLogs(finalInitialQuota,rewardQuota){
+      if(rewardQuota>0 && shareRatio>0) return Math.round(rewardQuota/shareRatio);
+      if(finalInitialQuota>0 && newStoreRewardRatio>0) return Math.round(finalInitialQuota/(1+newStoreRewardRatio));
+      return finalInitialQuota;
+    }
+    function benefitQuotaFromRow(row){
+      if(row.status!=='APPROVED') return 0;
+      const finalInitialQuota=Number(row.firstRechargeQuota||0);
+      const rewardQuota=Number(row.rewardQuota||0);
+      const approvedQuota=approvedQuotaFromLogs(finalInitialQuota,rewardQuota);
+      return rewardQuota || Math.floor(approvedQuota*shareRatio);
+    }
+    const mapper=row=>{
+      const finalInitialQuota=Number(row.firstRechargeQuota||0);
+      const rewardQuota=Number(row.rewardQuota||0);
+      const approvedQuota=row.status==='APPROVED'?approvedQuotaFromLogs(finalInitialQuota,rewardQuota):0;
+      return {
+        ...publicApplication(row),
+        inviterMerchantName:m?.company_name||'',
+        inviterMerchantCode:merchantCode,
+        invitedMerchantId:row.invitedMerchantId||row.merchant_id||'',
+        invitedMerchantName:row.invitedMerchantName||row.company_name||'',
+        invitedMerchantCode:row.invitedMerchantCode||'',
+        rechargeQuota:approvedQuota,
+        initialQuota:finalInitialQuota,
+        shareRatio,
+        benefitQuota:benefitQuotaFromRow(row),
+        settlementStatus:row.status==='APPROVED'?'已结算':(row.status==='REJECTED'?'不结算':'未结算'),
+        generatedAt:row.rewardAt||row.firstRechargeAt||row.reviewed_at||row.created_at,
+        lastRechargeAt:row.firstRechargeAt||null
+      };
+    };
+    const data=await paged(
+      `SELECT a.*,invited.id invitedMerchantId,invited.company_name invitedMerchantName,invited.merchant_code invitedMerchantCode,
+              IFNULL(COALESCE(linkedQuota.firstRechargeQuota,firstQuota.firstRechargeQuota),0) firstRechargeQuota,
+              COALESCE(linkedQuota.firstRechargeAt,firstQuota.firstRechargeAt) firstRechargeAt,
+              IFNULL(rewardLog.rewardQuota,0) rewardQuota,rewardLog.rewardAt
+       ${base}
+       ORDER BY a.created_at DESC`,
+      `SELECT COUNT(*) total ${base}`,
+      baseParams,
+      req,
+      mapper
+    );
+    const [summaryRows]=await pool.query(
+      `SELECT a.status,
+              IFNULL(COALESCE(linkedQuota.firstRechargeQuota,firstQuota.firstRechargeQuota),0) firstRechargeQuota,
+              IFNULL(rewardLog.rewardQuota,0) rewardQuota
+       ${base}`,
+      baseParams
+    );
+    const summary=summaryRows.reduce((acc,row)=>{
+      acc.invitedCount+=1;
+      if(row.status==='APPROVED') acc.approvedCount+=1;
+      if(row.status==='PENDING') acc.pendingCount+=1;
+      acc.benefitQuota+=benefitQuotaFromRow(row);
+      return acc;
+    },{invitedCount:0,approvedCount:0,pendingCount:0,benefitQuota:0});
+    res.json({
+      merchantCode,
+      inviteCode,
+      inviteLink:`/#/apply?invite=${encodeURIComponent(inviteCode)}`,
+      summary:{
+        invitedCount:Number(summary?.invitedCount||0),
+        approvedCount:Number(summary?.approvedCount||0),
+        pendingCount:Number(summary?.pendingCount||0),
+        benefitQuota:Number(summary?.benefitQuota||0)
+      },
+      ...data
+    });
   });
 }

@@ -1,7 +1,7 @@
 import React,{useEffect,useMemo,useState}from'react';
 import{createPortal}from'react-dom';
 import{X}from'lucide-react';
-import{assetUrl,req,reqForm}from'../../appShared.jsx';
+import{imageViewUrl,req,reqForm}from'../../appShared.jsx';
 import{WATERMARK_TEXT,WATERMARK_SUB_TEXT}from'../../config/appConfig.js';
 
 const defaultConfig={
@@ -31,8 +31,8 @@ const positions=[
   ['bottom-left','左下'],['bottom-center','下中'],['bottom-right','右下']
 ];
 
-function srcOf(url=''){
-  return assetUrl(url);
+function watermarkSrc(config={}){
+  return imageViewUrl({id:config.imageId,url:config.image});
 }
 
 function placementStyle(config){
@@ -118,7 +118,7 @@ export function WatermarkConfigModal({open,onClose,setMsg}){
       const form=new FormData();
       form.append('image',file);
       const d=await reqForm('/api/watermark/image',form);
-      setConfig(prev=>({...prev,enabled:true,mode:'image',image:d.url,imageId:d.id,fileName:file.name}));
+      setConfig(prev=>({...prev,enabled:true,mode:'image',image:d.url,imageId:d.id,storageKey:d.storageKey||'',fileName:file.name}));
       setMsg&&setMsg('水印图片已上传');
     }catch(err){
       setMsg&&setMsg(err.message||'水印图片上传失败');
@@ -195,7 +195,7 @@ export function WatermarkConfigModal({open,onClose,setMsg}){
                     <input type="file" accept="image/png,image/jpeg,image/webp" disabled={uploading} onChange={chooseImage}/>
                     {config.image?
                       <div className="watermarkUploadPreview">
-                        <img src={srcOf(config.image)} alt="水印"/>
+                        <img src={watermarkSrc(config)} alt="水印"/>
                         <button type="button" onClick={e=>{e.preventDefault();update('image','');update('imageId','');update('fileName','');}}>清除</button>
                       </div>
                       :
@@ -230,7 +230,7 @@ export function WatermarkConfigModal({open,onClose,setMsg}){
                   <TextWatermarkPreview config={config} watermarkStyle={watermarkStyle}/>
                   :
                   config.image?
-                  <img className="watermarkPreviewMark" src={srcOf(config.image)} alt="水印预览" style={watermarkStyle}/>
+                  <img className="watermarkPreviewMark" src={watermarkSrc(config)} alt="水印预览" style={watermarkStyle}/>
                   :
                   <div className="watermarkPreviewEmpty">水印预览</div>}
               </div>

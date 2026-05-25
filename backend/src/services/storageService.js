@@ -14,6 +14,7 @@ export const OSS_PUBLIC_BASE_URL = process.env.OSS_PUBLIC_BASE_URL || '';
 export const COS_PUBLIC_BASE_URL = process.env.COS_PUBLIC_BASE_URL || '';
 export const DEFAULT_USER_STORAGE_LIMIT_BYTES = Number(process.env.USER_STORAGE_LIMIT_BYTES || 5 * 1024 * 1024 * 1024);
 export const MIN_GENERATION_STORAGE_BYTES = Number(process.env.MIN_GENERATION_STORAGE_BYTES || 50 * 1024 * 1024);
+const REMOTE_IMAGE_META_MAX_BYTES = Number(process.env.REMOTE_IMAGE_META_MAX_BYTES || 50 * 1024 * 1024);
 
 const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp']);
 const KIND_DIR_MAP = {
@@ -262,6 +263,31 @@ export function getLocalFileMeta(urlPath = '') {
   };
 }
 
+async function getRemoteImageMeta(url = '', storageKey = '') {
+  const raw = String(url || '');
+  const signed = storageKey ? getImageAccessUrl({ url: raw, storage_key: storageKey }) : raw;
+  if (!signed || !/^https?:\/\//i.test(signed)) return {};
+  const fetchMeta = target => axios.get(target, {
+    responseType: 'arraybuffer',
+    timeout: 60000,
+    maxContentLength: REMOTE_IMAGE_META_MAX_BYTES,
+    maxBodyLength: REMOTE_IMAGE_META_MAX_BYTES
+  });
+  let response;
+  try {
+    response = await fetchMeta(signed);
+  } catch (err) {
+    if (!raw || raw === signed || !/^https?:\/\//i.test(raw)) throw err;
+    response = await fetchMeta(raw);
+  }
+  const buffer = Buffer.from(response.data || []);
+  return {
+    sizeBytes: Number(response.headers?.['content-length'] || buffer.length || 0),
+    mimeType: response.headers?.['content-type'] || '',
+    ...readImageDimensionsFromBuffer(buffer)
+  };
+}
+
 export async function getStoredFileMeta(imageOrUrl = '') {
   const url = typeof imageOrUrl === 'string' ? imageOrUrl : (imageOrUrl.url || '');
   const storageKey = typeof imageOrUrl === 'object' ? imageOrUrl.storage_key || imageOrUrl.storageKey || '' : '';
@@ -269,25 +295,39 @@ export async function getStoredFileMeta(imageOrUrl = '') {
     const key = storageKey || storageKeyFromUrl(url);
     const fileName = path.posix.basename(key || String(url || ''));
     if (!key) {
-      return { storageProvider: STORAGE_PROVIDER, storageKey: '', fileName, sizeBytes: 0, mimeType: '' };
+      const remote = /^https?:\/\//i.test(url) ? await getRemoteImageMeta(url).catch(() => ({})) : {};
+      return { storageProvider: STORAGE_PROVIDER, storageKey: '', fileName, sizeBytes: Number(remote.sizeBytes || 0), mimeType: remote.mimeType || '', width: remote.width || null, height: remote.height || null };
     }
     try {
       const head = await getOssClient().head(key);
       const headers = head?.res?.headers || {};
+      const remote = await getRemoteImageMeta(url, key).catch(() => ({}));
       return {
         storageProvider: STORAGE_PROVIDER,
         storageKey: key,
         fileName,
-        sizeBytes: Number(headers['content-length'] || 0),
-        mimeType: headers['content-type'] || '',
-        width: null,
-        height: null
+        sizeBytes: Number(headers['content-length'] || remote.sizeBytes || 0),
+        mimeType: headers['content-type'] || remote.mimeType || '',
+        width: remote.width || null,
+        height: remote.height || null
       };
     } catch {
-      return { storageProvider: STORAGE_PROVIDER, storageKey: key, fileName, sizeBytes: 0, mimeType: '', width: null, height: null };
+      const remote = await getRemoteImageMeta(url, key).catch(() => ({}));
+      return { storageProvider: STORAGE_PROVIDER, storageKey: key, fileName, sizeBytes: Number(remote.sizeBytes || 0), mimeType: remote.mimeType || '', width: remote.width || null, height: remote.height || null };
     }
   }
-  return getLocalFileMeta(url);
+  const local = getLocalFileMeta(url);
+  if ((!local.width || !local.height || !local.sizeBytes) && /^https?:\/\//i.test(url)) {
+    const remote = await getRemoteImageMeta(url, storageKey).catch(() => ({}));
+    return {
+      ...local,
+      sizeBytes: Number(local.sizeBytes || remote.sizeBytes || 0),
+      mimeType: local.mimeType || remote.mimeType || '',
+      width: local.width || remote.width || null,
+      height: local.height || remote.height || null
+    };
+  }
+  return local;
 }
 
 export async function saveUploadedImage(file, { merchantId = null, userId = null, kind = 'original' } = {}) {

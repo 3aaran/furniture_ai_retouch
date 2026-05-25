@@ -47,14 +47,15 @@ async function sharpReadableInput(input) {
 }
 
 async function watermarkImageBuffer(input) {
-  const raw = String(input || '');
+  const raw = typeof input === 'object' ? String(input.url || input.image || '') : String(input || '');
+  const storageKey = typeof input === 'object' ? String(input.storage_key || input.storageKey || '') : '';
   if (!raw) return null;
   if (raw.startsWith('data:image/')) {
     const comma = raw.indexOf(',');
     return comma >= 0 ? Buffer.from(raw.slice(comma + 1), 'base64') : null;
   }
   if (/^https?:\/\//i.test(raw)) {
-    const signed = getImageAccessUrl({ url: raw, storage_key: storageKeyFromUrl(raw) });
+    const signed = getImageAccessUrl({ url: raw, storage_key: storageKey || storageKeyFromUrl(raw) });
     const response = await axios.get(signed || raw, { responseType: 'arraybuffer', timeout: 120000 });
     return Buffer.from(response.data);
   }
@@ -258,7 +259,7 @@ export async function applyWatermark({ imagePath, config, merchantId = null, use
   const width = meta.width || 1000;
   const height = meta.height || 800;
   if(config.mode !== 'text' && config.image){
-    const markBuffer=await watermarkImageBuffer(config.image);
+    const markBuffer=await watermarkImageBuffer({url:config.image,storageKey:config.storageKey});
     if(!markBuffer) return imagePath;
     const widthPercent=Math.max(5,Math.min(60,Number(config.widthPercent||23.5)));
     const markWidth=Math.max(1,Math.round(width*widthPercent/100));

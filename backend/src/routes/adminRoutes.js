@@ -158,7 +158,7 @@ export function registerAdminRoutes(app,{upload}){
           finalQuota += rewardToNew;
           if(rewardToInviter>0){
             await conn.query('UPDATE merchants SET quota_balance=quota_balance+? WHERE id=?',[rewardToInviter,inviter.id]);
-            await conn.query('INSERT INTO quota_logs(id,merchant_id,related_user_id,operator_user_id,amount,type,balance_after,remark) VALUES(?,?,?,?,?,?,(SELECT quota_balance FROM merchants WHERE id=?),?)',[uuid(),inviter.id,null,req.user.id,rewardToInviter,'MANUAL_ADJUST',inviter.id,'邀请奖励']);
+            await conn.query('INSERT INTO quota_logs(id,merchant_id,related_user_id,operator_user_id,amount,type,related_order_id,balance_after,remark) VALUES(?,?,?,?,?,?,?,(SELECT quota_balance FROM merchants WHERE id=?),?)',[uuid(),inviter.id,null,req.user.id,rewardToInviter,'MANUAL_ADJUST',req.params.id,inviter.id,'邀请奖励']);
           }
         }
       }
@@ -167,7 +167,7 @@ export function registerAdminRoutes(app,{upload}){
       const uid=uuid();
       await conn.query('INSERT INTO users(id,merchant_id,phone,username,display_name,company_name,password_hash,role,status,storage_limit_bytes) VALUES(?,?,?,?,?,?,?,?,?,?)',[uid,mid,appRow.phone,appRow.phone,appRow.contact_name,appRow.company_name,await bcrypt.hash(password,10),'MERCHANT_OWNER','ACTIVE',settingStorageLimitBytes(settings)]);
       if(finalQuota>0){
-        await conn.query('INSERT INTO quota_logs(id,merchant_id,related_user_id,operator_user_id,amount,type,balance_after,remark) VALUES(?,?,?,?,?,?,?,?)',[uuid(),mid,null,req.user.id,finalQuota,'MANUAL_ADJUST',finalQuota,'新门店初始额度']);
+        await conn.query('INSERT INTO quota_logs(id,merchant_id,related_user_id,operator_user_id,amount,type,related_order_id,balance_after,remark) VALUES(?,?,?,?,?,?,?,?,?)',[uuid(),mid,null,req.user.id,finalQuota,'MANUAL_ADJUST',req.params.id,finalQuota,'新门店初始额度']);
       }
       await conn.query('UPDATE merchant_applications SET status="APPROVED",reviewer_id=?,reviewed_at=NOW(),merchant_id=? WHERE id=?',[req.user.id,mid,req.params.id]);
       await conn.query('INSERT INTO finance_logs(id,merchant_id,type,amount,title) VALUES(?,?,?,?,?)',[uuid(),mid,'INCOME',Number(settings.income_per_quota||0.1)*finalQuota,'新门店初始额度']);

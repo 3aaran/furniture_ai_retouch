@@ -60,7 +60,7 @@ function WatermarkOverlay({config}){
     </div>;
   }
   if(config.image){
-    const src=assetUrl(config.image);
+    const src=imageViewUrl({id:config.imageId,url:config.image});
     return <img className="taskWatermarkImage" src={src} alt="\u6c34\u5370" style={{...baseStyle,width:`${config.widthPercent||23.5}%`}}/>;
   }
   return null;

@@ -10,6 +10,17 @@ export default function Login(){
   const[f,setF]=useState({identifier:'',password:'',code:'',companyName:'',contactName:'',phone:'',inviteCode:'',note:''});
   const[msg,setMsg]=useState('');
   useEffect(()=>{document.title=APP_NAME},[]);
+  useEffect(()=>{
+    const params=new URLSearchParams(location.search);
+    const hash=String(location.hash||'');
+    const hashParams=new URLSearchParams(hash.includes('?')?hash.slice(hash.indexOf('?')+1):'');
+    const code=(params.get('invite')||params.get('ref')||params.get('inviteCode')||hashParams.get('invite')||hashParams.get('ref')||hashParams.get('inviteCode')||'').trim();
+    const path=`${location.pathname}${hash}`.toLowerCase();
+    if(code||path.includes('/apply')||path.includes('/register')){
+      setMode('apply');
+      if(code) setF(prev=>({...prev,inviteCode:code}));
+    }
+  },[]);
 
   async function login(){
     try{

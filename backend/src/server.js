@@ -12,7 +12,7 @@ import { runAi, applyWatermark, quotaCost } from './aiService.js';
 import { submitAiTask, getAiTaskStatus, getAiTaskDetail, getRecentAiTasks, deleteAiTask } from './ai/taskService.js';
 import { getAiConfig, getFeatureConfig } from './ai/configService.js';
 import { callImageModel } from './ai/providerService.js';
-import { STORAGE_ROOT, storageTempDir, saveUploadedImage, saveBufferToStorage, urlToDiskPath, getLocalFileMeta, MIN_GENERATION_STORAGE_BYTES, getUserStorageSummary, assertUserStorageAvailable, addUserStorageUsage, applyUserStorageDelta, deleteStoredFile, normalizeUploadedFileName, getImageAccessUrl } from './services/storageService.js';
+import { STORAGE_ROOT, storageTempDir, saveUploadedImage, saveBufferToStorage, urlToDiskPath, getLocalFileMeta, MIN_GENERATION_STORAGE_BYTES, getUserStorageSummary, assertUserStorageAvailable, addUserStorageUsage, applyUserStorageDelta, deleteStoredFile, normalizeUploadedFileName, getImageAccessUrl, storageKeyFromUrl } from './services/storageService.js';
 import { registerAdminRoutes } from './routes/adminRoutes.js';
 import { registerMerchantRoutes } from './routes/merchantRoutes.js';
 import { registerResourceCategoryRoutes } from './routes/resourceCategoryRoutes.js';
@@ -644,7 +644,8 @@ app.delete('/api/images/:id', requireAuth, async (req,res)=>{
 
 async function normalizeWatermarkConfigForSave(config, reqUser) {
   const next = { ...(config || {}) };
-  if (next.mode === 'text' || !String(next.image || '').startsWith('data:image/')) return next;
+  if (next.mode === 'text') return next;
+  if (!String(next.image || '').startsWith('data:image/')) return hydrateWatermarkImageConfig(next, reqUser.merchant_id);
 
   const raw = String(next.image);
   const comma = raw.indexOf(',');
@@ -688,6 +689,33 @@ async function normalizeWatermarkConfigForSave(config, reqUser) {
   return next;
 }
 
+async function hydrateWatermarkImageConfig(config = {}, merchantId = null) {
+  const next = { ...(config || {}) };
+  if (next.mode === 'text' || !merchantId || (!next.imageId && !next.image)) return next;
+  const key = next.storageKey || storageKeyFromUrl(next.image || '');
+  let rows = [];
+  if (next.imageId) {
+    [rows] = await pool.query(
+      'SELECT id,url,storage_key FROM images WHERE id=? AND merchant_id=? AND source_type="WATERMARK" AND status="ACTIVE" LIMIT 1',
+      [next.imageId, merchantId]
+    );
+  }
+  if (!rows.length && (next.image || key)) {
+    [rows] = await pool.query(
+      'SELECT id,url,storage_key FROM images WHERE merchant_id=? AND source_type="WATERMARK" AND status="ACTIVE" AND (url=? OR storage_key=?) ORDER BY created_at DESC LIMIT 1',
+      [merchantId, next.image || '', key]
+    );
+  }
+  if (rows[0]) {
+    next.imageId = rows[0].id;
+    next.image = rows[0].url;
+    next.storageKey = rows[0].storage_key || key || '';
+  } else if (key && !next.storageKey) {
+    next.storageKey = key;
+  }
+  return next;
+}
+
 
 app.post('/api/watermark/image', requireAuth, (req,res)=>{
   upload.single('image')(req,res,async err=>{
@@ -703,7 +731,7 @@ app.post('/api/watermark/image', requireAuth, (req,res)=>{
         'INSERT INTO images(id,merchant_id,user_id,display_name,original_name,file_name,mime_type,size_bytes,width,height,storage_provider,storage_key,url,source_type,status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
         [id,req.user.merchant_id,req.user.id,displayName,displayName,saved.fileName,saved.mimeType,saved.sizeBytes,saved.width||null,saved.height||null,saved.storageProvider,saved.storageKey,saved.url,'WATERMARK','ACTIVE']
       );
-      res.json({id,url:saved.url,fileName:saved.fileName,message:'水印图片已上传'});
+      res.json({id,url:saved.url,storageKey:saved.storageKey,fileName:saved.fileName,message:'水印图片已上传'});
     }catch(e){
       res.status(400).json({message:e.message||'水印图片上传失败'});
     }
@@ -719,7 +747,7 @@ app.all('/api/watermark/settings', requireAuth, async (req,res,next)=>{
       if(!req.user.merchant_id) return res.json({enabled:false,configured:false,canConfigure,name:'门店水印',config:{}});
       const [rows]=await pool.query('SELECT * FROM watermarks WHERE merchant_id=? ORDER BY created_at DESC LIMIT 1',[req.user.merchant_id]);
       if(rows[0]){
-        const config=typeof rows[0].config==='string'?JSON.parse(rows[0].config):rows[0].config;
+        const config=await hydrateWatermarkImageConfig(typeof rows[0].config==='string'?JSON.parse(rows[0].config):rows[0].config,req.user.merchant_id);
         const configured=!!(config?.image || (config?.mode==='text' && String(config?.text||'').trim()));
         return res.json({enabled:!!config?.enabled,configured,canConfigure,name:rows[0].name,config});
       }
@@ -750,7 +778,7 @@ app.get('/api/images/:id/view', requireAuth, async (req,res)=>{
            ?
            OR i.user_id=?
            OR COALESCE(imc.scope,i.resource_scope)="SYSTEM"
-           OR (i.merchant_id=? AND (COALESCE(imc.scope,i.resource_scope)="MERCHANT" OR i.source_type="AI_GENERATED"))
+           OR (i.merchant_id=? AND (COALESCE(imc.scope,i.resource_scope)="MERCHANT" OR i.source_type IN ("AI_GENERATED","WATERMARK")))
          )
        LIMIT 1`,
       [req.params.id,isSystemAdmin(req.user),req.user.id,req.user.merchant_id]

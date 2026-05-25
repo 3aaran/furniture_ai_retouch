@@ -369,6 +369,19 @@ function StoreResources({me,setMsg}){
   const detailImage=detail?.image||null;
   const detailUrl=detailImage?imageViewUrl(detailImage):'';
   const detailCategory=detailImage?[detailImage.mainCategoryName,detailImage.subCategoryName].filter(Boolean).join(' / ')||'未分类':'';
+
+  function detailResolutionText(image){
+    const width=Number(image?.width||0);
+    const height=Number(image?.height||0);
+    return width&&height?`${width} × ${height}`:'-';
+  }
+
+  function updateDetailImageSize(e){
+    const width=Number(e.currentTarget?.naturalWidth||0);
+    const height=Number(e.currentTarget?.naturalHeight||0);
+    if(!width||!height||(detailImage?.width&&detailImage?.height))return;
+    setDetail(prev=>prev?.image?{...prev,image:{...prev.image,width,height}}:prev);
+  }
   const categorySections=categoryTree.length?categoryTree:[
     {purposeKey:'user_reference',purposeName:'产品参考',mains:[]},
     {purposeKey:'material',purposeName:'材质替换',mains:[]},
@@ -520,7 +533,7 @@ function StoreResources({me,setMsg}){
 
       {activeResourcePanel==='detail'&&detail&&detailImage&&<div className="resourceActionContentV7 resourceDetailFlatV7">
         <div className="resourceDetailImageV6">
-          {detailUrl?<img src={detailUrl} alt={detailImage.name}/>:<span>暂无图片</span>}
+          {detailUrl?<img src={detailUrl} alt={detailImage.name} onLoad={updateDetailImageSize}/>:<span>暂无图片</span>}
         </div>
         <div>
           <div className="resourceDetailTitleV6">
@@ -530,7 +543,7 @@ function StoreResources({me,setMsg}){
           </div>
           <dl className="resourceDetailMetaV6">
             <dt>文件大小</dt><dd>{formatResourceBytes(detailImage.fileSize)}</dd>
-            <dt>分辨率</dt><dd>{detailImage.width&&detailImage.height?`${detailImage.width} × ${detailImage.height}`:'-'}</dd>
+            <dt>分辨率</dt><dd>{detailResolutionText(detailImage)}</dd>
             <dt>分类</dt><dd>{detailCategory}</dd>
             <dt>上传时间</dt><dd>{fmt(detailImage.createdAt)}</dd>
           </dl>
@@ -691,7 +704,7 @@ function StoreResources({me,setMsg}){
 
       {detail&&detailImage&&<div className="resourceDetailInlineV6">
         <div className="resourceDetailImageV6">
-          {detailUrl?<img src={detailUrl} alt={detailImage.name}/>:<span>暂无图片</span>}
+          {detailUrl?<img src={detailUrl} alt={detailImage.name} onLoad={updateDetailImageSize}/>:<span>暂无图片</span>}
         </div>
         <div className="resourceDetailTitleV6">
           <h3>{detailImage.name}</h3>
@@ -699,7 +712,7 @@ function StoreResources({me,setMsg}){
         </div>
         <dl className="resourceDetailMetaV6">
           <dt>文件大小</dt><dd>{formatResourceBytes(detailImage.fileSize)}</dd>
-          <dt>分辨率</dt><dd>{detailImage.width&&detailImage.height?`${detailImage.width} × ${detailImage.height}`:'-'}</dd>
+          <dt>分辨率</dt><dd>{detailResolutionText(detailImage)}</dd>
           <dt>分类</dt><dd>{detailCategory}</dd>
           <dt>上传时间</dt><dd>{fmt(detailImage.createdAt)}</dd>
         </dl>
