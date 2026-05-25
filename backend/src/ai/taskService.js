@@ -590,7 +590,15 @@ export async function runAiTask(taskId) {
       message: `AI task ${taskId} image inputs prepared`,
       userId: full.user_id,
       merchantId: full.merchant_id,
-      metadata: { taskId, hasImageUrl: !!modelImageUrl, referenceCount: modelReferenceUrls.length }
+      metadata: {
+        taskId,
+        resolution: full.resolution,
+        ratio: full.ratio,
+        originWidth: Number(originMeta.width || 0),
+        originHeight: Number(originMeta.height || 0),
+        hasImageUrl: !!modelImageUrl,
+        referenceCount: modelReferenceUrls.length
+      }
     });
 
     const callStartedAt = Date.now();

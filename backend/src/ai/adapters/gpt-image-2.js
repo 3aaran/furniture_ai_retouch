@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import axios from 'axios';
-import { downloadImage, saveBuffer } from './utils.js';
+import sharp from 'sharp';
+import { saveBuffer } from './utils.js';
 
 const SIZE_MAP = {
   '1K': {
@@ -70,6 +71,30 @@ export function mapImageSizeForGptImage2({ resolution = '2K', ratio = '自适应
   const resolutionKey = normalizeResolution(resolution);
   const ratioKey = normalizeRatio(ratio) || closestRatioFromMeta(imageMeta || {});
   return SIZE_MAP[resolutionKey][ratioKey] || SIZE_MAP[resolutionKey]['1:1'];
+}
+
+function parseSize(size = '') {
+  const match = String(size || '').match(/^(\d+)x(\d+)$/i);
+  if (!match) return null;
+  return { width: Number(match[1]), height: Number(match[2]) };
+}
+
+export async function fitImageBufferToSizeForGptImage2(buffer, size) {
+  const target = parseSize(size);
+  if (!target) return buffer;
+  const meta = await sharp(buffer).metadata();
+  if (Number(meta.width || 0) === target.width && Number(meta.height || 0) === target.height) {
+    return buffer;
+  }
+  return await sharp(buffer)
+    .resize({
+      width: target.width,
+      height: target.height,
+      fit: 'contain',
+      background: { r: 255, g: 255, b: 255, alpha: 0 }
+    })
+    .png()
+    .toBuffer();
 }
 
 function contentType(filePath = '') {
@@ -169,14 +194,18 @@ function assertPublicImages({ imagePath, imageUrl, referenceImageUrls = [] }) {
 
 function buildLk888ParamsPayload({ modelName, finalPrompt, imagePath, imageUrl, referenceImageUrls, size }) {
   const images = assertPublicImages({ imagePath, imageUrl, referenceImageUrls });
+  const params = {
+    size,
+    quality: 'high',
+    ...(images.length ? { images } : {})
+  };
   return {
     model: modelName || 'gpt-image-2',
     prompt: finalPrompt,
-    params: {
-      size,
-      quality: 'high',
-      ...(images.length ? { images } : {})
-    }
+    params,
+    size,
+    quality: params.quality,
+    ...(images.length ? { images } : {})
   };
 }
 
@@ -332,12 +361,19 @@ export async function generate(params = {}) {
     throw new Error('GPT Image 2 接口未返回图片地址或 Base64 图片');
   }
 
+  const context = { merchantId, userId, kind: 'generated' };
   if (String(result).startsWith('http')) {
-    return downloadImage(result, `gpt-image-2-${featureKey || 'image'}`, { merchantId, userId, kind: 'generated' });
+    const remote = await axios.get(result, {
+      responseType: 'arraybuffer',
+      timeout: Number(params.timeoutMs || 180000)
+    });
+    const buffer = await fitImageBufferToSizeForGptImage2(Buffer.from(remote.data || []), size);
+    return saveBuffer(buffer, `gpt-image-2-${featureKey || 'image'}`, 'png', context);
   }
 
   const b64 = String(result).replace(/^data:image\/\w+;base64,/, '');
-  return saveBuffer(Buffer.from(b64, 'base64'), `gpt-image-2-${featureKey || 'image'}`, 'png', { merchantId, userId, kind: 'generated' });
+  const buffer = await fitImageBufferToSizeForGptImage2(Buffer.from(b64, 'base64'), size);
+  return saveBuffer(buffer, `gpt-image-2-${featureKey || 'image'}`, 'png', context);
 }
 
 export default { generate };
