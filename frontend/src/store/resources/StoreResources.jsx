@@ -379,7 +379,9 @@ function StoreResources({me,setMsg}){
   function updateDetailImageSize(e){
     const width=Number(e.currentTarget?.naturalWidth||0);
     const height=Number(e.currentTarget?.naturalHeight||0);
-    if(!width||!height||(detailImage?.width&&detailImage?.height))return;
+    const currentWidth=Number(detailImage?.width||0);
+    const currentHeight=Number(detailImage?.height||0);
+    if(!width||!height||(currentWidth&&currentHeight))return;
     setDetail(prev=>prev?.image?{...prev,image:{...prev.image,width,height}}:prev);
   }
   const categorySections=categoryTree.length?categoryTree:[

@@ -366,6 +366,10 @@ export function registerAdminRoutes(app,{upload}){
       mainCategoryName:r.mainCategoryName||'未分类',
       subCategoryName:Number(r.isMainOnly||0)?'':(r.subCategoryName||''),
       imageUrl:r.url,
+      fileSize:Number(r.size_bytes||0),
+      width:r.width||null,
+      height:r.height||null,
+      mimeType:r.mime_type||'',
       status:r.status,
       createdAt:r.created_at,
       scope:'SYSTEM'

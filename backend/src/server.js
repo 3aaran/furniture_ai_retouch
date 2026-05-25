@@ -317,7 +317,7 @@ app.post('/api/images/upload', requireAuth, (req,res)=>{
 });
 
 app.get('/api/images/recent', requireAuth, async (req,res)=>{
-  const wh=['i.user_id=?','i.source_type<>"UPLOAD"','i.status="ACTIVE"'];
+  const wh=['i.user_id=?','i.source_type IN ("AI_GENERATED","PROCESS_RESULT")','i.status="ACTIVE"'];
   const ps=[req.user.id];
   if(req.query.kind){ wh.push('i.source_type=?'); ps.push(req.query.kind); }
   if(req.query.keyword){ wh.push('(i.id LIKE ? OR i.source_type LIKE ? OR i.original_name LIKE ? OR i.display_name LIKE ?)'); ps.push(like(req.query.keyword),like(req.query.keyword),like(req.query.keyword),like(req.query.keyword)); }
@@ -803,7 +803,10 @@ app.get('/api/images/:id/download', requireAuth, async (req,res)=>{
     if(String(req.query.watermark||'')==='1'&&merchantId){
       const [rows]=await pool.query('SELECT * FROM watermarks WHERE merchant_id=? ORDER BY created_at DESC LIMIT 1',[merchantId]);
       if(rows[0]){
-        const config=typeof rows[0].config==='string'?JSON.parse(rows[0].config):rows[0].config;
+        const config=await hydrateWatermarkImageConfig(
+          typeof rows[0].config==='string'?JSON.parse(rows[0].config):rows[0].config,
+          merchantId
+        );
         if(config?.image||(config?.mode==='text'&&String(config?.text||'').trim())){
           const sourceInput=/^https?:\/\//i.test(finalUrl)?finalUrl:urlToDiskPath(img.url);
           const wmUrl=await applyWatermark({imagePath:sourceInput,config,merchantId,userId:req.user.id});
@@ -837,7 +840,10 @@ app.get('/api/images/:id/watermark-preview', requireAuth, async (req,res)=>{
       if(/^https?:\/\//i.test(fallbackUrl)) return res.redirect(fallbackUrl);
       return res.sendFile(urlToDiskPath(fallbackUrl||img.url));
     }
-    const config=typeof rows[0].config==='string'?JSON.parse(rows[0].config):rows[0].config;
+    const config=await hydrateWatermarkImageConfig(
+      typeof rows[0].config==='string'?JSON.parse(rows[0].config):rows[0].config,
+      merchantId
+    );
     if(!(config?.image || (config?.mode==='text' && String(config?.text||'').trim()))){
       if(/^https?:\/\//i.test(fallbackUrl)) return res.redirect(fallbackUrl);
       return res.sendFile(urlToDiskPath(fallbackUrl||img.url));

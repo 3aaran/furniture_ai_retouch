@@ -241,11 +241,13 @@ export function registerResourceCategoryRoutes(app) {
       LIMIT 1
     `, access.params);
     if (!image) return res.status(404).json({ message: '资源不存在或无权查看' });
-    if ((!image.width || !image.height || !Number(image.size_bytes || 0)) && image.url) {
+    const currentWidth = Number(image.width || 0);
+    const currentHeight = Number(image.height || 0);
+    if ((!currentWidth || !currentHeight || !Number(image.size_bytes || 0)) && image.url) {
       const meta = await getStoredFileMeta(image);
       if (meta.width || meta.height || meta.sizeBytes) {
-        image.width = image.width || meta.width;
-        image.height = image.height || meta.height;
+        image.width = currentWidth || meta.width;
+        image.height = currentHeight || meta.height;
         image.size_bytes = Number(image.size_bytes || meta.sizeBytes || 0);
         image.mime_type = image.mime_type || meta.mimeType;
         image.file_name = image.file_name || meta.fileName;

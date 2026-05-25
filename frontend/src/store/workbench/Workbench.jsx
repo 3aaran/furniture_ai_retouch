@@ -18,6 +18,14 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
     return assetUrl(input);
   }
 
+  function isRecentTaskItem(item){
+    return item?.itemType==='task'||['pending','running','succeeded','failed'].includes(String(item?.status||'').toLowerCase());
+  }
+
+  function recentImageId(item){
+    return String(item?.resultImage?.id||item?.imageId||item?.id||'').trim();
+  }
+
   const ops=Object.fromEntries(Object.entries(featureConfig).map(([key,item])=>[key,{label:item.name,desc:item.desc,cost:item.defaultCost}]));
   const [op,setOp]=useState('material');
   const [origin,setOrigin]=useState(null);
@@ -179,7 +187,8 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
       req('/api/images/recent?pageSize=20')
     ]).then(results=>{
       const taskItems=results[0].status==='fulfilled'?(results[0].value.items||[]):[];
-      const imageItems=results[1].status==='fulfilled'?(results[1].value.items||[]).filter(i=>i.kind!=='original'):[];
+      const hiddenKinds=new Set(['ORIGINAL','UPLOAD','WATERMARK','RESOURCE']);
+      const imageItems=results[1].status==='fulfilled'?(results[1].value.items||[]).filter(i=>!hiddenKinds.has(String(i.kind||'').toUpperCase())):[];
       const seen=new Set();
       const items=[...taskItems,...imageItems]
         .filter(item=>{
@@ -470,19 +479,23 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
 
   async function deleteRecentTask(item,e){
     e?.stopPropagation?.();
-    const taskId=String(item?.id||'').trim();
-    if(!taskId) return;
+    const deleteId=isRecentTaskItem(item)?String(item?.id||'').trim():recentImageId(item);
+    if(!deleteId) return;
     setDeleteTarget(item);
   }
 
   async function confirmDeleteRecentTask(){
     const item=deleteTarget;
-    const taskId=String(item?.id||'').trim();
-    if(!taskId) return;
+    const isTask=isRecentTaskItem(item);
+    const deleteId=isTask?String(item?.id||'').trim():recentImageId(item);
+    if(!deleteId) return;
     try{
-      const d=await req('/api/ai/tasks/'+taskId,{method:'DELETE'});
-      setRecent(prev=>prev.filter(x=>x.id!==taskId));
-      if(taskDetail?.id===taskId) setTaskDetail(null);
+      const d=await req((isTask?'/api/ai/tasks/':'/api/images/')+deleteId,{method:'DELETE'});
+      setRecent(prev=>prev.filter(x=>{
+        const currentId=isRecentTaskItem(x)?String(x?.id||'').trim():recentImageId(x);
+        return currentId!==deleteId&&recentImageId(x)!==deleteId&&String(x?.id||'').trim()!==deleteId;
+      }));
+      if(taskDetail?.id===deleteId||taskDetail?.image?.id===deleteId) setTaskDetail(null);
       setDeleteTarget(null);
       setMsg(d.message||'图片已删除');
       refreshRecent();
@@ -520,7 +533,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
     try{
       if(item.status&&item.status!=='succeeded')return setMsg(item.statusMessage||item.errorMessage||(item.status==='failed'?'生成图片失败：模型服务异常':'任务正在生成'));
       setTaskDetailLoading(true);
-      setTaskDetail(await req(item.itemType==='task'||item.status?('/api/ai/tasks/'+item.id):('/api/images/'+item.id+'/detail-rich')));
+      setTaskDetail(await req(isRecentTaskItem(item)?('/api/ai/tasks/'+item.id):('/api/images/'+recentImageId(item)+'/detail-rich')));
     }catch(e){
       setMsg(e.message);
     }finally{
@@ -741,7 +754,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
               zIndex:3
             }}
           >
-            {renderRecentActionButton(<Download size={14}/>,(e)=>{e.stopPropagation();window.open(`${API}/api/images/${item.resultImage?.id||item.imageId}/download?token=${token()}`,'_blank');},'下载')}
+            {renderRecentActionButton(<Download size={14}/>,(e)=>{e.stopPropagation();window.open(`${API}/api/images/${recentImageId(item)}/download?token=${token()}`,'_blank');},'下载')}
             {renderRecentActionButton(<Trash2 size={14}/>,(e)=>deleteRecentTask(item,e),'删除',{danger:true})}
           </div>}
         </div>
