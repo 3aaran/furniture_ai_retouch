@@ -192,20 +192,16 @@ function assertPublicImages({ imagePath, imageUrl, referenceImageUrls = [] }) {
   return publicImages;
 }
 
-function buildLk888ParamsPayload({ modelName, finalPrompt, imagePath, imageUrl, referenceImageUrls, size }) {
+export function buildLk888ParamsPayload({ modelName, finalPrompt, imagePath, imageUrl, referenceImageUrls, size }) {
   const images = assertPublicImages({ imagePath, imageUrl, referenceImageUrls });
-  const params = {
-    size,
-    quality: 'high',
-    ...(images.length ? { images } : {})
-  };
   return {
     model: modelName || 'gpt-image-2',
     prompt: finalPrompt,
-    params,
-    size,
-    quality: params.quality,
-    ...(images.length ? { images } : {})
+    params: {
+      size,
+      quality: 'high',
+      ...(images.length ? { images } : {})
+    }
   };
 }
 

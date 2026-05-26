@@ -91,10 +91,15 @@
 .wbUploadInner button{height:44px;padding:0 22px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:#18191b;color:#f2ece0}
 .wbUploadCircle{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:rgba(240,214,138,.18);color:#f0d68a;font-size:28px;font-weight:900}
 .wbRefCard{border:1px solid rgba(255,255,255,.08);border-radius:22px;background:#17181a;padding:16px 18px;margin-bottom:16px}
-.wbRefHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.wbRefHeader{display:flex;align-items:center;justify-content:space-between;gap:14px}
 .wbRefHeader b{display:block;color:#fff;font-size:18px;margin-bottom:6px}
 .wbRefHeader span{display:block;color:#a69f93;font-size:14px;line-height:1.6}
 .wbRefHeader strong{color:#d4d0c7;font-size:14px;font-weight:700;white-space:nowrap}
+.wbRefHeaderActions{display:flex;align-items:center;gap:10px}
+.wbRefToggle{width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:#101113;color:#ead89f;display:grid;place-items:center;cursor:pointer;transition:border-color .18s ease,background .18s ease,color .18s ease,transform .18s ease}
+.wbRefToggle:hover{border-color:rgba(240,214,138,.48);background:rgba(240,214,138,.12);color:#f0d68a}
+.wbRefToggle svg{transition:transform .18s ease}
+.wbRefCard.isOpen .wbRefToggle svg{transform:rotate(180deg)}
 .wbRefBody{display:flex;align-items:center;gap:14px;margin-top:14px;flex-wrap:wrap}
 .wbRefUpload{width:132px;height:112px;border-radius:18px;border:1px dashed rgba(255,255,255,.16);background:#121315;display:grid;place-items:center;color:#d1c6a5;overflow:hidden;cursor:pointer}
 .wbRefUpload input{display:none}

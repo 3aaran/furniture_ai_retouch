@@ -1,5 +1,5 @@
-import React from 'react';
-import { Droplet } from 'lucide-react';
+import React, { useState } from 'react';
+import { ChevronDown, Droplet } from 'lucide-react';
 
 export function WorkbenchUploadPanel({
   origin,
@@ -20,6 +20,8 @@ export function WorkbenchUploadPanel({
   clearReferenceImage,
   setMsg
 }) {
+  const [referenceOpen, setReferenceOpen] = useState(false);
+
   return <>
     <div className="wbMainBlock">
       <div className="wbSourceHead">
@@ -48,14 +50,26 @@ export function WorkbenchUploadPanel({
       </label>
     </div>
 
-    <div className="wbRefCard">
+    <div className={referenceOpen ? 'wbRefCard isOpen' : 'wbRefCard'}>
       <div className="wbRefHeader">
         <div>
           <b>参考图（可选）</b>
         </div>
-        <strong>{reference ? '已添加' : '未添加'}</strong>
+        <div className="wbRefHeaderActions">
+          <strong>{reference ? '已添加' : '未添加'}</strong>
+          <button
+            className="wbRefToggle"
+            type="button"
+            title={referenceOpen ? '收起参考图' : '展开参考图'}
+            aria-label={referenceOpen ? '收起参考图' : '展开参考图'}
+            aria-expanded={referenceOpen}
+            onClick={() => setReferenceOpen(v => !v)}
+          >
+            <ChevronDown size={18}/>
+          </button>
+        </div>
       </div>
-      <div className="wbRefBody">
+      {referenceOpen && <div className="wbRefBody">
         <label className={draggingRef ? 'wbRefUpload isDragging' : 'wbRefUpload'} onDragOver={e => dragOver(e, 'reference')} onDragLeave={e => dragLeave(e, 'reference')} onDrop={e => dropUpload(e, 'reference')}>
           <input key={reference?.id || 'empty-reference'} type="file" accept="image/*" onChange={chooseReference}/>
           {reference ? <div className="wbRefPreviewWrap">
@@ -73,7 +87,7 @@ export function WorkbenchUploadPanel({
         </label>
         <button className="wbGhostBtn" type="button" onClick={() => openResourceModal('reference')}>从资源库选择</button>
         {selectedTpl && <div className="wbSelectedTip">已选择资源模板：{selectedTpl.name}</div>}
-      </div>
+      </div>}
     </div>
   </>;
 }
