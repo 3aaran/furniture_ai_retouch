@@ -8,6 +8,7 @@
   "dependencies": {
     "@vitejs/plugin-react": "4.3.4",
     "furniture-retouch": "file:..",
+    "gsap": "^3.15.0",
     "lucide-react": "^0.468.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

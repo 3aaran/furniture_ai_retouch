@@ -2,7 +2,8 @@
 import React,{useEffect,useState}from'react';
 import{ArrowRight,Building2,LockKeyhole,Phone,UserRound}from'lucide-react';
 import{req}from'../../appShared.jsx';
-import{APP_NAME,LOGIN_SUBTITLE,LOGO_TEXT}from'../../config/appConfig.js';
+import BrandMark from'../../components/BrandMark.jsx';
+import{APP_NAME,LOGIN_SUBTITLE}from'../../config/appConfig.js';
 
 export default function Login(){
   const[mode,setMode]=useState('login');
@@ -53,7 +54,7 @@ export default function Login(){
     <div className="authAmbient authAmbientTwo"/>
     <section className="authIntroV2">
       <div className="authBrandV2">
-        <span className="logo authLogoV2">{LOGO_TEXT}</span>
+        <BrandMark className="authLogoV2"/>
         <div><b>{APP_NAME}</b><small>{LOGIN_SUBTITLE}</small></div>
       </div>
       <div className="authTitleV2">

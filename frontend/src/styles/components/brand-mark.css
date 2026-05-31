@@ -1,0 +1,8 @@
+/* 该文件用于定义勋港品牌图标在导航、登录页和公开首页中的统一显示样式。 */
+.brandMark{display:grid;place-items:center;width:52px;height:52px;flex:0 0 auto;border-radius:16px;color:#f2d58c;background:#070809;box-shadow:0 14px 46px rgba(231,199,111,.14)}
+.brandMark svg{display:block;width:100%;height:100%}
+.topBrand .brandMark{width:58px;height:58px;border-radius:18px}
+.topBrandButton{display:flex;align-items:center;gap:14px;margin:0;padding:0;border:0!important;background:transparent!important;color:inherit;text-align:left;cursor:pointer}
+.topBrandButton:hover .brandMark{filter:drop-shadow(0 0 18px rgba(242,213,140,.28))}
+.authBrandV2 .brandMark{width:56px;height:56px}
+.authLogoV2.brandMark{background:#070809;color:#f2d58c}

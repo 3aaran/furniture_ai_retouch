@@ -4,12 +4,14 @@
 @import './base/variables.css';
 @import './base/reset.css';
 
+@import './components/brand-mark.css';
 
 @import './legacy/style.css';
 @import './legacy/workbench-fixes.css';
 
 
 @import './pages/auth.css';
+@import './pages/landing.css';
 @import './pages/workbench.css';
 @import './pages/resources.css';
 @import './pages/task-detail.css';

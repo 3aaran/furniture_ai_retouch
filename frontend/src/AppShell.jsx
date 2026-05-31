@@ -5,8 +5,9 @@ import{adminNav,adminNavGroups,Dashboard,Applications,Merchants,AiConfig,Setting
 import{storeAdminNav,staffNav,Workbench,StoreResources,StoreUsers,StoreTasks,Promotion,QuotaLogs}from'./store/StorePages.jsx';
 import{UserFeedback,FeedbackModal,RedeemModal,Profile}from'./account/AccountPages.jsx';
 import{TaskDetailModal}from'./components/TaskDetailModal.jsx';
+import BrandMark from'./components/BrandMark.jsx';
 import{avatarViewUrl,roleName,userFriendlyMessage,recordClientFailure}from'./appShared.jsx';
-import{APP_NAME,APP_SUBTITLE,LOGO_TEXT}from'./config/appConfig.js';
+import{APP_NAME,APP_SUBTITLE}from'./config/appConfig.js';
 
 function roleNav(role){
   if(role==='SYSTEM_ADMIN')return adminNav;
@@ -74,6 +75,9 @@ function Shell({me,setMe}){
     setNavDrop(null);
     if(window.location.hash!==`#/${next}`)window.history.replaceState(null,'',`#/${next}`);
   }
+  function openHome(){
+    window.location.hash='/home';
+  }
   function openProfileMenu(){
     if(menuTimer.current)clearTimeout(menuTimer.current);
     menuTimer.current=null;
@@ -107,10 +111,10 @@ function Shell({me,setMe}){
 
   return <div className="topApp" onClick={()=>setNavDrop(null)}>
     <header className="topbar">
-      <div className="topBrand">
-        <span className="logo">{LOGO_TEXT}</span>
+      <button className="topBrand topBrandButton" type="button" onClick={openHome} aria-label="返回官网首页">
+        <BrandMark/>
         <div><b>{APP_NAME}</b><small>{APP_SUBTITLE}</small></div>
-      </div>
+      </button>
 
       <nav className="topNav" onClick={e=>e.stopPropagation()}>
         {isAdmin?adminNavGroups.map(g=>
