@@ -39,10 +39,10 @@ const heroImages={
 };
 
 const workflowImages=[
-  ['/landing/workflow/01-original.jpg','原始照片','门店实拍家具图',UploadCloud],
-  ['/landing/workflow/02-clean.png','背景净化','主体清晰，背景干净',WandSparkles],
-  ['/landing/workflow/03-material.png','材质替换','快速预览 SKU 效果',Brush],
-  ['/landing/workflow/04-scene.png','场景融合','适合展示的家居空间',Layers3]
+  ['/landing/workflow/01-original.webp','原始照片','门店实拍家具图',UploadCloud],
+  ['/landing/workflow/02-clean.webp','背景净化','主体清晰，背景干净',WandSparkles],
+  ['/landing/workflow/03-material.webp','材质替换','快速预览 SKU 效果',Brush],
+  ['/landing/workflow/04-scene.webp','场景融合','适合展示的家居空间',Layers3]
 ];
 const workflowLoopImages=workflowImages.length>1?[...workflowImages,workflowImages[0]]:workflowImages;
 
@@ -269,7 +269,7 @@ export default function LandingPage({me}){
               transition:workflowTransition?'transform 720ms cubic-bezier(.22,.8,.24,1)':'none'
             }}>
               {workflowLoopImages.map(([src,title,text,Icon],index)=><div className={`workflowFrame frame${index+1}`} key={`${src}-${index}`}>
-                <img src={src} alt={title} onError={e=>{e.currentTarget.hidden=true}}/>
+                <img src={src} alt={title} loading="lazy" decoding="async" onError={e=>{e.currentTarget.hidden=true}}/>
                 <div className="workflowFrameText"><Icon size={28}/><b>{title}</b><span>{text}</span></div>
               </div>)}
             </div>

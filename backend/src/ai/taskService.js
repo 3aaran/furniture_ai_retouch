@@ -54,7 +54,10 @@ function calcCost(settings, featureKey, resolution) {
     enhance: 'cost_enhance',
     material: 'cost_material',
     multiview: 'cost_multiview',
-    lineart: 'cost_lineart'
+    lineart: 'cost_lineart',
+    promo_main_image: 'cost_replace_bg',
+    promo_poster_image: 'cost_replace_bg',
+    promo_detail_image: 'cost_enhance'
   };
   const opKey = opKeyMap[featureKey];
   const base = Number(settings[opKey] ?? quotaCost[featureKey] ?? 1);
@@ -683,7 +686,10 @@ export async function runAiTask(taskId) {
         remove_bg: '背景净化生成',
         enhance: '摄影增强生成',
         lineart: '线稿图生成',
-        multiview: '多角度视图生成'
+        multiview: '多角度视图生成',
+        promo_main_image: '产品主图生成',
+        promo_poster_image: '广告海报图生成',
+        promo_detail_image: '产品细节图生成'
       };
 
       await bindImageToResourceCategory(conn2, {

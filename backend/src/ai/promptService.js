@@ -20,6 +20,19 @@ function firstText(...values) {
   return values.map(clean).find(Boolean) || '';
 }
 
+function textList(value) {
+  if (Array.isArray(value)) return value.map(clean).filter(Boolean).join('、');
+  return clean(value);
+}
+
+function singleLineText(value) {
+  return String(value ?? '')
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .join('；');
+}
+
 function block(title, items) {
   const lines = (Array.isArray(items) ? items : [items]).filter(Boolean);
   if (!lines.length) return '';
@@ -96,6 +109,44 @@ export function buildExtraRequirements(featureKey, options = {}, taskParams = {}
       result.push('2. 侧视图：从家具左侧或右侧水平拍摄，展示侧面长度、侧板或扶手形态、座面高度、靠背厚度、底部支脚和侧面结构关系。');
       result.push('3. 45度视图：从家具前方偏左或偏右约45度拍摄，展示家具正面、侧面和顶部结构关系，作为主展示视角。');
     }
+  }
+
+  if (featureKey === 'promo_main_image') {
+    const background = firstText(options.mainBackground, '暖灰渐变商业摄影背景');
+    const composition = firstText(options.mainComposition, '主体居中');
+    const whitespace = firstText(options.mainWhitespace, '少量留白');
+    result.push(`背景风格：${background}`);
+    result.push(`主图构图：${composition}`);
+    result.push(`留白要求：${whitespace}`);
+    result.push('产品主图默认不生成标题、价格、品牌文字、Logo、水印或促销标签。');
+  }
+
+  if (featureKey === 'promo_poster_image') {
+    const textMode = firstText(options.posterTextMode, 'auto');
+    const copy = singleLineText(options.posterText);
+    const placement = firstText(options.posterCopyPlacement, '右侧留白');
+    const tone = firstText(options.posterTone, '温暖家居');
+    result.push(`文案区域：${placement}`);
+    result.push(`海报氛围：${tone}`);
+    if (textMode === 'custom' && copy) {
+      result.push(`海报文案：${copy}`);
+      result.push('只使用用户提供的海报文案，不要额外编造价格、品牌、联系方式、参数或促销标签。');
+    } else if (textMode === 'none') {
+      result.push('海报文字：不生成任何文字，只预留清晰文案区域，方便后期添加。');
+    } else {
+      result.push('海报文字：允许自动生成少量简短、通顺、可阅读的中文宣传文案，建议 1 个主标题 + 1 个副标题。');
+    }
+    result.push('不要生成无意义文字、乱码文字、错误中文或伪文字。');
+  }
+
+  if (featureKey === 'promo_detail_image') {
+    const layout = firstText(options.detailLayout, '四宫格');
+    const focus = textList(options.detailFocus) || '材质纹理、边角工艺';
+    const textMode = firstText(options.detailTextMode, '留白不生成文字');
+    result.push(`细节排版：${layout}`);
+    result.push(`细节重点：${focus}`);
+    result.push(`文字策略：${textMode}`);
+    result.push('产品细节图必须以局部细节、多区域细节展示为主，不要把完整家具作为主体大图。');
   }
 
   return result;

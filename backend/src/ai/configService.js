@@ -7,7 +7,10 @@ const FEATURES = [
   ['enhance', '摄影增强', 'cost_enhance', 40],
   ['lineart', '线稿图', 'cost_lineart', 50],
   ['multiview', '多角度视图', 'cost_multiview', 60],
-  ['video_generate', '宣传视频生成', 'cost_video_generate', 70]
+  ['promo_main_image', '产品主图', 'cost_replace_bg', 70],
+  ['promo_poster_image', '广告海报图', 'cost_replace_bg', 80],
+  ['promo_detail_image', '产品细节图', 'cost_enhance', 90],
+  ['video_generate', '宣传视频生成', 'cost_video_generate', 100]
 ];
 
 function maskKey(key = '') {

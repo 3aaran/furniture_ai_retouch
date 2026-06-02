@@ -7,7 +7,6 @@ import{APP_NAME,LOGIN_SUBTITLE}from'../../config/appConfig.js';
 
 export default function Login(){
   const[mode,setMode]=useState('login');
-  const[tab,setTab]=useState('pwd');
   const[f,setF]=useState({identifier:'',password:'',code:'',companyName:'',contactName:'',phone:'',inviteCode:'',note:''});
   const[msg,setMsg]=useState('');
   useEffect(()=>{document.title=APP_NAME},[]);
@@ -25,19 +24,9 @@ export default function Login(){
 
   async function login(){
     try{
-      const d=tab==='code'
-        ? await req('/api/auth/code-login',{method:'POST',body:JSON.stringify({phone:f.identifier,code:f.code})})
-        : await req('/api/auth/login',{method:'POST',body:JSON.stringify({identifier:f.identifier,password:f.password})});
+      const d=await req('/api/auth/login',{method:'POST',body:JSON.stringify({identifier:f.identifier,password:f.password})});
       localStorage.setItem('token',d.token);
       location.reload();
-    }catch(e){setMsg(e.message)}
-  }
-
-  async function send(){
-    try{
-      const d=await req('/api/auth/send-code',{method:'POST',body:JSON.stringify({phone:f.identifier})});
-      setF({...f,code:d.code||''});
-      setMsg(d.code?'开发验证码：'+d.code:'验证码已发送');
     }catch(e){setMsg(e.message)}
   }
 
@@ -75,13 +64,11 @@ export default function Login(){
           <h2>登录账号</h2>
         </div>
         <div className="tabs authTabsV2">
-          <button type="button" className={tab==='pwd'?'on':''} onClick={()=>setTab('pwd')}><LockKeyhole size={17}/>账号密码</button>
-          <button type="button" className={tab==='code'?'on':''} onClick={()=>setTab('code')}><Phone size={17}/>手机验证码</button>
+          <button type="button" className="on"><LockKeyhole size={17}/>账号密码</button>
+          <button type="button" className="coming" disabled><Phone size={17}/>手机验证码<span className="authComingTag">开发中</span></button>
         </div>
         <label className="authFieldV2">账号 / 手机号<input value={f.identifier} onChange={e=>setF({...f,identifier:e.target.value})} placeholder="请输入账号或手机号"/></label>
-        {tab==='pwd'
-          ? <label className="authFieldV2">密码<input type="password" value={f.password} onChange={e=>setF({...f,password:e.target.value})} placeholder="请输入密码"/></label>
-          : <label className="authFieldV2">验证码<div className="inputBtn authCodeRowV2"><input value={f.code} onChange={e=>setF({...f,code:e.target.value})} placeholder="请输入验证码"/><button type="button" onClick={send}>获取</button></div></label>}
+        <label className="authFieldV2">密码<input type="password" value={f.password} onChange={e=>setF({...f,password:e.target.value})} placeholder="请输入密码"/></label>
         <button className="submit authSubmitV2" type="button" onClick={login}>登录<ArrowRight size={18}/></button>
         <div className="switch authSwitchV2">没有门店？<b onClick={()=>setMode('apply')}>提交商家申请</b></div>
       </>:<>

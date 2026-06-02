@@ -1,16 +1,18 @@
 ﻿import React,{useEffect,useRef,useState}from'react';
-import{Brush,Camera,Clapperboard,Download,Eye,Image as ImageIcon,Layers,PenLine,Plus,Power,Rotate3d,Search,Trash2,Users as UsersIcon,Video,WandSparkles}from'lucide-react';
+import{Brush,Camera,Clapperboard,Download,Eye,Image as ImageIcon,Layers,PenLine,Rotate3d,Search,Trash2,WandSparkles}from'lucide-react';
 import{API,token,req,reqForm,fmt,resTypeName,imageViewUrl,assetUrl}from'../../appShared.jsx';
 import{getFeatureDisplayName}from'../../config/uiText.js';
 import{featureConfig}from'../../config/featureConfig.jsx';
 import WorkbenchUploadPanel from'./WorkbenchUploadPanel.jsx';
 import GenerationControls from'./GenerationControls.jsx';
+import{DEFAULT_PROMOTION_KEY,buildPromotionOptions,getPromotionFeature,isPromotionFeatureKey,promotionFeatures,promotionOptionChoices,promotionOptionDefaults}from'./promotionFeatures.js';
 import ResourcePickerModal from'./ResourcePickerModal.jsx';
 import WorkbenchResourceUploadModal from'./WorkbenchResourceUploadModal.jsx';
 import WatermarkConfigModal from'./WatermarkConfigModal.jsx';
 import ConfirmDialog from'../../components/ConfirmDialog.jsx';
 
-const VIDEO_MODE_ENABLED=false;
+const BASE_RATIO_OPTIONS=['自适应','1:1','4:3','3:4','16:9'];
+const BASE_RESOLUTION_OPTIONS=['1K','2K','4K'];
 
 function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   function imgSrc(input){
@@ -28,8 +30,16 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
     return String(item?.resultImage?.id||item?.imageId||item?.id||'').trim();
   }
 
-  const ops=Object.fromEntries(Object.entries(featureConfig).map(([key,item])=>[key,{label:item.name,desc:item.desc,cost:item.defaultCost}]));
+  const baseOps=Object.fromEntries(Object.entries(featureConfig).map(([key,item])=>[key,{label:item.name,desc:item.desc,cost:item.defaultCost}]));
+  const promotionCostFallback={
+    promo_main_image:baseOps.replace_bg?.cost,
+    promo_poster_image:baseOps.replace_bg?.cost,
+    promo_detail_image:baseOps.enhance?.cost
+  };
+  const promotionOps=Object.fromEntries(promotionFeatures.map(item=>[item.key,{label:item.name,desc:item.desc,cost:promotionCostFallback[item.key]??12}]));
+  const ops={...baseOps,...promotionOps};
   const [op,setOp]=useState('material');
+  const [featureGroup,setFeatureGroup]=useState('base');
   const [mediaMode,setMediaMode]=useState('image');
   const [storyboards,setStoryboards]=useState([]);
   const [storyboardDragging,setStoryboardDragging]=useState(false);
@@ -58,6 +68,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   const [removeOpts,setRemoveOpts]=useState({whiteBg:false,mirror:false});
   const [enhanceOpts,setEnhanceOpts]=useState({focus:false,angle:'不变'});
   const [multiView,setMultiView]=useState('三角度视图');
+  const [promotionOptions,setPromotionOptions]=useState(promotionOptionDefaults);
   const [draggingSource,setDraggingSource]=useState(false);
   const [draggingRef,setDraggingRef]=useState(false);
   const [resourceModal,setResourceModal]=useState({open:false,target:'source',keyword:'',scope:'ALL'});
@@ -343,6 +354,43 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
     return resources.find(r=>String(r.id)===String(selectedResource));
   }
 
+  function activateFeatureGroup(group){
+    if(group==='base'){
+      setFeatureGroup('base');
+      setMediaMode('image');
+      if(isPromotionFeatureKey(op)) setOp('material');
+      setRatio(v=>BASE_RATIO_OPTIONS.includes(v)?v:'自适应');
+      setResolution(v=>BASE_RESOLUTION_OPTIONS.includes(v)?v:'2K');
+      return;
+    }
+    if(group==='promotion'){
+      setFeatureGroup('promotion');
+      setMediaMode('image');
+      if(!isPromotionFeatureKey(op)) setOp(DEFAULT_PROMOTION_KEY);
+      setRatio(v=>BASE_RATIO_OPTIONS.includes(v)?v:'自适应');
+      setResolution(v=>BASE_RESOLUTION_OPTIONS.includes(v)?v:'2K');
+      return;
+    }
+    setMsg('宣传短视频开发中');
+  }
+
+  function selectPromotionFeature(key){
+    const feature=getPromotionFeature(key);
+    setFeatureGroup('promotion');
+    setMediaMode('image');
+    setOp(feature.key);
+    setRatio(v=>BASE_RATIO_OPTIONS.includes(v)?v:'自适应');
+    setResolution(v=>BASE_RESOLUTION_OPTIONS.includes(v)?v:'2K');
+  }
+
+  function selectBaseFeature(key){
+    setFeatureGroup('base');
+    setMediaMode('image');
+    setOp(key);
+    setRatio(v=>BASE_RATIO_OPTIONS.includes(v)?v:'自适应');
+    setResolution(v=>BASE_RESOLUTION_OPTIONS.includes(v)?v:'2K');
+  }
+
   function filteredResources(){
     return resources.filter(r=>{
       if(resourceScope!=='ALL' && r.scope!==resourceScope) return false;
@@ -369,7 +417,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   }
 
   function calcWorkbenchCost(nextOp=op,nextResolution=resolution){
-    const opMap={material:'cost_material',replace_bg:'cost_replace_bg',remove_bg:'cost_remove_bg',enhance:'cost_enhance',lineart:'cost_lineart',multiview:'cost_multiview'};
+    const opMap={material:'cost_material',replace_bg:'cost_replace_bg',remove_bg:'cost_remove_bg',enhance:'cost_enhance',lineart:'cost_lineart',multiview:'cost_multiview',promo_main_image:'cost_replace_bg',promo_poster_image:'cost_replace_bg',promo_detail_image:'cost_enhance'};
     const mulKeyMap={'1K':'resolution_multiplier_1k','2K':'resolution_multiplier_2k','4K':'resolution_multiplier_4k'};
     const defaultMul={'1K':1,'2K':2,'4K':4};
     const base=Number(costSettings[opMap[nextOp]] ?? ops[nextOp]?.cost ?? 0);
@@ -381,6 +429,15 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   function buildGenerationOptions(){
     const tpl=currentTemplate();
     const base={resolution,ratio};
+
+    if(isPromotionFeatureKey(op)){
+      return buildPromotionOptions({
+        featureKey:op,
+        ratio,
+        resolution,
+        ...(promotionOptions[op]||{})
+      });
+    }
 
     if(op==='material'){
       return {
@@ -604,6 +661,12 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
     ['lineart','线稿图',PenLine],
     ['multiview','多角度视图',Rotate3d]
   ];
+  const promotionFeatureIconMap={
+    promo_main_image:ImageIcon,
+    promo_poster_image:WandSparkles,
+    promo_detail_image:Search
+  };
+  const isPromotionSelected=isPromotionFeatureKey(op);
   const resourceItems=filteredResources();
   const modalItems=modalResources();
   const selectedTpl=currentTemplate();
@@ -671,9 +734,73 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
     return String(i.id).toLowerCase().includes(kw)||recentTypeName(i).toLowerCase().includes(kw);
   }).slice(0,12);
 
+  function updatePromotionOption(key,value){
+    setPromotionOptions(prev=>({
+      ...prev,
+      [op]:{
+        ...(promotionOptionDefaults[op]||{}),
+        ...(prev[op]||{}),
+        [key]:value
+      }
+    }));
+  }
+
+  function promotionSelect(label,key,choices){
+    const opts={...(promotionOptionDefaults[op]||{}),...(promotionOptions[op]||{})};
+    return <label className="wbPromoField">
+      <span>{label}</span>
+      <select className="wbSelect" value={opts[key]||''} onChange={e=>updatePromotionOption(key,e.target.value)}>
+        {choices.map(item=>{
+          const value=typeof item==='string'?item:item.value;
+          const text=typeof item==='string'?item:item.label;
+          return <option key={value} value={value}>{text}</option>;
+        })}
+      </select>
+    </label>;
+  }
+
   function renderLeftPanel(){
     if(mediaMode==='video'){
       return <div className="wbVideoConfigSlot" aria-label="宣传视频生成配置预留区"/>;
+    }
+    if(isPromotionFeatureKey(op)){
+      const opts={...(promotionOptionDefaults[op]||{}),...(promotionOptions[op]||{})};
+      if(op==='promo_main_image'){
+        return <>
+          <div className="wbConfigTitle">固定要求</div>
+          <div className="wbOptionCard wbPromoFormCard">
+            {promotionSelect('背景风格','mainBackground',promotionOptionChoices.mainBackground)}
+            {promotionSelect('主图构图','mainComposition',promotionOptionChoices.mainComposition)}
+            {promotionSelect('留白要求','mainWhitespace',promotionOptionChoices.mainWhitespace)}
+          </div>
+        </>;
+      }
+      if(op==='promo_poster_image'){
+        return <>
+          <div className="wbConfigTitle">海报要求</div>
+          <div className="wbOptionCard wbPromoFormCard">
+            {promotionSelect('海报文字','posterTextMode',[
+              {value:'auto',label:'自动生成短文案'},
+              {value:'custom',label:'使用自定义文案'},
+              {value:'none',label:'不生成文字'}
+            ])}
+            {opts.posterTextMode==='custom'&&<label className="wbPromoField full">
+              <span>文案内容</span>
+              <textarea className="wbPromoTextarea" value={opts.posterText||''} onChange={e=>updatePromotionOption('posterText',e.target.value)} placeholder={'例如：舒适入座\n自然木质'}/>
+            </label>}
+            {promotionSelect('文案区域','posterCopyPlacement',promotionOptionChoices.posterCopyPlacement)}
+            {promotionSelect('海报氛围','posterTone',promotionOptionChoices.posterTone)}
+          </div>
+        </>;
+      }
+      return <>
+        <div className="wbConfigTitle">细节要求</div>
+        <div className="wbOptionCard wbPromoFormCard">
+          {promotionSelect('细节排版','detailLayout',promotionOptionChoices.detailLayout)}
+          {promotionSelect('细节重点','detailFocus',promotionOptionChoices.detailFocus)}
+          {promotionSelect('文字策略','detailTextMode',promotionOptionChoices.detailTextMode)}
+        </div>
+      </>;
     }
     if(op==='material' || op==='replace_bg'){
       return <>
@@ -778,14 +905,21 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   return <>
   <div className="wbScreen">
     <div className="wbSidePanel">
-      {VIDEO_MODE_ENABLED
-        ? <div className="wbMediaModeNav" aria-label="功能类型">
-            <button type="button" className={mediaMode==='image'?'active':''} onClick={()=>setMediaMode('image')}><ImageIcon size={17}/>图片</button>
-            <button type="button" className={mediaMode==='video'?'active':''} onClick={()=>setMediaMode('video')}><Video size={17}/>视频</button>
-          </div>
-        : <div className="wbPanelTitle">功能选择</div>}
+      <div className="wbSectionTabs" aria-label="功能分组">
+        <button type="button" className={featureGroup==='base'?'active':''} onClick={()=>activateFeatureGroup('base')}>基础</button>
+        <button type="button" className={featureGroup==='promotion'?'active':''} onClick={()=>activateFeatureGroup('promotion')}>宣传图</button>
+        <button type="button" className="isComing" onClick={()=>activateFeatureGroup('video')}>宣传短视频</button>
+      </div>
       {mediaMode==='image'
-        ? <div className="wbFeatureGrid">{featureList.map(([k,label,Icon])=><button key={k} className={op===k?'wbFeatureBtn active':'wbFeatureBtn'} onClick={()=>setOp(k)}><span className="wbFeatureTag"><Icon size={18}/></span><span>{label}</span></button>)}</div>
+        ? featureGroup==='promotion'
+          ? <div className="wbFeatureGrid wbPromoFeatureGrid">{promotionFeatures.map(item=>{
+              const Icon=promotionFeatureIconMap[item.key]||ImageIcon;
+              return <button key={item.key} className={op===item.key?'wbFeatureBtn active':'wbFeatureBtn'} onClick={()=>selectPromotionFeature(item.key)}>
+                <span className="wbFeatureTag"><Icon size={18}/></span>
+                <span>{item.name}</span>
+              </button>;
+            })}</div>
+          : <div className="wbFeatureGrid">{featureList.map(([k,label,Icon])=><button key={k} className={op===k?'wbFeatureBtn active':'wbFeatureBtn'} onClick={()=>selectBaseFeature(k)}><span className="wbFeatureTag"><Icon size={18}/></span><span>{label}</span></button>)}</div>
         : <div className="wbFeatureGrid wbVideoFeatureGrid"><button type="button" className="wbFeatureBtn active wbVideoFeatureBtn"><span className="wbFeatureTag"><Clapperboard size={18}/></span><span>宣传视频生成</span></button></div>}
       <div className="wbDivider"/>
       {renderLeftPanel()}
@@ -823,6 +957,10 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
             gen={gen}
             cost={calcWorkbenchCost()}
             remainingQuota={me.quota}
+            ratioOptions={BASE_RATIO_OPTIONS}
+            resolutionOptions={BASE_RESOLUTION_OPTIONS}
+            promptPlaceholder={isPromotionSelected?'选填：补充颜色、空间、风格或卖点要求':'选填：如有特殊要求，可以简短说明'}
+            generateLabel={isPromotionSelected?'生成宣传图':'生成效果'}
           />
         </>
         : renderVideoCenterPanel()}

@@ -128,6 +128,12 @@ function buildFeatureInstruction(featureKey) {
       return '基于家具主体生成清晰线稿图，保留主要轮廓和结构细节。';
     case 'multiview':
       return '生成同一件家具的多角度产品展示拼版图，只输出一张拼版图片，并保持结构、材质、颜色和细节一致。';
+    case 'promo_main_image':
+      return '生成家具产品主图：完整保留家具主体，突出电商首图和品牌封面感，背景干净高级，默认不生成文字、Logo 或水印。';
+    case 'promo_poster_image':
+      return '生成家具广告海报图：保留家具主体，采用广告海报构图，可根据用户选项生成少量通顺中文文案，并避免乱码、价格、Logo 和虚假参数。';
+    case 'promo_detail_image':
+      return '生成家具产品细节图：以局部材质、纹理、工艺和结构卖点为主，采用多区域细节展示，不把完整家具作为主体大图。';
     default:
       return '生成一张高质量家具商品图。';
   }

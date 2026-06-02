@@ -22,6 +22,9 @@ export const quotaCost = {
   material: 2,
   multiview: 5,
   lineart: 1,
+  promo_main_image: 2,
+  promo_poster_image: 2,
+  promo_detail_image: 1,
   watermark: 0
 };
 

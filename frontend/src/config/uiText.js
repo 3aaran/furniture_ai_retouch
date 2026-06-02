@@ -106,6 +106,9 @@ export const featureName = {
   enhance: '摄影增强',
   lineart: '线稿图',
   multiview: '多角度视图',
+  promo_main_image: '产品主图',
+  promo_poster_image: '广告海报图',
+  promo_detail_image: '产品细节图',
   video_generate: '宣传视频生成'
 };
 
