@@ -1,15 +1,15 @@
 // 该文件用于渲染项目公开首页，展示勋港品牌、核心能力、视觉流水线和套餐方向，不承载登录后业务页面逻辑。
-import React,{useCallback,useEffect,useRef}from'react';
+import React,{useCallback,useEffect,useRef,useState}from'react';
 import{ArrowRight,Brush,CheckCircle2,Image as ImageIcon,Layers3,Sparkles,UploadCloud,WandSparkles}from'lucide-react';
 import gsap from'gsap';
 import{ScrollTrigger}from'gsap/ScrollTrigger';
-import{MorphSVGPlugin}from'gsap/MorphSVGPlugin';
 import{MotionPathPlugin}from'gsap/MotionPathPlugin';
 import{SplitText}from'gsap/SplitText';
 import{CustomEase}from'gsap/CustomEase';
 import BrandMark from'../components/BrandMark.jsx';
+import PwaInstallButton from'../components/PwaInstallButton.jsx';
 
-gsap.registerPlugin(ScrollTrigger,MorphSVGPlugin,MotionPathPlugin,SplitText,CustomEase);
+gsap.registerPlugin(ScrollTrigger,MotionPathPlugin,SplitText,CustomEase);
 
 const featureCards=[
   ['01','材质替换','快速预览面料、皮革、木色等 SKU 效果，减少重复拍摄和人工修图。',Brush],
@@ -39,12 +39,12 @@ const heroImages={
 };
 
 const workflowImages=[
-  ['/landing/workflow/01-original.png','原始照片','门店实拍家具图',UploadCloud],
+  ['/landing/workflow/01-original.jpg','原始照片','门店实拍家具图',UploadCloud],
   ['/landing/workflow/02-clean.png','背景净化','主体清晰，背景干净',WandSparkles],
   ['/landing/workflow/03-material.png','材质替换','快速预览 SKU 效果',Brush],
-  ['/landing/workflow/04-scene.png','场景融合','适合展示的家居空间',Layers3],
-  ['/landing/workflow/05-final.png','最终商品图','可用于主图与详情页',Sparkles]
+  ['/landing/workflow/04-scene.png','场景融合','适合展示的家居空间',Layers3]
 ];
+const workflowLoopImages=workflowImages.length>1?[...workflowImages,workflowImages[0]]:workflowImages;
 
 function ChairGraphic(){
   return <div className="landingChair" aria-hidden="true">
@@ -70,6 +70,8 @@ function DemoPanel({kind,label,imgSrc}){
 
 export default function LandingPage({me}){
   const rootRef=useRef(null);
+  const[workflowIndex,setWorkflowIndex]=useState(0);
+  const[workflowTransition,setWorkflowTransition]=useState(true);
   const workbenchHash=me?.role==='SYSTEM_ADMIN'?'#/dashboard':'#/workbench';
   const enterHref=me?workbenchHash:'#/login';
   const scrollToSection=useCallback((id)=>{
@@ -83,16 +85,20 @@ export default function LandingPage({me}){
     const root=rootRef.current;
     if(!root)return undefined;
     const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const automated=navigator.webdriver||navigator.userAgent.toLowerCase().includes('headless');
+    const userAgent=window.navigator?.userAgent||'';
+    const automated=userAgent.toLowerCase().includes('headless');
+    const lighterMotion=window.matchMedia('(max-width: 900px), (pointer: coarse)').matches;
     if(reduced||automated){
       gsap.set(root.querySelectorAll('.landingReveal'),{autoAlpha:1,y:0});
       return undefined;
     }
 
+    let splitTitle=null;
+    let cleanupLandingAnimations=()=>{};
     const ctx=gsap.context(()=>{
       const cinemaEase=CustomEase.create('landingCinema','M0,0 C0.12,0 0.08,0.18 0.16,0.32 0.28,0.56 0.44,0.94 1,1');
-      let splitTitle=null;
       try{
+        if(lighterMotion)throw new Error('skip split text on small or touch screens');
         splitTitle=SplitText.create('.landingHeroTitle',{type:'lines,words',mask:'lines'});
       }catch{
         splitTitle=null;
@@ -101,39 +107,70 @@ export default function LandingPage({me}){
       const intro=gsap.timeline({defaults:{ease:cinemaEase}});
       intro
         .from('.landingNav',{y:-72,autoAlpha:0,duration:0.8})
-        .from(splitTitle?.words||'.landingHeroTitle',{y:72,rotationX:-24,autoAlpha:0,stagger:0.035,duration:0.9,transformOrigin:'50% 100%'},'-=0.25')
+        .from(splitTitle?.words||'.landingHeroTitle',{y:lighterMotion?34:72,rotationX:lighterMotion?0:-24,autoAlpha:0,stagger:lighterMotion?0:0.035,duration:lighterMotion?0.68:0.9,transformOrigin:'50% 100%'},'-=0.25')
         .from('.landingHeroCopy, .landingHeroActions, .landingMetaCard',{y:28,autoAlpha:0,stagger:0.08,duration:0.72},'-=0.5')
-        .from('.landingHeroStage',{x:56,rotationY:-7,autoAlpha:0,duration:1.05},'-=0.86')
+        .from('.landingHeroStage',{x:lighterMotion?0:56,y:lighterMotion?24:0,rotationY:lighterMotion?0:-7,autoAlpha:0,duration:lighterMotion?0.76:1.05},'-=0.86')
         .from('.landingStageBadge, .landingFloatCard, .landingStageGallery',{y:26,autoAlpha:0,stagger:0.06,duration:0.7},'-=0.7');
 
-      gsap.to('.landingLogoPulse',{rotation:360,duration:18,repeat:-1,ease:'none',transformOrigin:'50% 50%'});
-      gsap.to('.landingOrbitLines',{rotation:360,svgOrigin:'420 260',duration:38,repeat:-1,ease:'none'});
-      gsap.to('.landingParticles circle',{x:i=>i%3?12:-12,y:i=>i%2?-18:18,autoAlpha:0.4,duration:2.6,stagger:{each:0.16,from:'random'},repeat:-1,yoyo:true,ease:'sine.inOut'});
-      gsap.to('.landingButtonShine, .landingPanelShine',{xPercent:520,duration:1.6,repeat:-1,repeatDelay:2.8,ease:'power2.inOut'});
-      gsap.to('#landingBrandMorph',{morphSVG:{shape:'#landingBrandMorphAlt',type:'rotational',smooth:64},duration:4.6,repeat:-1,yoyo:true,ease:'sine.inOut'});
-
-      gsap.timeline({scrollTrigger:{trigger:'.landingHeroStage',start:'top 16%',end:'+=460',scrub:1}})
-        .to('.landingHeroStage',{rotationX:5,rotationY:-8,y:-24},0)
-        .to('.landingFloatCard',{y:-38,stagger:0.05},0)
-        .to('.landingStageSvg',{scale:1.12,autoAlpha:0.55},0);
+      const idleTweens=[
+        gsap.to('.landingButtonShine, .landingPanelShine',{xPercent:420,duration:2.2,repeat:-1,repeatDelay:4.2,ease:'power2.inOut'})
+      ];
+      if(!lighterMotion){
+        idleTweens.push(gsap.to('.landingLogoPulse',{rotation:360,duration:26,repeat:-1,ease:'none',transformOrigin:'50% 50%'}));
+        idleTweens.push(gsap.to('.landingOrbitLines',{rotation:360,svgOrigin:'420 260',duration:56,repeat:-1,ease:'none'}));
+        idleTweens.push(gsap.to('.landingParticles circle',{x:i=>i%3?10:-10,y:i=>i%2?-14:14,autoAlpha:0.45,duration:3.2,stagger:{each:0.18,from:'random'},repeat:-1,yoyo:true,ease:'sine.inOut'}));
+      }
+      const pauseIdle=()=>idleTweens.forEach(t=>t.pause());
+      const resumeIdle=()=>idleTweens.forEach(t=>t.resume());
+      ScrollTrigger.addEventListener('scrollStart',pauseIdle);
+      ScrollTrigger.addEventListener('scrollEnd',resumeIdle);
+      cleanupLandingAnimations=()=>{
+        ScrollTrigger.removeEventListener('scrollStart',pauseIdle);
+        ScrollTrigger.removeEventListener('scrollEnd',resumeIdle);
+        splitTitle?.revert();
+      };
 
       ScrollTrigger.batch('.landingFeatureCard, .landingScenePanel, .landingMiniScene, .landingPlanCard, .landingReveal:not(.landingHeroArea .landingReveal)',{
         start:'top 84%',
         once:true,
-        onEnter:batch=>gsap.fromTo(batch,{y:46,autoAlpha:0},{y:0,autoAlpha:1,stagger:0.08,duration:0.82,ease:cinemaEase})
+        interval:0.12,
+        batchMax:6,
+        onEnter:batch=>gsap.fromTo(batch,{y:lighterMotion?24:46,autoAlpha:0},{y:0,autoAlpha:1,stagger:0.06,duration:lighterMotion?0.56:0.76,ease:cinemaEase,overwrite:'auto'})
       });
 
-      gsap.timeline({scrollTrigger:{trigger:'.landingFlowStage',start:'top 72%',end:'bottom 45%',scrub:0.8}})
-        .from('.landingFlowLine',{strokeDasharray:1800,strokeDashoffset:1800,duration:1.2})
-        .to('.landingFlowDot',{motionPath:{path:'.landingFlowLine',align:'.landingFlowLine',autoRotate:false},duration:1},0)
-        .fromTo('.landingFlowStep',{y:72,autoAlpha:0},{y:0,autoAlpha:1,stagger:0.12,duration:0.72},0.1)
-        .to('.landingWorkflowImage',{yPercent:-80,duration:1},0);
-
-      return()=>splitTitle?.revert();
+      gsap.timeline({scrollTrigger:{trigger:'.landingFlowStage',start:'top 76%',once:true}})
+        .from('.landingFlowLine',{strokeDasharray:1800,strokeDashoffset:1800,duration:lighterMotion?0.65:1,ease:'power2.out'})
+        .fromTo('.landingFlowDot',{autoAlpha:0,scale:0.65},{autoAlpha:1,scale:1,duration:0.42,ease:'back.out(1.6)'},0.12)
+        .to('.landingFlowDot',{motionPath:{path:'.landingFlowLine',align:'.landingFlowLine',autoRotate:false},duration:lighterMotion?0.72:1.05,ease:'power2.inOut'},0.05)
+        .fromTo('.landingFlowStep',{y:lighterMotion?28:54,autoAlpha:0},{y:0,autoAlpha:1,stagger:0.08,duration:lighterMotion?0.52:0.68,ease:cinemaEase},0.1)
+        .fromTo('.landingWorkflowImage',{autoAlpha:0.92},{autoAlpha:1,duration:lighterMotion?0.38:0.5,ease:'power2.out'},0.12);
     },root);
 
-    return()=>ctx.revert();
+    return()=>{
+      cleanupLandingAnimations();
+      ctx.revert();
+    };
   },[]);
+
+  useEffect(()=>{
+    if(workflowLoopImages.length<2)return undefined;
+    const timer=setInterval(()=>{
+      setWorkflowTransition(true);
+      setWorkflowIndex(index=>index+1);
+    },3200);
+    return()=>clearInterval(timer);
+  },[]);
+
+  useEffect(()=>{
+    if(workflowIndex!==workflowLoopImages.length-1)return undefined;
+    const timer=setTimeout(()=>{
+      setWorkflowTransition(false);
+      setWorkflowIndex(0);
+      const restore=()=>setWorkflowTransition(true);
+      window.requestAnimationFrame?window.requestAnimationFrame(restore):setTimeout(restore,0);
+    },760);
+    return()=>clearTimeout(timer);
+  },[workflowIndex]);
 
   return <div className="landingPage" ref={rootRef}>
     <header className="landingNav">
@@ -148,6 +185,7 @@ export default function LandingPage({me}){
         <button type="button" onClick={()=>scrollToSection('landingPlans')}>套餐</button>
       </nav>
       <div className="landingNavActions">
+        <PwaInstallButton className="landingInstallBtn"/>
         <a className="landingGhostBtn" href="#/login">登录</a>
         <a className="landingGoldBtn" href={enterHref}><span className="landingButtonShine"/>进入工作台</a>
       </div>
@@ -216,7 +254,7 @@ export default function LandingPage({me}){
       <section className="landingSection landingWorkflow" id="landingWorkflow">
         <div className="landingSectionHead">
           <div><span className="landingKicker landingReveal">视觉流水线</span><h2 className="landingReveal">从一张原图到可投放素材。</h2></div>
-          <p className="landingReveal">这里后续可以替换成真实家具图片。建议放 4 到 5 张固定宣传图，滚动时依次展示原图、净化、换材质、场景融合和最终图。</p>
+          {/* <p className="landingReveal">这里后续可以替换成真实家具图片。建议放 4 到 5 张固定宣传图，滚动时依次展示原图、净化、换材质、场景融合和最终图。</p> */}
         </div>
         <div className="landingFlowStage">
           <svg className="landingFlowSvg" viewBox="0 0 1200 620" preserveAspectRatio="none" aria-hidden="true">
@@ -225,8 +263,12 @@ export default function LandingPage({me}){
             <circle className="landingFlowDot" cx="80" cy="230" r="9" fill="#f8dea0"/>
           </svg>
           <div className="landingWorkflowPreview">
-            <div className="landingWorkflowImage">
-              {workflowImages.map(([src,title,text,Icon],index)=><div className={`workflowFrame frame${index+1}`} key={src}>
+            <div className="landingWorkflowImage" style={{
+              '--workflow-frame-count':workflowLoopImages.length,
+              transform:`translate3d(0,${-workflowIndex*(100/workflowLoopImages.length)}%,0)`,
+              transition:workflowTransition?'transform 720ms cubic-bezier(.22,.8,.24,1)':'none'
+            }}>
+              {workflowLoopImages.map(([src,title,text,Icon],index)=><div className={`workflowFrame frame${index+1}`} key={`${src}-${index}`}>
                 <img src={src} alt={title} onError={e=>{e.currentTarget.hidden=true}}/>
                 <div className="workflowFrameText"><Icon size={28}/><b>{title}</b><span>{text}</span></div>
               </div>)}
@@ -253,7 +295,8 @@ export default function LandingPage({me}){
 
       <section className="landingSection landingPlans" id="landingPlans">
         <div className="landingSectionHead">
-          <div><span className="landingKicker landingReveal">商业化方向</span><h2 className="landingReveal">先按量稳定，再扩展套餐与会员。</h2></div>
+          {/* <h2 className="landingReveal">先按量稳定，再扩展套餐与会员。</h2> */}
+          <div><span className="landingKicker landingReveal">商业化方向</span></div>
           {/* <p className="landingReveal">当前页面先展示产品价值，不把价格写死。后续可以把按量充值、优惠包、会员权益组合成转化页。</p> */}
         </div>
         <div className="landingPlanGrid">

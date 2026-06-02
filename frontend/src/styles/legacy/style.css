@@ -64,6 +64,7 @@ aside{height:100vh;position:sticky;top:0;display:flex;flex-direction:column;bord
 .iconNav{width:42px!important;height:42px!important;padding:0!important;border:1px solid rgba(242,213,140,.22)!important;border-radius:14px!important;position:relative;justify-content:center!important;}
 .iconNav span{display:none;position:absolute;top:48px;left:50%;transform:translateX(-50%);background:#1b1b1b;border:1px solid rgba(242,213,140,.25);padding:8px 10px;border-radius:10px;font-size:13px;color:#f2d58c;box-shadow:0 14px 34px #0008;}
 .iconNav:hover span{display:block}.systemIcon{width:42px!important;height:42px!important;padding:0!important;border-left:1px solid rgba(242,213,140,.3)!important;border-radius:0!important;color:#d6c18a!important;}
+.topNavActions{margin-left:auto;display:flex;align-items:center;gap:10px;flex:0 0 auto;}
 .topRight{display:flex;align-items:center;gap:14px;position:relative;}
 .quotaPill{height:48px;border-radius:999px;border:1px solid rgba(242,213,140,.45);background:rgba(242,213,140,.07);color:#f2d58c;font-weight:900;padding:0 18px;}
 .avatarBtn{border:0;background:transparent;color:#fff;display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:14px;}

@@ -105,7 +105,8 @@ export const featureName = {
   remove_bg: '背景净化',
   enhance: '摄影增强',
   lineart: '线稿图',
-  multiview: '多角度视图'
+  multiview: '多角度视图',
+  video_generate: '宣传视频生成'
 };
 
 function readableFallback(value,fallback='-'){

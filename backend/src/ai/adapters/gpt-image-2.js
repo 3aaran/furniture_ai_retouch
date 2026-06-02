@@ -163,6 +163,7 @@ function isLk888Base(baseUrl = '') {
 }
 
 function normalizeEndpoint(baseUrl, apiPath) {
+  if (/^https?:\/\//i.test(String(apiPath || ''))) return String(apiPath);
   const base = String(baseUrl || 'https://api.lk888.ai').replace(/\/$/, '');
   if (isLk888Base(base)) {
     return `${base}/v1/media/generate`;

@@ -127,9 +127,21 @@ export async function initDb(){
     title VARCHAR(160) NOT NULL,
     content TEXT NOT NULL,
     audience ENUM('ALL','MERCHANT','ADMIN') NOT NULL DEFAULT 'ALL',
+    valid_until DATETIME NULL,
     created_by VARCHAR(36) NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_audience(audience)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`);
+  await ensureColumn('announcements', 'valid_until', 'DATETIME NULL', 'audience');
+
+  await pool.query(`CREATE TABLE IF NOT EXISTS announcement_reads (
+    announcement_id VARCHAR(36) NOT NULL,
+    user_id VARCHAR(36) NOT NULL,
+    read_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(announcement_id,user_id),
+    INDEX idx_notice_read_user(user_id),
+    CONSTRAINT fk_notice_read_announcement FOREIGN KEY(announcement_id) REFERENCES announcements(id) ON DELETE CASCADE,
+    CONSTRAINT fk_notice_read_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`);
 
   await pool.query(`CREATE TABLE IF NOT EXISTS finance_logs (
@@ -566,6 +578,11 @@ export async function initDb(){
     ['cost_material','10'],
     ['cost_multiview','20'],
     ['cost_lineart','8'],
+    ['cost_video_generate','30'],
+    ['video_default_duration_seconds','10'],
+    ['video_max_duration_seconds','30'],
+    ['announcement_retention_days','30'],
+    ['announcement_user_max_count','50'],
     ['resolution_multiplier_1k','1'],
     ['resolution_multiplier_2k','2'],
     ['resolution_multiplier_4k','4'],

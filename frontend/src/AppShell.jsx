@@ -1,13 +1,90 @@
 import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createPortal}from'react-dom';
-import{AlertCircle,CheckCircle2,LogOut,MessageSquare,Ticket,WalletCards,ShieldCheck,X}from'lucide-react';
+import{AlertCircle,CheckCircle2,LogOut,Mail,MessageSquare,ShieldCheck,Ticket,WalletCards,X}from'lucide-react';
 import{adminNav,adminNavGroups,Dashboard,Applications,Merchants,AiConfig,SettingsPage,AdminLogs,Feedbacks,Announcements,RedeemCodes}from'./admin/AdminPages.jsx';
 import{storeAdminNav,staffNav,Workbench,StoreResources,StoreUsers,StoreTasks,Promotion,QuotaLogs}from'./store/StorePages.jsx';
 import{UserFeedback,FeedbackModal,RedeemModal,Profile}from'./account/AccountPages.jsx';
 import{TaskDetailModal}from'./components/TaskDetailModal.jsx';
 import BrandMark from'./components/BrandMark.jsx';
-import{avatarViewUrl,roleName,userFriendlyMessage,recordClientFailure}from'./appShared.jsx';
+import{avatarViewUrl,roleName,userFriendlyMessage,recordClientFailure,req,fmt}from'./appShared.jsx';
 import{APP_NAME,APP_SUBTITLE}from'./config/appConfig.js';
+
+const DEFAULT_AVATAR='/default-avatar.svg';
+function NoticeCenterModal({onClose,onUnreadChange}){
+  const[items,setItems]=useState([]);
+  const[selected,setSelected]=useState(null);
+  const[loading,setLoading]=useState(true);
+  async function markNoticeRead(item,currentUnread){
+    if(!item||item.isRead)return;
+    const readAt=new Date().toISOString();
+    setItems(list=>list.map(x=>x.id===item.id?{...x,isRead:true,readAt}:x));
+    setSelected({...item,isRead:true,readAt});
+    onUnreadChange?.(Math.max(0,Number(currentUnread||0)-1));
+    try{await req(`/api/announcements/${item.id}/read`,{method:'POST',body:JSON.stringify({})})}catch{}
+  }
+  async function load(autoOpen=false){
+    setLoading(true);
+    try{
+      const data=await req('/api/announcements');
+      const list=data.items||[];
+      setItems(list);
+      const unread=Number(data.unreadCount||0);
+      onUnreadChange?.(unread);
+      if(autoOpen){
+        const firstUnread=list.find(x=>!x.isRead);
+        const target=firstUnread||list[0]||null;
+        setSelected(target);
+        if(firstUnread)markNoticeRead(firstUnread,unread);
+      }else{
+        setSelected(prev=>list.find(x=>x.id===prev?.id)||list[0]||null);
+      }
+    }finally{
+      setLoading(false);
+    }
+  }
+  useEffect(()=>{load(true).catch(()=>setLoading(false))},[]);
+  const unreadCount=items.filter(item=>!item.isRead).length;
+  async function openNotice(item){
+    setSelected(item);
+    if(item&&!item.isRead){
+      await markNoticeRead(item,unreadCount);
+      load().catch(()=>{});
+    }
+  }
+  return createPortal(<div className="feedbackModalMaskV2" onClick={onClose}>
+    <div className="feedbackModalCardV2 noticeCenterModalV2" onClick={e=>e.stopPropagation()}>
+      <div className="feedbackModalHeadV2">
+        <div>
+          <h2><Mail size={24}/>公告邮箱</h2>
+          {/* <p>平台公告、配置调整和运营通知会集中显示在这里。</p> */}
+        </div>
+        <button type="button" onClick={onClose}>×</button>
+      </div>
+      <div className="noticeCenterBodyV2">
+        <aside className="noticeListPaneV2">
+          <div className="noticeListV2">
+            {loading?<div className="noticeEmptyV2">公告加载中...</div>:items.length?items.map(item=>
+              <button key={item.id} className={`noticeListItemV2 ${selected?.id===item.id?'active':''} ${item.isRead?'isRead':'isUnread'}`} onClick={()=>openNotice(item)}>
+                <span className="noticeStateIconV2">{item.isRead?<CheckCircle2 size={17}/>:<Mail size={17}/>}</span>
+                <span className="noticeListTextV2"><b>{item.title}</b><small>{fmt(item.createdAt)}</small></span>
+              </button>
+            ):<div className="noticeEmptyV2">暂无公告</div>}
+          </div>
+        </aside>
+        <article className="noticeDetailPaneV2">
+          {selected?<>
+            <div className="noticeDetailMetaV2">
+              <span className={selected.isRead?'read':'unread'}>{selected.isRead?'已读':'未读'}</span>
+              <small>{fmt(selected.createdAt)}</small>
+            </div>
+            <h3>{selected.title}</h3>
+            <p>{selected.content}</p>
+          </>:<div className="noticeEmptyV2 large">请选择一条公告</div>}
+        </article>
+      </div>
+    </div>
+  </div>,document.body);
+}
 
 function roleNav(role){
   if(role==='SYSTEM_ADMIN')return adminNav;
@@ -34,6 +111,8 @@ function Shell({me,setMe}){
   const menuTimer=useRef(null);
   const[redeemOpen,setRedeemOpen]=useState(false);
   const[feedbackOpen,setFeedbackOpen]=useState(false);
+  const[emailOpen,setEmailOpen]=useState(false);
+  const[noticeUnread,setNoticeUnread]=useState(0);
   const[navDrop,setNavDrop]=useState(null);
 
   useEffect(()=>{document.title=APP_NAME},[]);
@@ -95,6 +174,10 @@ function Shell({me,setMe}){
   useEffect(()=>()=>menuTimer.current&&clearTimeout(menuTimer.current),[]);
   useEffect(()=>{if(window.location.hash!==`#/${page}`)window.history.replaceState(null,'',`#/${page}`)},[]);
   useEffect(()=>{
+    if(isAdmin)return;
+    req('/api/announcements').then(d=>setNoticeUnread(Number(d.unreadCount||0))).catch(()=>{});
+  },[isAdmin]);
+  useEffect(()=>{
     const onHashChange=()=>{
       const next=pageFromHash();
       if(next&&next!==page){
@@ -128,12 +211,15 @@ function Shell({me,setMe}){
           </div>
         ):nav.map(([k,t,I])=><button key={k} className={page===k?'active':''} onClick={()=>go(k)}><I size={17}/>{t}</button>)}
 
-        {!isAdmin&&<button className="iconNav" title="问题反馈" onClick={()=>setFeedbackOpen(true)}><MessageSquare size={20}/><span>问题反馈</span></button>}
+        {!isAdmin&&<div className="topNavActions">
+          <button className="iconNav" title="问题反馈" onClick={()=>setFeedbackOpen(true)}><MessageSquare size={20}/><span>问题反馈</span></button>
+          <button className="iconNav noticeIconNavV2" title="公告邮箱" onClick={()=>setEmailOpen(true)}><Mail size={20}/><span>公告邮箱</span>{noticeUnread>0&&<i>{noticeUnread>99?'99+':noticeUnread}</i>}</button>
+        </div>}
       </nav>
 
       <div className="topRight" onMouseEnter={openProfileMenu} onMouseLeave={closeProfileMenuSoon}>
         <button className="quotaPill" onClick={()=>go('quota')}><WalletCards size={17}/>{isAdmin?'额度明细':`${me.quota} 算力`}</button>
-        <button className="avatarBtn" type="button"><span>{avatarUrl?<img src={avatarUrl} alt="头像"/>:(me.displayName||me.phone||me.username||'用').slice(0,1)}</span><div><b>{me.displayName}</b><small>{roleName[me.role]}</small></div></button>
+        <button className="avatarBtn" type="button"><span><img src={avatarUrl||DEFAULT_AVATAR} alt="头像"/></span><div><b>{me.displayName}</b><small>{roleName[me.role]}</small></div></button>
         {menu&&<div className="profileMenu">
           <button onClick={()=>go('profile')}><ShieldCheck size={18}/>个人中心</button>
           <button onClick={()=>go('quota')}><WalletCards size={18}/>额度明细</button>
@@ -152,6 +238,7 @@ function Shell({me,setMe}){
 
     {redeemOpen&&<RedeemModal onClose={()=>setRedeemOpen(false)} setMsg={setMsg}/>}
     {feedbackOpen&&<FeedbackModal onClose={()=>setFeedbackOpen(false)} setMsg={setMsg}/>}
+    {emailOpen&&<NoticeCenterModal onClose={()=>setEmailOpen(false)} onUnreadChange={setNoticeUnread}/>}
   </div>;
 }
 

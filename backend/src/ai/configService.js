@@ -6,7 +6,8 @@ const FEATURES = [
   ['remove_bg', '背景净化', 'cost_remove_bg', 30],
   ['enhance', '摄影增强', 'cost_enhance', 40],
   ['lineart', '线稿图', 'cost_lineart', 50],
-  ['multiview', '多角度视图', 'cost_multiview', 60]
+  ['multiview', '多角度视图', 'cost_multiview', 60],
+  ['video_generate', '宣传视频生成', 'cost_video_generate', 70]
 ];
 
 function maskKey(key = '') {

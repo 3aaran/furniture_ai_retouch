@@ -60,7 +60,13 @@ function sendCsv(res, filename, headers, rows){
   res.send('\ufeff'+data);
 }
 async function getSettingsMap(){ const [rows]=await pool.query('SELECT setting_key,setting_value FROM app_settings'); return Object.fromEntries(rows.map(r=>[r.setting_key,r.setting_value])); }
-async function addAnnouncement({title,content,audience,createdBy}){ await pool.query('INSERT INTO announcements(id,title,content,audience,created_by) VALUES(?,?,?,?,?)',[uuid(),title,content,audience,createdBy]); }
+async function addAnnouncement({title,content,audience,createdBy,validDays}){
+  const days=Number(validDays||0);
+  await pool.query(
+    'INSERT INTO announcements(id,title,content,audience,valid_until,created_by) VALUES(?,?,?,?,IF(? > 0, DATE_ADD(NOW(), INTERVAL ? DAY), NULL),?)',
+    [uuid(),title,content,audience,days,days,createdBy]
+  );
+}
 async function saveUploadedFile(file, options = {}){
   const saved = await saveUploadedImage(file, options);
   return saved?.url || '';
@@ -101,7 +107,7 @@ export function registerAdminRoutes(app,{upload}){
   
   app.patch('/api/admin/settings', requireAuth, async (req,res)=>{
     if(!isSystemAdmin(req.user)) return res.status(403).json({message:SYSTEM_ADMIN_REQUIRED_MESSAGE});
-    const allowed=['recharge_ratio','income_per_quota','cost_per_ai_quota','cost_remove_bg','cost_replace_bg','cost_enhance','cost_material','cost_multiview','cost_lineart','resolution_multiplier_1k','resolution_multiplier_2k','resolution_multiplier_4k','cost_resolution_1k','cost_resolution_2k','cost_resolution_4k','invite_new_store_reward_ratio','invite_source_store_reward_ratio','trial_account_hours','user_storage_limit_bytes'];
+    const allowed=['recharge_ratio','income_per_quota','cost_per_ai_quota','cost_remove_bg','cost_replace_bg','cost_enhance','cost_material','cost_multiview','cost_lineart','cost_video_generate','video_default_duration_seconds','video_max_duration_seconds','announcement_retention_days','announcement_user_max_count','resolution_multiplier_1k','resolution_multiplier_2k','resolution_multiplier_4k','cost_resolution_1k','cost_resolution_2k','cost_resolution_4k','invite_new_store_reward_ratio','invite_source_store_reward_ratio','trial_account_hours','user_storage_limit_bytes'];
     for(const k of allowed){
       if(req.body[k]!==undefined){
         const parsedLimit=k==='user_storage_limit_bytes'?parseStorageLimitBytes(req.body[k]):null;
@@ -454,9 +460,12 @@ export function registerAdminRoutes(app,{upload}){
   
   app.post('/api/admin/announcements', requireAuth, async (req,res)=>{
     if(!isSystemAdmin(req.user)) return res.status(403).json({message:SYSTEM_ADMIN_REQUIRED_MESSAGE});
-    const {title,content,audience='ALL',validDays=30}=req.body;
+    const settings=await getSettingsMap();
+    const {title,content,audience='ALL'}=req.body;
+    const validDays=Math.max(1,Number(req.body.validDays||settings.announcement_retention_days||30));
+    const safeAudience=['ALL','MERCHANT','ADMIN'].includes(audience)?audience:'ALL';
     if(!title||!content) return res.status(400).json({message:'公告标题和内容不能为空'});
-    await addAnnouncement({title,content:`${content}\n\n有效期：${validDays}天`,audience,createdBy:req.user.id});
+    await addAnnouncement({title,content,audience:safeAudience,validDays,createdBy:req.user.id});
     res.json({message:'公告已发布'});
   });
   

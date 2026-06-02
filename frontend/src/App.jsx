@@ -1,6 +1,7 @@
 import React,{useEffect,useState}from'react';
 import{createRoot}from'react-dom/client';
 import './styles/index.css';
+import{registerServiceWorker}from'./registerServiceWorker.js';
 import AppShell from'./AppShell.jsx';
 import LandingPage from'./landing/LandingPage.jsx';
 import{Login}from'./account/AccountPages.jsx';
@@ -34,3 +35,4 @@ function App(){
 }
 
 createRoot(document.getElementById('root')).render(<App/>);
+registerServiceWorker();

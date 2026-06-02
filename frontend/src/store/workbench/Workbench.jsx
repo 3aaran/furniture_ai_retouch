@@ -1,5 +1,5 @@
 ﻿import React,{useEffect,useRef,useState}from'react';
-import{Layers,Users as UsersIcon,Brush,Download,Trash2,Eye,Search,Plus,Power}from'lucide-react';
+import{Brush,Camera,Clapperboard,Download,Eye,Image as ImageIcon,Layers,PenLine,Plus,Power,Rotate3d,Search,Trash2,Users as UsersIcon,Video,WandSparkles}from'lucide-react';
 import{API,token,req,reqForm,fmt,resTypeName,imageViewUrl,assetUrl}from'../../appShared.jsx';
 import{getFeatureDisplayName}from'../../config/uiText.js';
 import{featureConfig}from'../../config/featureConfig.jsx';
@@ -9,6 +9,8 @@ import ResourcePickerModal from'./ResourcePickerModal.jsx';
 import WorkbenchResourceUploadModal from'./WorkbenchResourceUploadModal.jsx';
 import WatermarkConfigModal from'./WatermarkConfigModal.jsx';
 import ConfirmDialog from'../../components/ConfirmDialog.jsx';
+
+const VIDEO_MODE_ENABLED=false;
 
 function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   function imgSrc(input){
@@ -28,6 +30,19 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
 
   const ops=Object.fromEntries(Object.entries(featureConfig).map(([key,item])=>[key,{label:item.name,desc:item.desc,cost:item.defaultCost}]));
   const [op,setOp]=useState('material');
+  const [mediaMode,setMediaMode]=useState('image');
+  const [storyboards,setStoryboards]=useState([]);
+  const [storyboardDragging,setStoryboardDragging]=useState(false);
+  const [videoPrompt,setVideoPrompt]=useState('');
+  const [videoParams,setVideoParams]=useState({
+    duration:'10秒',
+    ratio:'16:9',
+    quality:'高清',
+    camera:'缓慢推进',
+    motion:'中等',
+    pace:'稳重',
+    subtitle:'无字幕'
+  });
   const [origin,setOrigin]=useState(null);
   const [reference,setReference]=useState(null);
   const [custom,setCustom]=useState('');
@@ -59,6 +74,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   const [recentHoverId,setRecentHoverId]=useState('');
   const [deleteTarget,setDeleteTarget]=useState(null);
   const recentPreviewHideTimer=useRef(null);
+  const storyboardsRef=useRef([]);
 
   useEffect(()=>{req('/api/resources?pageSize=999').then(d=>setResources(d.items||[])).catch(()=>{})},[]);
   useEffect(()=>{req('/api/settings/public').then(setCostSettings).catch(()=>{})},[]);
@@ -80,8 +96,10 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
     window.addEventListener('image-processed',onProcessed);
     return ()=>window.removeEventListener('image-processed',onProcessed);
   },[]);
-  useEffect(()=>{setSelectedResource('')},[op,materialTab,resourceScope]);
+  useEffect(()=>{setSelectedResource('')},[op,materialTab,resourceScope,mediaMode]);
   useEffect(()=>()=>clearRecentPreviewTimer(),[]);
+  useEffect(()=>{storyboardsRef.current=storyboards},[storyboards]);
+  useEffect(()=>()=>storyboardsRef.current.forEach(item=>URL.revokeObjectURL(item.url)),[]);
 
   function clearRecentPreviewTimer(){
     if(recentPreviewHideTimer.current){
@@ -579,12 +597,12 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   }
 
   const featureList=[
-    ['material','材质替换','材质'],
-    ['replace_bg','场景融合','场景'],
-    ['remove_bg','背景净化','3D'],
-    ['enhance','摄影增强','摄影'],
-    ['lineart','线稿图','线稿'],
-    ['multiview','多角度视图','视图']
+    ['material','材质替换',Brush],
+    ['replace_bg','场景融合',Layers],
+    ['remove_bg','背景净化',WandSparkles],
+    ['enhance','摄影增强',Camera],
+    ['lineart','线稿图',PenLine],
+    ['multiview','多角度视图',Rotate3d]
   ];
   const resourceItems=filteredResources();
   const modalItems=modalResources();
@@ -614,13 +632,49 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   function changeWorkbenchUploadMain(main){
     setResourceUpload({...resourceUpload,objectName:main,colorName:''});
   }
-  const recentItems=recent.filter(i=>{
+  function addStoryboardFiles(files){
+    const next=Array.from(files||[]).filter(file=>file?.type?.startsWith('image/')).map(file=>({
+      id:`${file.name}-${file.size}-${file.lastModified}-${Math.random().toString(36).slice(2)}`,
+      file,
+      url:URL.createObjectURL(file),
+      name:file.name
+    }));
+    if(!next.length)return;
+    setStoryboards(prev=>[...prev,...next].slice(0,12));
+  }
+  function chooseStoryboard(e){
+    addStoryboardFiles(e.target.files);
+    e.target.value='';
+  }
+  function dropStoryboard(e){
+    e.preventDefault();
+    setStoryboardDragging(false);
+    addStoryboardFiles(e.dataTransfer?.files);
+  }
+  function removeStoryboard(id){
+    setStoryboards(prev=>{
+      const target=prev.find(item=>item.id===id);
+      if(target?.url)URL.revokeObjectURL(target.url);
+      return prev.filter(item=>item.id!==id);
+    });
+  }
+  function updateVideoParam(key,value){
+    setVideoParams(prev=>({...prev,[key]:value}));
+  }
+  const filteredRecent=recent.filter(item=>{
+    const isVideo=item?.featureKey==='video_generate'||item?.operation==='video_generate'||item?.mediaType==='video'||item?.kind==='video';
+    return mediaMode==='video'?isVideo:!isVideo;
+  });
+  const recentItems=filteredRecent.filter(i=>{
     const kw=recentKeyword.trim().toLowerCase();
     if(!kw)return true;
     return String(i.id).toLowerCase().includes(kw)||recentTypeName(i).toLowerCase().includes(kw);
   }).slice(0,12);
 
   function renderLeftPanel(){
+    if(mediaMode==='video'){
+      return <div className="wbVideoConfigSlot" aria-label="宣传视频生成配置预留区"/>;
+    }
     if(op==='material' || op==='replace_bg'){
       return <>
         <div className="wbDescRow"><span className="wbMiniIcon">✓</span><p>{ops[op].desc}</p></div>
@@ -681,52 +735,102 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
     </>;
   }
 
+  function renderVideoCenterPanel(){
+    return <>
+      <div className="wbMainBlock wbVideoStoryboardBlock">
+        <div className="wbSourceHead">
+          <div className="wbBlockTitle">分镜图片</div>
+        </div>
+        <label className={storyboardDragging?'wbUploadBox wbVideoUploadBox isDragging':'wbUploadBox wbVideoUploadBox'} onDragOver={e=>{e.preventDefault();setStoryboardDragging(true)}} onDragLeave={e=>{e.preventDefault();setStoryboardDragging(false)}} onDrop={dropStoryboard}>
+          <input type="file" accept="image/*" multiple onChange={chooseStoryboard}/>
+          <div className="wbUploadInner">
+            <div className="wbUploadCircle"><Clapperboard size={30}/></div>
+            <b>点击或拖动上传分镜图片</b>
+            <em>支持多张图片，按上传顺序作为视频分镜参考</em>
+          </div>
+        </label>
+        {storyboards.length>0&&<div className="wbStoryboardGrid">
+          {storyboards.map((item,index)=><div className="wbStoryboardItem" key={item.id}>
+            <img src={item.url} alt={`分镜 ${index+1}`}/>
+            <span>{index+1}</span>
+            <button type="button" onClick={()=>removeStoryboard(item.id)}>移除</button>
+          </div>)}
+        </div>}
+      </div>
+      <div className="wbVideoPromptCard">
+        <label>
+          <span>视频描述</span>
+          <textarea value={videoPrompt} onChange={e=>setVideoPrompt(e.target.value)} placeholder="描述镜头运动、产品卖点、场景氛围、字幕诉求等"/>
+        </label>
+        <div className="wbVideoParamGrid">
+          <label><span>视频时长</span><select className="wbSelect dark" value={videoParams.duration} onChange={e=>updateVideoParam('duration',e.target.value)}>{['5秒','10秒','15秒','30秒'].map(item=><option key={item}>{item}</option>)}</select></label>
+          <label><span>画幅比例</span><select className="wbSelect dark" value={videoParams.ratio} onChange={e=>updateVideoParam('ratio',e.target.value)}>{['16:9','9:16','1:1','4:3','3:4'].map(item=><option key={item}>{item}</option>)}</select></label>
+          <label><span>清晰度</span><select className="wbSelect dark" value={videoParams.quality} onChange={e=>updateVideoParam('quality',e.target.value)}>{['标准','高清','超清'].map(item=><option key={item}>{item}</option>)}</select></label>
+          <label><span>运镜方式</span><select className="wbSelect dark" value={videoParams.camera} onChange={e=>updateVideoParam('camera',e.target.value)}>{['固定镜头','缓慢推进','环绕展示','平移展示','拉远展示'].map(item=><option key={item}>{item}</option>)}</select></label>
+          <label><span>运动强度</span><select className="wbSelect dark" value={videoParams.motion} onChange={e=>updateVideoParam('motion',e.target.value)}>{['低','中等','高'].map(item=><option key={item}>{item}</option>)}</select></label>
+          <label><span>镜头节奏</span><select className="wbSelect dark" value={videoParams.pace} onChange={e=>updateVideoParam('pace',e.target.value)}>{['稳重','自然','快速'].map(item=><option key={item}>{item}</option>)}</select></label>
+          <label><span>字幕</span><select className="wbSelect dark" value={videoParams.subtitle} onChange={e=>updateVideoParam('subtitle',e.target.value)}>{['无字幕','自动字幕','产品卖点字幕'].map(item=><option key={item}>{item}</option>)}</select></label>
+        </div>
+      </div>
+    </>;
+  }
+
   return <>
   <div className="wbScreen">
     <div className="wbSidePanel">
-      <div className="wbPanelTitle">功能选择</div>
-      <div className="wbFeatureGrid">{featureList.map(([k,label,tag])=><button key={k} className={op===k?'wbFeatureBtn active':'wbFeatureBtn'} onClick={()=>setOp(k)}><span className="wbFeatureTag">{tag}</span><span>{label}</span></button>)}</div>
+      {VIDEO_MODE_ENABLED
+        ? <div className="wbMediaModeNav" aria-label="功能类型">
+            <button type="button" className={mediaMode==='image'?'active':''} onClick={()=>setMediaMode('image')}><ImageIcon size={17}/>图片</button>
+            <button type="button" className={mediaMode==='video'?'active':''} onClick={()=>setMediaMode('video')}><Video size={17}/>视频</button>
+          </div>
+        : <div className="wbPanelTitle">功能选择</div>}
+      {mediaMode==='image'
+        ? <div className="wbFeatureGrid">{featureList.map(([k,label,Icon])=><button key={k} className={op===k?'wbFeatureBtn active':'wbFeatureBtn'} onClick={()=>setOp(k)}><span className="wbFeatureTag"><Icon size={18}/></span><span>{label}</span></button>)}</div>
+        : <div className="wbFeatureGrid wbVideoFeatureGrid"><button type="button" className="wbFeatureBtn active wbVideoFeatureBtn"><span className="wbFeatureTag"><Clapperboard size={18}/></span><span>宣传视频生成</span></button></div>}
       <div className="wbDivider"/>
       {renderLeftPanel()}
     </div>
 
     <section className="wbCenterPanel">
-      <WorkbenchUploadPanel
-        origin={origin}
-        reference={reference}
-        selectedTpl={selectedTpl}
-        imgSrc={imgSrc}
-        draggingSource={draggingSource}
-        draggingRef={draggingRef}
-        chooseSource={chooseSource}
-        chooseReference={chooseReference}
-        dragOver={dragOver}
-        dragLeave={dragLeave}
-        dropUpload={dropUpload}
-        openResourceModal={openResourceModal}
-        onOpenWatermark={()=>setWatermarkOpen(true)}
-        canConfigureWatermark={me?.role==='MERCHANT_OWNER'||me?.role==='MERCHANT_ADMIN'}
-        clearSourceImage={clearSourceImage}
-        clearReferenceImage={clearReferenceImage}
-        setMsg={setMsg}
-      />
-
-      <GenerationControls
-        custom={custom}
-        setCustom={setCustom}
-        resolution={resolution}
-        setResolution={setResolution}
-        ratio={ratio}
-        setRatio={setRatio}
-        gen={gen}
-        cost={calcWorkbenchCost()}
-        remainingQuota={me.quota}
-      />
+      {mediaMode==='image'
+        ? <>
+          <WorkbenchUploadPanel
+            origin={origin}
+            reference={reference}
+            selectedTpl={selectedTpl}
+            imgSrc={imgSrc}
+            draggingSource={draggingSource}
+            draggingRef={draggingRef}
+            chooseSource={chooseSource}
+            chooseReference={chooseReference}
+            dragOver={dragOver}
+            dragLeave={dragLeave}
+            dropUpload={dropUpload}
+            openResourceModal={openResourceModal}
+            onOpenWatermark={()=>setWatermarkOpen(true)}
+            canConfigureWatermark={me?.role==='MERCHANT_OWNER'||me?.role==='MERCHANT_ADMIN'}
+            clearSourceImage={clearSourceImage}
+            clearReferenceImage={clearReferenceImage}
+            setMsg={setMsg}
+          />
+          <GenerationControls
+            custom={custom}
+            setCustom={setCustom}
+            resolution={resolution}
+            setResolution={setResolution}
+            ratio={ratio}
+            setRatio={setRatio}
+            gen={gen}
+            cost={calcWorkbenchCost()}
+            remainingQuota={me.quota}
+          />
+        </>
+        : renderVideoCenterPanel()}
     </section>
 
     <div className="wbRightPanel">
-      <div className="wbRightHeader"><b>最近生成</b><button onClick={refreshRecent}>↻</button></div>
-      <div className="wbRecentSearch"><Search size={16}/><input placeholder="搜索任务编号..." value={recentKeyword} onChange={e=>setRecentKeyword(e.target.value)}/></div>
+      <div className="wbRightHeader"><b>{mediaMode==='video'?'最近视频':'最近图片'}</b><button onClick={refreshRecent}>↻</button></div>
+      <div className="wbRecentSearch"><Search size={16}/><input placeholder={mediaMode==='video'?'搜索视频任务...':'搜索任务编号...'} value={recentKeyword} onChange={e=>setRecentKeyword(e.target.value)}/></div>
 
       <div className="wbRecentList">{recentItems.length?recentItems.map(item=>{
         const running=item.status==='queued'||item.status==='running';
@@ -737,7 +841,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
           onMouseEnter={(e)=>{setRecentHoverId(item.id);showRecentOriginal(item,e);}}
           onMouseMove={(e)=>moveRecentOriginal(item,e)}
           onMouseLeave={()=>{setRecentHoverId(prev=>prev===item.id?'':prev);hideRecentOriginal();}}
-          onClick={()=>openRecentTask(item)}
+          onClick={()=>mediaMode==='video'?setMsg('视频任务详情后续接入'):openRecentTask(item)}
         >
           <div className="wbRecentThumb"><img src={imgSrc(item)} alt="最近生成"/>{running&&<i className="wbSpin"/>}{failed&&<em>失败</em>}</div>
           <div className="wbRecentInfo"><b>{recentTypeName(item)}</b><span>{running?'生成中...':failed?'失败，已退回算力':fmt(item.createdAt||item.submittedAt)}</span><small>{item.id}</small></div>
@@ -758,7 +862,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
             {renderRecentActionButton(<Trash2 size={14}/>,(e)=>deleteRecentTask(item,e),'删除',{danger:true})}
           </div>}
         </div>
-      }):<div className="wbRecentEmpty">暂无生成记录</div>}</div>
+      }):<div className="wbRecentEmpty">{mediaMode==='video'?'暂无视频生成记录':'暂无生成记录'}</div>}</div>
       <button className="wbMoreBtn" onClick={()=>goPage&&goPage('images')}>查看更多记录</button>
     </div>
   </div>

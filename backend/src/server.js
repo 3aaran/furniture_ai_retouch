@@ -228,9 +228,36 @@ app.post('/api/applications', async (req,res)=>{
 });
 
 app.get('/api/announcements', requireAuth, async (req,res)=>{
-  const aud = isSystemAdmin(req.user) ? ['ALL','ADMIN'] : ['ALL','MERCHANT'];
-  const [rows]=await pool.query('SELECT * FROM announcements WHERE audience IN (?) ORDER BY created_at DESC LIMIT 20',[aud]);
-  res.json(rows.map(r=>({id:r.id,title:r.title,content:r.content,audience:r.audience,createdAt:r.created_at})));
+  const settings=await getSettingsMap();
+  const retentionDays=Math.max(1,Number(settings.announcement_retention_days||30));
+  const maxCount=Math.min(200,Math.max(1,Number(settings.announcement_user_max_count||50)));
+  const aud = isSystemAdmin(req.user)
+    ? ['ALL','ADMIN']
+    : (['MERCHANT_OWNER','MERCHANT_ADMIN'].includes(req.user.role)?['ALL','MERCHANT']:['ALL']);
+  const [rows]=await pool.query(`
+    SELECT a.*, ar.read_at
+    FROM announcements a
+    LEFT JOIN announcement_reads ar ON ar.announcement_id=a.id AND ar.user_id=?
+    WHERE a.audience IN (?)
+      AND a.created_at>=DATE_SUB(NOW(), INTERVAL ? DAY)
+      AND (a.valid_until IS NULL OR a.valid_until>=NOW())
+    ORDER BY IF(ar.read_at IS NULL,0,1), a.created_at DESC
+    LIMIT ?
+  `,[req.user.id,aud,retentionDays,maxCount]);
+  res.json({
+    items:rows.map(r=>({id:r.id,title:r.title,content:r.content,audience:r.audience,createdAt:r.created_at,validUntil:r.valid_until,isRead:!!r.read_at,readAt:r.read_at})),
+    unreadCount:rows.filter(r=>!r.read_at).length
+  });
+});
+
+app.post('/api/announcements/:id/read', requireAuth, async (req,res)=>{
+  const aud = isSystemAdmin(req.user)
+    ? ['ALL','ADMIN']
+    : (['MERCHANT_OWNER','MERCHANT_ADMIN'].includes(req.user.role)?['ALL','MERCHANT']:['ALL']);
+  const [[notice]]=await pool.query('SELECT id FROM announcements WHERE id=? AND audience IN (?) AND (valid_until IS NULL OR valid_until>=NOW()) LIMIT 1',[req.params.id,aud]);
+  if(!notice) return res.status(404).json({message:'公告不存在或无权查看'});
+  await pool.query('INSERT INTO announcement_reads(announcement_id,user_id) VALUES(?,?) ON DUPLICATE KEY UPDATE read_at=VALUES(read_at)',[req.params.id,req.user.id]);
+  res.json({message:'已读'});
 });
 
 registerAdminRoutes(app,{upload});

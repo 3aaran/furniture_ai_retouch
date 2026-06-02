@@ -1,5 +1,5 @@
 ﻿import React,{useEffect,useState}from'react';
-import{Bell,BrainCircuit,Building2,CheckCircle2,Download,Eye,Image as ImageIcon,Phone,Plus,Power,Search,SlidersHorizontal,Ticket,Trash2,UserRound,WalletCards,X,XCircle}from'lucide-react';
+import{Bell,BrainCircuit,Building2,CheckCircle2,Download,Eye,Image as ImageIcon,Phone,Plus,Power,Search,SlidersHorizontal,Ticket,Trash2,UserRound,Video,WalletCards,X,XCircle}from'lucide-react';
 import{API,token,req,reqForm,fmt,Badge,usePaged,Pagination,Table,Toolbar,roleName,audName,resTypeName,getStatusName,imageViewUrl}from'../appShared.jsx';
 import{adminPages,adminNavGroups as configuredAdminNavGroups}from'../config/pageRegistry.jsx';
 import{featureName,getFeatureDisplayName,getTargetScopeDisplayName}from'../config/uiText.js';
@@ -10,10 +10,8 @@ export const adminNavGroups=configuredAdminNavGroups;
 
 const AI_MODEL_OPTIONS=[
   {label:'本地模拟',provider:'mock',modelName:'local-mock-model',baseUrl:'',apiPath:''},
-  {label:'智谱 CogView-3-Flash',provider:'zhipu',modelName:'cogview-3-flash',baseUrl:'https://open.bigmodel.cn',apiPath:'/api/paas/v4/images/generations'},
-  {label:'GPT Image 2',provider:'gpt-image-2',modelName:'gpt-image-2',baseUrl:'https://api.lk888.ai',apiPath:'/v1/media/generate'},
-  {label:'阿里云通义万相',provider:'aliyun',modelName:'wanx2.1-imageedit',baseUrl:'',apiPath:''},
-  {label:'即梦图片模型',provider:'jimeng',modelName:'jimeng-image',baseUrl:'',apiPath:''},
+  {label:'智谱 CogView-3-Flash',provider:'zhipu',modelName:'cogview-3-flash',baseUrl:'',apiPath:'https://open.bigmodel.cn/api/paas/v4/images/generations'},
+  {label:'GPT Image 2',provider:'gpt-image-2',modelName:'gpt-image-2',baseUrl:'',apiPath:'https://api.lk888.ai/v1/media/generate'},
   {label:'自定义 HTTP',provider:'custom',modelName:'custom-image-model',baseUrl:'',apiPath:''}
 ];
 const modelOptionValue=o=>`${o.provider}::${o.modelName}`;
@@ -25,7 +23,7 @@ function ModelSelect({value,onChange}){
 }
 function updateAiModelSelection(setAi,value){
   const option=AI_MODEL_OPTIONS.find(o=>modelOptionValue(o)===value)||AI_MODEL_OPTIONS[0];
-  setAi(ai=>({...ai,providerConfig:{...(ai?.providerConfig||{}),provider:option.provider,defaultModel:option.modelName,defaultApiPath:option.apiPath,baseUrl:ai?.providerConfig?.baseUrl||option.baseUrl},features:(ai?.features||[]).map(f=>({...f,provider:option.provider,modelName:option.modelName,apiPath:option.apiPath}))}));
+  setAi(ai=>({...ai,providerConfig:{...(ai?.providerConfig||{}),provider:option.provider,defaultModel:option.modelName,defaultApiPath:option.apiPath,baseUrl:''},features:(ai?.features||[]).map(f=>({...f,provider:option.provider,modelName:option.modelName,apiPath:option.apiPath}))}));
 }
 function updateFeatureModelSelection(setAi,index,value){
   const option=AI_MODEL_OPTIONS.find(o=>modelOptionValue(o)===value)||AI_MODEL_OPTIONS[0];
@@ -135,7 +133,7 @@ function AiConfig({setMsg}){
   function updateProvider(k,v){setAi(a=>({...a,providerConfig:{...(a?.providerConfig||{}),[k]:v}}))}
   function updateFeature(i,k,v){setAi(a=>{const next={...a,features:[...(a?.features||[])]};next.features[i]={...next.features[i],[k]:v};return next})}
   async function save(){try{await req('/api/admin/ai/config',{method:'POST',body:JSON.stringify(ai)});setMsg('AI模型配置已保存');req('/api/admin/ai/config').then(setAi).catch(()=>{})}catch(e){setMsg(e.message)}}
-  return <section className="panel settings aiConfigPageV2"><h2><BrainCircuit/> AI 模型配置</h2>{!ai?<div className="empty">AI 配置加载中...</div>:<><div className="aiConfigBoxV2"><h3>全局模型服务</h3><div className="grid2"><label>模型服务<ModelSelect value={modelOptionValue(findModelOption(ai.providerConfig?.provider,ai.providerConfig?.defaultModel))} onChange={v=>updateAiModelSelection(setAi,v)}/></label><label>接口基础地址<input value={ai.providerConfig?.baseUrl||''} onChange={e=>updateProvider('baseUrl',e.target.value)}/></label><label>接口密钥<input placeholder={ai.providerConfig?.apiKeyMasked||'保存后自动脱敏显示'} value={ai.providerConfig?.apiKey||''} onChange={e=>updateProvider('apiKey',e.target.value)}/></label><label>接口路径<input value={ai.providerConfig?.defaultApiPath||''} onChange={e=>updateProvider('defaultApiPath',e.target.value)}/></label></div><label className="check"><input type="checkbox" checked={!!ai.providerConfig?.enabled} onChange={e=>updateProvider('enabled',e.target.checked)}/> 启用 AI 生成功能</label></div><div className="aiConfigBoxV2"><h3>功能模型映射</h3><div className="aiFeatureTableV2"><div className="aiFeatureHeadV2"><b>功能</b><b>启用</b><b>模型来源</b><b>模型名称</b><b>接口路径</b></div>{(ai.features||[]).map((f,i)=><div className="aiFeatureRowV2" key={f.featureKey}><span>{getFeatureDisplayName(f.featureKey,f.featureName||'未知功能')}</span><input type="checkbox" checked={!!f.enabled} onChange={e=>updateFeature(i,'enabled',e.target.checked)}/><input readOnly value={f.provider||''}/><ModelSelect value={modelOptionValue(findModelOption(f.provider,f.modelName))} onChange={v=>updateFeatureModelSelection(setAi,i,v)}/><input value={f.apiPath||''} onChange={e=>updateFeature(i,'apiPath',e.target.value)}/></div>)}</div></div><button className="submit" onClick={save}>保存 AI 配置</button></>}</section>;
+  return <section className="panel settings aiConfigPageV2"><h2><BrainCircuit/> AI 模型配置</h2>{!ai?<div className="empty">AI 配置加载中...</div>:<><div className="aiConfigBoxV2"><h3>全局模型服务</h3><div className="grid2"><label>模型服务<ModelSelect value={modelOptionValue(findModelOption(ai.providerConfig?.provider,ai.providerConfig?.defaultModel))} onChange={v=>updateAiModelSelection(setAi,v)}/></label><label>接口密钥<input placeholder={ai.providerConfig?.apiKeyMasked||'保存后自动脱敏显示'} value={ai.providerConfig?.apiKey||''} onChange={e=>updateProvider('apiKey',e.target.value)}/></label><label className="full">接口路径地址<input placeholder="https://example.com/v1/images/generations" value={ai.providerConfig?.defaultApiPath||''} onChange={e=>updateProvider('defaultApiPath',e.target.value)}/></label></div><label className="check"><input type="checkbox" checked={!!ai.providerConfig?.enabled} onChange={e=>updateProvider('enabled',e.target.checked)}/> 启用 AI 生成功能</label></div><div className="aiConfigBoxV2"><h3>功能模型映射</h3><div className="aiFeatureTableV2"><div className="aiFeatureHeadV2"><b>功能</b><b>启用</b><b>模型来源</b><b>模型名称</b><b>接口路径地址</b></div>{(ai.features||[]).map((f,i)=><div className="aiFeatureRowV2" key={f.featureKey}><span>{getFeatureDisplayName(f.featureKey,f.featureName||'未知功能')}</span><input type="checkbox" checked={!!f.enabled} onChange={e=>updateFeature(i,'enabled',e.target.checked)}/><input readOnly value={f.provider||''}/><ModelSelect value={modelOptionValue(findModelOption(f.provider,f.modelName))} onChange={v=>updateFeatureModelSelection(setAi,i,v)}/><input placeholder="可为该功能单独填写完整接口地址" value={f.apiPath||''} onChange={e=>updateFeature(i,'apiPath',e.target.value)}/></div>)}</div></div><button className="submit" onClick={save}>保存 AI 配置</button></>}</section>;
 }
 
 function Resources({setMsg}){
@@ -157,12 +155,21 @@ function SettingsPage({setMsg}){
     if(n%(1024**2)===0)return `${n/(1024**2)}MB`;
     return `${(n/(1024**3)).toFixed(2)}GB`;
   }
-  useEffect(()=>{req('/api/admin/settings').then(d=>setS({...d,user_storage_limit_bytes:formatStorageSetting(d.user_storage_limit_bytes)})).catch(e=>setMsg(e.message))},[]);
+  useEffect(()=>{req('/api/admin/settings').then(d=>setS({
+    video_default_duration_seconds:'10',
+    video_max_duration_seconds:'30',
+    announcement_retention_days:'30',
+    announcement_user_max_count:'50',
+    ...d,
+    user_storage_limit_bytes:formatStorageSetting(d.user_storage_limit_bytes)
+  })).catch(e=>setMsg(e.message))},[]);
   async function save(){try{await req('/api/admin/settings',{method:'PATCH',body:JSON.stringify(s)});setMsg('系统配置已保存')}catch(e){setMsg(e.message)}}
   const groups=[
     {key:'storage',title:'图片存储',icon:<ImageIcon size={22}/>,tone:'blue',items:[['user_storage_limit_bytes','用户图片存储上限']]},
     {key:'quota',title:'额度基础',icon:<WalletCards size={22}/>,tone:'gold',items:[['recharge_ratio','额度换算比例'],['trial_account_hours','体验账号有效小时']]},
-    {key:'cost',title:'AI 功能消耗',icon:<SlidersHorizontal size={22}/>,tone:'green',items:[['cost_remove_bg','背景净化'],['cost_replace_bg','场景融合'],['cost_enhance','摄影增强'],['cost_material','材质替换'],['cost_multiview','多角度视图'],['cost_lineart','线稿图']]},
+    {key:'cost',title:'AI 功能消耗',icon:<SlidersHorizontal size={22}/>,tone:'green',items:[['cost_remove_bg','背景净化'],['cost_replace_bg','场景融合'],['cost_enhance','摄影增强'],['cost_material','材质替换'],['cost_multiview','多角度视图'],['cost_lineart','线稿图'],['cost_video_generate','宣传视频生成']]},
+    {key:'video',title:'视频生成',icon:<Video size={22}/>,tone:'blue',items:[['video_default_duration_seconds','默认视频时长（秒）'],['video_max_duration_seconds','最大视频时长（秒）']]},
+    {key:'announcement',title:'公告邮箱',icon:<Bell size={22}/>,tone:'gold',items:[['announcement_retention_days','公告默认保留天数'],['announcement_user_max_count','每个用户最多显示公告数']]},
     {key:'resolution',title:'分辨率倍率',icon:<ImageIcon size={22}/>,tone:'blue',items:[['resolution_multiplier_1k','1K 倍率'],['resolution_multiplier_2k','2K 倍率'],['resolution_multiplier_4k','4K 倍率']]},
     {key:'invite',title:'推广奖励',icon:<Ticket size={22}/>,tone:'rose',items:[['invite_new_store_reward_ratio','新注册门店奖励比例'],['invite_source_store_reward_ratio','邀请门店奖励比例']]}
   ];
@@ -183,10 +190,57 @@ function AdminLogs({setMsg}){
 }
 
 function Feedbacks({setMsg}){const{query,setQuery,data,load}=usePaged('/api/admin/feedbacks',{status:'',keyword:''});async function handle(id,status){const reply=prompt('处理说明/回复内容')||'';try{await req('/api/admin/feedbacks/'+id,{method:'PATCH',body:JSON.stringify({status,reply})});setMsg('反馈已处理');load()}catch(e){setMsg(e.message)}}return <section className="panel"><Toolbar onSearch={()=>setQuery(q=>({...q,page:1}))} onExport={()=>window.open(API+'/api/export/admin/feedbacks?token='+token())}><input placeholder="标题/内容/用户/商家" value={query.keyword} onChange={e=>setQuery({...query,keyword:e.target.value})}/><select value={query.status} onChange={e=>setQuery({...query,status:e.target.value})}><option value="">全部状态</option><option value="PENDING">待处理</option><option value="PROCESSING">处理中</option><option value="RESOLVED">已解决</option><option value="REJECTED">已驳回</option></select></Toolbar><Table cols={['商家','用户','联系方式','标题','内容','状态','回复','提交时间','操作']}>{(data.items||[]).map(f=><tr key={f.id}><td>{f.companyName||'-'}</td><td>{f.userName||f.userPhone||'-'}</td><td>{f.contact||'-'}</td><td>{f.title}</td><td>{f.content}</td><td><Badge v={f.status}/></td><td>{f.reply||'-'}</td><td>{fmt(f.created_at)}</td><td><button onClick={()=>handle(f.id,'PROCESSING')}>处理中</button><button className="primary" onClick={()=>handle(f.id,'RESOLVED')}>解决</button><button className="danger" onClick={()=>handle(f.id,'REJECTED')}>驳回</button></td></tr>)}</Table><Pagination data={data} setQuery={setQuery}/></section>}
-function Announcements({setMsg}){const{query,setQuery,data,load}=usePaged('/api/admin/announcements',{audience:'',keyword:''});const[f,setF]=useState({title:'',content:'',audience:'ALL',validDays:30});async function create(){try{await req('/api/admin/announcements',{method:'POST',body:JSON.stringify(f)});setMsg('公告已发布');setF({title:'',content:'',audience:'ALL',validDays:30});load()}catch(e){setMsg(e.message)}}return <div className="stack"><section className="panel"><h2><Bell/>发布公告</h2><div className="grid2"><input placeholder="公告标题" value={f.title} onChange={e=>setF({...f,title:e.target.value})}/><select value={f.audience} onChange={e=>setF({...f,audience:e.target.value})}>{Object.entries(audName).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select><input type="number" value={f.validDays} onChange={e=>setF({...f,validDays:e.target.value})} placeholder="有效天数"/></div><textarea placeholder="公告内容" value={f.content} onChange={e=>setF({...f,content:e.target.value})}/><button className="primary" onClick={create}>发布公告</button></section><section className="panel"><Toolbar onSearch={()=>setQuery(q=>({...q,page:1}))}><input placeholder="标题/内容" value={query.keyword} onChange={e=>setQuery({...query,keyword:e.target.value})}/><select value={query.audience} onChange={e=>setQuery({...query,audience:e.target.value})}><option value="">全部对象</option>{Object.entries(audName).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></Toolbar><Table cols={['标题','对象','内容','发布时间']}>{(data.items||[]).map(a=><tr key={a.id}><td>{a.title}</td><td>{audName[a.audience]||a.audience}</td><td>{a.content}</td><td>{fmt(a.created_at)}</td></tr>)}</Table><Pagination data={data} setQuery={setQuery}/></section></div>}
+function AnnouncementCreateModal({form,setForm,onClose,onSubmit}){
+  return <div className="adminModalMaskV9" onMouseDown={e=>{if(e.target===e.currentTarget)onClose()}}>
+    <div className="announcementCreateModalV9">
+      <button className="modalCloseV9" onClick={onClose}><X size={22}/></button>
+      <div className="modalBadgeV9 approve"><Bell/></div>
+      <h2>发布公告</h2>
+      <div className="announcementFormV9">
+        <label>发送对象<select value={form.audience} onChange={e=>setForm({...form,audience:e.target.value})}>
+          <option value="ALL">全体用户</option>
+          <option value="MERCHANT">门店管理员</option>
+        </select></label>
+        <label>公告标题<input autoFocus placeholder="请输入公告标题" value={form.title} onChange={e=>setForm({...form,title:e.target.value})}/></label>
+        <label className="full">公告内容<textarea placeholder="请输入公告完整内容" value={form.content} onChange={e=>setForm({...form,content:e.target.value})}/></label>
+      </div>
+      <div className="modalActionsV9"><button onClick={onClose}>取消</button><button className="primary" onClick={onSubmit}>确认发布</button></div>
+    </div>
+  </div>;
+}
+function Announcements({setMsg}){
+  const{query,setQuery,data,load}=usePaged('/api/admin/announcements',{audience:'',keyword:''});
+  const[open,setOpen]=useState(false);
+  const[f,setF]=useState({title:'',content:'',audience:'ALL'});
+  async function create(){
+    try{
+      await req('/api/admin/announcements',{method:'POST',body:JSON.stringify(f)});
+      setMsg('公告已发布');
+      setF({title:'',content:'',audience:'ALL'});
+      setOpen(false);
+      load();
+    }catch(e){setMsg(e.message)}
+  }
+  return <div className="stack announcementAdminPageV9">
+    <section className="panel">
+      <div className="announcementToolbarV9">
+        <div className="filterGroup">
+          <input placeholder="标题/内容" value={query.keyword} onChange={e=>setQuery({...query,keyword:e.target.value})}/>
+          <select value={query.audience} onChange={e=>setQuery({...query,audience:e.target.value})}>
+            <option value="">全部对象</option>
+            <option value="ALL">全体用户</option>
+            <option value="MERCHANT">门店管理员</option>
+            <option value="ADMIN">平台管理员</option>
+          </select>
+          <button className="primary" onClick={()=>setQuery(q=>({...q,page:1}))}><Search size={16}/>查询</button>
+        </div>
+        <button className="primary" onClick={()=>setOpen(true)}><Plus size={16}/>发布公告</button>
+      </div>
+      <Table cols={['标题','对象','内容','保留至','发布时间']}>{(data.items||[]).map(a=><tr key={a.id}><td>{a.title}</td><td>{a.audience==='MERCHANT'?'门店管理员':audName[a.audience]||a.audience}</td><td>{a.content}</td><td>{fmt(a.valid_until)}</td><td>{fmt(a.created_at)}</td></tr>)}</Table>
+      <Pagination data={data} setQuery={setQuery}/>
+    </section>
+    {open&&<AnnouncementCreateModal form={f} setForm={setF} onClose={()=>setOpen(false)} onSubmit={create}/>}
+  </div>;
+}
 function RedeemCodes({setMsg}){const{query,setQuery,data,load}=usePaged('/api/admin/redeem-codes',{status:'',keyword:''});const[f,setF]=useState({count:10,quota:50,maxUses:1,targetScope:'ALL',validDays:30});const[codes,setCodes]=useState([]);async function create(){try{const d=await req('/api/admin/redeem-codes/batch',{method:'POST',body:JSON.stringify(f)});setMsg(d.message);setCodes(d.codes||[]);load()}catch(e){setMsg(e.message)}}return <div className="stack"><section className="panel"><h2><Ticket/>批量创建兑换码</h2><div className="grid2"><label>数量<input type="number" value={f.count} onChange={e=>setF({...f,count:e.target.value})}/></label><label>每个额度<input type="number" value={f.quota} onChange={e=>setF({...f,quota:e.target.value})}/></label><label>可兑换次数<input type="number" value={f.maxUses} onChange={e=>setF({...f,maxUses:e.target.value})}/></label><label>有效天数<input type="number" value={f.validDays} onChange={e=>setF({...f,validDays:e.target.value})}/></label><label>使用对象<select value={f.targetScope} onChange={e=>setF({...f,targetScope:e.target.value})}><option value="ALL">全部</option><option value="MERCHANT_OWNER">门店管理员</option><option value="MERCHANT_USER">门店人员</option><option value="TRIAL">体验账户</option></select></label></div><button className="primary" onClick={create}>创建兑换码</button>{codes.length>0&&<textarea readOnly value={codes.join('\n')}/>}</section><section className="panel"><Toolbar onSearch={()=>setQuery(q=>({...q,page:1}))} onExport={()=>window.open(API+'/api/export/admin/redeem-codes?token='+token())}><input placeholder="兑换码" value={query.keyword} onChange={e=>setQuery({...query,keyword:e.target.value})}/><select value={query.status} onChange={e=>setQuery({...query,status:e.target.value})}><option value="">全部状态</option><option value="ACTIVE">启用</option><option value="DISABLED">禁用</option><option value="EXPIRED">过期</option></select></Toolbar><Table cols={['兑换码','额度','次数','对象','状态','有效期','创建时间']}>{(data.items||[]).map(c=><tr key={c.id}><td>{c.code}</td><td>{c.quota}</td><td>{c.used_count}/{c.max_uses}</td><td>{getTargetScopeDisplayName(c.target_scope)}</td><td><Badge v={c.status}/></td><td>{fmt(c.valid_until)}</td><td>{fmt(c.created_at)}</td></tr>)}</Table><Pagination data={data} setQuery={setQuery}/></section></div>}
 export{Dashboard,Applications,Merchants,AiConfig,Resources,SettingsPage,AdminLogs,Feedbacks,Announcements,RedeemCodes};
-
-
-
-

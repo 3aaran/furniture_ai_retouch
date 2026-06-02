@@ -2,7 +2,7 @@ import axios from 'axios';
 import { buildCommonPayload, downloadImage, joinUrl, pickBase64, pickImage, saveBuffer } from './utils.js';
 
 export async function generate({ provider, modelName, baseUrl, apiPath, apiKey, timeoutMs, featureKey, imagePath, referenceImagePaths = [], prompt, resolution, ratio, merchantId = null, userId = null }) {
-  if (!baseUrl) throw new Error('缺少 AI Base URL');
+  if (!baseUrl && !/^https?:\/\//i.test(String(apiPath || ''))) throw new Error('缺少 AI 接口地址');
   const endpoint = joinUrl(baseUrl, apiPath);
   const payload = buildCommonPayload({ provider, modelName, featureKey, prompt, imagePath, referenceImagePaths, resolution, ratio });
 

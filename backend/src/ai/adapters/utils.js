@@ -24,6 +24,7 @@ export async function downloadImage(url, op = 'ai-result', context = {}) {
 }
 
 export function joinUrl(base = '', apiPath = '') {
+  if (/^https?:\/\//i.test(String(apiPath || ''))) return String(apiPath);
   if (!apiPath) return String(base || '');
   return `${String(base).replace(/\/$/, '')}/${String(apiPath).replace(/^\//, '')}`;
 }
