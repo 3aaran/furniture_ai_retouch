@@ -487,11 +487,39 @@
 .topApp .wbCenterPanel .wbMainBlock > .wbUploadBox{
   width:100% !important;
   min-width:0 !important;
-  height:clamp(200px,28vh,280px) !important;
-  min-height:0 !important;
+  height:clamp(260px,32vh,340px) !important;
+  min-height:260px !important;
   max-height:none !important;
   aspect-ratio:auto !important;
   margin:0 !important;
+}
+
+.topApp .wbUploadInner{
+  box-sizing:border-box !important;
+  height:100% !important;
+  min-height:0 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:10px !important;
+  padding:28px 20px 30px !important;
+  text-align:center !important;
+}
+
+.topApp .wbUploadInner b,
+.topApp .wbUploadInner em,
+.topApp .wbUploadInner button{
+  margin:0 !important;
+}
+
+.topApp .wbUploadInner button{
+  flex:0 0 auto !important;
+  white-space:nowrap !important;
+}
+
+.topApp .wbUploadCircle{
+  flex:0 0 auto !important;
 }
 
 .avatarBtn>span{
@@ -1502,6 +1530,35 @@
 .resourceUploadModalV3{
   max-height:calc(100vh - 48px)!important;
 }
+
+.wbResourcePickerMask{
+  position:fixed!important;
+  inset:0!important;
+  z-index:2147483647!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:24px!important;
+  background:rgba(0,0,0,.72)!important;
+  backdrop-filter:blur(6px)!important;
+}
+
+.wbResourcePickerMask .wbResourceModal{
+  width:min(1200px,calc(100vw - 48px))!important;
+  max-height:calc(100dvh - 48px)!important;
+  overflow:auto!important;
+}
+
+@media(max-width:720px){
+  .wbResourcePickerMask{
+    padding:12px!important;
+  }
+
+  .wbResourcePickerMask .wbResourceModal{
+    width:calc(100vw - 24px)!important;
+    max-height:calc(100dvh - 24px)!important;
+  }
+}
+
 .resourceUploadSettingsV3 textarea{
   display:none!important;
 }

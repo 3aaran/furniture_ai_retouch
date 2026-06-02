@@ -43,6 +43,8 @@ const RATIO_VALUES = {
   '9:16': 9 / 16,
   '16:9': 16 / 9
 };
+const DEFAULT_LK888_POLL_TIMEOUT_MS = 600000;
+const DEFAULT_RESULT_DOWNLOAD_TIMEOUT_MS = 300000;
 
 function normalizeResolution(resolution = '2K') {
   const value = String(resolution || '2K').trim().toUpperCase();
@@ -112,6 +114,18 @@ function imageDataUrl(filePath) {
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export function resolveLk888PollTimeoutMs(timeoutMs) {
+  const configured = Number(timeoutMs || 0);
+  const envOverride = Number(process.env.LK888_POLL_TIMEOUT_MS || 0);
+  return Math.max(configured, envOverride, DEFAULT_LK888_POLL_TIMEOUT_MS);
+}
+
+export function resolveResultDownloadTimeoutMs(timeoutMs) {
+  const configured = Number(timeoutMs || 0);
+  const envOverride = Number(process.env.AI_RESULT_DOWNLOAD_TIMEOUT_MS || 0);
+  return Math.max(configured, envOverride, DEFAULT_RESULT_DOWNLOAD_TIMEOUT_MS);
 }
 
 function buildFeatureInstruction(featureKey) {
@@ -243,7 +257,7 @@ async function createLk888Task(endpoint, requestParams) {
 
 async function pollLk888Result(endpoint, taskId, { apiKey, timeoutMs }) {
   const started = Date.now();
-  const maxWait = Number(timeoutMs || 180000);
+  const maxWait = resolveLk888PollTimeoutMs(timeoutMs);
   const interval = 3500;
   const url = statusEndpoint(endpoint);
 
@@ -261,7 +275,7 @@ async function pollLk888Result(endpoint, taskId, { apiKey, timeoutMs }) {
     await sleep(interval);
   }
 
-  throw new Error('锦潮 AI 任务超时，请稍后到任务记录中查看结果');
+  throw new Error(`锦潮 AI 任务等待超时（已等待 ${Math.round(maxWait / 1000)} 秒），请稍后到任务记录中查看结果`);
 }
 
 async function postLk888(endpoint, requestParams) {
@@ -368,7 +382,7 @@ export async function generate(params = {}) {
   if (String(result).startsWith('http')) {
     const remote = await axios.get(result, {
       responseType: 'arraybuffer',
-      timeout: Number(params.timeoutMs || 180000)
+      timeout: resolveResultDownloadTimeoutMs(params.timeoutMs)
     });
     const buffer = await fitImageBufferToSizeForGptImage2(Buffer.from(remote.data || []), size);
     return saveBuffer(buffer, `gpt-image-2-${featureKey || 'image'}`, 'png', context);

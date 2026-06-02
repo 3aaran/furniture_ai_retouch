@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { Search } from 'lucide-react';
 import { resTypeName } from '../../appShared.jsx';
 
@@ -11,7 +12,7 @@ export function ResourcePickerModal({
 }) {
   if (!resourceModal.open) return null;
 
-  return <div className="modalMask">
+  const content = <div className="modalMask wbResourcePickerMask">
     <div className="wbResourceModal">
       <div className="modalHead">
         <h2>{resourceModal.target==='source'?'从资源库选择产品原图':'从资源库选择参考图'}</h2>
@@ -30,6 +31,9 @@ export function ResourcePickerModal({
       </div>
     </div>
   </div>;
+
+  if (typeof document === 'undefined') return content;
+  return createPortal(content, document.body);
 }
 
 export default ResourcePickerModal;

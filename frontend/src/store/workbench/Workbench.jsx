@@ -233,9 +233,11 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   }
 
   function pollAiTask(taskId){
+    let missedStatusReads=0;
     const timer=setInterval(async()=>{
       try{
         const d=await req('/api/ai/tasks/'+taskId+'/status');
+        missedStatusReads=0;
         if(d.user)setMe(d.user);
         setRecent(prev=>prev.map(x=>x.id===taskId?{...x,...d}:x));
         if(d.status==='succeeded'){
@@ -248,7 +250,15 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
           setMsg(d.statusMessage||d.errorMessage||'生成图片失败：模型服务异常');
           refreshRecent();
         }
-      }catch(e){clearInterval(timer);setMsg(e.message)}
+      }catch(e){
+        missedStatusReads+=1;
+        if(missedStatusReads===1)setMsg('任务仍在生成，状态读取短暂失败，继续等待结果');
+        if(missedStatusReads>=5){
+          clearInterval(timer);
+          setMsg('任务状态读取失败，请稍后到历史任务查看');
+          refreshRecent();
+        }
+      }
     },2000);
   }
 

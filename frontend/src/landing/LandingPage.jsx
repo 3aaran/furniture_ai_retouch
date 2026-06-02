@@ -34,8 +34,8 @@ const sceneCards=[
 ];
 
 const heroImages={
-  source:'/landing/hero/original.png',
-  result:'/landing/hero/result.png'
+  source:'/landing/hero/original.webp',
+  result:'/landing/hero/result.webp'
 };
 
 const workflowImages=[
@@ -60,7 +60,7 @@ function ChairGraphic(){
 function DemoPanel({kind,label,imgSrc}){
   return <div className={`landingDemoPanel ${kind} hasImage`}>
     <i className="landingPanelShine" aria-hidden="true"/>
-    <img className="landingDemoImg" src={imgSrc} alt={label} onError={e=>{e.currentTarget.hidden=true}}/>
+    <img className="landingDemoImg" src={imgSrc} alt={label} loading="eager" decoding="async" fetchPriority="high" onError={e=>{e.currentTarget.hidden=true}}/>
     <div className="landingPanelGrid"/>
     <span>{label}</span>
     <div className="landingSceneFloor"/>

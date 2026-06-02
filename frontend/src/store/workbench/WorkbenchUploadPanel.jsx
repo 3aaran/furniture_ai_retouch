@@ -45,7 +45,7 @@ export function WorkbenchUploadPanel({
           <div className="wbUploadCircle">+</div>
           <b>点击上传家具图片</b>
           <em>或</em>
-          <button type="button" onClick={e => { e.preventDefault(); openResourceModal('source'); }}>从资源库选择</button>
+          <button type="button" onClick={e => { e.preventDefault(); e.stopPropagation(); openResourceModal('source'); }}>从资源库选择</button>
         </div>}
       </label>
     </div>
@@ -85,7 +85,7 @@ export function WorkbenchUploadPanel({
             <em>上传参考图</em>
           </>}
         </label>
-        <button className="wbGhostBtn" type="button" onClick={() => openResourceModal('reference')}>从资源库选择</button>
+        <button className="wbGhostBtn" type="button" onClick={e => { e.stopPropagation(); openResourceModal('reference'); }}>从资源库选择</button>
         {selectedTpl && <div className="wbSelectedTip">已选择资源模板：{selectedTpl.name}</div>}
       </div>}
     </div>

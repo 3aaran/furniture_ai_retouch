@@ -1,7 +1,7 @@
 // 该文件用于验证 GPT Image 2 适配器传给模型的 size 参数，确保生成规格和图片比例映射正确。
 import assert from 'node:assert/strict';
 import sharp from 'sharp';
-import { buildLk888ParamsPayload, fitImageBufferToSizeForGptImage2, mapImageSizeForGptImage2 } from './gpt-image-2.js';
+import { buildLk888ParamsPayload, fitImageBufferToSizeForGptImage2, mapImageSizeForGptImage2, resolveLk888PollTimeoutMs, resolveResultDownloadTimeoutMs } from './gpt-image-2.js';
 
 assert.equal(mapImageSizeForGptImage2({ resolution: '1K', ratio: '1:1' }), '1024x1024');
 assert.equal(mapImageSizeForGptImage2({ resolution: '2K', ratio: '1:1' }), '2048x2048');
@@ -15,6 +15,24 @@ assert.equal(mapImageSizeForGptImage2({ resolution: '4K', ratio: '9:16' }), '216
 assert.equal(mapImageSizeForGptImage2({ resolution: '2K', ratio: '自适应', imageMeta: { width: 1600, height: 1200 } }), '2560x1920');
 assert.equal(mapImageSizeForGptImage2({ resolution: '2K', ratio: '自适应', imageMeta: { width: 1200, height: 1600 } }), '1920x2560');
 assert.equal(mapImageSizeForGptImage2({ resolution: '4K', ratio: '自适应', imageMeta: { width: 1920, height: 1080 } }), '3840x2160');
+
+const oldLk888PollTimeout = process.env.LK888_POLL_TIMEOUT_MS;
+delete process.env.LK888_POLL_TIMEOUT_MS;
+assert.equal(resolveLk888PollTimeoutMs(120000), 600000);
+assert.equal(resolveLk888PollTimeoutMs(900000), 900000);
+process.env.LK888_POLL_TIMEOUT_MS = '720000';
+assert.equal(resolveLk888PollTimeoutMs(120000), 720000);
+if (oldLk888PollTimeout === undefined) delete process.env.LK888_POLL_TIMEOUT_MS;
+else process.env.LK888_POLL_TIMEOUT_MS = oldLk888PollTimeout;
+
+const oldResultDownloadTimeout = process.env.AI_RESULT_DOWNLOAD_TIMEOUT_MS;
+delete process.env.AI_RESULT_DOWNLOAD_TIMEOUT_MS;
+assert.equal(resolveResultDownloadTimeoutMs(120000), 300000);
+assert.equal(resolveResultDownloadTimeoutMs(480000), 480000);
+process.env.AI_RESULT_DOWNLOAD_TIMEOUT_MS = '360000';
+assert.equal(resolveResultDownloadTimeoutMs(120000), 360000);
+if (oldResultDownloadTimeout === undefined) delete process.env.AI_RESULT_DOWNLOAD_TIMEOUT_MS;
+else process.env.AI_RESULT_DOWNLOAD_TIMEOUT_MS = oldResultDownloadTimeout;
 
 const payload = buildLk888ParamsPayload({
   modelName: 'gpt-image-2',

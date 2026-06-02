@@ -9,6 +9,18 @@ const root = join(here, '../..');
 const source = readFileSync(join(here, 'LandingPage.jsx'), 'utf8');
 
 describe('landing workflow assets', () => {
+  it('uses existing lightweight hero images for the first viewport', () => {
+    for (const name of ['original.webp', 'result.webp']) {
+      const file = join(root, 'public/landing/hero', name);
+      assert.equal(existsSync(file), true, `${name} should exist`);
+      assert.ok(statSync(file).size < 120_000, `${name} should stay lightweight`);
+      assert.match(source, new RegExp(`/landing/hero/${name}`));
+    }
+
+    assert.doesNotMatch(source, /\/landing\/hero\/[^'"]+\.png/);
+    assert.match(source, /fetchPriority="high"/);
+  });
+
   it('uses optimized workflow images with lazy decoding', () => {
     for (const name of ['01-original.webp', '02-clean.webp', '03-material.webp', '04-scene.webp']) {
       const file = join(root, 'public/landing/workflow', name);

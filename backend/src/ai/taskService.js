@@ -22,6 +22,16 @@ function usesMerchantQuota(user) {
   return ['MERCHANT_OWNER', 'MERCHANT_ADMIN'].includes(user?.role);
 }
 
+export function modelFeatureKeyFor(featureKey = '') {
+  const key = String(featureKey || '').trim();
+  const map = {
+    promo_main_image: 'replace_bg',
+    promo_poster_image: 'replace_bg',
+    promo_detail_image: 'enhance'
+  };
+  return map[key] || key;
+}
+
 function canSeeTask(task, user) {
   if (!task || !user) return false;
   if (isSystemAdmin(user)) return true;
@@ -103,7 +113,9 @@ function safeParseJson(v, fallback = []) {
 function publicFailureMessage(task) {
   const text = String(task?.error_message || '');
   let reason = '模型服务异常';
-  if (/timeout|timed\s*out|超时|ETIMEDOUT|ECONNRESET|ECONNREFUSED|ENOTFOUND|network|fetch failed|socket|网络/i.test(text)) {
+  if (/任务.*超时|等待超时|生成.*超时|模型.*超时|耗时过长|锦潮 AI 任务超时/i.test(text)) {
+    reason = '模型生成耗时过长';
+  } else if (/timeout|timed\s*out|超时|ETIMEDOUT|ECONNRESET|ECONNREFUSED|ENOTFOUND|network|fetch failed|socket|网络/i.test(text)) {
     reason = '网络较差';
   } else if (/base64|data:|公网|public.*url|public_base_url|download|图片地址|URL|无法访问|access|reachable|fetch.*image|读取图片|image.*url/i.test(text)) {
     reason = '图片地址无法访问';
@@ -269,6 +281,8 @@ export async function submitAiTask(payload, user) {
   if (!feature || !Number(feature.enabled)) {
     throw new Error('该 AI 功能未启用');
   }
+  const modelFeatureKey = modelFeatureKeyFor(featureKey);
+  const modelFeature = await getFeatureConfig(modelFeatureKey) || feature;
 
   const settings = await settingsMap();
   const cost = calcCost(settings, featureKey, resolution);
@@ -291,13 +305,13 @@ export async function submitAiTask(payload, user) {
   });
 
   const resolvedProvider =
-    feature.provider && feature.provider !== 'mock'
-      ? feature.provider
+    modelFeature.provider && modelFeature.provider !== 'mock'
+      ? modelFeature.provider
       : aiCfg.providerConfig.provider;
 
   const resolvedModel =
-    feature.model_name && feature.model_name !== '本地模拟模型'
-      ? feature.model_name
+    modelFeature.model_name && modelFeature.model_name !== '本地模拟模型'
+      ? modelFeature.model_name
       : aiCfg.providerConfig.defaultModel;
 
   const taskId = uuid();
@@ -385,7 +399,7 @@ export async function submitAiTask(payload, user) {
         ratio,
         resolvedProvider,
         resolvedModel,
-        feature.api_path || '',
+        modelFeature.api_path || '',
         cost
       ]
     );
@@ -547,7 +561,8 @@ export async function runAiTask(taskId) {
     }
 
     const aiCfg = await getAiConfig({ includeSecret: true });
-    const feature = await getFeatureConfig(full.feature_key);
+    const modelFeatureKey = modelFeatureKeyFor(full.feature_key);
+    const feature = await getFeatureConfig(modelFeatureKey) || await getFeatureConfig(full.feature_key);
 
     const taskParams = safeParseJson(full.task_params, {});
     const referenceIds = safeParseJson(full.reference_image_ids, []);
@@ -616,7 +631,7 @@ export async function runAiTask(taskId) {
         enabled: aiCfg.providerConfig.enabled
       },
       featureConfig: feature,
-      featureKey: full.feature_key,
+      featureKey: modelFeatureKey,
       imagePath: toDiskPath(full.originUrl),
       imageUrl: modelImageUrl,
       referenceImagePaths,
