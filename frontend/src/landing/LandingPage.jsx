@@ -309,7 +309,11 @@ export default function LandingPage({me}){
 
     <footer className="landingFooter">
       <a className="landingBrand" href="#/home"><BrandMark className="landingBrandMark"/><span><b>勋港</b><small>智能家具 AI 修图平台</small></span></a>
-      <span>© 2026 勋港。保留所有权利。</span>
+      <div className="landingFooterInfo">
+        <span>© 2026 勋港。保留所有权利。</span>
+        <a className="landingIcpLink" href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer">粤ICP备2026071107号</a>
+        <span>审核通过日期：2026-06-04</span>
+      </div>
     </footer>
   </div>;
 }

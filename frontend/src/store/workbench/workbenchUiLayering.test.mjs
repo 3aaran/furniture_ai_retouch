@@ -40,4 +40,12 @@ describe('workbench resource picker layering', () => {
     assert.ok(networkIndex > -1, 'network message should still exist');
     assert.ok(modelTimeoutIndex < networkIndex, 'model timeout should be classified before generic network timeout');
   });
+
+  it('uses browser-like root zoom and keeps promo requirements independently scrollable', () => {
+    assert.match(finalCss, /--app-browser-zoom:\.9/);
+    assert.doesNotMatch(finalCss, /\.topApp[\s\S]*zoom:\.9/);
+    assert.match(finalCss, /body[\s\S]*width:calc\(100% \/ var\(--app-browser-zoom\)\)/);
+    assert.match(finalCss, /\.topApp \.wbSidePanel[\s\S]*overflow:hidden\s*!important/);
+    assert.match(finalCss, /\.topApp \.wbPromoFormCard[\s\S]*overflow-y:auto\s*!important/);
+  });
 });

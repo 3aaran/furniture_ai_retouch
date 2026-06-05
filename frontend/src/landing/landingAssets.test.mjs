@@ -7,6 +7,7 @@ import { describe, it } from 'node:test';
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '../..');
 const source = readFileSync(join(here, 'LandingPage.jsx'), 'utf8');
+const finalCss = readFileSync(join(root, 'src/styles/overrides/final-fixes.css'), 'utf8');
 
 describe('landing workflow assets', () => {
   it('uses existing lightweight hero images for the first viewport', () => {
@@ -31,5 +32,13 @@ describe('landing workflow assets', () => {
 
     assert.match(source, /loading="lazy"/);
     assert.match(source, /decoding="async"/);
+  });
+
+  it('does not cover hero demo images with default placeholder overlays', () => {
+    assert.match(finalCss, /\.landingDemoPanel\.hasImage \.landingDemoImg[\s\S]*object-fit:cover/);
+    for (const selector of ['landingPanelShine', 'landingPanelGrid', 'landingSceneFloor', 'landingChair']) {
+      assert.match(finalCss, new RegExp(`\\.landingDemoPanel\\.hasImage \\.${selector}`));
+    }
+    assert.match(finalCss, /\.landingDemoPanel\.hasImage > span/);
   });
 });

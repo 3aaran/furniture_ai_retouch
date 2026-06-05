@@ -1,4 +1,32 @@
 ﻿
+:root{
+  --app-browser-zoom:.9;
+}
+
+html{
+  zoom:var(--app-browser-zoom);
+}
+
+body{
+  width:calc(100% / var(--app-browser-zoom));
+  min-height:calc(100vh / var(--app-browser-zoom));
+}
+
+.topApp .topbar{
+  right:auto !important;
+  width:calc(100vw / var(--app-browser-zoom)) !important;
+}
+
+.topMain:has(.wbScreen),
+.topApp .wbScreen{
+  width:calc(100vw / var(--app-browser-zoom)) !important;
+  max-width:calc(100vw / var(--app-browser-zoom)) !important;
+}
+
+.topApp .wbSidePanel{
+  overflow:hidden !important;
+}
+
 
 
 
@@ -2020,6 +2048,24 @@
   filter:drop-shadow(0 18px 18px rgba(0,0,0,.20));
 }
 
+.landingDemoPanel.hasImage .landingDemoImg{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+.landingDemoPanel.hasImage:after,
+.landingDemoPanel.hasImage .landingPanelShine,
+.landingDemoPanel.hasImage .landingPanelGrid,
+.landingDemoPanel.hasImage .landingSceneFloor,
+.landingDemoPanel.hasImage .landingChair,
+.landingDemoPanel.hasImage > span{
+  display:none !important;
+}
+
 .landingHeroStage,
 .landingFlowStage,
 .landingWorkflowPreview,
@@ -2165,6 +2211,26 @@
   display:grid !important;
   gap:12px !important;
   padding:14px !important;
+  max-height:clamp(190px,32vh,330px) !important;
+  min-height:0 !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  align-content:start !important;
+  overscroll-behavior:contain !important;
+  padding-right:10px !important;
+}
+
+.topApp .wbPromoFormCard::-webkit-scrollbar{
+  width:6px !important;
+}
+
+.topApp .wbPromoFormCard::-webkit-scrollbar-thumb{
+  background:rgba(242,213,140,.36) !important;
+  border-radius:999px !important;
+}
+
+.topApp .wbPromoFormCard::-webkit-scrollbar-track{
+  background:transparent !important;
 }
 
 .topApp .wbPromoField{
