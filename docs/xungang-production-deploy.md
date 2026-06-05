@@ -111,6 +111,7 @@ pm2 save
 ```txt
 https://www.xungang.xin
 https://www.xungang.xin/api/health
+https://www.xungang.xin/manifest.json
 https://www.xungang.xin/manifest.webmanifest
 https://www.xungang.xin/sw.js
 ```
@@ -123,6 +124,7 @@ HTTPS 正常后，再检查 PWA 文件：
 
 ```bash
 curl -I https://www.xungang.xin/manifest.webmanifest
+curl -I https://www.xungang.xin/manifest.json
 curl -I https://www.xungang.xin/sw.js
 curl -I https://www.xungang.xin/pwa-icon-192.png
 curl -I https://www.xungang.xin/pwa-icon-512.png
@@ -133,6 +135,13 @@ curl -I https://www.xungang.xin/pwa-icon-512.png
 ```txt
 HTTP/1.1 200 OK
 Content-Type: application/manifest+json
+```
+
+`manifest.json` 建议返回：
+
+```txt
+HTTP/1.1 200 OK
+Content-Type: application/json
 ```
 
 如果返回 `application/octet-stream`，在 Nginx 的 manifest location 内加入：

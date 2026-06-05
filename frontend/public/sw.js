@@ -1,7 +1,8 @@
-const CACHE_NAME = 'xungang-pwa-v6';
+const CACHE_NAME = 'xungang-pwa-v7';
 const APP_SHELL = [
   '/',
   '/index.html',
+  '/manifest.json',
   '/manifest.webmanifest',
   '/favicon.svg',
   '/pwa-icon-192.png',
