@@ -1,4 +1,4 @@
-const CACHE_NAME = 'xungang-pwa-v8';
+const CACHE_NAME = 'xungang-pwa-v9';
 const STATIC_CACHE = `${CACHE_NAME}-static`;
 const RUNTIME_CACHE = `${CACHE_NAME}-runtime`;
 

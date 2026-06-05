@@ -6,7 +6,15 @@ export function registerServiceWorker() {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' })
       .then(registration => {
-        registration.update().catch(() => {});
+        const applyWaitingWorker = () => {
+          if (registration.waiting && navigator.serviceWorker.controller) {
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+          }
+        };
+        const checkUpdate = () => registration.update().then(applyWaitingWorker).catch(() => {});
+
+        checkUpdate();
+        applyWaitingWorker();
 
         registration.addEventListener('updatefound', () => {
           const worker = registration.installing;
@@ -17,6 +25,11 @@ export function registerServiceWorker() {
             }
           });
         });
+
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') checkUpdate();
+        });
+        window.addEventListener('online', checkUpdate);
       })
       .catch(() => {
         // PWA registration is optional; the app should continue to run normally.
