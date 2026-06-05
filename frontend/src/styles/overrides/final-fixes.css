@@ -1,26 +1,42 @@
 ﻿
 :root{
   --app-browser-zoom:.9;
+  --app-zoomed-viewport-width:calc(100vw / var(--app-browser-zoom));
+  --app-zoomed-viewport-height:calc(100vh / var(--app-browser-zoom));
 }
 
 html{
   zoom:var(--app-browser-zoom);
+  overflow-x:hidden;
 }
 
 body{
-  width:calc(100% / var(--app-browser-zoom));
-  min-height:calc(100vh / var(--app-browser-zoom));
+  width:var(--app-zoomed-viewport-width);
+  min-width:var(--app-zoomed-viewport-width);
+  min-height:var(--app-zoomed-viewport-height);
+  overflow-x:hidden;
+}
+
+#root,
+.topApp{
+  width:100%;
+  min-height:var(--app-zoomed-viewport-height);
 }
 
 .topApp .topbar{
   right:auto !important;
-  width:calc(100vw / var(--app-browser-zoom)) !important;
+  width:var(--app-zoomed-viewport-width) !important;
+  max-width:none !important;
 }
 
 .topMain:has(.wbScreen),
 .topApp .wbScreen{
-  width:calc(100vw / var(--app-browser-zoom)) !important;
-  max-width:calc(100vw / var(--app-browser-zoom)) !important;
+  width:var(--app-zoomed-viewport-width) !important;
+  max-width:var(--app-zoomed-viewport-width) !important;
+}
+
+.topApp .metrics{
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
 }
 
 .topApp .wbSidePanel{
