@@ -1,0 +1,13 @@
+{
+  "appId": "xin.xungang.app",
+  "appName": "勋港",
+  "webDir": "www",
+  "server": {
+    "url": "https://www.xungang.xin/",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true
+  }
+}

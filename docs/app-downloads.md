@@ -63,3 +63,95 @@ sudo systemctl reload nginx
 ## 注意
 
 前端构建不会自动生成 APK 或 EXE。APK 需要通过 Android 项目打包，EXE 需要通过 Windows 桌面壳打包。当前下载入口负责把这些安装包暴露给用户。
+
+## 更新规则
+
+### 只改网站内容
+
+如果只改前端页面、后端接口、提示词、样式、业务功能：
+
+- 重新部署网站即可。
+- PWA 会读取新网页。
+- Windows EXE 和 Android APK 因为只是打开 `https://www.xungang.xin/`，用户下次打开软件也会看到新网页。
+- 不需要重新生成 EXE/APK。
+
+### 改安装包壳
+
+如果改了桌面壳或安卓壳本身，例如图标、窗口配置、启动逻辑、文件下载权限、系统权限、包名、自动更新逻辑：
+
+- 需要重新生成 EXE/APK。
+- 上传覆盖 `/www/furniture_ai_retouch/downloads/` 中的安装包。
+- 已安装用户不会自动替换壳程序，需要重新下载安装，除非后续实现自动更新机制。
+
+### Windows 版本更新
+
+修改：
+
+```text
+desktop/package.json
+```
+
+把 `version` 从 `1.0.0` 改成新版本，例如：
+
+```json
+"version": "1.0.1"
+```
+
+重新打包：
+
+```bash
+cd desktop
+npm install
+npm run dist
+```
+
+复制输出安装包：
+
+```powershell
+Copy-Item "desktop\dist\勋港 Setup 1.0.1.exe" "downloads\xungang-setup.exe" -Force
+```
+
+### Android 版本更新
+
+修改：
+
+```text
+mobile-android/android/app/build.gradle
+```
+
+每次重新发布 APK 时，必须增加 `versionCode`，并更新 `versionName`：
+
+```gradle
+versionCode 2
+versionName "1.0.1"
+```
+
+然后构建：
+
+```bash
+cd mobile-android
+npm run build:debug
+```
+
+调试 APK 输出通常在：
+
+```text
+mobile-android/android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+复制为：
+
+```text
+downloads/xungang.apk
+```
+
+正式发布建议用 Android Studio 生成签名 APK。
+
+## 自动更新说明
+
+当前安装包没有实现壳程序自动更新：
+
+- 网站内容会自动更新，因为 EXE/APK 打开的是线上域名。
+- EXE/APK 壳程序不会自动更新。
+- Windows 若要壳程序自动更新，需要接入 Electron autoUpdater，并提供更新源、签名和 `latest.yml`。
+- Android 若不上架应用商店，直接下载 APK 不能静默自动安装；最多只能在网页里提示用户下载新版 APK，安装仍需要用户确认。

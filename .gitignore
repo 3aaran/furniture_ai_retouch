@@ -25,6 +25,9 @@ temp/
 .env
 .env.*
 !.env.example
+!frontend/.env.example
+!frontend/.env.production.example
+!backend/.env.example
 
 # logs
 *.log
@@ -85,6 +88,17 @@ test-results/
 .env.local
 .env.production
 .env.development
+
+# app installer build outputs
+desktop/node_modules/
+desktop/dist/
+mobile-android/node_modules/
+mobile-android/android/.gradle/
+mobile-android/android/**/build/
+downloads/*.exe
+downloads/*.apk
+frontend/public/downloads/*.exe
+frontend/public/downloads/*.apk
 
 # local Codex project notes
 skills/
