@@ -3,12 +3,37 @@
 首页安装按钮提供三条入口：
 
 - 网页应用 PWA：由浏览器安装能力决定。电脑推荐 Edge / Chrome；iPhone 使用 Safari 添加到主屏幕；安卓默认浏览器需要支持“安装应用”或“添加到桌面”。
-- Windows 安装包：默认下载地址 `/downloads/xungang-setup.exe`。
-- 安卓安装包 APK：默认下载地址 `/downloads/xungang.apk`。
+- Windows 安装包：正式环境使用 OSS/CDN 下载地址。
+- 安卓安装包 APK：手机端页面适配完成前暂不开放下载。
+
+## OSS 下载地址
+
+安装包不要继续由 ECS/Nginx 直接分发，正式环境建议放到 OSS，并绑定下载域名：
+
+```text
+https://download.xungang.xin/xungang-setup.exe
+https://download.xungang.xin/xungang.apk
+```
+
+前端构建配置：
+
+```env
+VITE_WINDOWS_EXE_URL=https://download.xungang.xin/xungang-setup.exe
+VITE_ANDROID_APK_ENABLED=false
+VITE_ANDROID_APK_URL=https://download.xungang.xin/xungang.apk
+```
+
+当前手机端下载入口默认关闭。等手机端页面适配完成后，再改为：
+
+```env
+VITE_ANDROID_APK_ENABLED=true
+```
+
+同时更新 `downloads/latest.json` 中的 `android.enabled`。
 
 ## 推荐线上文件路径
 
-不要优先把安装包直接放进 `frontend/dist`，因为每次重新构建前端时，`dist` 目录可能会被清空。推荐放到项目固定下载目录：
+不要优先把安装包直接放进 `frontend/dist`，因为每次重新构建前端时，`dist` 目录可能会被清空。若暂时不用 OSS，可放到项目固定下载目录：
 
 ```text
 /www/furniture_ai_retouch/downloads/xungang.apk
@@ -41,8 +66,8 @@ location /downloads/ {
 最后确认浏览器可访问：
 
 ```bash
-curl -I https://www.xungang.xin/downloads/xungang.apk
-curl -I https://www.xungang.xin/downloads/xungang-setup.exe
+curl -I https://download.xungang.xin/xungang.apk
+curl -I https://download.xungang.xin/xungang-setup.exe
 curl -I https://www.xungang.xin/downloads/latest.json
 ```
 
@@ -51,8 +76,9 @@ curl -I https://www.xungang.xin/downloads/latest.json
 如需修改文件名或放到其他静态目录，在前端构建前配置：
 
 ```env
-VITE_ANDROID_APK_URL=/downloads/xungang.apk
-VITE_WINDOWS_EXE_URL=/downloads/xungang-setup.exe
+VITE_ANDROID_APK_ENABLED=false
+VITE_ANDROID_APK_URL=https://download.xungang.xin/xungang.apk
+VITE_WINDOWS_EXE_URL=https://download.xungang.xin/xungang-setup.exe
 VITE_APP_RELEASE_MANIFEST=/downloads/latest.json
 ```
 

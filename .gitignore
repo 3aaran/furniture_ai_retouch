@@ -95,6 +95,7 @@ desktop/dist/
 mobile-android/node_modules/
 mobile-android/android/.gradle/
 mobile-android/android/**/build/
+mobile-android/android/app/release/
 downloads/*.exe
 downloads/*.apk
 frontend/public/downloads/*.exe

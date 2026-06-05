@@ -42,6 +42,7 @@ export default function AppUpdateNotice(){
       .then(data=>{
         const next=data?.[client.platform];
         if(!next?.version||!next?.url)return;
+        if(next.enabled===false)return;
         if(compareVersion(next.version,client.version)<=0)return;
         const key=`xg-update-dismissed-${client.platform}-${next.version}`;
         if(window.localStorage?.getItem(key)==='1')return;

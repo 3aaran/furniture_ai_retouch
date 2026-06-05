@@ -2,18 +2,20 @@
   "schema": 1,
   "updatedAt": "2026-06-05T00:00:00+08:00",
   "windows": {
+    "enabled": true,
     "version": "1.0.0",
-    "url": "/downloads/xungang-setup.exe",
+    "url": "https://download.xungang.xin/xungang-setup.exe",
     "notes": [
-      "首个 Windows 安装包版本，打开线上勋港平台。"
+      "Windows 安装包已迁移到 OSS/CDN 下载入口。"
     ]
   },
   "android": {
+    "enabled": false,
     "version": "1.0.0",
     "versionCode": 1,
-    "url": "/downloads/xungang.apk",
+    "url": "https://download.xungang.xin/xungang.apk",
     "notes": [
-      "首个 Android 安装包版本，打开线上勋港平台。"
+      "手机端页面适配完成前，安卓安装包暂不开放下载。"
     ]
   },
   "pwa": {
