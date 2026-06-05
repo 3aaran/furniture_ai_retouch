@@ -13,6 +13,7 @@
 ```text
 /www/furniture_ai_retouch/downloads/xungang.apk
 /www/furniture_ai_retouch/downloads/xungang-setup.exe
+/www/furniture_ai_retouch/downloads/latest.json
 ```
 
 Nginx 增加：
@@ -20,7 +21,7 @@ Nginx 增加：
 ```nginx
 location /downloads/ {
     alias /www/furniture_ai_retouch/downloads/;
-    add_header Cache-Control "public";
+    add_header Cache-Control "no-store";
 }
 ```
 
@@ -42,6 +43,7 @@ location /downloads/ {
 ```bash
 curl -I https://www.xungang.xin/downloads/xungang.apk
 curl -I https://www.xungang.xin/downloads/xungang-setup.exe
+curl -I https://www.xungang.xin/downloads/latest.json
 ```
 
 ## 自定义下载地址
@@ -51,6 +53,7 @@ curl -I https://www.xungang.xin/downloads/xungang-setup.exe
 ```env
 VITE_ANDROID_APK_URL=/downloads/xungang.apk
 VITE_WINDOWS_EXE_URL=/downloads/xungang-setup.exe
+VITE_APP_RELEASE_MANIFEST=/downloads/latest.json
 ```
 
 修改后重新构建并部署：
@@ -130,6 +133,7 @@ versionName "1.0.1"
 
 ```bash
 cd mobile-android
+npm run sync
 npm run build:debug
 ```
 
@@ -147,11 +151,21 @@ downloads/xungang.apk
 
 正式发布建议用 Android Studio 生成签名 APK。
 
-## 自动更新说明
+## 版本清单和更新提示
 
-当前安装包没有实现壳程序自动更新：
+仓库中保留 `downloads/latest.json`，它会随 GitHub 部署到服务器。EXE/APK 文件本身不提交到 GitHub，需要打包后上传到同一目录。
 
-- 网站内容会自动更新，因为 EXE/APK 打开的是线上域名。
-- EXE/APK 壳程序不会自动更新。
-- Windows 若要壳程序自动更新，需要接入 Electron autoUpdater，并提供更新源、签名和 `latest.yml`。
-- Android 若不上架应用商店，直接下载 APK 不能静默自动安装；最多只能在网页里提示用户下载新版 APK，安装仍需要用户确认。
+当前前端会读取：
+
+```text
+https://www.xungang.xin/downloads/latest.json
+```
+
+如果用户打开的是 Windows EXE 或 Android APK，并且壳程序携带的版本号低于 `latest.json`，页面会提示“发现新版本”，用户点击后下载新的安装包。
+
+注意：
+
+- 网站内容更新：用户下次打开 EXE/APK 会自动看到新网页，不需要重新安装。
+- EXE/APK 壳程序更新：需要重新生成安装包，上传覆盖固定下载文件，并更新 `latest.json`。
+- Android APK 不能静默自动安装，必须用户确认安装。
+- Windows EXE 若要完全自动后台更新，后续还需要单独接入 Electron autoUpdater、签名证书和更新源。

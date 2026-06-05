@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "updatedAt": "2026-06-05T00:00:00+08:00",
+  "windows": {
+    "version": "1.0.0",
+    "url": "/downloads/xungang-setup.exe",
+    "notes": [
+      "首个 Windows 安装包版本，打开线上勋港平台。"
+    ]
+  },
+  "android": {
+    "version": "1.0.0",
+    "versionCode": 1,
+    "url": "/downloads/xungang.apk",
+    "notes": [
+      "首个 Android 安装包版本，打开线上勋港平台。"
+    ]
+  },
+  "pwa": {
+    "version": "2026.06.05",
+    "notes": [
+      "PWA 由浏览器更新网站内容，不提供独立安装包。"
+    ]
+  }
+}

@@ -4,6 +4,7 @@ import './styles/index.css';
 import{registerServiceWorker}from'./registerServiceWorker.js';
 import AppShell from'./AppShell.jsx';
 import LandingPage from'./landing/LandingPage.jsx';
+import AppUpdateNotice from'./components/AppUpdateNotice.jsx';
 import{Login}from'./account/AccountPages.jsx';
 import{token,req}from'./appShared.jsx';
 
@@ -29,9 +30,9 @@ function App(){
     return()=>window.removeEventListener('hashchange',onHashChange);
   },[]);
 
-  if(route==='home')return <LandingPage me={me}/>;
-  if(loading)return <div className="loading">加载中...</div>;
-  return me?<AppShell me={me} setMe={setMe}/>:<Login/>;
+  if(route==='home')return <><LandingPage me={me}/><AppUpdateNotice/></>;
+  if(loading)return <><div className="loading">加载中...</div><AppUpdateNotice/></>;
+  return <>{me?<AppShell me={me} setMe={setMe}/>:<Login/>}<AppUpdateNotice/></>;
 }
 
 createRoot(document.getElementById('root')).render(<App/>);

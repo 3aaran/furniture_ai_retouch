@@ -1,6 +1,14 @@
 const { app, BrowserWindow, shell } = require('electron');
+const { version } = require('./package.json');
 
 const APP_URL = 'https://www.xungang.xin/';
+
+function appUrl() {
+  const url = new URL(APP_URL);
+  url.searchParams.set('xg_platform', 'windows');
+  url.searchParams.set('xg_version', version);
+  return url.toString();
+}
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -30,7 +38,8 @@ function createWindow() {
     shell.openExternal(url);
   });
 
-  win.loadURL(APP_URL);
+  win.webContents.setUserAgent(`${win.webContents.getUserAgent()} XungangDesktop/${version}`);
+  win.loadURL(appUrl());
 }
 
 app.whenReady().then(() => {
