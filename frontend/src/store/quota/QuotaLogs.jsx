@@ -117,11 +117,11 @@ export default function QuotaLogs({me,setMsg,TaskDetailModal}){
             {(data.items||[]).length?data.items.map(l=>{
               const n=Number(l.signedAmount??l.amount??0);
               return <tr key={l.id}>
-                <td>{fmt(l.created_at)}</td>
-                <td><span className={'quotaTypeBadgeV2 '+(n>=0?'plus':'minus')}>{l.typeLabel||merchantTypeText(l.type)}</span></td>
-                <td><b className={n>=0?'quotaNumPlusV2':'quotaNumMinusV2'}>{n>=0?`+${n}`:n}</b></td>
-                <td>{l.balanceAfter??'-'}</td>
-                <td>{l.related_task_id?<button className="quotaTaskLinkV2" type="button" onClick={()=>openTask(l.related_task_id)}>{taskId(l.related_task_id)}</button>:<code>-</code>}</td>
+                <td data-label="时间">{fmt(l.created_at)}</td>
+                <td data-label="类型"><span className={'quotaTypeBadgeV2 '+(n>=0?'plus':'minus')}>{l.typeLabel||merchantTypeText(l.type)}</span></td>
+                <td data-label="变动算力"><b className={n>=0?'quotaNumPlusV2':'quotaNumMinusV2'}>{n>=0?`+${n}`:n}</b></td>
+                <td data-label="变动后余额">{l.balanceAfter??'-'}</td>
+                <td data-label="关联任务">{l.related_task_id?<button className="quotaTaskLinkV2" type="button" onClick={()=>openTask(l.related_task_id)}>{taskId(l.related_task_id)}</button>:<code>-</code>}</td>
               </tr>
             }):<tr><td colSpan="5"><div className="empty big">暂无额度流水</div></td></tr>}
           </tbody>

@@ -1,6 +1,6 @@
 import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createPortal}from'react-dom';
-import{AlertCircle,CheckCircle2,LogOut,Mail,MessageSquare,ShieldCheck,Ticket,WalletCards,X}from'lucide-react';
+import{AlertCircle,CheckCircle2,LogOut,Mail,Menu,MessageSquare,ShieldCheck,Ticket,WalletCards,X}from'lucide-react';
 import{adminNav,adminNavGroups,Dashboard,Applications,Merchants,AiConfig,SettingsPage,AdminLogs,Feedbacks,Announcements,RedeemCodes}from'./admin/AdminPages.jsx';
 import{storeAdminNav,staffNav,Workbench,StoreResources,StoreUsers,StoreTasks,Promotion,QuotaLogs}from'./store/StorePages.jsx';
 import{UserFeedback,FeedbackModal,RedeemModal,Profile}from'./account/AccountPages.jsx';
@@ -90,6 +90,48 @@ function roleNav(role){
   if(role==='SYSTEM_ADMIN')return adminNav;
   if(role==='MERCHANT_OWNER'||role==='MERCHANT_ADMIN')return storeAdminNav;
   return staffNav;
+}
+
+
+
+function MobileAdminNav({page,go}){
+  const [open,setOpen]=useState(false);
+  const closeAndGo=(key)=>{setOpen(false);go(key)};
+  return <div className="mobileAdminNavV4" onClick={e=>e.stopPropagation()}>
+    <button type="button" className="mobileAdminNavToggleV4" onClick={()=>setOpen(v=>!v)}>
+      <Menu size={19}/><span>管理导航</span><small>{adminNav.find(([k])=>k===page)?.[1]||'请选择页面'}</small>
+    </button>
+    {open&&<div className="mobileAdminNavPanelV4">
+      <div className="mobileAdminNavPanelHeadV4"><b>平台管理员导航</b><button type="button" onClick={()=>setOpen(false)}>×</button></div>
+      <div className="mobileAdminNavGroupsV4">
+        {adminNavGroups.map(group=><section key={group.key}>
+          <h3>{group.title}</h3>
+          <div>
+            {group.items.map(([k,t,I])=><button key={k} type="button" className={page===k?'active':''} onClick={()=>closeAndGo(k)}>{I&&<I size={17}/>}<span>{t}</span></button>)}
+          </div>
+        </section>)}
+      </div>
+    </div>}
+  </div>;
+}
+
+function MobileBottomNav({page,go,nav}){
+  const byKey=Object.fromEntries(nav.map(item=>[item[0],item]));
+  const items=[
+    byKey.workbench||['workbench','工作台',null],
+    byKey.images||['images','历史',null],
+    byKey.resources||['resources','资源库',null],
+    ['profile','我的',ShieldCheck]
+  ];
+  return <nav className="mobileBottomNavV4" aria-label="手机底部导航">
+    {items.map(([key,title,Icon])=>{
+      const label=key==='images'?'历史':key==='workbench'?'工作台':key==='resources'?'资源库':'我的';
+      const ActiveIcon=Icon||ShieldCheck;
+      return <button key={key} type="button" className={page===key?'active':''} onClick={()=>go(key)}>
+        {ActiveIcon&&<ActiveIcon size={22}/>}<span>{label}</span>
+      </button>;
+    })}
+  </nav>;
 }
 
 function Shell({me,setMe}){
@@ -192,7 +234,7 @@ function Shell({me,setMe}){
 
   const fallbackTitle={profile:'个人中心',quota:'额度明细',redeem:'兑换码创建',feedbacks:'问题反馈'};
 
-  return <div className="topApp" onClick={()=>setNavDrop(null)}>
+  return <div className="topApp" onClick={()=>{setNavDrop(null);setMenu(false)}}>
     <header className="topbar">
       <button className="topBrand topBrandButton" type="button" onClick={openHome} aria-label="返回官网首页">
         <BrandMark/>
@@ -217,9 +259,9 @@ function Shell({me,setMe}){
         </div>}
       </nav>
 
-      <div className="topRight" onMouseEnter={openProfileMenu} onMouseLeave={closeProfileMenuSoon}>
+      <div className="topRight" onClick={e=>e.stopPropagation()} onMouseEnter={openProfileMenu} onMouseLeave={closeProfileMenuSoon}>
         <button className="quotaPill" onClick={()=>go('quota')}><WalletCards size={17}/>{isAdmin?'额度明细':`${me.quota} 算力`}</button>
-        <button className="avatarBtn" type="button"><span><img src={avatarUrl||DEFAULT_AVATAR} alt="头像"/></span><div><b>{me.displayName}</b><small>{roleName[me.role]}</small></div></button>
+        <button className="avatarBtn" type="button" onClick={(e)=>{e.stopPropagation();setMenu(v=>!v)}}><span><img src={avatarUrl||DEFAULT_AVATAR} alt="头像"/></span><div><b>{me.displayName}</b><small>{roleName[me.role]}</small></div></button>
         {menu&&<div className="profileMenu">
           <button onClick={()=>go('profile')}><ShieldCheck size={18}/>个人中心</button>
           <button onClick={()=>go('quota')}><WalletCards size={18}/>额度明细</button>
@@ -230,11 +272,15 @@ function Shell({me,setMe}){
       </div>
     </header>
 
+    {isAdmin&&<MobileAdminNav page={page} go={go}/>}
+
     <main className="topMain">
       {!(page==='workbench'&&!isAdmin)&&<div className="pageHead"><h1>{nav.find(n=>n[0]===page)?.[1]||(fallbackTitle[page]||'管理页面')}</h1></div>}
       {msg&&createPortal(<div className={`globalToastV2 ${toastKind==='error'?'error':'success'}`}><span>{toastKind==='error'?<AlertCircle size={20}/>:<CheckCircle2 size={20}/>}</span><b>{toastText}</b><button aria-label="关闭提示" onClick={()=>setMsg('')}><X size={18}/></button></div>,document.body)}
       <Comp me={me} setMe={setMe} setMsg={setMsg} goPage={go} TaskDetailModal={TaskDetailModal}/>
     </main>
+
+    {!isAdmin&&<MobileBottomNav page={page} go={go} nav={nav}/>} 
 
     {redeemOpen&&<RedeemModal onClose={()=>setRedeemOpen(false)} setMsg={setMsg}/>}
     {feedbackOpen&&<FeedbackModal onClose={()=>setFeedbackOpen(false)} setMsg={setMsg}/>}
