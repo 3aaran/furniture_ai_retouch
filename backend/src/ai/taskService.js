@@ -135,6 +135,20 @@ function publicFailureMessage(task) {
   return `生成图片失败：${reason}`;
 }
 
+function withFailureStage(err, failureStage) {
+  if (err && typeof err === 'object' && !err.failureStage) {
+    err.failureStage = failureStage;
+  }
+  return err;
+}
+
+function failureMessageFromError(err) {
+  const name = String(err?.name || '').trim();
+  const message = String(err?.message || err || 'AI任务处理失败').trim();
+  if (name && message && !message.includes(name)) return `${name}: ${message}`;
+  return message || name || 'AI任务处理失败';
+}
+
 async function getTaskForUser(taskId, user) {
   const [[task]] = await pool.query(
     `
@@ -620,29 +634,34 @@ export async function runAiTask(taskId) {
     });
 
     const callStartedAt = Date.now();
-    const resultUrl = await callImageModel({
-      providerConfig: {
-        provider: aiCfg.providerConfig.provider,
-        base_url: aiCfg.providerConfig.baseUrl,
-        api_key: aiCfg.providerConfig.apiKey,
-        default_model: aiCfg.providerConfig.defaultModel,
-        default_api_path: aiCfg.providerConfig.defaultApiPath,
-        timeout_ms: aiCfg.providerConfig.timeoutMs,
-        enabled: aiCfg.providerConfig.enabled
-      },
-      featureConfig: feature,
-      featureKey: modelFeatureKey,
-      imagePath: toDiskPath(full.originUrl),
-      imageUrl: modelImageUrl,
-      referenceImagePaths,
-      referenceImageUrls: modelReferenceUrls,
-      prompt: runtimePrompt,
-      resolution: full.resolution,
-      ratio: full.ratio,
-      imageMeta: originMeta,
-      merchantId: full.merchant_id || null,
-      userId: full.user_id || null
-    });
+    let resultUrl;
+    try {
+      resultUrl = await callImageModel({
+        providerConfig: {
+          provider: aiCfg.providerConfig.provider,
+          base_url: aiCfg.providerConfig.baseUrl,
+          api_key: aiCfg.providerConfig.apiKey,
+          default_model: aiCfg.providerConfig.defaultModel,
+          default_api_path: aiCfg.providerConfig.defaultApiPath,
+          timeout_ms: aiCfg.providerConfig.timeoutMs,
+          enabled: aiCfg.providerConfig.enabled
+        },
+        featureConfig: feature,
+        featureKey: modelFeatureKey,
+        imagePath: toDiskPath(full.originUrl),
+        imageUrl: modelImageUrl,
+        referenceImagePaths,
+        referenceImageUrls: modelReferenceUrls,
+        prompt: runtimePrompt,
+        resolution: full.resolution,
+        ratio: full.ratio,
+        imageMeta: originMeta,
+        merchantId: full.merchant_id || null,
+        userId: full.user_id || null
+      });
+    } catch (err) {
+      throw withFailureStage(err, err?.failureStage || 'model');
+    }
     const latencyMs = Date.now() - callStartedAt;
 
     const imageId = uuid();
@@ -775,12 +794,17 @@ export async function runAiTask(taskId) {
       await conn2.commit();
     } catch (err) {
       await conn2.rollback();
-      throw err;
+      throw withFailureStage(err, err?.failureStage || 'database');
     } finally {
       conn2.release();
     }
   } catch (err) {
-    await markTaskFailed(taskId, err.message || 'AI任务处理失败', 'RUNTIME_ERROR', 'model_or_storage');
+    await markTaskFailed(
+      taskId,
+      failureMessageFromError(err),
+      'RUNTIME_ERROR',
+      err?.failureStage || 'model'
+    );
   }
 }
 

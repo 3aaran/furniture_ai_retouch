@@ -15,6 +15,7 @@ export const COS_PUBLIC_BASE_URL = process.env.COS_PUBLIC_BASE_URL || '';
 export const DEFAULT_USER_STORAGE_LIMIT_BYTES = Number(process.env.USER_STORAGE_LIMIT_BYTES || 5 * 1024 * 1024 * 1024);
 export const MIN_GENERATION_STORAGE_BYTES = Number(process.env.MIN_GENERATION_STORAGE_BYTES || 50 * 1024 * 1024);
 const REMOTE_IMAGE_META_MAX_BYTES = Number(process.env.REMOTE_IMAGE_META_MAX_BYTES || 50 * 1024 * 1024);
+const OSS_TIMEOUT_MS = 300000;
 
 const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp']);
 const KIND_DIR_MAP = {
@@ -27,6 +28,13 @@ const KIND_DIR_MAP = {
   trash: 'trash'
 };
 let ossClient = null;
+
+function withFailureStage(err, failureStage) {
+  if (err && typeof err === 'object' && !err.failureStage) {
+    err.failureStage = failureStage;
+  }
+  return err;
+}
 
 function isOssStorage() {
   return String(STORAGE_PROVIDER || '').toLowerCase() === 'oss';
@@ -48,7 +56,8 @@ function getOssClient() {
     accessKeyId,
     accessKeySecret,
     secure: true,
-    endpoint: process.env.OSS_ENDPOINT || undefined
+    endpoint: process.env.OSS_ENDPOINT || undefined,
+    timeout: OSS_TIMEOUT_MS
   });
   return ossClient;
 }
@@ -343,10 +352,15 @@ export async function saveUploadedImage(file, { merchantId = null, userId = null
   const dimensions = readImageDimensions(file.path);
 
   if (isOssStorage()) {
-    await getOssClient().put(storageKey, file.path, {
-      mime: file.mimetype || undefined,
-      headers: file.mimetype ? { 'Content-Type': file.mimetype } : undefined
-    });
+    try {
+      await getOssClient().put(storageKey, file.path, {
+        mime: file.mimetype || undefined,
+        headers: file.mimetype ? { 'Content-Type': file.mimetype } : undefined,
+        timeout: OSS_TIMEOUT_MS
+      });
+    } catch (err) {
+      throw withFailureStage(err, 'storage');
+    }
     fs.rmSync(file.path, { force: true });
     return {
       storageProvider: STORAGE_PROVIDER,
@@ -394,10 +408,15 @@ export async function saveBufferToStorage(buffer, { merchantId = null, userId = 
   const dimensions = readImageDimensionsFromBuffer(buffer || Buffer.alloc(0));
 
   if (isOssStorage()) {
-    await getOssClient().put(storageKey, buffer, {
-      mime: mimeType,
-      headers: { 'Content-Type': mimeType }
-    });
+    try {
+      await getOssClient().put(storageKey, buffer, {
+        mime: mimeType,
+        headers: { 'Content-Type': mimeType },
+        timeout: OSS_TIMEOUT_MS
+      });
+    } catch (err) {
+      throw withFailureStage(err, 'storage');
+    }
     return {
       storageProvider: STORAGE_PROVIDER,
       storageKey,
@@ -424,7 +443,12 @@ export async function saveBufferToStorage(buffer, { merchantId = null, userId = 
 }
 
 export async function downloadImageToStorage(url, { merchantId = null, userId = null, kind = 'generated', op = 'ai-result' } = {}) {
-  const r = await axios.get(url, { responseType: 'arraybuffer', timeout: 180000 });
+  let r;
+  try {
+    r = await axios.get(url, { responseType: 'arraybuffer', timeout: 180000 });
+  } catch (err) {
+    throw withFailureStage(err, 'download');
+  }
   return saveBufferToStorage(Buffer.from(r.data), { merchantId, userId, kind, op, ext: 'png' });
 }
 

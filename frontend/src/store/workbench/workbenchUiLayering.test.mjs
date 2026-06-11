@@ -41,6 +41,14 @@ describe('workbench resource picker layering', () => {
     assert.ok(modelTimeoutIndex < networkIndex, 'model timeout should be classified before generic network timeout');
   });
 
+  it('does not label result image receive failures as poor network', () => {
+    const receiveFailureIndex = appSharedSource.indexOf('结果图接收失败');
+    const networkIndex = appSharedSource.indexOf('网络较差');
+    assert.ok(receiveFailureIndex > -1, 'result receive failure message should exist');
+    assert.ok(networkIndex > -1, 'network message should still exist');
+    assert.ok(receiveFailureIndex < networkIndex, 'result receive failures should be classified before generic network errors');
+  });
+
   it('uses browser-like root zoom and keeps promo requirements independently scrollable', () => {
     assert.match(finalCss, /--app-browser-zoom:\.9/);
     assert.doesNotMatch(finalCss, /\.topApp[\s\S]*zoom:\.9/);
