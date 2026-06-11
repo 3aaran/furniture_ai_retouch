@@ -4,6 +4,7 @@ import { requireAuth } from '../auth.js';
 import { requireMerchantAccount, requireMerchantManager } from '../middleware/roleMiddleware.js';
 import { registerInternalUserRoutes } from './merchant/internalUserRoutes.js';
 import { assertUserStorageAvailable, applyUserStorageDelta, deleteStoredFile, getStoredFileMeta, normalizeUploadedFileName } from '../services/storageService.js';
+import { generateThumbnailBestEffort } from '../services/thumbnailService.js';
 
 export function registerMerchantRoutes(app,deps){
   const {
@@ -86,6 +87,7 @@ export function registerMerchantRoutes(app,deps){
       subCategoryName,
       description:r.description || '',
       imageUrl:r.url || r.image_url,
+      thumbUrl:r.thumb_url || r.thumbUrl || '',
       fileSize:Number(r.size_bytes||0),
       width:r.width||null,
       height:r.height||null,
@@ -286,6 +288,13 @@ export function registerMerchantRoutes(app,deps){
           const meta=await getStoredFileMeta(finalUrl);
           totalSavedBytes+=Number(meta.sizeBytes||file?.size||0);
           await pool.query('INSERT INTO images(id,merchant_id,user_id,display_name,original_name,url,source_type,resource_scope,status,storage_provider,storage_key,file_name,mime_type,size_bytes,width,height) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',[id,req.user.merchant_id||null,req.user.id,displayName,originalName,finalUrl,'RESOURCE',scope,'ACTIVE',meta.storageProvider||'local',meta.storageKey||finalUrl,meta.fileName||file?.filename||'',meta.mimeType||file?.mimetype||'',Number(meta.sizeBytes||file?.size||0),meta.width||null,meta.height||null]);
+          await generateThumbnailBestEffort(pool, {
+            id,
+            merchant_id: req.user.merchant_id || null,
+            user_id: req.user.id,
+            url: finalUrl,
+            storage_key: meta.storageKey || ''
+          });
           if(subId){
             await pool.query('INSERT INTO image_category_bindings(image_id,sub_category_id) VALUES(?,?) ON DUPLICATE KEY UPDATE sub_category_id=VALUES(sub_category_id)',[id,subId]);
           }

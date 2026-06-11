@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "dev": "node src/server.js",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "thumbs:backfill": "node scripts/backfill-thumbnails.js"
   },
   "dependencies": {
     "ali-oss": "^6.23.0",

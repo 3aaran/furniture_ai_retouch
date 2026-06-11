@@ -1,6 +1,6 @@
 ﻿import React,{useEffect,useRef,useState}from'react';
 import{Brush,Camera,Clapperboard,Download,Eye,Image as ImageIcon,Layers,PenLine,Rotate3d,Search,Trash2,WandSparkles}from'lucide-react';
-import{API,token,req,reqForm,fmt,resTypeName,imageViewUrl,assetUrl}from'../../appShared.jsx';
+import{API,token,req,reqForm,fmt,resTypeName,imageViewUrl,imageListUrl,assetUrl}from'../../appShared.jsx';
 import{getFeatureDisplayName}from'../../config/uiText.js';
 import{featureConfig}from'../../config/featureConfig.jsx';
 import WorkbenchUploadPanel from'./WorkbenchUploadPanel.jsx';
@@ -18,6 +18,12 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   function imgSrc(input){
     if(!input)return '';
     if(typeof input==='object')return imageViewUrl(input);
+    if(String(input).startsWith('http'))return input;
+    return assetUrl(input);
+  }
+  function listImgSrc(input){
+    if(!input)return '';
+    if(typeof input==='object')return imageListUrl(input);
     if(String(input).startsWith('http'))return input;
     return assetUrl(input);
   }
@@ -831,7 +837,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
             <b>上传</b>
           </button>
           {resourceItems.map(r=><button key={r.scope+r.id} className={selectedResource===String(r.id)?'wbResourceCard active':'wbResourceCard'} onClick={()=>setSelectedResource(String(r.id))}>
-            {r.imageUrl?<img src={imgSrc(r)} alt={r.name} loading="lazy" decoding="async"/>:<div className="wbResourcePlaceholder">{resTypeName[r.resourceType]}</div>}
+            {r.imageUrl?<img src={listImgSrc(r)} alt={r.name} loading="lazy" decoding="async"/>:<div className="wbResourcePlaceholder">{resTypeName[r.resourceType]}</div>}
             <b>{r.name}</b>
             <span>{r.scope==='SYSTEM'?'系统':'门店'} / {r.mainCategoryName||r.objectName||resTypeName[r.resourceType]}{(r.subCategoryName||r.colorName)?` / ${r.subCategoryName||r.colorName}`:''}</span>
           </button>)}
@@ -991,7 +997,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
           onMouseLeave={()=>{setRecentHoverId(prev=>prev===item.id?'':prev);hideRecentOriginal();}}
           onClick={()=>mediaMode==='video'?setMsg('视频任务详情后续接入'):openRecentTask(item)}
         >
-          <div className="wbRecentThumb"><img src={imgSrc(item)} alt="最近生成" loading="lazy" decoding="async"/>{running&&<i className="wbSpin"/>}{failed&&<em>失败</em>}</div>
+          <div className="wbRecentThumb"><img src={listImgSrc(item)} alt="最近生成" loading="lazy" decoding="async"/>{running&&<i className="wbSpin"/>}{failed&&<em>失败</em>}</div>
           <div className="wbRecentInfo"><b>{recentTypeName(item)}</b><span>{running?'生成中...':failed?'失败，已退回算力':fmt(item.createdAt||item.submittedAt)}</span><small>{item.id}</small></div>
           {!running&&!failed&&<div
             style={{
@@ -1081,7 +1087,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
     onContinueImage={continueWithImage}
   />}
 
-  <ResourcePickerModal resourceModal={resourceModal} setResourceModal={setResourceModal} modalItems={modalItems} chooseResourceImage={chooseResourceImage} imgSrc={imgSrc}/>
+  <ResourcePickerModal resourceModal={resourceModal} setResourceModal={setResourceModal} modalItems={modalItems} chooseResourceImage={chooseResourceImage} imgSrc={listImgSrc}/>
   <WatermarkConfigModal open={watermarkOpen} onClose={()=>setWatermarkOpen(false)} setMsg={setMsg}/>
   <ConfirmDialog
     open={!!deleteTarget}

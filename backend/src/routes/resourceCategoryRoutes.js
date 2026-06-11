@@ -275,6 +275,7 @@ export function registerResourceCategoryRoutes(app) {
         id: image.id,
         name: image.display_name || image.original_name || `资源-${String(image.id).slice(0, 8)}`,
         url: image.url,
+        thumbUrl: image.thumb_url || '',
         fileSize: Number(image.size_bytes || 0),
         width: image.width,
         height: image.height,

@@ -1,6 +1,6 @@
 ﻿import React,{useEffect,useState}from'react';
 import{Download,Eye}from'lucide-react';
-import{API,token,req,fmt,usePaged,Pagination,Toolbar,imageViewUrl}from'../../appShared.jsx';
+import{API,token,req,fmt,usePaged,Pagination,Toolbar,imageListUrl}from'../../appShared.jsx';
 import{featureName,getFeatureDisplayName}from'../../config/uiText.js';
 
 export default function StoreTasks({me,setMsg,TaskDetailModal,goPage}){
@@ -21,7 +21,7 @@ export default function StoreTasks({me,setMsg,TaskDetailModal,goPage}){
         <input type="date" value={query.startDate} onChange={e=>setQuery({...query,startDate:e.target.value})}/>
         <input type="date" value={query.endDate} onChange={e=>setQuery({...query,endDate:e.target.value})}/>
       {/* </Toolbar> */}
-      <div className="aiTaskGrid">{taskItems.map(i=><article className="taskCard" key={i.id}><div className="taskImg" onClick={()=>open(i.id)}><img src={imageViewUrl(i)} loading="lazy" decoding="async"/><b>{getFeatureDisplayName(i.featureKey||i.operation||i.kind,'AI任务')}</b></div><div className="taskMeta"><strong>{i.userName||'-'}</strong><span>{fmt(i.createdAt)}</span><small>编号：{i.id}</small></div><div className="taskActions"><button onClick={()=>open(i.id)}><Eye size={16}/>详情</button><button onClick={()=>window.open(`${API}/api/images/${i.id}/download?token=${token()}`,'_blank')}><Download size={16}/>下载</button></div></article>)}</div>
+      <div className="aiTaskGrid">{taskItems.map(i=><article className="taskCard" key={i.id}><div className="taskImg" onClick={()=>open(i.id)}><img src={imageListUrl(i)} loading="lazy" decoding="async"/><b>{getFeatureDisplayName(i.featureKey||i.operation||i.kind,'AI任务')}</b></div><div className="taskMeta"><strong>{i.userName||'-'}</strong><span>{fmt(i.createdAt)}</span><small>编号：{i.id}</small></div><div className="taskActions"><button onClick={()=>open(i.id)}><Eye size={16}/>详情</button><button onClick={()=>window.open(`${API}/api/images/${i.id}/download?token=${token()}`,'_blank')}><Download size={16}/>下载</button></div></article>)}</div>
       <Pagination data={data} setQuery={setQuery}/>
     </section>
     {detail&&<TaskDetailModal

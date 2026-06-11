@@ -1,6 +1,7 @@
 import React,{useEffect,useState}from'react';
 import{ChevronLeft,ChevronRight,Search,Download}from'lucide-react';
 import{roleName,audienceName,resourceTypeName,statusName,messageText,getDisplayStatusName}from'./config/uiText.js';
+import{assetUrlFromBase,imageListUrl as imageListUrlBase,imageViewUrlFor}from'./imageUrls.js';
 
 const apiBase=(import.meta.env.VITE_API_BASE_URL||'/api').replace(/\/$/,'');
 export const API=apiBase==='/api'?'':apiBase;
@@ -68,25 +69,13 @@ export function userFriendlyMessage(message,fallback='操作失败请稍后重�
   return text.length>48?`${text.slice(0,48)}…`:text;
 }
 export function imageViewUrl(image){
-  if(typeof image==='string'){
-    if(!image)return '';
-    if(image.startsWith('http')||image.startsWith('data:'))return image;
-    if(image.startsWith('/'))return assetUrl(image);
-    return `${API}/api/images/${image}/view?token=${encodeURIComponent(token()||'')}`;
-  }
-  const id=image?.resultImage?.id||image?.imageId||image?.sourceId||(image?.itemType==='task'?image?.originImage?.id:image?.id);
-  if(id)return `${API}/api/images/${id}/view?token=${encodeURIComponent(token()||'')}`;
-  const url=image?.url||image?.imageUrl||'';
-  if(!url)return '';
-  return assetUrl(url);
+  return imageViewUrlFor(image,{api:API,assetBase:ASSET_BASE,token:token()||''});
+}
+export function imageListUrl(image){
+  return imageListUrlBase(image,{api:API,assetBase:ASSET_BASE,token:token()||''});
 }
 export function assetUrl(url){
-  if(!url)return '';
-  const text=String(url);
-  if(text.startsWith('http')||text.startsWith('data:')||text.startsWith('blob:'))return text;
-  if(/^\/(files|uploads|outputs)\//.test(text))return `${API}/api${text}`;
-  if(text.startsWith('/'))return ASSET_BASE+text;
-  return `${ASSET_BASE}/${text.replace(/^\/+/,'')}`;
+  return assetUrlFromBase(url,{api:API,assetBase:ASSET_BASE});
 }
 export function avatarViewUrl(user){
   const raw=user?.avatarUrl||'';

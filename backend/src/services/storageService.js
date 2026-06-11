@@ -23,6 +23,7 @@ const KIND_DIR_MAP = {
   reference: 'references',
   resource: 'resources',
   generated: 'generated',
+  thumb: 'thumbs',
   avatar: 'avatars',
   temp: 'temp',
   trash: 'trash'
@@ -555,6 +556,16 @@ export async function applyUserStorageDelta(conn, userId, deltaBytes = 0, log = 
 }
 
 export async function deleteStoredFile(imageOrUrl = '') {
+  const thumbUrl = typeof imageOrUrl === 'object' ? imageOrUrl.thumb_url || imageOrUrl.thumbUrl || '' : '';
+  const url = typeof imageOrUrl === 'string' ? imageOrUrl : (imageOrUrl.url || '');
+  const deleted = await deleteSingleStoredFile(imageOrUrl);
+  if (thumbUrl && thumbUrl !== url) {
+    await deleteSingleStoredFile(thumbUrl);
+  }
+  return deleted;
+}
+
+async function deleteSingleStoredFile(imageOrUrl = '') {
   const url = typeof imageOrUrl === 'string' ? imageOrUrl : (imageOrUrl.url || '');
   const storageKey = typeof imageOrUrl === 'object' ? imageOrUrl.storage_key || imageOrUrl.storageKey || '' : '';
   if (isOssStorage()) {

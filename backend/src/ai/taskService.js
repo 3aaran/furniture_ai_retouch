@@ -9,6 +9,7 @@ import { callImageModel } from './providerService.js';
 import { urlToDiskPath, getStoredFileMeta, MIN_GENERATION_STORAGE_BYTES, assertUserStorageAvailable, applyUserStorageDelta, deleteStoredFile, getUserStorageSummary, getImageAccessUrl } from '../services/storageService.js';
 import { writeSystemLog } from '../services/loggerService.js';
 import { bindImageToResourceCategory } from '../services/resourceBindingService.js';
+import { generateThumbnailBestEffort } from '../services/thumbnailService.js';
 
 function isSystemAdmin(user) {
   return user?.role === 'SYSTEM_ADMIN';
@@ -155,7 +156,9 @@ async function getTaskForUser(taskId, user) {
     SELECT
       t.*,
       ri.url AS resultUrl,
+      ri.thumb_url AS resultThumbUrl,
       oi.url AS originUrl,
+      oi.thumb_url AS originThumbUrl,
       oi.original_name AS originOriginalName,
       u.display_name AS userName,
       u.phone AS userPhone,
@@ -202,8 +205,9 @@ function publicTask(task) {
     ratio: task.ratio,
 
     url: task.resultUrl || task.originUrl,
-    previewUrl: task.resultUrl || task.originUrl,
+    previewUrl: task.resultThumbUrl || task.resultUrl || task.originThumbUrl || task.originUrl,
     resultUrl: task.resultUrl || null,
+    thumbUrl: task.resultThumbUrl || task.originThumbUrl || null,
     sourceUrl: task.originUrl || null,
 
     userPrompt: task.user_prompt || '',
@@ -241,12 +245,13 @@ function publicTask(task) {
 
     imageId: task.result_image_id || null,
     resultImage: task.result_image_id
-      ? { id: task.result_image_id, url: task.resultUrl }
+      ? { id: task.result_image_id, url: task.resultUrl, thumbUrl: task.resultThumbUrl || null }
       : null,
 
     originImage: {
       id: task.origin_image_id,
       url: task.originUrl,
+      thumbUrl: task.originThumbUrl || null,
       originalName: task.originOriginalName || ''
     },
 
@@ -792,6 +797,13 @@ export async function runAiTask(taskId) {
       await addEvent(conn2, full.id, 'success', '任务生成成功');
 
       await conn2.commit();
+      await generateThumbnailBestEffort(pool, {
+        id: imageId,
+        merchant_id: full.merchant_id || null,
+        user_id: full.user_id,
+        url: resultUrl,
+        storage_key: resultMeta.storageKey
+      });
     } catch (err) {
       await conn2.rollback();
       throw withFailureStage(err, err?.failureStage || 'database');
@@ -886,7 +898,7 @@ export async function getAiTaskDetail(taskId, user) {
     [taskId]
   );
   const [inputImages] = await pool.query(
-    `SELECT ti.input_role role,ti.sort_order sortOrder,im.id,im.url,im.original_name originalName
+    `SELECT ti.input_role role,ti.sort_order sortOrder,im.id,im.url,im.thumb_url thumbUrl,im.original_name originalName
      FROM ai_task_inputs ti
      JOIN images im ON im.id=ti.image_id
      WHERE ti.task_id=?
@@ -951,7 +963,9 @@ export async function getRecentAiTasks(user, { pageSize = 20, keyword = '' } = {
     SELECT
       t.*,
       ri.url AS resultUrl,
+      ri.thumb_url AS resultThumbUrl,
       oi.url AS originUrl,
+      oi.thumb_url AS originThumbUrl,
       oi.original_name AS originOriginalName,
       fc.feature_name AS featureName,
       u.display_name AS userName,
@@ -1020,13 +1034,13 @@ export async function deleteAiTask(taskId, user) {
           message: 'task result deleted'
         });
       }
-      deletedFiles = imageRows.map((row) => row.url).filter(Boolean);
+      deletedFiles = imageRows;
     }
 
     await conn.commit();
 
-    for (const url of deletedFiles) {
-      await deleteStoredFile(url);
+    for (const row of deletedFiles) {
+      await deleteStoredFile(row);
     }
 
     return {
@@ -1088,7 +1102,9 @@ export async function getAdminAiTasks(req) {
     SELECT
       t.*,
       ri.url AS resultUrl,
+      ri.thumb_url AS resultThumbUrl,
       oi.url AS originUrl,
+      oi.thumb_url AS originThumbUrl,
       fc.feature_name AS featureName,
       u.display_name AS userName,
       m.company_name AS companyName
