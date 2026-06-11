@@ -24,7 +24,7 @@ export function ResourcePickerModal({
       </div>
       <div className="wbModalGrid">
         {modalItems.length?modalItems.map(r=><button key={r.scope+'modal'+r.id} className="wbModalResource" onClick={()=>chooseResourceImage(r)}>
-          {r.imageUrl?<img src={imgSrc(r)} alt={r.name}/>:<div className="wbResourcePlaceholder">{resTypeName[r.resourceType]}</div>}
+          {r.imageUrl?<img src={imgSrc(r)} alt={r.name} loading="lazy" decoding="async"/>:<div className="wbResourcePlaceholder">{resTypeName[r.resourceType]}</div>}
           <b>{r.name}</b>
           <span>{r.scope==='SYSTEM'?'系统':'门店'} / {resTypeName[r.resourceType]}</span>
         </button>):<div className="empty big">暂无可选资源</div>}

@@ -22,7 +22,7 @@ export default function ResourceDetailModal({detail,onClose,onUse}){
       </header>
       <main className="resourceDetailBodyV3">
         <section className="resourceDetailPreviewV3">
-          {image.url?<img src={imageViewUrl(image)} alt={image.name}/>:<div>暂无图片</div>}
+          {image.url?<img src={imageViewUrl(image)} alt={image.name} loading="lazy" decoding="async"/>:<div>暂无图片</div>}
         </section>
         <aside className="resourceDetailInfoV3">
           <h3>{image.name}</h3>

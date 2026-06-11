@@ -261,7 +261,7 @@ function Shell({me,setMe}){
 
       <div className="topRight" onClick={e=>e.stopPropagation()} onMouseEnter={openProfileMenu} onMouseLeave={closeProfileMenuSoon}>
         <button className="quotaPill" onClick={()=>go('quota')}><WalletCards size={17}/>{isAdmin?'额度明细':`${me.quota} 算力`}</button>
-        <button className="avatarBtn" type="button" onClick={(e)=>{e.stopPropagation();setMenu(v=>!v)}}><span><img src={avatarUrl||DEFAULT_AVATAR} alt="头像"/></span><div><b>{me.displayName}</b><small>{roleName[me.role]}</small></div></button>
+        <button className="avatarBtn" type="button" onClick={(e)=>{e.stopPropagation();setMenu(v=>!v)}}><span><img src={avatarUrl||DEFAULT_AVATAR} alt="头像" loading="lazy" decoding="async"/></span><div><b>{me.displayName}</b><small>{roleName[me.role]}</small></div></button>
         {menu&&<div className="profileMenu">
           <button onClick={()=>go('profile')}><ShieldCheck size={18}/>个人中心</button>
           <button onClick={()=>go('quota')}><WalletCards size={18}/>额度明细</button>

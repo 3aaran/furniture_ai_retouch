@@ -37,6 +37,8 @@ export function WorkbenchUploadPanel({
             key={origin.id}
             className="wbPreview"
             src={origin.imageUrl || imgSrc(origin.url)}
+            loading="lazy"
+            decoding="async"
             alt="产品原图"
             onError={e => setMsg('图片已上传，但前端加载图片失败：' + e.currentTarget.src)}
           />
@@ -76,6 +78,8 @@ export function WorkbenchUploadPanel({
             <img
               key={reference.id}
               src={reference.imageUrl || imgSrc(reference.url)}
+              loading="lazy"
+              decoding="async"
               alt="参考图"
               onError={e => setMsg('参考图已上传，但前端加载失败：' + e.currentTarget.src)}
             />

@@ -12,7 +12,7 @@ import{defaultCategoryGroups,fixedMainCategories,fixedCategoryUseLabel,normalize
 function StoreResources({me,setMsg}){
   const isSystemAdmin=me?.role==='SYSTEM_ADMIN';
   const isStoreAdmin=me?.role==='MERCHANT_OWNER'||me?.role==='MERCHANT_ADMIN';
-  const {query,setQuery,data,load}=usePaged('/api/merchant/resources',{keyword:'',resourceType:'',mainCategory:'',subCategory:'',status:'',scope:'MERCHANT',page:1,pageSize:24});
+  const {query,setQuery,data,load}=usePaged('/api/merchant/resources',{keyword:'',resourceType:'',mainCategory:'',subCategory:'',status:'',scope:'MERCHANT',page:1,pageSize:20});
   const [sys,setSys]=useState([]);
   const [space,setSpace]=useState(isSystemAdmin?'SYSTEM':isStoreAdmin?'STORE':'PERSONAL');
   const [sysPage,setSysPage]=useState(1);
@@ -36,7 +36,7 @@ function StoreResources({me,setMsg}){
   const [files,setFiles]=useState([]);
   const [preview,setPreview]=useState('');
 
-  const pageSize=24;
+  const pageSize=20;
   const canUpload=(isSystemAdmin&&space==='SYSTEM')||(isStoreAdmin&&space==='STORE')||(!isSystemAdmin&&space==='PERSONAL');
   const canManageCurrentSpace=(isSystemAdmin&&space==='SYSTEM')||(isStoreAdmin&&space==='STORE')||(!isSystemAdmin&&space==='PERSONAL');
   const categoryScope=space==='SYSTEM'?'SYSTEM':space==='STORE'?'MERCHANT':'USER';
@@ -65,7 +65,7 @@ function StoreResources({me,setMsg}){
   }
 
   useEffect(()=>{
-    req((isSystemAdmin?'/api/admin/resources':'/api/resources')+'?pageSize=999')
+    req((isSystemAdmin?'/api/admin/resources':'/api/resources')+'?pageSize=20')
       .then(d=>setSys((d.items||[]).filter(x=>x.scope==='SYSTEM')))
       .catch(e=>setMsg(e.message));
   },[isSystemAdmin]);
@@ -129,7 +129,7 @@ function StoreResources({me,setMsg}){
       setUploadOpen(false);
       if(!isSystemAdmin)setSpace(categoryScope==='MERCHANT'?'STORE':'PERSONAL');
       load();
-      req((isSystemAdmin?'/api/admin/resources':'/api/resources')+'?pageSize=999').then(d=>setSys((d.items||[]).filter(x=>x.scope==='SYSTEM'))).catch(()=>{});
+      req((isSystemAdmin?'/api/admin/resources':'/api/resources')+'?pageSize=20').then(d=>setSys((d.items||[]).filter(x=>x.scope==='SYSTEM'))).catch(()=>{});
     }catch(e){
       setMsg(e.message);
     }
@@ -199,7 +199,7 @@ function StoreResources({me,setMsg}){
       setMsg(`已删除 ${ids.length} 个资源`);
       clearResourceSelection();
       load();
-      req((isSystemAdmin?'/api/admin/resources':'/api/resources')+'?pageSize=999').then(d=>setSys((d.items||[]).filter(x=>x.scope==='SYSTEM'))).catch(()=>{});
+      req((isSystemAdmin?'/api/admin/resources':'/api/resources')+'?pageSize=20').then(d=>setSys((d.items||[]).filter(x=>x.scope==='SYSTEM'))).catch(()=>{});
     }catch(e){
       setMsg(e.message);
     }
@@ -222,7 +222,7 @@ function StoreResources({me,setMsg}){
       setBatchCategoryOpen(false);
       clearResourceSelection();
       load();
-      req((isSystemAdmin?'/api/admin/resources':'/api/resources')+'?pageSize=999').then(d=>setSys((d.items||[]).filter(x=>x.scope==='SYSTEM'))).catch(()=>{});
+      req((isSystemAdmin?'/api/admin/resources':'/api/resources')+'?pageSize=20').then(d=>setSys((d.items||[]).filter(x=>x.scope==='SYSTEM'))).catch(()=>{});
     }catch(e){
       setMsg(e.message);
     }
@@ -248,7 +248,7 @@ function StoreResources({me,setMsg}){
       setRenameTarget(null);
       if(activeResourcePanel!=='detail')setActiveResourcePanel('');
       load();
-      req((isSystemAdmin?'/api/admin/resources':'/api/resources')+'?pageSize=999').then(d=>setSys((d.items||[]).filter(x=>x.scope==='SYSTEM'))).catch(()=>{});
+      req((isSystemAdmin?'/api/admin/resources':'/api/resources')+'?pageSize=20').then(d=>setSys((d.items||[]).filter(x=>x.scope==='SYSTEM'))).catch(()=>{});
     }catch(e){
       setMsg(e.message);
     }
@@ -535,7 +535,7 @@ function StoreResources({me,setMsg}){
 
       {activeResourcePanel==='detail'&&detail&&detailImage&&<div className="resourceActionContentV7 resourceDetailFlatV7">
         <div className="resourceDetailImageV6">
-          {detailUrl?<img src={detailUrl} alt={detailImage.name} onLoad={updateDetailImageSize}/>:<span>暂无图片</span>}
+          {detailUrl?<img src={detailUrl} alt={detailImage.name} onLoad={updateDetailImageSize} loading="lazy" decoding="async"/>:<span>暂无图片</span>}
         </div>
         <div>
           <div className="resourceDetailTitleV6">
@@ -642,7 +642,7 @@ function StoreResources({me,setMsg}){
 
       <div className="resourcePagerV3">
         <div className="resourceTotalV3">共 {total} 条</div>
-        <div className="resourcePageSizeV3">24 条/页</div>
+        <div className="resourcePageSizeV3">20 条/页</div>
         <div className="resourcePageButtonsV3">
           <button disabled={currentPage<=1} onClick={()=>changePage(1)}>«</button>
           <button disabled={currentPage<=1} onClick={()=>changePage(currentPage-1)}>‹</button>
@@ -706,7 +706,7 @@ function StoreResources({me,setMsg}){
 
       {detail&&detailImage&&<div className="resourceDetailInlineV6">
         <div className="resourceDetailImageV6">
-          {detailUrl?<img src={detailUrl} alt={detailImage.name} onLoad={updateDetailImageSize}/>:<span>暂无图片</span>}
+          {detailUrl?<img src={detailUrl} alt={detailImage.name} onLoad={updateDetailImageSize} loading="lazy" decoding="async"/>:<span>暂无图片</span>}
         </div>
         <div className="resourceDetailTitleV6">
           <h3>{detailImage.name}</h3>

@@ -26,7 +26,7 @@ export default function WorkbenchResourceUploadModal({
         <label className="resourceDropV3">
           <input type="file" accept="image/*" onChange={e=>chooseWorkbenchResourceFile(e.target.files?.[0])}/>
           {resourceUploadPreview?
-            <img src={resourceUploadPreview} alt="preview"/>
+            <img src={resourceUploadPreview} alt="preview" loading="lazy" decoding="async"/>
             :
             <>
               <ImageIcon size={46}/>

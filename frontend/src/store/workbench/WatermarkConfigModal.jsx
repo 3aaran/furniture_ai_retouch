@@ -195,7 +195,7 @@ export function WatermarkConfigModal({open,onClose,setMsg}){
                     <input type="file" accept="image/png,image/jpeg,image/webp" disabled={uploading} onChange={chooseImage}/>
                     {config.image?
                       <div className="watermarkUploadPreview">
-                        <img src={watermarkSrc(config)} alt="水印"/>
+                        <img src={watermarkSrc(config)} alt="水印" loading="lazy" decoding="async"/>
                         <button type="button" onClick={e=>{e.preventDefault();update('image','');update('imageId','');update('fileName','');}}>清除</button>
                       </div>
                       :
@@ -230,7 +230,7 @@ export function WatermarkConfigModal({open,onClose,setMsg}){
                   <TextWatermarkPreview config={config} watermarkStyle={watermarkStyle}/>
                   :
                   config.image?
-                  <img className="watermarkPreviewMark" src={watermarkSrc(config)} alt="水印预览" style={watermarkStyle}/>
+                  <img className="watermarkPreviewMark" src={watermarkSrc(config)} alt="水印预览" style={watermarkStyle} loading="lazy" decoding="async"/>
                   :
                   <div className="watermarkPreviewEmpty">水印预览</div>}
               </div>

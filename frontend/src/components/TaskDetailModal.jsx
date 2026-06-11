@@ -61,7 +61,7 @@ function WatermarkOverlay({config}){
   }
   if(config.image){
     const src=imageViewUrl({id:config.imageId,url:config.image});
-    return <img className="taskWatermarkImage" src={src} alt="\u6c34\u5370" style={{...baseStyle,width:`${config.widthPercent||23.5}%`}}/>;
+    return <img className="taskWatermarkImage" src={src} alt="\u6c34\u5370" style={{...baseStyle,width:`${config.widthPercent||23.5}%`}} loading="lazy" decoding="async"/>;
   }
   return null;
 }
@@ -287,11 +287,11 @@ function TaskDetailModal({
       <div className="taskComparePanel">
         <div className="compareCol">
           <div className="compareHead"><h3>产品图片</h3>{!isAdmin&&<button onClick={()=>continueWith({id:sourceImageId,url:sourceUrl,originalName:detail.sourceOriginalName})}>以此图继续创作</button>}</div>
-          <div className="taskImageFrame">{sourceUrl?<img src={sourceImageSrc}/>:<span>无原图</span>}</div>
+          <div className="taskImageFrame">{sourceUrl?<img src={sourceImageSrc} loading="lazy" decoding="async"/>:<span>无原图</span>}</div>
         </div>
         <div className="compareCol">
           <div className="compareHead"><h3>生成结果</h3>{!isAdmin&&<button onClick={()=>continueWith({id:imageId,url:resultUrl,originalName:detail.originalName})}>以此图继续创作</button>}</div>
-          <div className="taskImageFrame">{resultUrl?<img src={resultPreviewSrc} onError={()=>setPreviewFailed(true)}/>:<span>无生成图</span>}</div>
+          <div className="taskImageFrame">{resultUrl?<img src={resultPreviewSrc} onError={()=>setPreviewFailed(true)} loading="lazy" decoding="async"/>:<span>无生成图</span>}</div>
         </div>
       </div>
       <div className="taskInfoPanel">
@@ -310,7 +310,7 @@ function TaskDetailModal({
           {referenceImages.length>0&&<div className="taskReferenceBlock">
             {referenceImages.map(img=><div className="taskReferenceItem" key={img.id}>
               <span>{img.roleLabel}</span>
-              <img src={imageViewUrl(img)} alt={img.title||img.roleLabel}/>
+              <img src={imageViewUrl(img)} alt={img.title||img.roleLabel} loading="lazy" decoding="async"/>
               {img.title&&<b>{img.title}</b>}
             </div>)}
           </div>}
@@ -440,7 +440,7 @@ function ImageProcessModal({detail,onClose,setMsg}){
     <div className="cropShotPanel">
       <header className="cropShotHeader"><div><h2>图片处理</h2><p>当前来源：{detail.originalName||detail.id}</p></div><button type="button" onClick={onClose}>× 关闭</button></header>
       <main className="cropShotBody">
-        <section className="cropShotCanvasBox"><div className="cropShotCanvas"><div className="cropShotBadge">{hasResult?`${result.width||'-'} × ${result.height||'-'}`:(imgSize.w&&imgSize.h?`${imgSize.w} × ${imgSize.h}`:'加载中...')}{hasResult&&result.format?` / ${String(result.format).toUpperCase()}`:''}</div><div ref={stageRef} className="cropShotStage" onMouseMove={moveDrag} onMouseUp={()=>setDrag(null)} onMouseLeave={()=>setDrag(null)}>{previewUrl?<img src={previewUrl} onLoad={onImageLoad}/>:<div className="cropShotEmpty">暂无图片</div>}{!hasResult&&basicMode==='crop'&&displayRect.width>0&&<div className="cropShotLayer" style={{left:displayRect.left,top:displayRect.top,width:displayRect.width,height:displayRect.height}}><div className="cropShotSelection" style={{left:`${crop.x}%`,top:`${crop.y}%`,width:`${crop.w}%`,height:`${crop.h}%`}} onMouseDown={e=>startDrag(e,'move')}><span>{cropW} × {cropH}</span><i onMouseDown={e=>startDrag(e,'resize')}></i></div></div>}</div></div></section>
+        <section className="cropShotCanvasBox"><div className="cropShotCanvas"><div className="cropShotBadge">{hasResult?`${result.width||'-'} × ${result.height||'-'}`:(imgSize.w&&imgSize.h?`${imgSize.w} × ${imgSize.h}`:'加载中...')}{hasResult&&result.format?` / ${String(result.format).toUpperCase()}`:''}</div><div ref={stageRef} className="cropShotStage" onMouseMove={moveDrag} onMouseUp={()=>setDrag(null)} onMouseLeave={()=>setDrag(null)}>{previewUrl?<img src={previewUrl} onLoad={onImageLoad} loading="lazy" decoding="async"/>:<div className="cropShotEmpty">暂无图片</div>}{!hasResult&&basicMode==='crop'&&displayRect.width>0&&<div className="cropShotLayer" style={{left:displayRect.left,top:displayRect.top,width:displayRect.width,height:displayRect.height}}><div className="cropShotSelection" style={{left:`${crop.x}%`,top:`${crop.y}%`,width:`${crop.w}%`,height:`${crop.h}%`}} onMouseDown={e=>startDrag(e,'move')}><span>{cropW} × {cropH}</span><i onMouseDown={e=>startDrag(e,'resize')}></i></div></div>}</div></div></section>
         <div className="cropShotSide">
           <div className="cropShotCard"><h3>基础处理</h3>{[['none','不处理','保持原图不做基础处理'],['crop','裁剪','拖动裁剪框调整截取区域']].map(([k,b,s])=><button key={k} type="button" className={basicMode===k?'cropShotOption active':'cropShotOption'} onClick={()=>setBasicMode(k)}><div><b>{b}</b><small>{s}</small></div><span>{basicMode===k?'●':'○'}</span></button>)}{basicMode==='crop'&&<><div className="cropShotFields"><label><span>裁剪宽度(px)</span><input type="number" value={cropW||''} onChange={e=>updateCropByPixel('w',e.target.value)}/></label><label><span>裁剪高度(px)</span><input type="number" value={cropH||''} onChange={e=>updateCropByPixel('h',e.target.value)}/></label></div><div className="cropShotFields"><label><span>X 坐标</span><input type="number" value={cropX} readOnly /></label><label><span>Y 坐标</span><input type="number" value={cropY} readOnly /></label></div><div className="cropShotRatio"><span>快捷比例</span><div>{['free','1:1','4:3','3:4','16:9'].map(x=><button key={x} type="button" onClick={()=>applyRatio(x)}>{x==='free'?'自由':x}</button>)}</div></div></>}</div>
           <div className="cropShotCard"><h3>高级处理</h3>{[['none','不处理','不开启高级处理'],['remove_bg','智能抠图（透明背景）','适合白底/浅色背景'],['compress','图片压缩','重新编码并缩小尺寸'],['convert','格式转换','输出 PNG / JPG / WebP']].map(([k,b,s])=><button key={k} type="button" className={advancedMode===k?'cropShotOption active':'cropShotOption'} onClick={()=>setAdvancedMode(k)}><div><b>{b}</b><small>{s}</small></div><span>{advancedMode===k?'●':'○'}</span></button>)}{(basicMode==='crop'||advancedMode==='compress'||advancedMode==='convert')&&<label className="cropShotSingle"><span>输出格式</span><select value={format} onChange={e=>setFormat(e.target.value)}><option value="png">PNG</option><option value="jpg">JPG</option><option value="webp">WebP</option></select></label>}{(advancedMode==='compress'||advancedMode==='convert'||format!=='png')&&<label className="cropShotSingle"><span>输出质量：{quality}%</span><input type="range" min="30" max="100" value={quality} onChange={e=>setQuality(e.target.value)}/></label>}{advancedMode==='compress'&&<label className="cropShotSingle"><span>最大宽度：{maxWidth}px</span><input type="range" min="800" max="2400" step="100" value={maxWidth} onChange={e=>setMaxWidth(Number(e.target.value))}/></label>}<div className="cropShotTip"><p>处理后会生成新图，并自动写入生成记录。</p></div></div>

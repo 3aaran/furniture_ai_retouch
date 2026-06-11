@@ -87,7 +87,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   const recentPreviewHideTimer=useRef(null);
   const storyboardsRef=useRef([]);
 
-  useEffect(()=>{req('/api/resources?pageSize=999').then(d=>setResources(d.items||[])).catch(()=>{})},[]);
+  useEffect(()=>{req('/api/resources?pageSize=20').then(d=>setResources(d.items||[])).catch(()=>{})},[]);
   useEffect(()=>{req('/api/settings/public').then(setCostSettings).catch(()=>{})},[]);
   useEffect(()=>{refreshRecent()},[]);
   useEffect(()=>{
@@ -657,7 +657,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
       setResourceUploadPreview('');
       const nextType=op==='replace_bg'?'scene':'material';
       setResourceUpload({name:'',resourceType:nextType,objectName:nextType==='scene'?'场景模板':'材质',colorName:'',description:''});
-      const d=await req('/api/resources?pageSize=999');
+      const d=await req('/api/resources?pageSize=20');
       setResources(d.items||[]);
       setResourceScope((me?.role==='MERCHANT_OWNER'||me?.role==='MERCHANT_ADMIN')?'MERCHANT':'ALL');
     }catch(e){setMsg(e.message)}
@@ -831,7 +831,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
             <b>上传</b>
           </button>
           {resourceItems.map(r=><button key={r.scope+r.id} className={selectedResource===String(r.id)?'wbResourceCard active':'wbResourceCard'} onClick={()=>setSelectedResource(String(r.id))}>
-            {r.imageUrl?<img src={imgSrc(r)} alt={r.name}/>:<div className="wbResourcePlaceholder">{resTypeName[r.resourceType]}</div>}
+            {r.imageUrl?<img src={imgSrc(r)} alt={r.name} loading="lazy" decoding="async"/>:<div className="wbResourcePlaceholder">{resTypeName[r.resourceType]}</div>}
             <b>{r.name}</b>
             <span>{r.scope==='SYSTEM'?'系统':'门店'} / {r.mainCategoryName||r.objectName||resTypeName[r.resourceType]}{(r.subCategoryName||r.colorName)?` / ${r.subCategoryName||r.colorName}`:''}</span>
           </button>)}
@@ -888,7 +888,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
         </label>
         {storyboards.length>0&&<div className="wbStoryboardGrid">
           {storyboards.map((item,index)=><div className="wbStoryboardItem" key={item.id}>
-            <img src={item.url} alt={`分镜 ${index+1}`}/>
+            <img src={item.url} alt={`分镜 ${index+1}`} loading="lazy" decoding="async"/>
             <span>{index+1}</span>
             <button type="button" onClick={()=>removeStoryboard(item.id)}>移除</button>
           </div>)}
@@ -991,7 +991,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
           onMouseLeave={()=>{setRecentHoverId(prev=>prev===item.id?'':prev);hideRecentOriginal();}}
           onClick={()=>mediaMode==='video'?setMsg('视频任务详情后续接入'):openRecentTask(item)}
         >
-          <div className="wbRecentThumb"><img src={imgSrc(item)} alt="最近生成"/>{running&&<i className="wbSpin"/>}{failed&&<em>失败</em>}</div>
+          <div className="wbRecentThumb"><img src={imgSrc(item)} alt="最近生成" loading="lazy" decoding="async"/>{running&&<i className="wbSpin"/>}{failed&&<em>失败</em>}</div>
           <div className="wbRecentInfo"><b>{recentTypeName(item)}</b><span>{running?'生成中...':failed?'失败，已退回算力':fmt(item.createdAt||item.submittedAt)}</span><small>{item.id}</small></div>
           {!running&&!failed&&<div
             style={{
@@ -1055,6 +1055,8 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
     <img
       src={recentPreviewSrc(recentSourcePreview)}
       alt="原图预览"
+      loading="lazy"
+      decoding="async"
       style={{width:'100%',height:'100%',objectFit:'cover',display:'block',background:'#fff'}}
       onError={(e)=>{
         if(e.currentTarget.dataset.fallback!=='1'){

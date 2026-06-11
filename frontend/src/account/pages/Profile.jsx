@@ -45,7 +45,7 @@ export default function Profile({me,setMe,setMsg}){
   return <div className="profilePageV3">
     <section className="profileHeroV3">
       <div className="profileAvatarV3">
-        {avatarUrl?<img src={avatarUrl} alt="头像"/>:<span>{initials}</span>}
+        {avatarUrl?<img src={avatarUrl} alt="头像" loading="lazy" decoding="async"/>:<span>{initials}</span>}
         <button type="button" disabled={avatarBusy} onClick={()=>fileRef.current?.click()} title="更换头像"><Camera size={18}/></button>
         <input ref={fileRef} type="file" accept="image/*" onChange={e=>uploadAvatar(e.target.files?.[0])}/>
       </div>

@@ -35,7 +35,7 @@ export default function ResourceUploadModal({
           <input type="file" accept="image/*" multiple onChange={choose}/>
           {preview?
             <>
-              <img src={preview} alt="preview"/>
+              <img src={preview} alt="preview" loading="lazy" decoding="async"/>
               {files.length>1&&<span>已选择 {files.length} 张图片</span>}
             </>
             :
