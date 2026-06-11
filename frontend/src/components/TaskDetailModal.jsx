@@ -169,6 +169,7 @@ function TaskDetailModal({
   const [watermarkConfigOpen,setWatermarkConfigOpen]=useState(false);
   const [previewFailed,setPreviewFailed]=useState(false);
   const [confirmAction,setConfirmAction]=useState(null);
+  const [isMobile,setIsMobile]=useState(()=>typeof window!=='undefined'&&!!window.matchMedia?.('(max-width: 860px)').matches);
 
   function loadWatermark(){
     if(isAdmin){
@@ -184,6 +185,15 @@ function TaskDetailModal({
   useEffect(()=>{
     loadWatermark();
   },[detail?.id,isAdmin]);
+
+  useEffect(()=>{
+    if(typeof window==='undefined'||!window.matchMedia)return;
+    const mq=window.matchMedia('(max-width: 860px)');
+    const update=()=>setIsMobile(!!mq.matches);
+    update();
+    mq.addEventListener?.('change',update);
+    return()=>mq.removeEventListener?.('change',update);
+  },[]);
 
   useEffect(()=>{
     setUseWatermark(false);
@@ -238,6 +248,10 @@ function TaskDetailModal({
   }
 
   function download(){
+    if(isMobile){
+      setMsg&&setMsg('请长按图片保存到手机');
+      return;
+    }
     openImageDownload({
       id:imageId,
       url:resultUrl,
@@ -281,9 +295,62 @@ function TaskDetailModal({
     ? `${API}/api/images/${imageId}/watermark-preview?token=${token()}&v=${Date.now()}`
     : resultImageSrc;
 
+  const taskOverlays=<>
+    {processOpen&&<ImageProcessModal detail={{...detail,id:imageId,url:resultUrl}} onClose={()=>setProcessOpen(false)} setMsg={setMsg}/>}
+    <WatermarkConfigModal open={watermarkConfigOpen} onClose={()=>{setWatermarkConfigOpen(false);loadWatermark();}} setMsg={setMsg}/>
+    <ConfirmDialog
+      open={confirmAction==='delete'}
+      title="删除图片"
+      message="确认删除这张生成图片吗？删除后将无法恢复。"
+      confirmText="确认删除"
+      danger
+      onClose={()=>setConfirmAction(null)}
+      onConfirm={()=>{setConfirmAction(null);deleteImage();}}
+    />
+  </>;
+
+  if(isMobile){
+    return createPortal(<MobileTaskPreviewView
+      detail={detail}
+      opLabel={opLabel}
+      status={status}
+      statusTone={statusTone}
+      userName={userName}
+      extraText={extraText}
+      spec={spec}
+      quotaUsed={quotaUsed}
+      displayPrompt={displayPrompt}
+      referenceImages={referenceImages}
+      resultUrl={resultUrl}
+      resultPreviewSrc={resultPreviewSrc}
+      imageId={imageId}
+      currentIndex={currentIndex}
+      total={total}
+      canPrev={canPrev}
+      canNext={canNext}
+      busy={busy}
+      isAdmin={isAdmin}
+      watermark={watermark}
+      wmReady={wmReady}
+      useWatermark={useWatermark}
+      onClose={onClose}
+      onPrev={()=>switchTo(-1)}
+      onNext={()=>switchTo(1)}
+      onOpenProcess={()=>setProcessOpen(true)}
+      onDelete={()=>setConfirmAction('delete')}
+      onCopyPrompt={copyPrompt}
+      onContinueImage={()=>continueWith({id:imageId,url:resultUrl,originalName:detail.originalName})}
+      onWatermarkToggle={setUseWatermark}
+      onWatermarkConfig={()=>setWatermarkConfigOpen(true)}
+      onPreviewError={()=>setPreviewFailed(true)}
+    >
+      {taskOverlays}
+    </MobileTaskPreviewView>,document.body);
+  }
+
   return createPortal(<div className="taskPreviewOverlay taskPreviewWindowMode">
     <div className="taskPreviewTop">
-      <div><b>任务对比预览</b><span>{currentIndex>=0?currentIndex+1:1} / {total}</span></div>
+      <div><b><span className="taskDesktopTitle">任务对比预览</span><span className="taskMobileTitle">任务预览</span></b><span>{currentIndex>=0?currentIndex+1:1} / {total}</span></div>
       <div className="taskPreviewTopBtns">
         <button disabled={!canPrev} onClick={()=>switchTo(-1)}><ChevronLeft size={22}/></button>
         <button disabled={!canNext} onClick={()=>switchTo(1)}><ChevronRight size={22}/></button>
@@ -300,6 +367,11 @@ function TaskDetailModal({
           <div className="compareHead"><h3>生成结果</h3>{!isAdmin&&<button onClick={()=>continueWith({id:imageId,url:resultUrl,originalName:detail.originalName})}>以此图继续创作</button>}</div>
           <div className="taskImageFrame">{resultUrl?<img src={resultPreviewSrc} onError={()=>setPreviewFailed(true)} loading="lazy" decoding="async"/>:<span>无生成图</span>}</div>
         </div>
+      </div>
+      <div className="taskMobileActionBar" aria-label="任务操作">
+        <button type="button" onClick={()=>setProcessOpen(true)}><SlidersHorizontal size={20}/><span>参数</span></button>
+        <button type="button" className="primary" onClick={download}><Download size={20}/><span>保存</span></button>
+        {!isAdmin&&<button type="button" className="danger" onClick={()=>setConfirmAction('delete')} disabled={!!busy}><Trash2 size={20}/><span>删除</span></button>}
       </div>
       <div className="taskInfoPanel">
         <h3>任务详情</h3>
@@ -346,18 +418,230 @@ function TaskDetailModal({
         </div>
       </div>
     </div>
-    {processOpen&&<ImageProcessModal detail={{...detail,id:imageId,url:resultUrl}} onClose={()=>setProcessOpen(false)} setMsg={setMsg}/>}
-    <WatermarkConfigModal open={watermarkConfigOpen} onClose={()=>{setWatermarkConfigOpen(false);loadWatermark();}} setMsg={setMsg}/>
-    <ConfirmDialog
-      open={confirmAction==='delete'}
-      title="删除图片"
-      message="确认删除这张生成图片吗？删除后将无法恢复。"
-      confirmText="确认删除"
-      danger
-      onClose={()=>setConfirmAction(null)}
-      onConfirm={()=>{setConfirmAction(null);deleteImage();}}
-    />
+    {taskOverlays}
   </div>,document.body)
+}
+
+function MobileTaskPreviewView({
+  detail,
+  opLabel,
+  status,
+  statusTone,
+  userName,
+  extraText,
+  spec,
+  quotaUsed,
+  displayPrompt,
+  referenceImages,
+  resultUrl,
+  resultPreviewSrc,
+  currentIndex,
+  total,
+  canPrev,
+  canNext,
+  busy,
+  isAdmin,
+  watermark,
+  wmReady,
+  useWatermark,
+  onClose,
+  onPrev,
+  onNext,
+  onOpenProcess,
+  onDelete,
+  onCopyPrompt,
+  onContinueImage,
+  onWatermarkToggle,
+  onWatermarkConfig,
+  onPreviewError,
+  children
+}){
+  return <div className="taskPreviewOverlay mobileTaskPreviewOverlay">
+    <section className="mobileTaskPreview" role="dialog" aria-modal="true" aria-label="任务预览">
+      <header className="mobileTaskHeader">
+        <div>
+          <b>任务预览</b>
+          <span>{currentIndex>=0?currentIndex+1:1} / {total}</span>
+        </div>
+        <div className="mobileTaskHeaderBtns">
+          <button type="button" disabled={!canPrev} onClick={onPrev} aria-label="上一张"><ChevronLeft size={20}/></button>
+          <button type="button" disabled={!canNext} onClick={onNext} aria-label="下一张"><ChevronRight size={20}/></button>
+          <button type="button" onClick={onClose} aria-label="关闭">×</button>
+        </div>
+      </header>
+
+      <main className="mobileTaskScroll">
+        <section className="mobileTaskImageCard">
+          <div className="mobileTaskImageTitle">
+            <div>
+              <span>成品图</span>
+              <b>{detail.originalName||opLabel}</b>
+            </div>
+            <em>{opLabel}</em>
+          </div>
+          <div className="mobileTaskImageStage">
+            {resultUrl?<img src={resultPreviewSrc} alt={detail.originalName||opLabel||'成品图'} onError={onPreviewError} loading="lazy" decoding="async"/>:<span>暂无生成图</span>}
+          </div>
+          <p className="mobileLongPressHint">请长按图片保存到手机</p>
+        </section>
+
+        <nav className="mobileTaskActions" aria-label="任务操作">
+          <button type="button" onClick={onOpenProcess}><SlidersHorizontal size={18}/><span>参数</span></button>
+          {!isAdmin&&<button type="button" onClick={onContinueImage} disabled={!resultUrl}><ChevronRight size={18}/><span>继续创作</span></button>}
+          {!isAdmin&&<button type="button" className="danger" onClick={onDelete} disabled={!!busy}><Trash2 size={18}/><span>删除</span></button>}
+        </nav>
+
+        <section className="mobileTaskInfoCard">
+          <h3>任务详情</h3>
+          <div className="mobileTaskInfoGrid">
+            <div className="mobileTaskInfoRow"><i><Hash size={15}/></i><p><span>任务编号</span><b>{detail.id}</b></p></div>
+            <div className="mobileTaskInfoRow"><i><Flag size={15}/></i><p><span>任务类型</span><b className="goldTag">{opLabel}</b></p></div>
+            <div className="mobileTaskInfoRow"><i><User size={15}/></i><p><span>生成账号</span><b>{userName}</b></p></div>
+            <div className="mobileTaskInfoRow"><i><FileText size={15}/></i><p><span>额外要求</span><b>{extraText}</b></p></div>
+            <div className="mobileTaskInfoRow"><i><FileText size={15}/></i><p><span>生成规格</span><b>{spec}</b></p></div>
+            <div className="mobileTaskInfoRow"><i><FileText size={15}/></i><p><span>创建时间</span><b>{fmt(detail.createdAt||detail.submittedAt)}</b></p></div>
+            <div className="mobileTaskInfoRow"><i><WalletCards size={15}/></i><p><span>状态 / 消耗</span><b><em className={statusTone}>{status}</em> {quotaUsed||'-'} 算力</b></p></div>
+          </div>
+
+          {referenceImages.length>0&&<div className="mobileTaskReferenceBlock">
+            {referenceImages.map(img=><div className="mobileTaskReferenceItem" key={img.id}>
+              <span>{img.roleLabel}</span>
+              <img src={imageViewUrl(img)} alt={img.title||img.roleLabel} loading="lazy" decoding="async"/>
+              {img.title&&<b>{img.title}</b>}
+            </div>)}
+          </div>}
+
+          <div className="promptBox mobileTaskPrompt">
+            <div><span>用户要求</span><button className="iconOnly" title="复制用户要求" aria-label="复制用户要求" onClick={onCopyPrompt} disabled={!displayPrompt}><Copy size={14}/></button></div>
+            <p>{displayPrompt||'无'}</p>
+          </div>
+
+          {!isAdmin&&<div className="taskWatermarkControl mobileTaskWatermark">
+            <div>
+              <b>{'\u4f7f\u7528\u6c34\u5370'}</b>
+              <small>{watermark.loading?'\u6b63\u5728\u8bfb\u53d6\u95e8\u5e97\u6c34\u5370\u914d\u7f6e':wmReady?'\u5f00\u542f\u540e\u4e0b\u8f7d\u539f\u56fe\u4f1a\u6dfb\u52a0\u6c34\u5370':watermark.canConfigure?'\u95e8\u5e97\u672a\u914d\u7f6e\u6c34\u5370':'\u95e8\u5e97\u672a\u914d\u7f6e\u6c34\u5370'}</small>
+            </div>
+            {wmReady?
+              <label className="taskWatermarkToggle">
+                <input type="checkbox" checked={useWatermark} onChange={e=>onWatermarkToggle(e.target.checked)}/>
+                <i/>
+              </label>
+              :
+              <button type="button" disabled={!watermark.canConfigure||watermark.loading} onClick={onWatermarkConfig}>{'\u53bb\u914d\u7f6e'}</button>}
+          </div>}
+        </section>
+      </main>
+    </section>
+    {children}
+  </div>;
+}
+
+function MobileProcessModal({
+  detail,
+  previewUrl,
+  hasResult,
+  result,
+  imgSize,
+  cropX,
+  cropY,
+  cropW,
+  cropH,
+  advancedMode,
+  format,
+  quality,
+  maxWidth,
+  processing,
+  canSubmit,
+  setAdvancedMode,
+  setFormat,
+  setQuality,
+  setMaxWidth,
+  onImageLoad,
+  onClose,
+  onSubmit,
+  onCopySourceName
+}){
+  const sourceName=detail.originalName||String(detail.id||'');
+  const advancedOptions=[
+    ['none','不处理','不开启高级处理'],
+    ['remove_bg','智能抠图','适合白底或浅色背景'],
+    ['compress','图片压缩','重新编码并缩小尺寸'],
+    ['convert','格式转换','输出 PNG / JPG / WebP']
+  ];
+  return <div className="mobileProcessMask">
+    <section className="mobileProcessPanel" role="dialog" aria-modal="true" aria-label="处理参数">
+      <header className="mobileProcessHeader">
+        <div>
+          <b>处理参数</b>
+          <span>{processing?'正在处理':'移动端参数'}</span>
+        </div>
+        <button type="button" onClick={onClose} aria-label="关闭">×</button>
+      </header>
+
+      <main className="mobileProcessScroll">
+        <section className="mobileProcessSource">
+          <span>当前来源</span>
+          <div>
+            <b title={sourceName}>{sourceName}</b>
+            <button type="button" onClick={onCopySourceName}>复制</button>
+          </div>
+        </section>
+
+        <section className="mobileProcessPreview">
+          <div className="mobileProcessPreviewHead">
+            <span>图片预览</span>
+            <em>{hasResult?`${result.width||'-'} × ${result.height||'-'}`:(imgSize.w&&imgSize.h?`${imgSize.w} × ${imgSize.h}`:'加载中')}</em>
+          </div>
+          <div className="mobileProcessStage">
+            {previewUrl?<img src={previewUrl} onLoad={onImageLoad} alt={sourceName||'处理图片'} loading="lazy" decoding="async"/>:<div>暂无图片</div>}
+          </div>
+        </section>
+
+        <section className="mobileProcessCard">
+          <h3>基础处理</h3>
+          <div className="mobileProcessSummary">
+            <p><span>处理方式</span><b>移动端仅查看裁剪参数</b></p>
+            <p><span>说明</span><b>裁剪拖拽编辑请在电脑端使用</b></p>
+          </div>
+        </section>
+
+        <section className="mobileProcessCard">
+          <h3>裁剪参数</h3>
+          <div className="mobileProcessFieldList">
+            <label><span>裁剪宽度</span><input type="text" value={cropW?`${cropW}px`:'未加载'} readOnly /></label>
+            <label><span>裁剪高度</span><input type="text" value={cropH?`${cropH}px`:'未加载'} readOnly /></label>
+            <label><span>X 坐标</span><input type="text" value={`${cropX}px`} readOnly /></label>
+            <label><span>Y 坐标</span><input type="text" value={`${cropY}px`} readOnly /></label>
+          </div>
+        </section>
+
+        <section className="mobileProcessCard">
+          <h3>其他参数</h3>
+          <div className="mobileProcessOptions">
+            {advancedOptions.map(([k,b,s])=><button key={k} type="button" className={advancedMode===k?'active':''} onClick={()=>setAdvancedMode(k)}>
+              <div><b>{b}</b><small>{s}</small></div>
+              <span>{advancedMode===k?'●':'○'}</span>
+            </button>)}
+          </div>
+          {(advancedMode==='compress'||advancedMode==='convert')&&<div className="mobileProcessFieldList">
+            <label><span>输出格式</span><select value={format} onChange={e=>setFormat(e.target.value)}><option value="png">PNG</option><option value="jpg">JPG</option><option value="webp">WebP</option></select></label>
+            <label><span>输出质量：{quality}%</span><input type="range" min="30" max="100" value={quality} onChange={e=>setQuality(e.target.value)}/></label>
+            {advancedMode==='compress'&&<label><span>最大宽度：{maxWidth}px</span><input type="range" min="800" max="2400" step="100" value={maxWidth} onChange={e=>setMaxWidth(Number(e.target.value))}/></label>}
+          </div>}
+        </section>
+
+        {hasResult&&<section className="mobileProcessCard mobileProcessResult">
+          <h3>处理结果</h3>
+          <p>输出尺寸：{result.width||'-'} × {result.height||'-'}</p>
+        </section>}
+      </main>
+
+      <footer className="mobileProcessFooter">
+        <button type="button" className="ghost" onClick={onClose}>取消</button>
+        <button type="button" className="primary" disabled={!canSubmit} onClick={onSubmit}>{processing?'处理中':'确认应用'}</button>
+      </footer>
+    </section>
+  </div>;
 }
 
 function ImageProcessModal({detail,onClose,setMsg}){
@@ -372,6 +656,7 @@ function ImageProcessModal({detail,onClose,setMsg}){
   const [displayRect,setDisplayRect]=useState({left:0,top:0,width:0,height:0});
   const [crop,setCrop]=useState({x:12,y:14,w:70,h:56});
   const [drag,setDrag]=useState(null);
+  const [isMobile,setIsMobile]=useState(()=>typeof window!=='undefined'&&!!window.matchMedia?.('(max-width: 860px)').matches);
   const stageRef=useRef(null);
 
   function clamp(v,min,max){return Math.max(min,Math.min(max,v))}
@@ -386,6 +671,14 @@ function ImageProcessModal({detail,onClose,setMsg}){
     setDisplayRect({left,top,width,height});
   }
   useEffect(()=>{const onResize=()=>syncRect();window.addEventListener('resize',onResize);return()=>window.removeEventListener('resize',onResize)},[imgSize]);
+  useEffect(()=>{
+    if(typeof window==='undefined'||!window.matchMedia)return;
+    const mq=window.matchMedia('(max-width: 860px)');
+    const update=()=>setIsMobile(!!mq.matches);
+    update();
+    mq.addEventListener?.('change',update);
+    return()=>mq.removeEventListener?.('change',update);
+  },[]);
   function onImageLoad(e){const next={w:e.currentTarget.naturalWidth,h:e.currentTarget.naturalHeight};setImgSize(next);requestAnimationFrame(()=>syncRect(next))}
   function pointToPercent(e){
     const box=stageRef.current?.getBoundingClientRect();
@@ -430,7 +723,7 @@ function ImageProcessModal({detail,onClose,setMsg}){
   }
   async function submitProcess(){
     const queue=[];
-    if(basicMode==='crop')queue.push('crop');
+    if(!isMobile&&basicMode==='crop')queue.push('crop');
     if(advancedMode!=='none')queue.push(advancedMode);
     if(!queue.length)return setMsg&&setMsg('请至少选择一个处理方式');
     try{
@@ -443,6 +736,43 @@ function ImageProcessModal({detail,onClose,setMsg}){
   }
   const previewUrl=imageViewUrl(result||detail);
   const hasResult=!!result;
+  const canSubmit=!processing&&((!isMobile&&basicMode==='crop')||advancedMode!=='none');
+  async function copySourceName(){
+    try{
+      await copyText(detail.originalName||String(detail.id||''));
+      setMsg&&setMsg('文件名已复制');
+    }catch{
+      setMsg&&setMsg('复制失败');
+    }
+  }
+  if(isMobile){
+    return <MobileProcessModal
+      detail={detail}
+      previewUrl={previewUrl}
+      hasResult={hasResult}
+      result={result}
+      imgSize={imgSize}
+      cropX={cropX}
+      cropY={cropY}
+      cropW={cropW}
+      cropH={cropH}
+      advancedMode={advancedMode}
+      format={format}
+      quality={quality}
+      maxWidth={maxWidth}
+      processing={processing}
+      canSubmit={canSubmit}
+      setAdvancedMode={setAdvancedMode}
+      setFormat={setFormat}
+      setQuality={setQuality}
+      setMaxWidth={setMaxWidth}
+      onImageLoad={onImageLoad}
+      onClose={onClose}
+      onSubmit={submitProcess}
+      onCopySourceName={copySourceName}
+      setMsg={setMsg}
+    />;
+  }
   return <div className="cropShotMask">
     <div className="cropShotPanel">
       <header className="cropShotHeader"><div><h2>图片处理</h2><p>当前来源：{detail.originalName||detail.id}</p></div><button type="button" onClick={onClose}>× 关闭</button></header>

@@ -134,6 +134,28 @@ function MobileBottomNav({page,go,nav}){
   </nav>;
 }
 
+function MobileImageSavePreview({image,onClose,setMsg}){
+  async function copyLink(){
+    try{
+      if(!navigator.clipboard?.writeText)throw new Error('clipboard unavailable');
+      await navigator.clipboard.writeText(image?.url||'');
+      setMsg&&setMsg('图片链接已复制');
+    }catch{
+      setMsg&&setMsg('复制失败，请手动长按图片保存');
+    }
+  }
+  return createPortal(<div className="mobileImageSaveMask" role="dialog" aria-modal="true" aria-label="保存图片预览">
+    <button className="mobileImageSaveClose" type="button" onClick={onClose} aria-label="关闭">×</button>
+    <div className="mobileImageSaveStage">
+      {image?.url?<img src={image.url} alt={image.title||'原图'} loading="lazy" decoding="async"/>:<div className="mobileImageSaveEmpty">暂无图片</div>}
+    </div>
+    <div className="mobileImageSaveTip">
+      <b>请长按图片保存到手机</b>
+      <button type="button" onClick={copyLink}>复制图片链接</button>
+    </div>
+  </div>,document.body);
+}
+
 function Shell({me,setMe}){
   const nav=roleNav(me.role);
   const isAdmin=me.role==='SYSTEM_ADMIN';
@@ -159,6 +181,7 @@ function Shell({me,setMe}){
   const[navDrop,setNavDrop]=useState(null);
   const[isMobile,setIsMobile]=useState(()=>typeof window!=='undefined'&&!!window.matchMedia?.('(max-width: 860px)').matches);
   const[mobileModalOpen,setMobileModalOpen]=useState(false);
+  const[mobileSaveImage,setMobileSaveImage]=useState(null);
 
   useEffect(()=>{document.title=APP_NAME},[]);
   useEffect(()=>{
@@ -174,6 +197,8 @@ function Shell({me,setMe}){
     const selectors=[
       '.modalMask',
       '.taskPreviewOverlay',
+      '.mobileImageSaveMask',
+      '.mobileProcessMask',
       '.cropShotMask',
       '.watermarkMask',
       '.feedbackModalMaskV2',
@@ -201,6 +226,11 @@ function Shell({me,setMe}){
       observer.disconnect();
       document.body.classList.remove('mobile-modal-open-v4');
     };
+  },[]);
+  useEffect(()=>{
+    const onOpen=(event)=>setMobileSaveImage(event.detail||null);
+    window.addEventListener('mobile-image-save-preview',onOpen);
+    return()=>window.removeEventListener('mobile-image-save-preview',onOpen);
   },[]);
 
   const rawToastText=typeof msg==='object'?(msg.text||msg.message||''):String(msg||'');
@@ -277,7 +307,7 @@ function Shell({me,setMe}){
   },[page,pageKeys]);
 
   const fallbackTitle={profile:'个人中心',quota:'额度明细',redeem:'兑换码创建',feedbacks:'问题反馈'};
-  const shouldShowMobileTabBar=!isAdmin&&isMobile&&mobileTopLevelPages.has(page)&&!mobileModalOpen&&!redeemOpen&&!feedbackOpen&&!emailOpen&&!menu;
+  const shouldShowMobileTabBar=!isAdmin&&isMobile&&mobileTopLevelPages.has(page)&&!mobileModalOpen&&!mobileSaveImage&&!redeemOpen&&!feedbackOpen&&!emailOpen&&!menu;
 
   return <div className="topApp" onClick={()=>{setNavDrop(null);setMenu(false)}}>
     <header className="topbar">
@@ -330,6 +360,7 @@ function Shell({me,setMe}){
     {redeemOpen&&<RedeemModal onClose={()=>setRedeemOpen(false)} setMsg={setMsg}/>}
     {feedbackOpen&&<FeedbackModal onClose={()=>setFeedbackOpen(false)} setMsg={setMsg}/>}
     {emailOpen&&<NoticeCenterModal onClose={()=>setEmailOpen(false)} onUnreadChange={setNoticeUnread}/>}
+    {mobileSaveImage&&<MobileImageSavePreview image={mobileSaveImage} onClose={()=>setMobileSaveImage(null)} setMsg={setMsg}/>}
   </div>;
 }
 

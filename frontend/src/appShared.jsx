@@ -81,15 +81,25 @@ export function imageDownloadUrl(image){
   return imageDownloadUrlBase(image,{api:API,assetBase:ASSET_BASE,token:token()||''});
 }
 export function openImageDownload(image,setMsg){
+  const mobile=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent||'');
+  if(mobile){
+    const previewUrl=imageViewUrl(image);
+    if(!previewUrl){
+      setMsg&&setMsg('图片地址不存在');
+      return;
+    }
+    window.dispatchEvent(new CustomEvent('mobile-image-save-preview',{detail:{
+      url:previewUrl,
+      title:image?.originalName||image?.name||image?.title||'原图'
+    }}));
+    return;
+  }
   const url=imageDownloadUrl(image);
   if(!url){
     setMsg&&setMsg('图片地址不存在');
     return;
   }
   window.open(url,'_blank');
-  if(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent||'')){
-    setMsg&&setMsg('图片已打开，请长按保存');
-  }
 }
 export function fallbackToOriginalImage(event,image){
   const fallback=imageFallbackUrl(image);
