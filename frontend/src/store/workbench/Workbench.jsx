@@ -1,5 +1,5 @@
 ﻿import React,{useEffect,useRef,useState}from'react';
-import{Brush,Camera,Clapperboard,Download,Eye,Image as ImageIcon,Layers,PenLine,Rotate3d,Search,Trash2,WandSparkles}from'lucide-react';
+import{Brush,Camera,Clapperboard,Download,Eye,Image as ImageIcon,Layers,PenLine,Rotate3d,Search,Trash2,WandSparkles,X}from'lucide-react';
 import{API,token,req,reqForm,fmt,resTypeName,imageViewUrl,imageListUrl,assetUrl,fallbackToOriginalImage,openImageDownload}from'../../appShared.jsx';
 import{getFeatureDisplayName}from'../../config/uiText.js';
 import{featureConfig}from'../../config/featureConfig.jsx';
@@ -90,6 +90,8 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   const [costSettings,setCostSettings]=useState({});
   const [recentHoverId,setRecentHoverId]=useState('');
   const [deleteTarget,setDeleteTarget]=useState(null);
+  const [leftDrawerOpen,setLeftDrawerOpen]=useState(false);
+  const [rightDrawerOpen,setRightDrawerOpen]=useState(false);
   const recentPreviewHideTimer=useRef(null);
   const storyboardsRef=useRef([]);
 
@@ -686,6 +688,8 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   const resourceItems=filteredResources();
   const modalItems=modalResources();
   const selectedTpl=currentTemplate();
+  const currentFeatureLabel=mediaMode==='video'?'宣传视频生成':ops[op]?.label||'生图功能';
+  const currentFeatureMode=mediaMode==='video'?'视频功能':isPromotionSelected?'宣传图':'生图功能';
   const workbenchUploadMainOptions=resourceUpload.resourceType==='scene'
     ? ['场景模板']
     : resourceUpload.resourceType==='user_reference'
@@ -878,6 +882,79 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
     </>;
   }
 
+  function renderFeaturePanel(){
+    return <>
+      <div className="wbMobileDrawerHead">
+        <div><span>{currentFeatureMode}</span><b>{currentFeatureLabel}</b></div>
+        <button type="button" className="wbDrawerClose" onClick={()=>setLeftDrawerOpen(false)} aria-label="关闭功能侧栏"><X size={18}/></button>
+      </div>
+      <div className="wbSectionTabs" aria-label="功能分组">
+        <button type="button" className={featureGroup==='base'?'active':''} onClick={()=>activateFeatureGroup('base')}>基础</button>
+        <button type="button" className={featureGroup==='promotion'?'active':''} onClick={()=>activateFeatureGroup('promotion')}>宣传图</button>
+        <button type="button" className="isComing" onClick={()=>activateFeatureGroup('video')}>宣传短视频</button>
+      </div>
+      {mediaMode==='image'
+        ? featureGroup==='promotion'
+          ? <div className="wbFeatureGrid wbPromoFeatureGrid">{promotionFeatures.map(item=>{
+              const Icon=promotionFeatureIconMap[item.key]||ImageIcon;
+              return <button key={item.key} className={op===item.key?'wbFeatureBtn active':'wbFeatureBtn'} onClick={()=>selectPromotionFeature(item.key)}>
+                <span className="wbFeatureTag"><Icon size={18}/></span>
+                <span>{item.name}</span>
+              </button>;
+            })}</div>
+          : <div className="wbFeatureGrid">{featureList.map(([k,label,Icon])=><button key={k} className={op===k?'wbFeatureBtn active':'wbFeatureBtn'} onClick={()=>selectBaseFeature(k)}><span className="wbFeatureTag"><Icon size={18}/></span><span>{label}</span></button>)}</div>
+        : <div className="wbFeatureGrid wbVideoFeatureGrid"><button type="button" className="wbFeatureBtn active wbVideoFeatureBtn"><span className="wbFeatureTag"><Clapperboard size={18}/></span><span>宣传视频生成</span></button></div>}
+      <div className="wbDivider"/>
+      {renderLeftPanel()}
+    </>;
+  }
+
+  function renderRecentPanel(){
+    return <>
+      <div className="wbRightHeader">
+        <b>{mediaMode==='video'?'最近视频':'最近图片'}</b>
+        <div className="wbRightHeaderActions">
+          <button onClick={refreshRecent}>↻</button>
+          <button type="button" className="wbDrawerClose" onClick={()=>setRightDrawerOpen(false)} aria-label="关闭最近生成侧栏"><X size={18}/></button>
+        </div>
+      </div>
+      <div className="wbRecentSearch"><Search size={16}/><input placeholder={mediaMode==='video'?'搜索视频任务...':'搜索任务编号...'} value={recentKeyword} onChange={e=>setRecentKeyword(e.target.value)}/></div>
+
+      <div className="wbRecentList">{recentItems.length?recentItems.map(item=>{
+        const running=item.status==='queued'||item.status==='running';
+        const failed=item.status==='failed';
+        return <div
+          className={running?'wbRecentItem isLoading':failed?'wbRecentItem isFailed':'wbRecentItem'}
+          key={item.id}
+          onMouseEnter={(e)=>{setRecentHoverId(item.id);showRecentOriginal(item,e);}}
+          onMouseMove={(e)=>moveRecentOriginal(item,e)}
+          onMouseLeave={()=>{setRecentHoverId(prev=>prev===item.id?'':prev);hideRecentOriginal();}}
+          onClick={()=>mediaMode==='video'?setMsg('视频任务详情后续接入'):openRecentTask(item)}
+        >
+          <div className="wbRecentThumb"><img src={listImgSrc(item)} alt="最近生成" onError={e=>fallbackToOriginalImage(e,item)} loading="lazy" decoding="async"/>{running&&<i className="wbSpin"/>}{failed&&<em>失败</em>}</div>
+          <div className="wbRecentInfo"><b>{recentTypeName(item)}</b><span>{running?'生成中...':failed?'失败，已退回算力':fmt(item.createdAt||item.submittedAt)}</span><small>{item.id}</small></div>
+          {!running&&!failed&&<div
+            style={{
+              position:'absolute',
+              right:8,
+              top:8,
+              display:'flex',
+              gap:6,
+              opacity:recentHoverId===item.id?1:0,
+              pointerEvents:recentHoverId===item.id?'auto':'none',
+              transition:'opacity .18s ease',
+              zIndex:3
+            }}
+          >
+            {renderRecentActionButton(<Download size={14}/>,(e)=>{e.stopPropagation();openImageDownload(item,setMsg);},'下载')}
+            {renderRecentActionButton(<Trash2 size={14}/>,(e)=>deleteRecentTask(item,e),'删除',{danger:true})}
+          </div>}
+        </div>
+      }):<div className="wbRecentEmpty">{mediaMode==='video'?'暂无视频生成记录':'暂无生成记录'}</div>}</div>
+      <button className="wbMoreBtn" onClick={()=>goPage&&goPage('images')}>查看更多记录</button>
+    </>;
+  }
+
   function renderVideoCenterPanel(){
     return <>
       <div className="wbMainBlock wbVideoStoryboardBlock">
@@ -919,26 +996,22 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   }
 
   return <>
-  <div className="wbScreen">
-    <div className="wbSidePanel">
-      <div className="wbSectionTabs" aria-label="功能分组">
-        <button type="button" className={featureGroup==='base'?'active':''} onClick={()=>activateFeatureGroup('base')}>基础</button>
-        <button type="button" className={featureGroup==='promotion'?'active':''} onClick={()=>activateFeatureGroup('promotion')}>宣传图</button>
-        <button type="button" className="isComing" onClick={()=>activateFeatureGroup('video')}>宣传短视频</button>
-      </div>
-      {mediaMode==='image'
-        ? featureGroup==='promotion'
-          ? <div className="wbFeatureGrid wbPromoFeatureGrid">{promotionFeatures.map(item=>{
-              const Icon=promotionFeatureIconMap[item.key]||ImageIcon;
-              return <button key={item.key} className={op===item.key?'wbFeatureBtn active':'wbFeatureBtn'} onClick={()=>selectPromotionFeature(item.key)}>
-                <span className="wbFeatureTag"><Icon size={18}/></span>
-                <span>{item.name}</span>
-              </button>;
-            })}</div>
-          : <div className="wbFeatureGrid">{featureList.map(([k,label,Icon])=><button key={k} className={op===k?'wbFeatureBtn active':'wbFeatureBtn'} onClick={()=>selectBaseFeature(k)}><span className="wbFeatureTag"><Icon size={18}/></span><span>{label}</span></button>)}</div>
-        : <div className="wbFeatureGrid wbVideoFeatureGrid"><button type="button" className="wbFeatureBtn active wbVideoFeatureBtn"><span className="wbFeatureTag"><Clapperboard size={18}/></span><span>宣传视频生成</span></button></div>}
-      <div className="wbDivider"/>
-      {renderLeftPanel()}
+  <div className={`wbScreen ${leftDrawerOpen?'isWorkbenchLeftOpen':''} ${rightDrawerOpen?'isWorkbenchRightOpen':''}`}>
+    {(leftDrawerOpen||rightDrawerOpen)&&<button className="wbMobileDrawerBackdrop" type="button" aria-label="关闭侧栏" onClick={()=>{setLeftDrawerOpen(false);setRightDrawerOpen(false)}}/>}
+    <div className="wbToolRail">
+      <button type="button" className="wbRailBtn primary" onClick={()=>setLeftDrawerOpen(true)}>
+        <Layers size={20}/>
+        <span>{currentFeatureMode}</span>
+        <b>{currentFeatureLabel}</b>
+      </button>
+      <button type="button" className="wbRailBtn" onClick={()=>setRightDrawerOpen(true)}>
+        <Eye size={20}/>
+        <span>最近生成</span>
+        <b>{recentItems.length}</b>
+      </button>
+    </div>
+    <div className="wbSidePanel wbWorkbenchLeftDrawer">
+      {renderFeaturePanel()}
     </div>
 
     <section className="wbCenterPanel">
@@ -982,42 +1055,8 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
         : renderVideoCenterPanel()}
     </section>
 
-    <div className="wbRightPanel">
-      <div className="wbRightHeader"><b>{mediaMode==='video'?'最近视频':'最近图片'}</b><button onClick={refreshRecent}>↻</button></div>
-      <div className="wbRecentSearch"><Search size={16}/><input placeholder={mediaMode==='video'?'搜索视频任务...':'搜索任务编号...'} value={recentKeyword} onChange={e=>setRecentKeyword(e.target.value)}/></div>
-
-      <div className="wbRecentList">{recentItems.length?recentItems.map(item=>{
-        const running=item.status==='queued'||item.status==='running';
-        const failed=item.status==='failed';
-        return <div
-          className={running?'wbRecentItem isLoading':failed?'wbRecentItem isFailed':'wbRecentItem'}
-          key={item.id}
-          onMouseEnter={(e)=>{setRecentHoverId(item.id);showRecentOriginal(item,e);}}
-          onMouseMove={(e)=>moveRecentOriginal(item,e)}
-          onMouseLeave={()=>{setRecentHoverId(prev=>prev===item.id?'':prev);hideRecentOriginal();}}
-          onClick={()=>mediaMode==='video'?setMsg('视频任务详情后续接入'):openRecentTask(item)}
-        >
-          <div className="wbRecentThumb"><img src={listImgSrc(item)} alt="最近生成" onError={e=>fallbackToOriginalImage(e,item)} loading="lazy" decoding="async"/>{running&&<i className="wbSpin"/>}{failed&&<em>失败</em>}</div>
-          <div className="wbRecentInfo"><b>{recentTypeName(item)}</b><span>{running?'生成中...':failed?'失败，已退回算力':fmt(item.createdAt||item.submittedAt)}</span><small>{item.id}</small></div>
-          {!running&&!failed&&<div
-            style={{
-              position:'absolute',
-              right:8,
-              top:8,
-              display:'flex',
-              gap:6,
-              opacity:recentHoverId===item.id?1:0,
-              pointerEvents:recentHoverId===item.id?'auto':'none',
-              transition:'opacity .18s ease',
-              zIndex:3
-            }}
-          >
-            {renderRecentActionButton(<Download size={14}/>,(e)=>{e.stopPropagation();openImageDownload(item,setMsg);},'下载')}
-            {renderRecentActionButton(<Trash2 size={14}/>,(e)=>deleteRecentTask(item,e),'删除',{danger:true})}
-          </div>}
-        </div>
-      }):<div className="wbRecentEmpty">{mediaMode==='video'?'暂无视频生成记录':'暂无生成记录'}</div>}</div>
-      <button className="wbMoreBtn" onClick={()=>goPage&&goPage('images')}>查看更多记录</button>
+    <div className="wbRightPanel wbWorkbenchRightDrawer">
+      {renderRecentPanel()}
     </div>
   </div>
 

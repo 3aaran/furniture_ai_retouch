@@ -134,6 +134,39 @@ function MobileBottomNav({page,go,nav}){
   </nav>;
 }
 
+function MobileSideNavDrawer({open,page,go,nav,onClose,onFeedback,onEmail,noticeUnread}){
+  if(!open)return null;
+  const byKey=Object.fromEntries(nav.map(item=>[item[0],item]));
+  const items=[
+    byKey.workbench||['workbench','工作台',null],
+    byKey.images||['images','历史',null],
+    byKey.resources||['resources','资源库',null],
+    ['profile','我的',ShieldCheck]
+  ];
+  const closeAndGo=(key)=>{onClose();go(key)};
+  return createPortal(<div className="mobileSideNavMaskV5" onClick={onClose}>
+    <aside className="mobileSideNavPanelV5" aria-label="手机侧边导航" onClick={e=>e.stopPropagation()}>
+      <div className="mobileSideNavHeadV5">
+        <div><BrandMark/><span><b>{APP_NAME}</b><small>{APP_SUBTITLE}</small></span></div>
+        <button type="button" onClick={onClose} aria-label="关闭导航"><X size={20}/></button>
+      </div>
+      <nav className="mobileSideNavListV5">
+        {items.map(([key,title,Icon])=>{
+          const label=key==='images'?'历史':key==='workbench'?'工作台':key==='resources'?'资源库':'我的';
+          const ActiveIcon=Icon||ShieldCheck;
+          return <button key={key} type="button" className={page===key?'active':''} onClick={()=>closeAndGo(key)}>
+            {ActiveIcon&&<ActiveIcon size={21}/>}<span>{label}</span>
+          </button>;
+        })}
+      </nav>
+      <div className="mobileSideNavToolsV5">
+        <button type="button" onClick={()=>{onClose();onFeedback();}}><MessageSquare size={19}/><span>问题反馈</span></button>
+        <button type="button" onClick={()=>{onClose();onEmail();}}><Mail size={19}/><span>公告邮箱</span>{noticeUnread>0&&<i>{noticeUnread>99?'99+':noticeUnread}</i>}</button>
+      </div>
+    </aside>
+  </div>,document.body);
+}
+
 function MobileImageSavePreview({image,onClose,setMsg}){
   useEffect(()=>()=>{if(image?.revokeOnClose&&image?.url)URL.revokeObjectURL(image.url)},[image?.url,image?.revokeOnClose]);
   function close(){
@@ -187,6 +220,7 @@ function Shell({me,setMe}){
   const[isMobile,setIsMobile]=useState(()=>typeof window!=='undefined'&&!!window.matchMedia?.('(max-width: 860px)').matches);
   const[mobileModalOpen,setMobileModalOpen]=useState(false);
   const[mobileSaveImage,setMobileSaveImage]=useState(null);
+  const[mobileSideNavOpen,setMobileSideNavOpen]=useState(false);
 
   useEffect(()=>{document.title=APP_NAME},[]);
   useEffect(()=>{
@@ -216,6 +250,7 @@ function Shell({me,setMe}){
       '.storeUserModalMaskV2',
       '.trialTicketMaskV2',
       '.mobileAdminNavPanelV4',
+      '.mobileSideNavMaskV5',
       '.resourceActionPanelV7.detailDrawerV7',
       '.resourceActionPanelV7.categoryDrawerV7'
     ].join(',');
@@ -278,6 +313,15 @@ function Shell({me,setMe}){
   function openHome(){
     window.location.hash='/home';
   }
+  function handleBrandClick(e){
+    e.stopPropagation();
+    if(isMobile&&!isAdmin){
+      setMobileSideNavOpen(true);
+      setMenu(false);
+      return;
+    }
+    openHome();
+  }
   function openProfileMenu(){
     if(menuTimer.current)clearTimeout(menuTimer.current);
     menuTimer.current=null;
@@ -316,7 +360,8 @@ function Shell({me,setMe}){
 
   return <div className="topApp" onClick={()=>{setNavDrop(null);setMenu(false)}}>
     <header className="topbar">
-      <button className="topBrand topBrandButton" type="button" onClick={openHome} aria-label="返回官网首页">
+      <button className="topBrand topBrandButton" type="button" onClick={handleBrandClick} aria-label={isMobile&&!isAdmin?'打开导航栏':'返回官网首页'}>
+        <Menu className="topBrandMenuIconV5" size={25}/>
         <BrandMark/>
         <div><b>{APP_NAME}</b><small>{APP_SUBTITLE}</small></div>
       </button>
@@ -360,7 +405,16 @@ function Shell({me,setMe}){
       <Comp me={me} setMe={setMe} setMsg={setMsg} goPage={go} TaskDetailModal={TaskDetailModal}/>
     </main>
 
-    {shouldShowMobileTabBar&&<MobileBottomNav page={page} go={go} nav={nav}/>}
+    {!isAdmin&&<MobileSideNavDrawer
+      open={mobileSideNavOpen}
+      page={page}
+      go={go}
+      nav={nav}
+      onClose={()=>setMobileSideNavOpen(false)}
+      onFeedback={()=>setFeedbackOpen(true)}
+      onEmail={()=>setEmailOpen(true)}
+      noticeUnread={noticeUnread}
+    />}
 
     {redeemOpen&&<RedeemModal onClose={()=>setRedeemOpen(false)} setMsg={setMsg}/>}
     {feedbackOpen&&<FeedbackModal onClose={()=>setFeedbackOpen(false)} setMsg={setMsg}/>}
