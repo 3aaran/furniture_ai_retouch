@@ -1,7 +1,8 @@
 import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createPortal}from'react-dom';
 import{ChevronLeft,ChevronRight,Copy,Download,FileText,Flag,Hash,SlidersHorizontal,Trash2,User,WalletCards}from'lucide-react';
-import{API,token,req,fmt,imageViewUrl,assetUrl,openImageDownload}from'../appShared.jsx';
+import{req,fmt,imageViewUrl,assetUrl,openImageDownload}from'../appShared.jsx';
+import{createWatermarkedImageBlob,downloadBlob,watermarkedFilename}from'../utils/watermarkImage.js';
 import{getDisplayStatusName,getFeatureDisplayName}from'../config/uiText.js';
 import WatermarkConfigModal from'../store/workbench/WatermarkConfigModal.jsx';
 import ConfirmDialog from'./ConfirmDialog.jsx';
@@ -49,6 +50,21 @@ function watermarkPlacement(config={}){
 
 function WatermarkOverlay({config}){
   if(!config)return null;
+  if(config.mode==='text'&&config.style==='tile'){
+    const items=Array.from({length:40});
+    return <div
+      className="taskWatermarkTile"
+      style={{
+        color:config.color||'#f0d68a',
+        opacity:Number(config.opacity||100)/100,
+        fontSize:`${Math.max(14,Number(config.fontSize||46)*0.34)}px`,
+        transform:`rotate(${Number(config.rotate||0)}deg)`,
+        gap:`${Math.max(12,Number(config.gap||220)*0.12)}px`
+      }}
+    >
+      {items.map((_,i)=><span key={i}>{config.text||'文字水印'}{config.subText?<small style={{color:config.accent||'#fff'}}>{config.subText}</small>:null}</span>)}
+    </div>;
+  }
   const baseStyle={
     ...watermarkPlacement(config),
     opacity:Number(config.opacity||100)/100
@@ -65,6 +81,8 @@ function WatermarkOverlay({config}){
   }
   return null;
 }
+
+let cachedWatermarkSettings=null;
 
 function imageSrc(url){
   return assetUrl(url);
@@ -171,20 +189,27 @@ function TaskDetailModal({
   const [confirmAction,setConfirmAction]=useState(null);
   const [isMobile,setIsMobile]=useState(()=>typeof window!=='undefined'&&!!window.matchMedia?.('(max-width: 860px)').matches);
 
-  function loadWatermark(){
+  function loadWatermark(force=false){
     if(isAdmin){
       setWatermark({loading:false,enabled:false,configured:false,canConfigure:false});
       return;
     }
+    if(cachedWatermarkSettings&&!force){
+      setWatermark({...cachedWatermarkSettings,loading:false});
+      return;
+    }
     setWatermark(prev=>({...prev,loading:true}));
     req('/api/watermark/settings')
-      .then(d=>setWatermark({...d,loading:false}))
+      .then(d=>{
+        cachedWatermarkSettings=d;
+        setWatermark({...d,loading:false});
+      })
       .catch(()=>setWatermark({loading:false,enabled:false,configured:false,canConfigure:false}));
   }
 
   useEffect(()=>{
     loadWatermark();
-  },[detail?.id,isAdmin]);
+  },[isAdmin]);
 
   useEffect(()=>{
     if(typeof window==='undefined'||!window.matchMedia)return;
@@ -247,9 +272,52 @@ function TaskDetailModal({
     if(next)onSwitchTask?.(next);
   }
 
-  function download(){
+  async function download(){
     if(isMobile){
-      setMsg&&setMsg('请长按图片保存到手机');
+      if(!resultUrl)return setMsg&&setMsg('图片地址不存在');
+      if(!useWatermark){
+        window.dispatchEvent(new CustomEvent('mobile-image-save-preview',{detail:{
+          url:resultImageSrc,
+          title:detail.originalName||opLabel||'原图'
+        }}));
+        return;
+      }
+      if(!wmReady||!watermark.config){
+        setMsg&&setMsg('请先配置水印');
+        return;
+      }
+      try{
+        setBusy('watermark');
+        const blob=await createWatermarkedImageBlob(resultImageSrc,watermark.config);
+        const blobUrl=URL.createObjectURL(blob);
+        window.dispatchEvent(new CustomEvent('mobile-image-save-preview',{detail:{
+          url:blobUrl,
+          title:detail.originalName||opLabel||'带水印图片',
+          revokeOnClose:true
+        }}));
+      }catch(e){
+        const message=e?.message?.includes('跨域')?e.message:'水印图片生成失败，请重试';
+        setMsg&&setMsg(message);
+      }finally{
+        setBusy('');
+      }
+      return;
+    }
+    if(useWatermark){
+      if(!wmReady||!watermark.config){
+        setMsg&&setMsg('请先配置水印');
+        return;
+      }
+      try{
+        setBusy('watermark');
+        const blob=await createWatermarkedImageBlob(resultImageSrc,watermark.config);
+        downloadBlob(blob,watermarkedFilename(detail.originalName||selectedResultImage.originalName||imageId));
+      }catch(e){
+        const message=e?.message?.includes('跨域')?e.message:'水印图片生成失败，请重试';
+        setMsg&&setMsg(message);
+      }finally{
+        setBusy('');
+      }
       return;
     }
     openImageDownload({
@@ -290,14 +358,13 @@ function TaskDetailModal({
     finally{setBusy('')}
   }
 
-  const wmReady=!!watermark.configured;
-  const resultPreviewSrc=useWatermark&&wmReady&&imageId&&!previewFailed
-    ? `${API}/api/images/${imageId}/watermark-preview?token=${token()}&v=${Date.now()}`
-    : resultImageSrc;
+  const wmReady=!!watermark.configured&&!!watermark.config;
+  const watermarkActive=useWatermark&&wmReady;
+  const resultPreviewSrc=resultImageSrc;
 
   const taskOverlays=<>
     {processOpen&&<ImageProcessModal detail={{...detail,id:imageId,url:resultUrl}} onClose={()=>setProcessOpen(false)} setMsg={setMsg}/>}
-    <WatermarkConfigModal open={watermarkConfigOpen} onClose={()=>{setWatermarkConfigOpen(false);loadWatermark();}} setMsg={setMsg}/>
+    <WatermarkConfigModal open={watermarkConfigOpen} onClose={()=>{setWatermarkConfigOpen(false);loadWatermark(true);}} setMsg={setMsg}/>
     <ConfirmDialog
       open={confirmAction==='delete'}
       title="删除图片"
@@ -333,10 +400,13 @@ function TaskDetailModal({
       watermark={watermark}
       wmReady={wmReady}
       useWatermark={useWatermark}
+      watermarkActive={watermarkActive}
+      watermarkConfig={watermark.config}
       onClose={onClose}
       onPrev={()=>switchTo(-1)}
       onNext={()=>switchTo(1)}
       onOpenProcess={()=>setProcessOpen(true)}
+      onSave={download}
       onDelete={()=>setConfirmAction('delete')}
       onCopyPrompt={copyPrompt}
       onContinueImage={()=>continueWith({id:imageId,url:resultUrl,originalName:detail.originalName})}
@@ -365,7 +435,7 @@ function TaskDetailModal({
         </div>
         <div className="compareCol">
           <div className="compareHead"><h3>生成结果</h3>{!isAdmin&&<button onClick={()=>continueWith({id:imageId,url:resultUrl,originalName:detail.originalName})}>以此图继续创作</button>}</div>
-          <div className="taskImageFrame">{resultUrl?<img src={resultPreviewSrc} onError={()=>setPreviewFailed(true)} loading="lazy" decoding="async"/>:<span>无生成图</span>}</div>
+          <div className="taskImageFrame">{resultUrl?<><img src={resultPreviewSrc} onError={()=>setPreviewFailed(true)} loading="lazy" decoding="async"/>{watermarkActive&&<WatermarkOverlay config={watermark.config}/>}</>:<span>无生成图</span>}</div>
         </div>
       </div>
       <div className="taskMobileActionBar" aria-label="任务操作">
@@ -444,10 +514,13 @@ function MobileTaskPreviewView({
   watermark,
   wmReady,
   useWatermark,
+  watermarkActive,
+  watermarkConfig,
   onClose,
   onPrev,
   onNext,
   onOpenProcess,
+  onSave,
   onDelete,
   onCopyPrompt,
   onContinueImage,
@@ -480,13 +553,14 @@ function MobileTaskPreviewView({
             <em>{opLabel}</em>
           </div>
           <div className="mobileTaskImageStage">
-            {resultUrl?<img src={resultPreviewSrc} alt={detail.originalName||opLabel||'成品图'} onError={onPreviewError} loading="lazy" decoding="async"/>:<span>暂无生成图</span>}
+            {resultUrl?<><img src={resultPreviewSrc} alt={detail.originalName||opLabel||'成品图'} onError={onPreviewError} loading="lazy" decoding="async"/>{watermarkActive&&<WatermarkOverlay config={watermarkConfig}/>}</>:<span>暂无生成图</span>}
           </div>
           <p className="mobileLongPressHint">请长按图片保存到手机</p>
         </section>
 
         <nav className="mobileTaskActions" aria-label="任务操作">
           <button type="button" onClick={onOpenProcess}><SlidersHorizontal size={18}/><span>参数</span></button>
+          <button type="button" className="primary" onClick={onSave} disabled={!resultUrl||busy==='watermark'}><Download size={18}/><span>保存</span></button>
           {!isAdmin&&<button type="button" onClick={onContinueImage} disabled={!resultUrl}><ChevronRight size={18}/><span>继续创作</span></button>}
           {!isAdmin&&<button type="button" className="danger" onClick={onDelete} disabled={!!busy}><Trash2 size={18}/><span>删除</span></button>}
         </nav>
@@ -519,7 +593,7 @@ function MobileTaskPreviewView({
           {!isAdmin&&<div className="taskWatermarkControl mobileTaskWatermark">
             <div>
               <b>{'\u4f7f\u7528\u6c34\u5370'}</b>
-              <small>{watermark.loading?'\u6b63\u5728\u8bfb\u53d6\u95e8\u5e97\u6c34\u5370\u914d\u7f6e':wmReady?'\u5f00\u542f\u540e\u4e0b\u8f7d\u539f\u56fe\u4f1a\u6dfb\u52a0\u6c34\u5370':watermark.canConfigure?'\u95e8\u5e97\u672a\u914d\u7f6e\u6c34\u5370':'\u95e8\u5e97\u672a\u914d\u7f6e\u6c34\u5370'}</small>
+              <small>{watermark.loading?'\u6b63\u5728\u8bfb\u53d6\u95e8\u5e97\u6c34\u5370\u914d\u7f6e':wmReady?'开启后会预览水印，下载时前端临时合成':watermark.canConfigure?'\u95e8\u5e97\u672a\u914d\u7f6e\u6c34\u5370':'\u95e8\u5e97\u672a\u914d\u7f6e\u6c34\u5370'}</small>
             </div>
             {wmReady?
               <label className="taskWatermarkToggle">

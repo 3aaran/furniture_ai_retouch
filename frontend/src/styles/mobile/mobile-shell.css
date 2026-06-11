@@ -378,6 +378,7 @@
   }
 
   .mobileTaskImageStage {
+    position: relative !important;
     width: 100% !important;
     height: min(42dvh, 360px) !important;
     min-height: 220px !important;
@@ -452,6 +453,12 @@
     border-color: rgba(255, 111, 134, .38) !important;
     color: #ff9dad !important;
     background: rgba(32, 28, 36, .96) !important;
+  }
+
+  .mobileTaskActions button.primary {
+    border-color: transparent !important;
+    background: linear-gradient(135deg, #f3da94, #c79b3b) !important;
+    color: #171207 !important;
   }
 
   .mobileTaskActions button:disabled {

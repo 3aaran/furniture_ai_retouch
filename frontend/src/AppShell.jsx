@@ -135,6 +135,11 @@ function MobileBottomNav({page,go,nav}){
 }
 
 function MobileImageSavePreview({image,onClose,setMsg}){
+  useEffect(()=>()=>{if(image?.revokeOnClose&&image?.url)URL.revokeObjectURL(image.url)},[image?.url,image?.revokeOnClose]);
+  function close(){
+    if(image?.revokeOnClose&&image?.url)URL.revokeObjectURL(image.url);
+    onClose&&onClose();
+  }
   async function copyLink(){
     try{
       if(!navigator.clipboard?.writeText)throw new Error('clipboard unavailable');
@@ -145,7 +150,7 @@ function MobileImageSavePreview({image,onClose,setMsg}){
     }
   }
   return createPortal(<div className="mobileImageSaveMask" role="dialog" aria-modal="true" aria-label="保存图片预览">
-    <button className="mobileImageSaveClose" type="button" onClick={onClose} aria-label="关闭">×</button>
+    <button className="mobileImageSaveClose" type="button" onClick={close} aria-label="关闭">×</button>
     <div className="mobileImageSaveStage">
       {image?.url?<img src={image.url} alt={image.title||'原图'} loading="lazy" decoding="async"/>:<div className="mobileImageSaveEmpty">暂无图片</div>}
     </div>

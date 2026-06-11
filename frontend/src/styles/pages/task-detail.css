@@ -97,6 +97,30 @@
 .taskDesktopTitle{
   display:inline;
 }
+.taskWatermarkTile{
+  position:absolute;
+  inset:-18%;
+  z-index:3;
+  display:flex;
+  flex-wrap:wrap;
+  align-content:center;
+  justify-content:center;
+  overflow:hidden;
+  pointer-events:none;
+  font-weight:900;
+  line-height:1;
+  text-shadow:0 2px 8px rgba(0,0,0,.22);
+}
+.taskWatermarkTile span{
+  display:inline-flex;
+  align-items:center;
+  gap:.45em;
+  white-space:nowrap;
+}
+.taskWatermarkTile small{
+  font-size:.48em;
+  color:inherit;
+}
 .taskReferenceBlock{
   border-top:1px solid rgba(255,255,255,.12);
   margin-top:18px;
