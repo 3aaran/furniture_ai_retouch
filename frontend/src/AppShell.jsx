@@ -137,6 +137,7 @@ function MobileBottomNav({page,go,nav}){
 function Shell({me,setMe}){
   const nav=roleNav(me.role);
   const isAdmin=me.role==='SYSTEM_ADMIN';
+  const mobileTopLevelPages=new Set(['workbench','images','resources','profile']);
   const pageKeys=useMemo(()=>{
     const keys=new Set(nav.map(([k])=>k));
     ['profile','quota','redeem','feedbacks'].forEach(k=>keys.add(k));
@@ -156,8 +157,51 @@ function Shell({me,setMe}){
   const[emailOpen,setEmailOpen]=useState(false);
   const[noticeUnread,setNoticeUnread]=useState(0);
   const[navDrop,setNavDrop]=useState(null);
+  const[isMobile,setIsMobile]=useState(()=>typeof window!=='undefined'&&!!window.matchMedia?.('(max-width: 860px)').matches);
+  const[mobileModalOpen,setMobileModalOpen]=useState(false);
 
   useEffect(()=>{document.title=APP_NAME},[]);
+  useEffect(()=>{
+    if(typeof window==='undefined'||!window.matchMedia)return;
+    const mq=window.matchMedia('(max-width: 860px)');
+    const update=()=>setIsMobile(!!mq.matches);
+    update();
+    mq.addEventListener?.('change',update);
+    return()=>mq.removeEventListener?.('change',update);
+  },[]);
+  useEffect(()=>{
+    if(typeof document==='undefined')return;
+    const selectors=[
+      '.modalMask',
+      '.taskPreviewOverlay',
+      '.cropShotMask',
+      '.watermarkMask',
+      '.feedbackModalMaskV2',
+      '.resourceUploadMaskV3',
+      '.resourceCategoryDialogMaskV3',
+      '.resourceCategoryModalMaskV8',
+      '.resourceRenameMaskV3',
+      '.resourceDetailMaskV3',
+      '.adminModalMaskV9',
+      '.storeUserModalMaskV2',
+      '.trialTicketMaskV2',
+      '.mobileAdminNavPanelV4',
+      '.resourceActionPanelV7.detailDrawerV7',
+      '.resourceActionPanelV7.categoryDrawerV7'
+    ].join(',');
+    const update=()=>{
+      const open=!!document.body.querySelector(selectors);
+      setMobileModalOpen(open);
+      document.body.classList.toggle('mobile-modal-open-v4',open);
+    };
+    update();
+    const observer=new MutationObserver(update);
+    observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','style','aria-hidden']});
+    return()=>{
+      observer.disconnect();
+      document.body.classList.remove('mobile-modal-open-v4');
+    };
+  },[]);
 
   const rawToastText=typeof msg==='object'?(msg.text||msg.message||''):String(msg||'');
   const toastText=userFriendlyMessage(rawToastText,rawToastText||'操作失败请稍后重试');
@@ -233,6 +277,7 @@ function Shell({me,setMe}){
   },[page,pageKeys]);
 
   const fallbackTitle={profile:'个人中心',quota:'额度明细',redeem:'兑换码创建',feedbacks:'问题反馈'};
+  const shouldShowMobileTabBar=!isAdmin&&isMobile&&mobileTopLevelPages.has(page)&&!mobileModalOpen&&!redeemOpen&&!feedbackOpen&&!emailOpen&&!menu;
 
   return <div className="topApp" onClick={()=>{setNavDrop(null);setMenu(false)}}>
     <header className="topbar">
@@ -280,7 +325,7 @@ function Shell({me,setMe}){
       <Comp me={me} setMe={setMe} setMsg={setMsg} goPage={go} TaskDetailModal={TaskDetailModal}/>
     </main>
 
-    {!isAdmin&&<MobileBottomNav page={page} go={go} nav={nav}/>} 
+    {shouldShowMobileTabBar&&<MobileBottomNav page={page} go={go} nav={nav}/>}
 
     {redeemOpen&&<RedeemModal onClose={()=>setRedeemOpen(false)} setMsg={setMsg}/>}
     {feedbackOpen&&<FeedbackModal onClose={()=>setFeedbackOpen(false)} setMsg={setMsg}/>}

@@ -210,9 +210,13 @@ function TaskDetailModal({
   const userPrompt=(detail.userPrompt||detail.detailUserPrompt||settings.customText||settings.userPrompt||'').trim();
   const finalPrompt=(detail.prompt||detail.finalPrompt||settings.finalPrompt||settings.prompt||userPrompt||'').trim();
   const displayPrompt=userPrompt;
-  const imageId=detail.resultImage?.id||detail.imageId||detail.id;
+  const resultCandidates=asArray(detail.resultImages||detail.outputImages||detail.outputs)
+    .filter(x=>x&&(x.id||x.imageId||x.url||x.imageUrl));
+  const clickedImageId=detail.imageId||detail.clickedImageId||detail.selectedImageId||detail.id;
+  const selectedResultImage=resultCandidates.find(x=>String(x.id||x.imageId||'')===String(clickedImageId||''))||detail.resultImage||resultCandidates[0]||{};
+  const imageId=selectedResultImage.id||selectedResultImage.imageId||detail.resultImage?.id||detail.imageId||detail.id;
   const sourceImageId=detail.originImage?.id||detail.sourceImageId;
-  const resultUrl=detail.resultUrl||detail.url||detail.resultImage?.url;
+  const resultUrl=selectedResultImage.url||selectedResultImage.imageUrl||detail.resultUrl||detail.url||detail.resultImage?.url;
   const sourceUrl=detail.sourceUrl||detail.originImage?.url;
   const resultImageSrc=imageViewUrl({id:imageId,url:resultUrl});
   const sourceImageSrc=imageViewUrl({id:sourceImageId,url:sourceUrl});
@@ -237,7 +241,7 @@ function TaskDetailModal({
     openImageDownload({
       id:imageId,
       url:resultUrl,
-      downloadUrl:detail.downloadUrl||detail.resultImage?.downloadUrl
+      downloadUrl:selectedResultImage.downloadUrl||detail.downloadUrl||detail.resultImage?.downloadUrl
     },setMsg);
   }
 
