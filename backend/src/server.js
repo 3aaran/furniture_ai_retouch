@@ -12,7 +12,7 @@ import { runAi, applyWatermark, quotaCost } from './aiService.js';
 import { submitAiTask, getAiTaskStatus, getAiTaskDetail, getRecentAiTasks, deleteAiTask } from './ai/taskService.js';
 import { getAiConfig, getFeatureConfig } from './ai/configService.js';
 import { callImageModel } from './ai/providerService.js';
-import { STORAGE_ROOT, storageTempDir, saveUploadedImage, saveBufferToStorage, urlToDiskPath, getLocalFileMeta, MIN_GENERATION_STORAGE_BYTES, getUserStorageSummary, assertUserStorageAvailable, addUserStorageUsage, applyUserStorageDelta, deleteStoredFile, normalizeUploadedFileName, getImageAccessUrl, storageKeyFromUrl } from './services/storageService.js';
+import { STORAGE_ROOT, storageTempDir, saveUploadedImage, saveBufferToStorage, urlToDiskPath, getLocalFileMeta, MIN_GENERATION_STORAGE_BYTES, getUserStorageSummary, assertUserStorageAvailable, addUserStorageUsage, applyUserStorageDelta, deleteStoredFile, normalizeUploadedFileName, getImageAccessUrl, storageKeyFromUrl, isOssStorageEnabled, getStoredFileReadStream } from './services/storageService.js';
 import { registerAdminRoutes } from './routes/adminRoutes.js';
 import { registerMerchantRoutes } from './routes/merchantRoutes.js';
 import { registerResourceCategoryRoutes } from './routes/resourceCategoryRoutes.js';
@@ -115,6 +115,16 @@ function sendCsv(res, filename, headers, rows){
   res.setHeader('Content-Type','text/csv; charset=utf-8');
   res.setHeader('Content-Disposition',`attachment; filename="${filename}"`);
   res.send('\ufeff'+data);
+}
+function pipeStreamToResponse(stream, res) {
+  stream.on('error', (err) => {
+    if (!res.headersSent) {
+      res.status(400).json({ message: err.message || '图片读取失败' });
+    } else {
+      res.destroy(err);
+    }
+  });
+  stream.pipe(res);
 }
 async function assertMerchantActive(user){
   if(!user.merchant_id) throw new Error('当前账号未绑定商家');
@@ -811,6 +821,15 @@ app.get('/api/images/:id/view', requireAuth, async (req,res)=>{
       [req.params.id,isSystemAdmin(req.user),req.user.id,req.user.merchant_id]
     );
     if(!img) return res.status(404).json({message:'图片不存在'});
+    if(isOssStorageEnabled()){
+      const result=await getStoredFileReadStream(img);
+      const headers=result.headers||{};
+      res.setHeader('Cache-Control','private, max-age=60');
+      res.setHeader('Content-Type',headers['content-type']||img.mime_type||'image/png');
+      const size=headers['content-length']||img.size_bytes;
+      if(size) res.setHeader('Content-Length',String(size));
+      return pipeStreamToResponse(result.stream,res);
+    }
     const url=getImageAccessUrl(img);
     if(!url) return res.status(404).json({message:'图片地址不存在'});
     res.setHeader('Cache-Control','private, max-age=60');
@@ -827,7 +846,17 @@ app.get('/api/images/:id/download', requireAuth, async (req,res)=>{
     const merchantId=img.merchant_id||req.user.merchant_id||null;
     let finalUrl=getImageAccessUrl(img);
     let downloadName=`${APP_NAME}-${img.source_type||'image'}-${img.id}.png`;
-    if(String(req.query.watermark||'')==='1'&&merchantId){
+    const wantsWatermark=String(req.query.watermark||'')==='1'&&merchantId;
+    if(isOssStorageEnabled()&&!wantsWatermark){
+      const result=await getStoredFileReadStream(img);
+      const headers=result.headers||{};
+      res.setHeader('Content-Type',headers['content-type']||img.mime_type||'application/octet-stream');
+      res.setHeader('Content-Disposition',`attachment; filename="${downloadName}"`);
+      const size=headers['content-length']||img.size_bytes;
+      if(size) res.setHeader('Content-Length',String(size));
+      return pipeStreamToResponse(result.stream,res);
+    }
+    if(wantsWatermark){
       const [rows]=await pool.query('SELECT * FROM watermarks WHERE merchant_id=? ORDER BY created_at DESC LIMIT 1',[merchantId]);
       if(rows[0]){
         const config=await hydrateWatermarkImageConfig(

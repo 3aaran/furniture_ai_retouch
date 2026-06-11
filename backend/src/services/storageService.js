@@ -40,6 +40,10 @@ function isOssStorage() {
   return String(STORAGE_PROVIDER || '').toLowerCase() === 'oss';
 }
 
+export function isOssStorageEnabled() {
+  return isOssStorage();
+}
+
 function getOssClient() {
   if (!isOssStorage()) return null;
   if (ossClient) return ossClient;
@@ -337,6 +341,31 @@ export async function getStoredFileMeta(imageOrUrl = '') {
     };
   }
   return local;
+}
+
+export async function getStoredFileReadStream(imageOrUrl = '') {
+  const url = typeof imageOrUrl === 'string' ? imageOrUrl : (imageOrUrl.url || '');
+  const storageKey = typeof imageOrUrl === 'object' ? imageOrUrl.storage_key || imageOrUrl.storageKey || '' : '';
+
+  if (isOssStorage()) {
+    const key = storageKey || storageKeyFromUrl(url);
+    if (!key) throw new Error('OSS 图片 storage_key 不存在');
+    try {
+      const result = await getOssClient().getStream(key, { timeout: OSS_TIMEOUT_MS });
+      return {
+        stream: result.stream,
+        headers: result.res?.headers || {}
+      };
+    } catch (err) {
+      throw withFailureStage(err, 'storage');
+    }
+  }
+
+  const filePath = urlToDiskPath(url || publicUrlFromStorageKey(storageKey));
+  return {
+    stream: fs.createReadStream(filePath),
+    headers: {}
+  };
 }
 
 export async function saveUploadedImage(file, { merchantId = null, userId = null, kind = 'original' } = {}) {
