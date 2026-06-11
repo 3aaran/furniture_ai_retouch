@@ -16,6 +16,9 @@ export const DEFAULT_USER_STORAGE_LIMIT_BYTES = Number(process.env.USER_STORAGE_
 export const MIN_GENERATION_STORAGE_BYTES = Number(process.env.MIN_GENERATION_STORAGE_BYTES || 50 * 1024 * 1024);
 const REMOTE_IMAGE_META_MAX_BYTES = Number(process.env.REMOTE_IMAGE_META_MAX_BYTES || 50 * 1024 * 1024);
 const OSS_TIMEOUT_MS = 300000;
+export const THUMB_SIGNED_URL_EXPIRES_SECONDS = 7 * 24 * 60 * 60;
+export const IMAGE_SIGNED_URL_EXPIRES_SECONDS = 24 * 60 * 60;
+export const DOWNLOAD_SIGNED_URL_EXPIRES_SECONDS = 24 * 60 * 60;
 
 const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp']);
 const KIND_DIR_MAP = {
@@ -199,13 +202,99 @@ export function publicUrlFromStorageKey(storageKey = '') {
   return `${FILES_BASE_PATH.replace(/\/$/, '')}/${clean}`;
 }
 
+function encodeRFC5987Value(value = '') {
+  return encodeURIComponent(String(value || ''))
+    .replace(/['()]/g, c => `%${c.charCodeAt(0).toString(16).toUpperCase()}`)
+    .replace(/\*/g, '%2A');
+}
+
+function safeDownloadName(fileName = '') {
+  const raw = normalizeUploadedFileName(fileName) || 'image.png';
+  const clean = String(raw).replace(/[\r\n]/g, ' ').replace(/[\\/]+/g, '_').trim() || 'image.png';
+  return path.basename(clean);
+}
+
+export function buildDownloadContentDisposition(fileName = '') {
+  const name = safeDownloadName(fileName);
+  const asciiName = name.replace(/[^\x20-\x7E]/g, '_').replace(/"/g, '_') || 'image.png';
+  return `attachment; filename="${asciiName}"; filename*=UTF-8''${encodeRFC5987Value(name)}`;
+}
+
+export function buildSignedImageUrl(storageKey = '', options = {}) {
+  const clean = String(storageKey || '').split('#')[0].split('?')[0].replace(/^\/+/, '');
+  if (!clean) return '';
+  if (!isOssStorage()) return publicUrlFromStorageKey(clean);
+  const expires = Number(options.expires || IMAGE_SIGNED_URL_EXPIRES_SECONDS);
+  const signedOptions = {
+    expires: Number.isFinite(expires) && expires > 0 ? expires : IMAGE_SIGNED_URL_EXPIRES_SECONDS
+  };
+  if (options.download) {
+    signedOptions.response = {
+      'content-disposition': buildDownloadContentDisposition(options.fileName || path.posix.basename(clean) || 'image.png')
+    };
+  }
+  return getOssClient().signatureUrl(clean, signedOptions);
+}
+
+function imageFileName(image = {}) {
+  return image.original_name || image.originalName || image.display_name || image.displayName || image.file_name || image.fileName || `${image.id || 'image'}.png`;
+}
+
+export function imageSignedAccessFields(image = {}) {
+  const rawUrl = image.url || image.imageUrl || '';
+  const key = image.storage_key || image.storageKey || storageKeyFromUrl(rawUrl);
+  const thumbKey = image.thumb_storage_key || image.thumbStorageKey || '';
+  const legacyThumbUrl = image.thumbUrl || image.thumb_url || image.thumbnailUrl || image.thumbnail_url || '';
+  const originalUrl = key
+    ? buildSignedImageUrl(key, { expires: IMAGE_SIGNED_URL_EXPIRES_SECONDS })
+    : rawUrl;
+  const thumbUrl = (thumbKey
+    ? buildSignedImageUrl(thumbKey, { expires: THUMB_SIGNED_URL_EXPIRES_SECONDS })
+    : (legacyThumbUrl || originalUrl)) || originalUrl;
+  const downloadUrl = key
+    ? buildSignedImageUrl(key, {
+        expires: DOWNLOAD_SIGNED_URL_EXPIRES_SECONDS,
+        download: true,
+        fileName: imageFileName(image)
+      })
+    : originalUrl;
+  return {
+    url: originalUrl || '',
+    thumbUrl: thumbUrl || originalUrl || '',
+    downloadUrl: downloadUrl || originalUrl || ''
+  };
+}
+
+export function withSignedImageUrls(row = {}) {
+  const current = imageSignedAccessFields(row);
+  const mapped = {
+    ...row,
+    url: current.url,
+    thumbUrl: current.thumbUrl,
+    downloadUrl: current.downloadUrl
+  };
+  if (row.sourceUrl || row.sourceImageId || row.sourceThumbStorageKey || row.sourceOriginalName) {
+    const source = imageSignedAccessFields({
+      id: row.sourceImageId,
+      url: row.sourceUrl,
+      storage_key: row.sourceStorageKey || row.source_storage_key || '',
+      thumb_storage_key: row.sourceThumbStorageKey || row.source_thumb_storage_key || '',
+      original_name: row.sourceOriginalName || row.source_original_name || ''
+    });
+    mapped.sourceUrl = source.url;
+    mapped.sourceThumbUrl = source.thumbUrl;
+    mapped.sourceDownloadUrl = source.downloadUrl;
+  }
+  return mapped;
+}
+
 export function getImageAccessUrl(imageOrUrl = '', { expires } = {}) {
   const url = typeof imageOrUrl === 'string' ? imageOrUrl : (imageOrUrl.url || '');
   const storageKey = typeof imageOrUrl === 'object' ? imageOrUrl.storage_key || imageOrUrl.storageKey || '' : '';
   if (isOssStorage()) {
     const key = storageKey || storageKeyFromUrl(url);
     if (!key) return url;
-    return getOssClient().signatureUrl(key, {
+    return buildSignedImageUrl(key, {
       expires: Number(expires || process.env.OSS_SIGNED_URL_EXPIRES || 900)
     });
   }

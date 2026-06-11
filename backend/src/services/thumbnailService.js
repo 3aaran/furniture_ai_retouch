@@ -3,7 +3,7 @@ import path from 'path';
 import axios from 'axios';
 import sharp from 'sharp';
 
-import { getImageAccessUrl, saveBufferToStorage, storageKeyFromUrl, urlToDiskPath } from './storageService.js';
+import { THUMB_SIGNED_URL_EXPIRES_SECONDS, buildSignedImageUrl, getImageAccessUrl, saveBufferToStorage, storageKeyFromUrl, urlToDiskPath } from './storageService.js';
 
 const THUMB_WIDTH = Number(process.env.THUMBNAIL_WIDTH || 360);
 const THUMB_QUALITY = Number(process.env.THUMBNAIL_QUALITY || 72);
@@ -17,9 +17,8 @@ export function visibleThumbnailUrl(image = {}) {
 }
 
 export function thumbnailAccessUrl(image = {}) {
-  const id = image.id || image.imageId;
   const thumbStorageKey = image.thumb_storage_key || image.thumbStorageKey || '';
-  if (id && thumbStorageKey) return `/api/images/${encodeURIComponent(id)}/thumb`;
+  if (thumbStorageKey) return buildSignedImageUrl(thumbStorageKey, { expires: THUMB_SIGNED_URL_EXPIRES_SECONDS });
   const legacyUrl = image.thumb_url || image.thumbUrl || '';
   return /^https?:\/\//i.test(String(legacyUrl)) ? '' : legacyUrl;
 }

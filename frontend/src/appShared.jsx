@@ -1,7 +1,7 @@
 import React,{useEffect,useState}from'react';
 import{ChevronLeft,ChevronRight,Search,Download}from'lucide-react';
 import{roleName,audienceName,resourceTypeName,statusName,messageText,getDisplayStatusName}from'./config/uiText.js';
-import{assetUrlFromBase,imageFallbackUrl as imageFallbackUrlBase,imageListUrl as imageListUrlBase,imageViewUrlFor}from'./imageUrls.js';
+import{assetUrlFromBase,imageDownloadUrl as imageDownloadUrlBase,imageFallbackUrl as imageFallbackUrlBase,imageListUrl as imageListUrlBase,imageViewUrlFor}from'./imageUrls.js';
 
 const apiBase=(import.meta.env.VITE_API_BASE_URL||'/api').replace(/\/$/,'');
 export const API=apiBase==='/api'?'':apiBase;
@@ -76,6 +76,20 @@ export function imageListUrl(image){
 }
 export function imageFallbackUrl(image){
   return imageFallbackUrlBase(image,{api:API,assetBase:ASSET_BASE,token:token()||''});
+}
+export function imageDownloadUrl(image){
+  return imageDownloadUrlBase(image,{api:API,assetBase:ASSET_BASE,token:token()||''});
+}
+export function openImageDownload(image,setMsg){
+  const url=imageDownloadUrl(image);
+  if(!url){
+    setMsg&&setMsg('图片地址不存在');
+    return;
+  }
+  window.open(url,'_blank');
+  if(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent||'')){
+    setMsg&&setMsg('图片已打开，请长按保存');
+  }
 }
 export function fallbackToOriginalImage(event,image){
   const fallback=imageFallbackUrl(image);

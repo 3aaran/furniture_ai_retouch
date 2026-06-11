@@ -3,7 +3,7 @@ import { pool, publicApplication } from '../db.js';
 import { requireAuth } from '../auth.js';
 import { requireMerchantAccount, requireMerchantManager } from '../middleware/roleMiddleware.js';
 import { registerInternalUserRoutes } from './merchant/internalUserRoutes.js';
-import { assertUserStorageAvailable, applyUserStorageDelta, deleteStoredFile, getStoredFileMeta, normalizeUploadedFileName } from '../services/storageService.js';
+import { assertUserStorageAvailable, applyUserStorageDelta, deleteStoredFile, getStoredFileMeta, normalizeUploadedFileName, imageSignedAccessFields } from '../services/storageService.js';
 import { generateThumbnailBestEffort } from '../services/thumbnailService.js';
 
 export function registerMerchantRoutes(app,deps){
@@ -76,6 +76,7 @@ export function registerMerchantRoutes(app,deps){
     const mainCategoryName=r.mainCategoryName || r.object_name || '未分类';
     const subCategoryName=Number(r.isMainOnly||0)?'':(r.subCategoryName || r.color_name || '');
     const displayName=r.display_name || r.name || r.original_name || `资源-${String(r.id||'').slice(0,8)}`;
+    const access=imageSignedAccessFields(r);
     return {
       id:r.id,
       merchantId:r.merchant_id,
@@ -86,8 +87,10 @@ export function registerMerchantRoutes(app,deps){
       mainCategoryName,
       subCategoryName,
       description:r.description || '',
-      imageUrl:r.url || r.image_url,
-      thumbUrl:r.thumb_storage_key?`/api/images/${r.id}/thumb`:(/^https?:\/\//i.test(String(r.thumb_url||r.thumbUrl||''))?'':(r.thumb_url || r.thumbUrl || '')),
+      url:access.url,
+      imageUrl:access.url,
+      thumbUrl:access.thumbUrl,
+      downloadUrl:access.downloadUrl,
       thumbStorageKey:r.thumb_storage_key || r.thumbStorageKey || '',
       fileSize:Number(r.size_bytes||0),
       width:r.width||null,

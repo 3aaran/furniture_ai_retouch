@@ -12,7 +12,7 @@ import { runAi, applyWatermark, quotaCost } from './aiService.js';
 import { submitAiTask, getAiTaskStatus, getAiTaskDetail, getRecentAiTasks, deleteAiTask } from './ai/taskService.js';
 import { getAiConfig, getFeatureConfig } from './ai/configService.js';
 import { callImageModel } from './ai/providerService.js';
-import { STORAGE_ROOT, storageTempDir, saveUploadedImage, saveBufferToStorage, urlToDiskPath, getLocalFileMeta, MIN_GENERATION_STORAGE_BYTES, getUserStorageSummary, assertUserStorageAvailable, addUserStorageUsage, applyUserStorageDelta, deleteStoredFile, normalizeUploadedFileName, getImageAccessUrl, storageKeyFromUrl, isOssStorageEnabled, getStoredFileReadStream } from './services/storageService.js';
+import { STORAGE_ROOT, storageTempDir, saveUploadedImage, saveBufferToStorage, urlToDiskPath, getLocalFileMeta, MIN_GENERATION_STORAGE_BYTES, getUserStorageSummary, assertUserStorageAvailable, addUserStorageUsage, applyUserStorageDelta, deleteStoredFile, normalizeUploadedFileName, getImageAccessUrl, storageKeyFromUrl, isOssStorageEnabled, getStoredFileReadStream, withSignedImageUrls, imageSignedAccessFields } from './services/storageService.js';
 import { registerAdminRoutes } from './routes/adminRoutes.js';
 import { registerMerchantRoutes } from './routes/merchantRoutes.js';
 import { registerResourceCategoryRoutes } from './routes/resourceCategoryRoutes.js';
@@ -351,8 +351,14 @@ app.post('/api/images/upload', requireAuth, (req,res)=>{
         url: img.url,
         storage_key: img.storageKey
       });
-      img.thumbUrl = thumbUrl || '';
-      res.json({...img,storage,createdAt:new Date().toISOString()});
+      const access = imageSignedAccessFields({
+        id: img.id,
+        url: img.url,
+        storage_key: img.storageKey,
+        thumbUrl: thumbUrl || '',
+        originalName: img.originalName
+      });
+      res.json({...img,...access,storage,createdAt:new Date().toISOString()});
     }catch(e){
       if(req.file?.path && fs.existsSync(req.file.path)) fs.rmSync(req.file.path,{force:true});
       if(saved?.url) await deleteStoredFile(saved);
@@ -369,9 +375,9 @@ app.get('/api/images/recent', requireAuth, async (req,res)=>{
   if(req.query.keyword){ wh.push('(i.id LIKE ? OR i.source_type LIKE ? OR i.original_name LIKE ? OR i.display_name LIKE ?)'); ps.push(like(req.query.keyword),like(req.query.keyword),like(req.query.keyword),like(req.query.keyword)); }
   const where='WHERE '+wh.join(' AND ');
   const base=`FROM images i LEFT JOIN image_relations rel ON rel.target_image_id=i.id AND rel.relation_type='GENERATED_FROM' LEFT JOIN images src ON src.id=rel.source_image_id LEFT JOIN users u ON u.id=i.user_id LEFT JOIN merchants m ON m.id=i.merchant_id ${where}`;
-  const sql=`SELECT i.id,i.merchant_id merchantId,i.user_id userId,rel.source_image_id sourceImageId,i.original_name originalName,i.url,CASE WHEN COALESCE(i.thumb_storage_key,'')<>'' THEN CONCAT('/api/images/',i.id,'/thumb') WHEN i.thumb_url LIKE 'http%' THEN NULL ELSE i.thumb_url END thumbUrl,i.thumb_storage_key thumbStorageKey,i.source_type kind,NULL prompt,NULL userPrompt,0 quotaUsed,NULL settingsJson,0 freeRegenUsed,NULL watermark,i.created_at createdAt,src.url sourceUrl,CASE WHEN COALESCE(src.thumb_storage_key,'')<>'' THEN CONCAT('/api/images/',src.id,'/thumb') WHEN src.thumb_url LIKE 'http%' THEN NULL ELSE src.thumb_url END sourceThumbUrl,src.thumb_storage_key sourceThumbStorageKey,src.original_name sourceOriginalName,u.display_name userName,m.company_name companyName ${base} ORDER BY i.created_at DESC`;
+  const sql=`SELECT i.id,i.merchant_id merchantId,i.user_id userId,rel.source_image_id sourceImageId,i.original_name originalName,i.url,i.storage_key storageKey,CASE WHEN COALESCE(i.thumb_storage_key,'')<>'' THEN CONCAT('/api/images/',i.id,'/thumb') WHEN i.thumb_url LIKE 'http%' THEN NULL ELSE i.thumb_url END thumbUrl,i.thumb_storage_key thumbStorageKey,i.source_type kind,NULL prompt,NULL userPrompt,0 quotaUsed,NULL settingsJson,0 freeRegenUsed,NULL watermark,i.created_at createdAt,src.url sourceUrl,src.storage_key sourceStorageKey,CASE WHEN COALESCE(src.thumb_storage_key,'')<>'' THEN CONCAT('/api/images/',src.id,'/thumb') WHEN src.thumb_url LIKE 'http%' THEN NULL ELSE src.thumb_url END sourceThumbUrl,src.thumb_storage_key sourceThumbStorageKey,src.original_name sourceOriginalName,u.display_name userName,m.company_name companyName ${base} ORDER BY i.created_at DESC`;
   const countSql=`SELECT COUNT(*) total ${base}`;
-  const data=await paged(sql,countSql,ps,req,x=>x);
+  const data=await paged(sql,countSql,ps,req,withSignedImageUrls);
   res.json(data);
 });
 
@@ -391,9 +397,9 @@ app.get('/api/images', requireAuth, async (req,res)=>{
   if(req.query.endDate){ wh.push('DATE(i.created_at)<=?'); ps.push(req.query.endDate); }
   const where=wh.length?'WHERE '+wh.join(' AND '):'';
   const base=`FROM images i LEFT JOIN ai_task_outputs ato ON ato.image_id=i.id LEFT JOIN ai_tasks t ON t.id=ato.task_id LEFT JOIN image_relations rel ON rel.target_image_id=i.id AND rel.relation_type='GENERATED_FROM' LEFT JOIN users u ON u.id=i.user_id LEFT JOIN merchants m ON m.id=i.merchant_id ${where}`;
-  const sql=`SELECT i.id,i.merchant_id merchantId,i.user_id userId,rel.source_image_id sourceImageId,i.original_name originalName,i.url,CASE WHEN COALESCE(i.thumb_storage_key,'')<>'' THEN CONCAT('/api/images/',i.id,'/thumb') WHEN i.thumb_url LIKE 'http%' THEN NULL ELSE i.thumb_url END thumbUrl,i.thumb_storage_key thumbStorageKey,COALESCE(t.feature_key,i.source_type) kind,NULL prompt,NULL userPrompt,COALESCE(t.cost,0) quotaUsed,NULL watermark,i.created_at createdAt,u.display_name userName,m.company_name companyName ${base} ORDER BY i.created_at DESC`;
+  const sql=`SELECT i.id,i.merchant_id merchantId,i.user_id userId,rel.source_image_id sourceImageId,i.original_name originalName,i.url,i.storage_key storageKey,CASE WHEN COALESCE(i.thumb_storage_key,'')<>'' THEN CONCAT('/api/images/',i.id,'/thumb') WHEN i.thumb_url LIKE 'http%' THEN NULL ELSE i.thumb_url END thumbUrl,i.thumb_storage_key thumbStorageKey,COALESCE(t.feature_key,i.source_type) kind,NULL prompt,NULL userPrompt,COALESCE(t.cost,0) quotaUsed,NULL watermark,i.created_at createdAt,u.display_name userName,m.company_name companyName ${base} ORDER BY i.created_at DESC`;
   const countSql=`SELECT COUNT(*) total ${base}`;
-  const data=await paged(sql,countSql,ps,req,x=>x);
+  const data=await paged(sql,countSql,ps,req,withSignedImageUrls);
   res.json(data);
 });
 
@@ -491,11 +497,14 @@ app.get('/api/images/:id/source', requireAuth, async (req,res)=>{
       if(String(current.source_type||'')==='UPLOAD') break;
     }
 
+    const currentAccess = imageSignedAccessFields(current);
+    const startAccess = imageSignedAccessFields(start);
     res.json({
       imageId:start.id,
       sourceId:current.id,
-      sourceUrl:current.url || start.url,
-      sourceThumbUrl:thumbnailAccessUrl(current) || thumbnailAccessUrl(start) || '',
+      sourceUrl:currentAccess.url || startAccess.url,
+      sourceThumbUrl:currentAccess.thumbUrl || startAccess.thumbUrl || '',
+      sourceDownloadUrl:currentAccess.downloadUrl || startAccess.downloadUrl || '',
       sourceOriginalName:current.original_name || start.original_name || '??',
       sourceKind:current.source_type || 'unknown'
     });
@@ -565,7 +574,13 @@ app.post('/api/images/:id/process', requireAuth, async (req,res)=>{
       id,
       imageId:id,
       url:saved.url,
-      thumbUrl:thumbUrl || '',
+      ...imageSignedAccessFields({
+        id,
+        url: saved.url,
+        storage_key: saved.storageKey,
+        thumbUrl: thumbUrl || '',
+        originalName: displayName
+      }),
       originalName:displayName,
       width:saved.width||null,
       height:saved.height||null,
@@ -583,12 +598,12 @@ app.get('/api/images/:id/detail-rich', requireAuth, async (req,res)=>{
   const [[img]]=await pool.query(`
     SELECT
       i.id,i.merchant_id merchantId,i.user_id userId,rel.source_image_id sourceImageId,
-      i.original_name originalName,i.url,CASE WHEN COALESCE(i.thumb_storage_key,'')<>'' THEN CONCAT('/api/images/',i.id,'/thumb') WHEN i.thumb_url LIKE 'http%' THEN NULL ELSE i.thumb_url END thumbUrl,i.thumb_storage_key thumbStorageKey,i.source_type kind,
+      i.original_name originalName,i.url,i.storage_key storageKey,CASE WHEN COALESCE(i.thumb_storage_key,'')<>'' THEN CONCAT('/api/images/',i.id,'/thumb') WHEN i.thumb_url LIKE 'http%' THEN NULL ELSE i.thumb_url END thumbUrl,i.thumb_storage_key thumbStorageKey,i.source_type kind,
       COALESCE(tp.final_prompt,t.final_prompt) prompt,
       COALESCE(tp.user_prompt,t.user_prompt) userPrompt,
       COALESCE(t.cost,0) quotaUsed,
       opt.options_json settingsJson,NULL processSettings,0 freeRegenUsed,i.created_at createdAt,
-      src.url sourceUrl,CASE WHEN COALESCE(src.thumb_storage_key,'')<>'' THEN CONCAT('/api/images/',src.id,'/thumb') WHEN src.thumb_url LIKE 'http%' THEN NULL ELSE src.thumb_url END sourceThumbUrl,src.thumb_storage_key sourceThumbStorageKey,src.original_name sourceOriginalName,
+      src.url sourceUrl,src.storage_key sourceStorageKey,CASE WHEN COALESCE(src.thumb_storage_key,'')<>'' THEN CONCAT('/api/images/',src.id,'/thumb') WHEN src.thumb_url LIKE 'http%' THEN NULL ELSE src.thumb_url END sourceThumbUrl,src.thumb_storage_key sourceThumbStorageKey,src.original_name sourceOriginalName,
       u.display_name userName,m.company_name companyName,
       opt.options_json optionsJson,opt.output_format_json outputFormat,
       t.task_params taskParams,
@@ -614,14 +629,14 @@ app.get('/api/images/:id/detail-rich', requireAuth, async (req,res)=>{
     let inputImages=[];
     if(img.taskId){
       const [rows]=await pool.query(
-        `SELECT ti.input_role role,ti.sort_order sortOrder,im.id,im.url,CASE WHEN COALESCE(im.thumb_storage_key,'')<>'' THEN CONCAT('/api/images/',im.id,'/thumb') WHEN im.thumb_url LIKE 'http%' THEN NULL ELSE im.thumb_url END thumbUrl,im.thumb_storage_key thumbStorageKey,im.original_name originalName
+        `SELECT ti.input_role role,ti.sort_order sortOrder,im.id,im.url,im.storage_key storageKey,CASE WHEN COALESCE(im.thumb_storage_key,'')<>'' THEN CONCAT('/api/images/',im.id,'/thumb') WHEN im.thumb_url LIKE 'http%' THEN NULL ELSE im.thumb_url END thumbUrl,im.thumb_storage_key thumbStorageKey,im.original_name originalName
          FROM ai_task_inputs ti
          JOIN images im ON im.id=ti.image_id
          WHERE ti.task_id=?
          ORDER BY ti.sort_order ASC,ti.created_at ASC`,
         [img.taskId]
       );
-      inputImages=rows||[];
+      inputImages=(rows||[]).map(withSignedImageUrls);
     }
     const referenceImages=inputImages.filter(x=>x.role!=='IMAGE_A');
     img.inputImages=inputImages;
@@ -637,14 +652,14 @@ app.get('/api/images/:id/detail-rich', requireAuth, async (req,res)=>{
   }catch{}
   if(img.detailResolution&&!img.resolution) img.resolution=img.detailResolution;
   if(img.detailRatio&&!img.ratio) img.ratio=img.detailRatio;
-  res.json(img);
+  res.json(withSignedImageUrls(img));
 });
 
 
 app.get('/api/images/:id/detail', requireAuth, async (req,res)=>{
-  const [[img]]=await pool.query(`SELECT i.id,i.merchant_id merchantId,i.user_id userId,rel.source_image_id sourceImageId,i.original_name originalName,i.url,CASE WHEN COALESCE(i.thumb_storage_key,'')<>'' THEN CONCAT('/api/images/',i.id,'/thumb') WHEN i.thumb_url LIKE 'http%' THEN NULL ELSE i.thumb_url END thumbUrl,i.thumb_storage_key thumbStorageKey,i.source_type kind,NULL prompt,NULL userPrompt,0 quotaUsed,NULL settingsJson,0 freeRegenUsed,i.created_at createdAt,src.url sourceUrl,CASE WHEN COALESCE(src.thumb_storage_key,'')<>'' THEN CONCAT('/api/images/',src.id,'/thumb') WHEN src.thumb_url LIKE 'http%' THEN NULL ELSE src.thumb_url END sourceThumbUrl,src.thumb_storage_key sourceThumbStorageKey,src.original_name sourceOriginalName,u.display_name userName,m.company_name companyName FROM images i LEFT JOIN image_relations rel ON rel.target_image_id=i.id AND rel.relation_type='GENERATED_FROM' LEFT JOIN images src ON src.id=rel.source_image_id LEFT JOIN users u ON u.id=i.user_id LEFT JOIN merchants m ON m.id=i.merchant_id WHERE i.id=? AND (? OR i.user_id=? OR i.merchant_id=?)`,[req.params.id,isSystemAdmin(req.user),req.user.id,req.user.merchant_id]);
+  const [[img]]=await pool.query(`SELECT i.id,i.merchant_id merchantId,i.user_id userId,rel.source_image_id sourceImageId,i.original_name originalName,i.url,i.storage_key storageKey,CASE WHEN COALESCE(i.thumb_storage_key,'')<>'' THEN CONCAT('/api/images/',i.id,'/thumb') WHEN i.thumb_url LIKE 'http%' THEN NULL ELSE i.thumb_url END thumbUrl,i.thumb_storage_key thumbStorageKey,i.source_type kind,NULL prompt,NULL userPrompt,0 quotaUsed,NULL settingsJson,0 freeRegenUsed,i.created_at createdAt,src.url sourceUrl,src.storage_key sourceStorageKey,CASE WHEN COALESCE(src.thumb_storage_key,'')<>'' THEN CONCAT('/api/images/',src.id,'/thumb') WHEN src.thumb_url LIKE 'http%' THEN NULL ELSE src.thumb_url END sourceThumbUrl,src.thumb_storage_key sourceThumbStorageKey,src.original_name sourceOriginalName,u.display_name userName,m.company_name companyName FROM images i LEFT JOIN image_relations rel ON rel.target_image_id=i.id AND rel.relation_type='GENERATED_FROM' LEFT JOIN images src ON src.id=rel.source_image_id LEFT JOIN users u ON u.id=i.user_id LEFT JOIN merchants m ON m.id=i.merchant_id WHERE i.id=? AND (? OR i.user_id=? OR i.merchant_id=?)`,[req.params.id,isSystemAdmin(req.user),req.user.id,req.user.merchant_id]);
   if(!img) return res.status(404).json({message:'图片不存在'});
-  res.json(img);
+  res.json(withSignedImageUrls(img));
 });
 
 

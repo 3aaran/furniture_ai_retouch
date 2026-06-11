@@ -14,34 +14,32 @@ export function imageViewUrlFor(image, { api = '', assetBase = '', token = '' } 
     if (image.startsWith('/')) return assetUrlFromBase(image, { api, assetBase });
     return `${api}/api/images/${image}/view?token=${encodeURIComponent(token || '')}`;
   }
+  const url = image?.url || image?.imageUrl || image?.resultImage?.url || '';
+  if (url) return assetUrlFromBase(url, { api, assetBase });
   const id = image?.resultImage?.id || image?.imageId || image?.sourceId || (image?.itemType === 'task' ? image?.originImage?.id : image?.id);
-  if (id) return `${api}/api/images/${id}/view?token=${encodeURIComponent(token || '')}`;
-  const url = image?.url || image?.imageUrl || '';
-  if (!url) return '';
-  return assetUrlFromBase(url, { api, assetBase });
-}
-
-function withToken(url = '', token = '') {
-  if (!url || !token || !/(^|\/)api\/images\/[^/]+\/thumb(?:[?#]|$)/.test(String(url))) return url;
-  const separator = url.includes('?') ? '&' : '?';
-  return `${url}${separator}token=${encodeURIComponent(token)}`;
+  return id ? `${api}/api/images/${id}/view?token=${encodeURIComponent(token || '')}` : '';
 }
 
 export function thumbnailUrl(image) {
   if (!image || typeof image === 'string') return '';
   const direct = image.thumbUrl || image.thumb_url || image.thumbnailUrl || image.thumbnail_url || image.resultImage?.thumbUrl || image.resultImage?.thumb_url || '';
-  if (direct) return direct;
-  const id = image.id || image.imageId || image.resultImage?.id;
-  const thumbStorageKey = image.thumbStorageKey || image.thumb_storage_key || image.resultImage?.thumbStorageKey || image.resultImage?.thumb_storage_key || '';
-  return id && thumbStorageKey ? `/api/images/${encodeURIComponent(id)}/thumb` : '';
+  if (/(^|\/)api\/images\/[^/]+\/thumb(?:[?#]|$)/.test(String(direct))) return '';
+  return direct || '';
 }
 
 export function imageListUrl(image, options = {}) {
   const thumb = thumbnailUrl(image);
-  if (thumb) return withToken(assetUrlFromBase(thumb, options), options.token || '');
+  if (thumb) return assetUrlFromBase(thumb, options);
   return imageViewUrlFor(image, options);
 }
 
 export function imageFallbackUrl(image, options = {}) {
+  return imageViewUrlFor(image, options);
+}
+
+export function imageDownloadUrl(image, options = {}) {
+  if (!image) return '';
+  const direct = typeof image === 'string' ? '' : (image.downloadUrl || image.download_url || image.resultImage?.downloadUrl || image.resultImage?.download_url || '');
+  if (direct) return assetUrlFromBase(direct, options);
   return imageViewUrlFor(image, options);
 }

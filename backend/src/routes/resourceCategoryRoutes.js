@@ -1,7 +1,7 @@
 ﻿import { v4 as uuid } from 'uuid';
 import { pool } from '../db.js';
 import { requireAuth } from '../auth.js';
-import { getStoredFileMeta } from '../services/storageService.js';
+import { getStoredFileMeta, imageSignedAccessFields } from '../services/storageService.js';
 
 const purposeMap = {
   product: { id: 3, name: '产品参考', key: 'user_reference' },
@@ -270,12 +270,15 @@ export function registerResourceCategoryRoutes(app) {
       ORDER BY t.submitted_at DESC
       LIMIT 20
     `, [image.id, image.id, image.id, image.id, ...taskScopeParams]);
+    const imageAccess = imageSignedAccessFields(image);
     res.json({
       image: {
         id: image.id,
         name: image.display_name || image.original_name || `资源-${String(image.id).slice(0, 8)}`,
-        url: image.url,
-        thumbUrl: image.thumb_storage_key ? `/api/images/${image.id}/thumb` : (/^https?:\/\//i.test(String(image.thumb_url || '')) ? '' : (image.thumb_url || '')),
+        url: imageAccess.url,
+        imageUrl: imageAccess.url,
+        thumbUrl: imageAccess.thumbUrl,
+        downloadUrl: imageAccess.downloadUrl,
         thumbStorageKey: image.thumb_storage_key || '',
         fileSize: Number(image.size_bytes || 0),
         width: image.width,

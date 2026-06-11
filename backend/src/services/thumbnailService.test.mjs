@@ -24,10 +24,10 @@ describe('thumbnail service helpers', () => {
     assert.equal(visibleThumbnailUrl({ url: '/files/original3.png' }), '/files/original3.png');
   });
 
-  it('uses the backend proxy path when a private thumbnail storage key exists', () => {
+  it('uses a storage URL when a private thumbnail storage key exists', () => {
     assert.equal(
       thumbnailAccessUrl({ id: 'img_oss_1', thumb_storage_key: 'images/thumbs/private.webp', thumb_url: 'https://bucket.oss/private.webp' }),
-      '/api/images/img_oss_1/thumb'
+      '/files/images/thumbs/private.webp'
     );
   });
 });

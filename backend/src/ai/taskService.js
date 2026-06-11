@@ -6,10 +6,10 @@ import { getAiConfig, getFeatureConfig } from './configService.js';
 import { buildAiPrompt, buildPromptParts, featureNameMap } from './promptService.js';
 import { normalizeTaskParams, validateTaskParams } from './taskParamService.js';
 import { callImageModel } from './providerService.js';
-import { urlToDiskPath, getStoredFileMeta, MIN_GENERATION_STORAGE_BYTES, assertUserStorageAvailable, applyUserStorageDelta, deleteStoredFile, getUserStorageSummary, getImageAccessUrl } from '../services/storageService.js';
+import { urlToDiskPath, getStoredFileMeta, MIN_GENERATION_STORAGE_BYTES, assertUserStorageAvailable, applyUserStorageDelta, deleteStoredFile, getUserStorageSummary, getImageAccessUrl, imageSignedAccessFields, withSignedImageUrls } from '../services/storageService.js';
 import { writeSystemLog } from '../services/loggerService.js';
 import { bindImageToResourceCategory } from '../services/resourceBindingService.js';
-import { generateThumbnailBestEffort, thumbnailAccessUrl } from '../services/thumbnailService.js';
+import { generateThumbnailBestEffort } from '../services/thumbnailService.js';
 
 function isSystemAdmin(user) {
   return user?.role === 'SYSTEM_ADMIN';
@@ -156,9 +156,12 @@ async function getTaskForUser(taskId, user) {
     SELECT
       t.*,
       ri.url AS resultUrl,
+      ri.storage_key AS resultStorageKey,
       ri.thumb_url AS resultThumbUrl,
       ri.thumb_storage_key AS resultThumbStorageKey,
+      ri.original_name AS resultOriginalName,
       oi.url AS originUrl,
+      oi.storage_key AS originStorageKey,
       oi.thumb_url AS originThumbUrl,
       oi.thumb_storage_key AS originThumbStorageKey,
       oi.original_name AS originOriginalName,
@@ -191,16 +194,23 @@ function publicTask(task) {
     ratio: task.ratio
   });
 
-  const resultThumbUrl = thumbnailAccessUrl({
+  const resultAccess = imageSignedAccessFields({
     id: task.result_image_id,
+    url: task.resultUrl,
+    storage_key: task.resultStorageKey,
     thumb_url: task.resultThumbUrl,
-    thumb_storage_key: task.resultThumbStorageKey
+    thumb_storage_key: task.resultThumbStorageKey,
+    original_name: task.resultOriginalName
   });
-  const originThumbUrl = thumbnailAccessUrl({
+  const originAccess = imageSignedAccessFields({
     id: task.origin_image_id,
+    url: task.originUrl,
+    storage_key: task.originStorageKey,
     thumb_url: task.originThumbUrl,
-    thumb_storage_key: task.originThumbStorageKey
+    thumb_storage_key: task.originThumbStorageKey,
+    original_name: task.originOriginalName
   });
+  const displayAccess = task.result_image_id ? resultAccess : originAccess;
 
   return {
     id: task.id,
@@ -217,12 +227,15 @@ function publicTask(task) {
     resolution: task.resolution,
     ratio: task.ratio,
 
-    url: task.resultUrl || task.originUrl,
-    previewUrl: resultThumbUrl || task.resultUrl || originThumbUrl || task.originUrl,
-    resultUrl: task.resultUrl || null,
-    thumbUrl: resultThumbUrl || originThumbUrl || null,
+    url: displayAccess.url || '',
+    previewUrl: displayAccess.thumbUrl || displayAccess.url || '',
+    resultUrl: resultAccess.url || null,
+    thumbUrl: displayAccess.thumbUrl || null,
+    downloadUrl: displayAccess.downloadUrl || displayAccess.url || '',
     thumbStorageKey: task.resultThumbStorageKey || task.originThumbStorageKey || null,
-    sourceUrl: task.originUrl || null,
+    sourceUrl: originAccess.url || null,
+    sourceThumbUrl: originAccess.thumbUrl || null,
+    sourceDownloadUrl: originAccess.downloadUrl || null,
 
     userPrompt: task.user_prompt || '',
     taskParams,
@@ -259,13 +272,14 @@ function publicTask(task) {
 
     imageId: task.result_image_id || null,
     resultImage: task.result_image_id
-      ? { id: task.result_image_id, url: task.resultUrl, thumbUrl: resultThumbUrl || null, thumbStorageKey: task.resultThumbStorageKey || null }
+      ? { id: task.result_image_id, url: resultAccess.url, thumbUrl: resultAccess.thumbUrl || null, downloadUrl: resultAccess.downloadUrl || null, thumbStorageKey: task.resultThumbStorageKey || null }
       : null,
 
     originImage: {
       id: task.origin_image_id,
-      url: task.originUrl,
-      thumbUrl: originThumbUrl || null,
+      url: originAccess.url,
+      thumbUrl: originAccess.thumbUrl || null,
+      downloadUrl: originAccess.downloadUrl || null,
       thumbStorageKey: task.originThumbStorageKey || null,
       originalName: task.originOriginalName || ''
     },
@@ -912,14 +926,15 @@ export async function getAiTaskDetail(taskId, user) {
     'SELECT event_type eventType,event_detail eventDetail,created_at createdAt FROM ai_task_events WHERE task_id=? ORDER BY created_at ASC',
     [taskId]
   );
-  const [inputImages] = await pool.query(
-    `SELECT ti.input_role role,ti.sort_order sortOrder,im.id,im.url,CASE WHEN COALESCE(im.thumb_storage_key,'')<>'' THEN CONCAT('/api/images/',im.id,'/thumb') WHEN im.thumb_url LIKE 'http%' THEN NULL ELSE im.thumb_url END thumbUrl,im.thumb_storage_key thumbStorageKey,im.original_name originalName
+  const [inputImageRows] = await pool.query(
+    `SELECT ti.input_role role,ti.sort_order sortOrder,im.id,im.url,im.storage_key storageKey,CASE WHEN COALESCE(im.thumb_storage_key,'')<>'' THEN CONCAT('/api/images/',im.id,'/thumb') WHEN im.thumb_url LIKE 'http%' THEN NULL ELSE im.thumb_url END thumbUrl,im.thumb_storage_key thumbStorageKey,im.original_name originalName
      FROM ai_task_inputs ti
      JOIN images im ON im.id=ti.image_id
      WHERE ti.task_id=?
      ORDER BY ti.sort_order ASC,ti.created_at ASC`,
     [taskId]
   );
+  const inputImages=(inputImageRows||[]).map(withSignedImageUrls);
   const referenceImages=(inputImages||[]).filter(x=>x.role!=='IMAGE_A');
   return {
     ...t,
@@ -978,9 +993,12 @@ export async function getRecentAiTasks(user, { pageSize = 20, keyword = '' } = {
     SELECT
       t.*,
       ri.url AS resultUrl,
+      ri.storage_key AS resultStorageKey,
       ri.thumb_url AS resultThumbUrl,
       ri.thumb_storage_key AS resultThumbStorageKey,
+      ri.original_name AS resultOriginalName,
       oi.url AS originUrl,
+      oi.storage_key AS originStorageKey,
       oi.thumb_url AS originThumbUrl,
       oi.thumb_storage_key AS originThumbStorageKey,
       oi.original_name AS originOriginalName,
@@ -1119,9 +1137,12 @@ export async function getAdminAiTasks(req) {
     SELECT
       t.*,
       ri.url AS resultUrl,
+      ri.storage_key AS resultStorageKey,
       ri.thumb_url AS resultThumbUrl,
       ri.thumb_storage_key AS resultThumbStorageKey,
+      ri.original_name AS resultOriginalName,
       oi.url AS originUrl,
+      oi.storage_key AS originStorageKey,
       oi.thumb_url AS originThumbUrl,
       oi.thumb_storage_key AS originThumbStorageKey,
       fc.feature_name AS featureName,

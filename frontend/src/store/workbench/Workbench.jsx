@@ -1,6 +1,6 @@
 ﻿import React,{useEffect,useRef,useState}from'react';
 import{Brush,Camera,Clapperboard,Download,Eye,Image as ImageIcon,Layers,PenLine,Rotate3d,Search,Trash2,WandSparkles}from'lucide-react';
-import{API,token,req,reqForm,fmt,resTypeName,imageViewUrl,imageListUrl,assetUrl,fallbackToOriginalImage}from'../../appShared.jsx';
+import{API,token,req,reqForm,fmt,resTypeName,imageViewUrl,imageListUrl,assetUrl,fallbackToOriginalImage,openImageDownload}from'../../appShared.jsx';
 import{getFeatureDisplayName}from'../../config/uiText.js';
 import{featureConfig}from'../../config/featureConfig.jsx';
 import WorkbenchUploadPanel from'./WorkbenchUploadPanel.jsx';
@@ -1012,7 +1012,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
               zIndex:3
             }}
           >
-            {renderRecentActionButton(<Download size={14}/>,(e)=>{e.stopPropagation();window.open(`${API}/api/images/${recentImageId(item)}/download?token=${token()}`,'_blank');},'下载')}
+            {renderRecentActionButton(<Download size={14}/>,(e)=>{e.stopPropagation();openImageDownload(item,setMsg);},'下载')}
             {renderRecentActionButton(<Trash2 size={14}/>,(e)=>deleteRecentTask(item,e),'删除',{danger:true})}
           </div>}
         </div>
