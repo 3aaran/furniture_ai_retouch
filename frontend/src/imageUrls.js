@@ -21,13 +21,27 @@ export function imageViewUrlFor(image, { api = '', assetBase = '', token = '' } 
   return assetUrlFromBase(url, { api, assetBase });
 }
 
+function withToken(url = '', token = '') {
+  if (!url || !token || !/(^|\/)api\/images\/[^/]+\/thumb(?:[?#]|$)/.test(String(url))) return url;
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}token=${encodeURIComponent(token)}`;
+}
+
 export function thumbnailUrl(image) {
   if (!image || typeof image === 'string') return '';
-  return image.thumbUrl || image.thumb_url || image.thumbnailUrl || image.thumbnail_url || image.resultImage?.thumbUrl || image.resultImage?.thumb_url || '';
+  const direct = image.thumbUrl || image.thumb_url || image.thumbnailUrl || image.thumbnail_url || image.resultImage?.thumbUrl || image.resultImage?.thumb_url || '';
+  if (direct) return direct;
+  const id = image.id || image.imageId || image.resultImage?.id;
+  const thumbStorageKey = image.thumbStorageKey || image.thumb_storage_key || image.resultImage?.thumbStorageKey || image.resultImage?.thumb_storage_key || '';
+  return id && thumbStorageKey ? `/api/images/${encodeURIComponent(id)}/thumb` : '';
 }
 
 export function imageListUrl(image, options = {}) {
   const thumb = thumbnailUrl(image);
-  if (thumb) return assetUrlFromBase(thumb, options);
+  if (thumb) return withToken(assetUrlFromBase(thumb, options), options.token || '');
+  return imageViewUrlFor(image, options);
+}
+
+export function imageFallbackUrl(image, options = {}) {
   return imageViewUrlFor(image, options);
 }

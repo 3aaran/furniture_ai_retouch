@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { thumbnailStorageKeyFromImage, visibleThumbnailUrl } from './thumbnailService.js';
+import { thumbnailAccessUrl, thumbnailStorageKeyFromImage, visibleThumbnailUrl } from './thumbnailService.js';
 
 describe('thumbnail service helpers', () => {
   it('builds a thumbnail key without replacing the original image key', () => {
@@ -22,5 +22,12 @@ describe('thumbnail service helpers', () => {
     assert.equal(visibleThumbnailUrl({ thumb_url: '/files/thumb.webp', url: '/files/original.png' }), '/files/thumb.webp');
     assert.equal(visibleThumbnailUrl({ thumbUrl: '/files/thumb2.webp', url: '/files/original2.png' }), '/files/thumb2.webp');
     assert.equal(visibleThumbnailUrl({ url: '/files/original3.png' }), '/files/original3.png');
+  });
+
+  it('uses the backend proxy path when a private thumbnail storage key exists', () => {
+    assert.equal(
+      thumbnailAccessUrl({ id: 'img_oss_1', thumb_storage_key: 'images/thumbs/private.webp', thumb_url: 'https://bucket.oss/private.webp' }),
+      '/api/images/img_oss_1/thumb'
+    );
   });
 });

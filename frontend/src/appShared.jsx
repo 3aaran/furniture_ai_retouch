@@ -1,7 +1,7 @@
 import React,{useEffect,useState}from'react';
 import{ChevronLeft,ChevronRight,Search,Download}from'lucide-react';
 import{roleName,audienceName,resourceTypeName,statusName,messageText,getDisplayStatusName}from'./config/uiText.js';
-import{assetUrlFromBase,imageListUrl as imageListUrlBase,imageViewUrlFor}from'./imageUrls.js';
+import{assetUrlFromBase,imageFallbackUrl as imageFallbackUrlBase,imageListUrl as imageListUrlBase,imageViewUrlFor}from'./imageUrls.js';
 
 const apiBase=(import.meta.env.VITE_API_BASE_URL||'/api').replace(/\/$/,'');
 export const API=apiBase==='/api'?'':apiBase;
@@ -73,6 +73,17 @@ export function imageViewUrl(image){
 }
 export function imageListUrl(image){
   return imageListUrlBase(image,{api:API,assetBase:ASSET_BASE,token:token()||''});
+}
+export function imageFallbackUrl(image){
+  return imageFallbackUrlBase(image,{api:API,assetBase:ASSET_BASE,token:token()||''});
+}
+export function fallbackToOriginalImage(event,image){
+  const fallback=imageFallbackUrl(image);
+  const img=event?.currentTarget;
+  if(img&&fallback&&img.dataset.originalFallbackApplied!=='1'){
+    img.dataset.originalFallbackApplied='1';
+    img.src=fallback;
+  }
 }
 export function assetUrl(url){
   return assetUrlFromBase(url,{api:API,assetBase:ASSET_BASE});

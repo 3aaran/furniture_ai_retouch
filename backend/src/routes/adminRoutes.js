@@ -262,14 +262,14 @@ export function registerAdminRoutes(app,{upload}){
     if(req.query.endDate){ wh.push('DATE(i.created_at)<=?'); ps.push(req.query.endDate); }
     const where='WHERE '+wh.join(' AND ');
     const base=`FROM images i LEFT JOIN ai_task_outputs ato ON ato.image_id=i.id LEFT JOIN ai_tasks t ON t.id=ato.task_id LEFT JOIN ai_task_prompts tp ON tp.task_id=t.id LEFT JOIN ai_task_options opt ON opt.task_id=t.id LEFT JOIN image_relations rel ON rel.target_image_id=i.id AND rel.relation_type='GENERATED_FROM' LEFT JOIN images src ON src.id=rel.source_image_id LEFT JOIN users u ON u.id=i.user_id LEFT JOIN merchants m ON m.id=i.merchant_id ${where}`;
-    const sql=`SELECT i.id,i.merchant_id merchantId,i.user_id userId,rel.source_image_id sourceImageId,i.url,i.thumb_url thumbUrl,i.source_type kind,tp.final_prompt prompt,tp.user_prompt userPrompt,t.cost quotaUsed,opt.options_json settingsJson,i.created_at createdAt,src.url sourceUrl,src.thumb_url sourceThumbUrl,src.original_name sourceOriginalName,u.display_name userName,u.username,u.phone,m.company_name companyName ${base} ORDER BY i.created_at DESC`;
+    const sql=`SELECT i.id,i.merchant_id merchantId,i.user_id userId,rel.source_image_id sourceImageId,i.url,CASE WHEN COALESCE(i.thumb_storage_key,'')<>'' THEN CONCAT('/api/images/',i.id,'/thumb') WHEN i.thumb_url LIKE 'http%' THEN NULL ELSE i.thumb_url END thumbUrl,i.thumb_storage_key thumbStorageKey,i.source_type kind,tp.final_prompt prompt,tp.user_prompt userPrompt,t.cost quotaUsed,opt.options_json settingsJson,i.created_at createdAt,src.url sourceUrl,CASE WHEN COALESCE(src.thumb_storage_key,'')<>'' THEN CONCAT('/api/images/',src.id,'/thumb') WHEN src.thumb_url LIKE 'http%' THEN NULL ELSE src.thumb_url END sourceThumbUrl,src.thumb_storage_key sourceThumbStorageKey,src.original_name sourceOriginalName,u.display_name userName,u.username,u.phone,m.company_name companyName ${base} ORDER BY i.created_at DESC`;
     const countSql=`SELECT COUNT(*) total ${base}`;
     res.json(await paged(sql,countSql,ps,req,x=>x));
   });
   
   app.get('/api/admin/task-images/:id', requireAuth, async (req,res)=>{
     if(!isSystemAdmin(req.user)) return res.status(403).json({message:SYSTEM_ADMIN_REQUIRED_MESSAGE});
-    const [[img]]=await pool.query(`SELECT i.id,i.merchant_id merchantId,i.user_id userId,rel.source_image_id sourceImageId,i.original_name originalName,i.url,i.thumb_url thumbUrl,i.source_type kind,tp.final_prompt prompt,tp.user_prompt userPrompt,t.cost quotaUsed,opt.options_json settingsJson,0 freeRegenUsed,i.created_at createdAt,src.url sourceUrl,src.thumb_url sourceThumbUrl,src.original_name sourceOriginalName,u.display_name userName,u.username,u.phone,m.company_name companyName FROM images i LEFT JOIN ai_task_outputs ato ON ato.image_id=i.id LEFT JOIN ai_tasks t ON t.id=ato.task_id LEFT JOIN ai_task_prompts tp ON tp.task_id=t.id LEFT JOIN ai_task_options opt ON opt.task_id=t.id LEFT JOIN image_relations rel ON rel.target_image_id=i.id AND rel.relation_type='GENERATED_FROM' LEFT JOIN images src ON src.id=rel.source_image_id LEFT JOIN users u ON u.id=i.user_id LEFT JOIN merchants m ON m.id=i.merchant_id WHERE i.id=?`,[req.params.id]);
+    const [[img]]=await pool.query(`SELECT i.id,i.merchant_id merchantId,i.user_id userId,rel.source_image_id sourceImageId,i.original_name originalName,i.url,CASE WHEN COALESCE(i.thumb_storage_key,'')<>'' THEN CONCAT('/api/images/',i.id,'/thumb') WHEN i.thumb_url LIKE 'http%' THEN NULL ELSE i.thumb_url END thumbUrl,i.thumb_storage_key thumbStorageKey,i.source_type kind,tp.final_prompt prompt,tp.user_prompt userPrompt,t.cost quotaUsed,opt.options_json settingsJson,0 freeRegenUsed,i.created_at createdAt,src.url sourceUrl,CASE WHEN COALESCE(src.thumb_storage_key,'')<>'' THEN CONCAT('/api/images/',src.id,'/thumb') WHEN src.thumb_url LIKE 'http%' THEN NULL ELSE src.thumb_url END sourceThumbUrl,src.thumb_storage_key sourceThumbStorageKey,src.original_name sourceOriginalName,u.display_name userName,u.username,u.phone,m.company_name companyName FROM images i LEFT JOIN ai_task_outputs ato ON ato.image_id=i.id LEFT JOIN ai_tasks t ON t.id=ato.task_id LEFT JOIN ai_task_prompts tp ON tp.task_id=t.id LEFT JOIN ai_task_options opt ON opt.task_id=t.id LEFT JOIN image_relations rel ON rel.target_image_id=i.id AND rel.relation_type='GENERATED_FROM' LEFT JOIN images src ON src.id=rel.source_image_id LEFT JOIN users u ON u.id=i.user_id LEFT JOIN merchants m ON m.id=i.merchant_id WHERE i.id=?`,[req.params.id]);
     if(!img) return res.status(404).json({message:'图片不存在'});
     res.json(img);
   });
@@ -373,7 +373,8 @@ export function registerAdminRoutes(app,{upload}){
       mainCategoryName:r.mainCategoryName||'未分类',
       subCategoryName:Number(r.isMainOnly||0)?'':(r.subCategoryName||''),
       imageUrl:r.url,
-      thumbUrl:r.thumb_url || '',
+      thumbUrl:r.thumb_storage_key?`/api/images/${r.id}/thumb`:(/^https?:\/\//i.test(String(r.thumb_url||''))?'':(r.thumb_url || '')),
+      thumbStorageKey:r.thumb_storage_key || '',
       fileSize:Number(r.size_bytes||0),
       width:r.width||null,
       height:r.height||null,

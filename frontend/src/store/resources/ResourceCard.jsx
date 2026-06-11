@@ -1,6 +1,6 @@
 import React from'react';
 import{Eye,Pencil}from'lucide-react';
-import{resTypeName}from'../../appShared.jsx';
+import{fallbackToOriginalImage,resTypeName}from'../../appShared.jsx';
 
 export default function ResourceCard({
   resource,
@@ -21,7 +21,7 @@ export default function ResourceCard({
     </label>}
 
     <div className="resourceImageV3">
-      {url?<img src={url} alt={resource.name} loading="lazy" decoding="async"/>:<div className="resourcePlaceholderV3">{resTypeName[resource.resourceType]||'资源'}</div>}
+      {url?<img src={url} alt={resource.name} onError={e=>fallbackToOriginalImage(e,resource)} loading="lazy" decoding="async"/>:<div className="resourcePlaceholderV3">{resTypeName[resource.resourceType]||'资源'}</div>}
       <div className="resourceHoverActionsV3">
         <button title="预览" onClick={()=>onPreview(resource.id)}><Eye size={18}/></button>
         {canManage&&<button title="重命名" onClick={()=>onRename(resource)}><Pencil size={17}/></button>}

@@ -9,7 +9,7 @@ import { callImageModel } from './providerService.js';
 import { urlToDiskPath, getStoredFileMeta, MIN_GENERATION_STORAGE_BYTES, assertUserStorageAvailable, applyUserStorageDelta, deleteStoredFile, getUserStorageSummary, getImageAccessUrl } from '../services/storageService.js';
 import { writeSystemLog } from '../services/loggerService.js';
 import { bindImageToResourceCategory } from '../services/resourceBindingService.js';
-import { generateThumbnailBestEffort } from '../services/thumbnailService.js';
+import { generateThumbnailBestEffort, thumbnailAccessUrl } from '../services/thumbnailService.js';
 
 function isSystemAdmin(user) {
   return user?.role === 'SYSTEM_ADMIN';
@@ -157,8 +157,10 @@ async function getTaskForUser(taskId, user) {
       t.*,
       ri.url AS resultUrl,
       ri.thumb_url AS resultThumbUrl,
+      ri.thumb_storage_key AS resultThumbStorageKey,
       oi.url AS originUrl,
       oi.thumb_url AS originThumbUrl,
+      oi.thumb_storage_key AS originThumbStorageKey,
       oi.original_name AS originOriginalName,
       u.display_name AS userName,
       u.phone AS userPhone,
@@ -189,6 +191,17 @@ function publicTask(task) {
     ratio: task.ratio
   });
 
+  const resultThumbUrl = thumbnailAccessUrl({
+    id: task.result_image_id,
+    thumb_url: task.resultThumbUrl,
+    thumb_storage_key: task.resultThumbStorageKey
+  });
+  const originThumbUrl = thumbnailAccessUrl({
+    id: task.origin_image_id,
+    thumb_url: task.originThumbUrl,
+    thumb_storage_key: task.originThumbStorageKey
+  });
+
   return {
     id: task.id,
     itemType: 'task',
@@ -205,9 +218,10 @@ function publicTask(task) {
     ratio: task.ratio,
 
     url: task.resultUrl || task.originUrl,
-    previewUrl: task.resultThumbUrl || task.resultUrl || task.originThumbUrl || task.originUrl,
+    previewUrl: resultThumbUrl || task.resultUrl || originThumbUrl || task.originUrl,
     resultUrl: task.resultUrl || null,
-    thumbUrl: task.resultThumbUrl || task.originThumbUrl || null,
+    thumbUrl: resultThumbUrl || originThumbUrl || null,
+    thumbStorageKey: task.resultThumbStorageKey || task.originThumbStorageKey || null,
     sourceUrl: task.originUrl || null,
 
     userPrompt: task.user_prompt || '',
@@ -245,13 +259,14 @@ function publicTask(task) {
 
     imageId: task.result_image_id || null,
     resultImage: task.result_image_id
-      ? { id: task.result_image_id, url: task.resultUrl, thumbUrl: task.resultThumbUrl || null }
+      ? { id: task.result_image_id, url: task.resultUrl, thumbUrl: resultThumbUrl || null, thumbStorageKey: task.resultThumbStorageKey || null }
       : null,
 
     originImage: {
       id: task.origin_image_id,
       url: task.originUrl,
-      thumbUrl: task.originThumbUrl || null,
+      thumbUrl: originThumbUrl || null,
+      thumbStorageKey: task.originThumbStorageKey || null,
       originalName: task.originOriginalName || ''
     },
 
@@ -898,7 +913,7 @@ export async function getAiTaskDetail(taskId, user) {
     [taskId]
   );
   const [inputImages] = await pool.query(
-    `SELECT ti.input_role role,ti.sort_order sortOrder,im.id,im.url,im.thumb_url thumbUrl,im.original_name originalName
+    `SELECT ti.input_role role,ti.sort_order sortOrder,im.id,im.url,CASE WHEN COALESCE(im.thumb_storage_key,'')<>'' THEN CONCAT('/api/images/',im.id,'/thumb') WHEN im.thumb_url LIKE 'http%' THEN NULL ELSE im.thumb_url END thumbUrl,im.thumb_storage_key thumbStorageKey,im.original_name originalName
      FROM ai_task_inputs ti
      JOIN images im ON im.id=ti.image_id
      WHERE ti.task_id=?
@@ -964,8 +979,10 @@ export async function getRecentAiTasks(user, { pageSize = 20, keyword = '' } = {
       t.*,
       ri.url AS resultUrl,
       ri.thumb_url AS resultThumbUrl,
+      ri.thumb_storage_key AS resultThumbStorageKey,
       oi.url AS originUrl,
       oi.thumb_url AS originThumbUrl,
+      oi.thumb_storage_key AS originThumbStorageKey,
       oi.original_name AS originOriginalName,
       fc.feature_name AS featureName,
       u.display_name AS userName,
@@ -1103,8 +1120,10 @@ export async function getAdminAiTasks(req) {
       t.*,
       ri.url AS resultUrl,
       ri.thumb_url AS resultThumbUrl,
+      ri.thumb_storage_key AS resultThumbStorageKey,
       oi.url AS originUrl,
       oi.thumb_url AS originThumbUrl,
+      oi.thumb_storage_key AS originThumbStorageKey,
       fc.feature_name AS featureName,
       u.display_name AS userName,
       m.company_name AS companyName

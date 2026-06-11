@@ -170,6 +170,7 @@ export async function initDb(){
     storage_key VARCHAR(700) NOT NULL,
     url VARCHAR(800) NOT NULL,
     thumb_url VARCHAR(800) NULL,
+    thumb_storage_key VARCHAR(700) NULL,
     source_type ENUM('UPLOAD','AI_GENERATED','WATERMARK','PROCESS_RESULT','RESOURCE','PHOTO','OTHER') NOT NULL DEFAULT 'UPLOAD',
     resource_scope ENUM('SYSTEM','MERCHANT','USER') NULL,
     status ENUM('ACTIVE','DELETED') NOT NULL DEFAULT 'ACTIVE',
@@ -259,6 +260,7 @@ export async function initDb(){
   await ensureColumn('images', 'storage_provider', "VARCHAR(30) NOT NULL DEFAULT 'local'", 'height');
   await ensureColumn('images', 'storage_key', "VARCHAR(700) NOT NULL DEFAULT ''", 'storage_provider');
   await ensureColumn('images', 'thumb_url', 'VARCHAR(800) NULL', 'url');
+  await ensureColumn('images', 'thumb_storage_key', 'VARCHAR(700) NULL', 'thumb_url');
   await ensureColumn('images', 'resource_scope', "ENUM('SYSTEM','MERCHANT','USER') NULL", 'source_type');
   await pool.query(`
     UPDATE images i

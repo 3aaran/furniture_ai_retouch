@@ -22,18 +22,19 @@ function printUsage() {
 
 async function assertThumbColumnExists() {
   const [rows] = await pool.query(
-    'SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME="images" AND COLUMN_NAME="thumb_url"'
+    'SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME="images" AND COLUMN_NAME IN ("thumb_url","thumb_storage_key")'
   );
-  if (!rows.length) {
+  const columns = new Set(rows.map((row) => row.COLUMN_NAME));
+  if (!columns.has('thumb_storage_key')) {
     throw new Error(
-      'images.thumb_url column does not exist. Deploy the DB migration first, or run: ALTER TABLE images ADD COLUMN thumb_url VARCHAR(800) NULL AFTER url;'
+      'images.thumb_storage_key column does not exist. Deploy the DB migration first, or run: ALTER TABLE images ADD COLUMN thumb_storage_key VARCHAR(700) NULL AFTER thumb_url;'
     );
   }
 }
 
 async function countMissingThumbnails() {
   const [[row]] = await pool.query(
-    'SELECT COUNT(*) total FROM images WHERE status="ACTIVE" AND COALESCE(url,"")<>"" AND (thumb_url IS NULL OR thumb_url="")'
+    'SELECT COUNT(*) total FROM images WHERE status="ACTIVE" AND COALESCE(url,"")<>"" AND (thumb_storage_key IS NULL OR thumb_storage_key="")'
   );
   return Number(row?.total || 0);
 }
@@ -52,7 +53,7 @@ async function loadBatch(cursor) {
     FROM images
     WHERE status="ACTIVE"
       AND COALESCE(url,"")<>""
-      AND (thumb_url IS NULL OR thumb_url="")
+      AND (thumb_storage_key IS NULL OR thumb_storage_key="")
       ${cursorSql}
     ORDER BY created_at ASC, id ASC
     LIMIT ?

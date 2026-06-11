@@ -3,7 +3,7 @@ import path from 'path';
 import axios from 'axios';
 import sharp from 'sharp';
 
-import { getImageAccessUrl, publicUrlFromStorageKey, saveBufferToStorage, storageKeyFromUrl, urlToDiskPath } from './storageService.js';
+import { getImageAccessUrl, saveBufferToStorage, storageKeyFromUrl, urlToDiskPath } from './storageService.js';
 
 const THUMB_WIDTH = Number(process.env.THUMBNAIL_WIDTH || 360);
 const THUMB_QUALITY = Number(process.env.THUMBNAIL_QUALITY || 72);
@@ -13,7 +13,15 @@ function normalizeStorageKey(image = {}) {
 }
 
 export function visibleThumbnailUrl(image = {}) {
-  return image.thumb_url || image.thumbUrl || image.url || image.imageUrl || '';
+  return thumbnailAccessUrl(image) || image.url || image.imageUrl || '';
+}
+
+export function thumbnailAccessUrl(image = {}) {
+  const id = image.id || image.imageId;
+  const thumbStorageKey = image.thumb_storage_key || image.thumbStorageKey || '';
+  if (id && thumbStorageKey) return `/api/images/${encodeURIComponent(id)}/thumb`;
+  const legacyUrl = image.thumb_url || image.thumbUrl || '';
+  return /^https?:\/\//i.test(String(legacyUrl)) ? '' : legacyUrl;
 }
 
 export function thumbnailStorageKeyFromImage(image = {}) {
@@ -60,11 +68,11 @@ export async function generateThumbnailBestEffort(db, image = {}, context = {}) 
   if (!image?.id || !image?.url) return '';
   try {
     const saved = await createImageThumbnail(image, context);
-    const thumbUrl = saved?.url || publicUrlFromStorageKey(saved?.storageKey || '');
-    if (thumbUrl) {
-      await db.query('UPDATE images SET thumb_url=? WHERE id=?', [thumbUrl, image.id]);
+    const thumbStorageKey = saved?.storageKey || '';
+    if (thumbStorageKey) {
+      await db.query('UPDATE images SET thumb_storage_key=?, thumb_url=NULL WHERE id=?', [thumbStorageKey, image.id]);
     }
-    return thumbUrl;
+    return thumbnailAccessUrl({ id: image.id, thumb_storage_key: thumbStorageKey });
   } catch (err) {
     console.warn('[thumbnail] generate failed', image.id, err?.name || err?.code || 'Error', err?.message || err);
     return '';

@@ -557,8 +557,12 @@ export async function applyUserStorageDelta(conn, userId, deltaBytes = 0, log = 
 
 export async function deleteStoredFile(imageOrUrl = '') {
   const thumbUrl = typeof imageOrUrl === 'object' ? imageOrUrl.thumb_url || imageOrUrl.thumbUrl || '' : '';
+  const thumbStorageKey = typeof imageOrUrl === 'object' ? imageOrUrl.thumb_storage_key || imageOrUrl.thumbStorageKey || '' : '';
   const url = typeof imageOrUrl === 'string' ? imageOrUrl : (imageOrUrl.url || '');
   const deleted = await deleteSingleStoredFile(imageOrUrl);
+  if (thumbStorageKey) {
+    await deleteSingleStoredFile({ storage_key: thumbStorageKey });
+  }
   if (thumbUrl && thumbUrl !== url) {
     await deleteSingleStoredFile(thumbUrl);
   }
