@@ -48,38 +48,43 @@ function watermarkPlacement(config={}){
   return map[position]||map.center;
 }
 
+function textWatermarkConfig(config={}){
+  return {
+    ...config,
+    mode:'text',
+    text:String(config.text||'').trim(),
+    image:'',
+    imageId:'',
+    imageUrl:''
+  };
+}
+
 function WatermarkOverlay({config}){
-  if(!config)return null;
-  if(config.mode==='text'&&config.style==='tile'){
+  const textConfig=textWatermarkConfig(config||{});
+  if(!textConfig.text)return null;
+  if(textConfig.style==='tile'){
     const items=Array.from({length:40});
     return <div
       className="taskWatermarkTile"
       style={{
-        color:config.color||'#f0d68a',
-        opacity:Number(config.opacity||100)/100,
-        fontSize:`${Math.max(14,Number(config.fontSize||46)*0.34)}px`,
-        transform:`rotate(${Number(config.rotate||0)}deg)`,
-        gap:`${Math.max(12,Number(config.gap||220)*0.12)}px`
+        color:textConfig.color||'#f0d68a',
+        opacity:Number(textConfig.opacity||100)/100,
+        fontSize:`${Math.max(14,Number(textConfig.fontSize||46)*0.34)}px`,
+        transform:`rotate(${Number(textConfig.rotate||0)}deg)`,
+        gap:`${Math.max(12,Number(textConfig.gap||220)*0.12)}px`
       }}
     >
-      {items.map((_,i)=><span key={i}>{config.text||'文字水印'}{config.subText?<small style={{color:config.accent||'#fff'}}>{config.subText}</small>:null}</span>)}
+      {items.map((_,i)=><span key={i}>{textConfig.text}{textConfig.subText?<small style={{color:textConfig.accent||'#fff'}}>{textConfig.subText}</small>:null}</span>)}
     </div>;
   }
   const baseStyle={
-    ...watermarkPlacement(config),
-    opacity:Number(config.opacity||100)/100
+    ...watermarkPlacement(textConfig),
+    opacity:Number(textConfig.opacity||100)/100
   };
-  if(config.mode==='text'){
-    return <div className={`taskWatermarkText ${config.style||'signature'}`} style={{...baseStyle,color:config.color||'#f0d68a',fontSize:`${Math.max(16,Number(config.fontSize||46)*0.5)}px`,transform:`${baseStyle.transform||''} rotate(${Number(config.rotate||0)}deg)`}}>
-      <b>{config.text||'\u6587\u5b57\u6c34\u5370'}</b>
-      {config.subText&&<small style={{color:config.accent||'#fff'}}>{config.subText}</small>}
-    </div>;
-  }
-  if(config.image){
-    const src=imageViewUrl({id:config.imageId,url:config.image});
-    return <img className="taskWatermarkImage" src={src} alt="\u6c34\u5370" style={{...baseStyle,width:`${config.widthPercent||23.5}%`}} loading="lazy" decoding="async"/>;
-  }
-  return null;
+  return <div className={`taskWatermarkText ${textConfig.style||'signature'}`} style={{...baseStyle,color:textConfig.color||'#f0d68a',fontSize:`${Math.max(16,Number(textConfig.fontSize||46)*0.5)}px`,transform:`${baseStyle.transform||''} rotate(${Number(textConfig.rotate||0)}deg)`}}>
+    <b>{textConfig.text}</b>
+    {textConfig.subText&&<small style={{color:textConfig.accent||'#fff'}}>{textConfig.subText}</small>}
+  </div>;
 }
 
 let cachedWatermarkSettings=null;
@@ -288,7 +293,7 @@ function TaskDetailModal({
       }
       try{
         setBusy('watermark');
-        const blob=await createWatermarkedImageBlob(resultImageSrc,watermark.config);
+        const blob=await createWatermarkedImageBlob(resultImageSrc,watermarkConfig);
         const blobUrl=URL.createObjectURL(blob);
         window.dispatchEvent(new CustomEvent('mobile-image-save-preview',{detail:{
           url:blobUrl,
@@ -310,7 +315,7 @@ function TaskDetailModal({
       }
       try{
         setBusy('watermark');
-        const blob=await createWatermarkedImageBlob(resultImageSrc,watermark.config);
+        const blob=await createWatermarkedImageBlob(resultImageSrc,watermarkConfig);
         downloadBlob(blob,watermarkedFilename(detail.originalName||selectedResultImage.originalName||imageId));
       }catch(e){
         const message=e?.message?.includes('跨域')?e.message:'水印图片生成失败，请重试';
@@ -358,7 +363,8 @@ function TaskDetailModal({
     finally{setBusy('')}
   }
 
-  const wmReady=!!watermark.configured&&!!watermark.config;
+  const watermarkConfig=textWatermarkConfig(watermark.config||{});
+  const wmReady=!!watermark.configured&&!!watermarkConfig.text;
   const watermarkActive=useWatermark&&wmReady;
   const resultPreviewSrc=resultImageSrc;
 
@@ -401,7 +407,7 @@ function TaskDetailModal({
       wmReady={wmReady}
       useWatermark={useWatermark}
       watermarkActive={watermarkActive}
-      watermarkConfig={watermark.config}
+      watermarkConfig={watermarkConfig}
       onClose={onClose}
       onPrev={()=>switchTo(-1)}
       onNext={()=>switchTo(1)}
@@ -435,7 +441,7 @@ function TaskDetailModal({
         </div>
         <div className="compareCol">
           <div className="compareHead"><h3>生成结果</h3>{!isAdmin&&<button onClick={()=>continueWith({id:imageId,url:resultUrl,originalName:detail.originalName})}>以此图继续创作</button>}</div>
-          <div className="taskImageFrame">{resultUrl?<><img src={resultPreviewSrc} onError={()=>setPreviewFailed(true)} loading="lazy" decoding="async"/>{watermarkActive&&<WatermarkOverlay config={watermark.config}/>}</>:<span>无生成图</span>}</div>
+          <div className="taskImageFrame">{resultUrl?<><img src={resultPreviewSrc} onError={()=>setPreviewFailed(true)} loading="lazy" decoding="async"/>{watermarkActive&&<WatermarkOverlay config={watermarkConfig}/>}</>:<span>无生成图</span>}</div>
         </div>
       </div>
       <div className="taskMobileActionBar" aria-label="任务操作">

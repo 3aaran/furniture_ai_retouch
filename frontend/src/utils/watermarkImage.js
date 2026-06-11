@@ -154,26 +154,6 @@ function roundRect(ctx,x,y,w,h,r){
   ctx.closePath();
 }
 
-async function drawImageWatermark(ctx,config,canvasWidth,canvasHeight){
-  const watermarkUrl=config.imageUrl||config.image;
-  if(!watermarkUrl)throw new Error('missing watermark image');
-  const {img,cleanup}=await loadDrawableImage(watermarkUrl);
-  try{
-    const widthPercent=clampNumber(config.widthPercent,5,60,23.5)/100;
-    const markWidth=Math.max(1,canvasWidth*widthPercent);
-    const markHeight=img.naturalHeight&&img.naturalWidth?markWidth*(img.naturalHeight/img.naturalWidth):markWidth;
-    const pos=placement(config,canvasWidth,canvasHeight,markWidth,markHeight);
-    const rotate=(Number(config.rotate)||0)*Math.PI/180;
-    ctx.save();
-    ctx.translate(pos.x+markWidth/2,pos.y+markHeight/2);
-    ctx.rotate(rotate);
-    ctx.drawImage(img,-markWidth/2,-markHeight/2,markWidth,markHeight);
-    ctx.restore();
-  }finally{
-    cleanup();
-  }
-}
-
 function canvasToBlob(canvas){
   return new Promise((resolve,reject)=>{
     try{
@@ -189,9 +169,8 @@ function canvasToBlob(canvas){
 
 export async function createWatermarkedImageBlob(imageUrl,watermarkConfig={}){
   if(!imageUrl)throw new Error('missing image url');
-  const config={position:'bottom-right',opacity:80,mode:'image',...watermarkConfig};
-  if(config.mode==='image'&&!config.image&&!config.imageUrl)throw new Error('missing watermark image');
-  if(config.mode==='text'&&!String(config.text||'').trim())throw new Error('missing watermark text');
+  const config={position:'bottom-right',opacity:80,...watermarkConfig,mode:'text'};
+  if(!String(config.text||'').trim())throw new Error('missing watermark text');
 
   const {img,cleanup}=await loadDrawableImage(imageUrl);
   try{
@@ -203,9 +182,8 @@ export async function createWatermarkedImageBlob(imageUrl,watermarkConfig={}){
     ctx.drawImage(img,0,0,canvas.width,canvas.height);
     ctx.save();
     ctx.globalAlpha=clampNumber(config.opacity,0,100,80)/100;
-    if(config.mode==='text'&&config.style==='tile')drawTiledText(ctx,config,canvas.width,canvas.height);
-    else if(config.mode==='text')drawTextBlock(ctx,config,canvas.width,canvas.height);
-    else await drawImageWatermark(ctx,config,canvas.width,canvas.height);
+    if(config.style==='tile')drawTiledText(ctx,config,canvas.width,canvas.height);
+    else drawTextBlock(ctx,config,canvas.width,canvas.height);
     ctx.restore();
     return await canvasToBlob(canvas);
   }catch(error){
