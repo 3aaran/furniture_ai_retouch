@@ -1,7 +1,7 @@
 // 该文件用于验证 GPT Image 2 适配器传给模型的 size 参数，确保生成规格和图片比例映射正确。
 import assert from 'node:assert/strict';
 import sharp from 'sharp';
-import { buildLk888ParamsPayload, fitImageBufferToSizeForGptImage2, mapImageSizeForGptImage2, resolveLk888PollTimeoutMs, resolveResultDownloadTimeoutMs } from './gpt-image-2.js';
+import { buildLk888ParamsPayload, downloadResultImageWithRetry, fitImageBufferToSizeForGptImage2, mapImageSizeForGptImage2, resolveLk888PollTimeoutMs, resolveResultDownloadTimeoutMs } from './gpt-image-2.js';
 
 assert.equal(mapImageSizeForGptImage2({ resolution: '1K', ratio: '1:1' }), '1024x1024');
 assert.equal(mapImageSizeForGptImage2({ resolution: '2K', ratio: '1:1' }), '2048x2048');
@@ -57,5 +57,22 @@ const normalized = await fitImageBufferToSizeForGptImage2(smallPortrait, '1920x2
 const meta = await sharp(normalized).metadata();
 assert.equal(meta.width, 1920);
 assert.equal(meta.height, 2560);
+
+let attempts = 0;
+const downloaded = await downloadResultImageWithRetry('https://example.com/result.png', {
+  timeoutMs: 120000,
+  retryDelayMs: 1,
+  fetchImage: async () => {
+    attempts += 1;
+    if (attempts < 3) {
+      const err = new Error('temporary socket reset');
+      err.code = 'ECONNRESET';
+      throw err;
+    }
+    return Buffer.from('final-image');
+  }
+});
+assert.equal(attempts, 3);
+assert.deepEqual(downloaded, Buffer.from('final-image'));
 
 console.log('GPT Image 2 size 参数映射通过');

@@ -116,6 +116,53 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function isRetryableDownloadError(err) {
+  const status = Number(err?.response?.status || 0);
+  if (!status) return true;
+  return status === 408 || status === 409 || status === 425 || status === 429 || status >= 500;
+}
+
+function downloadErrorText(err) {
+  const status = err?.response?.status;
+  const code = err?.code;
+  const base = err?.message || 'unknown error';
+  return [status ? `HTTP ${status}` : '', code || '', base].filter(Boolean).join(' / ');
+}
+
+export async function downloadResultImageWithRetry(url, {
+  timeoutMs,
+  attempts = Number(process.env.AI_RESULT_DOWNLOAD_RETRIES || 3),
+  retryDelayMs = Number(process.env.AI_RESULT_DOWNLOAD_RETRY_DELAY_MS || 1500),
+  fetchImage
+} = {}) {
+  const maxAttempts = Math.max(1, Number(attempts || 1));
+  const download = fetchImage || (async () => {
+    const remote = await axios.get(url, {
+      responseType: 'arraybuffer',
+      timeout: resolveResultDownloadTimeoutMs(timeoutMs)
+    });
+    return Buffer.from(remote.data || []);
+  });
+
+  let lastError = null;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      const buffer = await download(url, attempt);
+      return Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer || []);
+    } catch (err) {
+      lastError = err;
+      if (attempt >= maxAttempts || !isRetryableDownloadError(err)) break;
+      await sleep(Math.max(0, Number(retryDelayMs || 0)) * attempt);
+    }
+  }
+
+  const host = (() => {
+    try { return new URL(url).host; } catch { return 'unknown-host'; }
+  })();
+  const message = downloadErrorText(lastError);
+  throw new Error(`模型已返回结果地址，但系统下载结果图失败（${host}）：${message}`);
+}
+
 export function resolveLk888PollTimeoutMs(timeoutMs) {
   const configured = Number(timeoutMs || 0);
   const envOverride = Number(process.env.LK888_POLL_TIMEOUT_MS || 0);
@@ -380,11 +427,8 @@ export async function generate(params = {}) {
 
   const context = { merchantId, userId, kind: 'generated' };
   if (String(result).startsWith('http')) {
-    const remote = await axios.get(result, {
-      responseType: 'arraybuffer',
-      timeout: resolveResultDownloadTimeoutMs(params.timeoutMs)
-    });
-    const buffer = await fitImageBufferToSizeForGptImage2(Buffer.from(remote.data || []), size);
+    const remoteBuffer = await downloadResultImageWithRetry(result, { timeoutMs: params.timeoutMs });
+    const buffer = await fitImageBufferToSizeForGptImage2(remoteBuffer, size);
     return saveBuffer(buffer, `gpt-image-2-${featureKey || 'image'}`, 'png', context);
   }
 

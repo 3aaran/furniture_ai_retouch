@@ -20,7 +20,7 @@ function isAndroid(){
 
 const androidApkUrl=import.meta.env.VITE_ANDROID_APK_URL||'https://download.xungang.xin/xungang.apk';
 const windowsExeUrl=import.meta.env.VITE_WINDOWS_EXE_URL||'https://download.xungang.xin/xungang-setup.exe';
-const androidDownloadEnabled=String(import.meta.env.VITE_ANDROID_APK_ENABLED||'false')==='true';
+const androidDownloadEnabled=String(import.meta.env.VITE_ANDROID_APK_ENABLED||'true')==='true';
 
 export default function PwaInstallButton({className='',compact=false}){
   const[promptEvent,setPromptEvent]=useState(null);
@@ -64,8 +64,8 @@ export default function PwaInstallButton({className='',compact=false}){
   const ios=isIos();
   const android=isAndroid();
   const label=compact
-    ? (inWechat?'浏览器':ios?'添加':android?'暂未开放':'安装')
-    : (inWechat?'在浏览器打开':ios?'添加到主屏幕':android?'手机端暂未开放':'安装应用');
+    ? (inWechat?'浏览器':ios?'添加':android?'下载 APK':'安装')
+    : (inWechat?'在浏览器打开':ios?'添加到主屏幕':android?'下载安卓 APK':'安装应用');
   const Icon=inWechat?ExternalLink:Download;
   const title=inWechat?'请在手机浏览器中打开':'安装 / 下载勋港';
 
@@ -82,7 +82,7 @@ export default function PwaInstallButton({className='',compact=false}){
           ? <p>微信内置浏览器不支持安装网页应用。请点击右上角菜单，选择“在浏览器打开”，优先用手机自带浏览器访问。</p>
           : ios
             ? <p>PWA 需要使用 Safari。打开本页面后，点击分享按钮，然后选择“添加到主屏幕”。</p>
-            : <p>按设备选择安装方式。PWA 需要浏览器支持；Windows 安装包通过下载文件安装。手机端页面正在适配，安卓安装包暂不开放下载。</p>}
+            : <p>按设备选择安装方式。PWA 需要浏览器支持；Windows 安装包和安卓 APK 都可以通过下载文件安装。</p>}
         <div className="pwaInstallOptions">
           <button type="button" className="pwaInstallOption" onClick={installPwa}>
             <span className="pwaInstallOptionIcon"><Globe2 size={20}/></span>
@@ -95,15 +95,15 @@ export default function PwaInstallButton({className='',compact=false}){
           {androidDownloadEnabled
             ? <a className="pwaInstallOption" href={androidApkUrl} download>
               <span className="pwaInstallOptionIcon"><Smartphone size={20}/></span>
-              <span><b>安卓安装包 APK</b><small>安卓默认浏览器可直接下载</small></span>
+              <span><b>安卓安装包 APK</b><small>安卓默认浏览器可直接下载；下载后按系统提示安装</small></span>
             </a>
             : <button type="button" className="pwaInstallOption isDisabled" disabled>
               <span className="pwaInstallOptionIcon"><Smartphone size={20}/></span>
-              <span><b>安卓安装包 APK</b><small>手机端页面适配完成后开放下载</small></span>
+              <span><b>安卓安装包 APK</b><small>当前环境配置为暂不开放下载</small></span>
             </button>}
         </div>
         <p>安装后打开的仍然是同一个勋港平台。未登录会进入登录/注册流程，已登录则直接进入对应工作台。</p>
-        <small>{android&&!androidDownloadEnabled?'手机端正在适配，当前请优先使用电脑端。':'PWA 安装入口由浏览器提供：电脑推荐 Edge / Chrome，iPhone 使用 Safari，安卓优先使用自带浏览器菜单。'}</small>
+        <small>{android&&!androidDownloadEnabled?'当前环境配置为暂不开放安卓 APK 下载。':'PWA 安装入口由浏览器提供：电脑推荐 Edge / Chrome，iPhone 使用 Safari；安卓也可以直接下载 APK。'}</small>
       </div>
     </div>,document.body)}
   </>;

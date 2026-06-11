@@ -11,6 +11,7 @@
 }
 .taskPreviewWindowMode .taskComparePanel{
   overflow:hidden;
+  align-items:stretch;
 }
 .taskPreviewWindowMode .taskInfoPanel{
   display:flex !important;
@@ -20,6 +21,27 @@
 }
 .taskPreviewWindowMode .taskInfoPanel>h3{
   flex:0 0 auto;
+}
+.taskPreviewWindowMode .compareCol{
+  min-height:0;
+}
+.taskPreviewWindowMode .taskImageFrame{
+  flex:1 1 auto;
+  position:relative;
+  min-height:0;
+  height:100%;
+  padding:0;
+}
+.taskPreviewWindowMode .taskImageFrame img{
+  position:absolute;
+  inset:8px 8px 18px;
+  width:calc(100% - 16px);
+  height:calc(100% - 26px);
+  max-width:none;
+  max-height:none;
+  object-fit:contain;
+  object-position:center center;
+  display:block;
 }
 .taskPreviewWindowMode .taskInfoScroll{
   flex:1 1 auto;
@@ -112,6 +134,10 @@
   .taskPreviewWindowMode .taskComparePanel,
   .taskPreviewWindowMode .taskInfoPanel{
     height:auto;
+  }
+  .taskPreviewWindowMode .taskImageFrame{
+    height:min(56vh,360px);
+    min-height:280px;
   }
   .taskPreviewWindowMode .taskInfoScroll{
     max-height:65vh;
