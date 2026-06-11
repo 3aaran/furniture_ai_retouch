@@ -6,7 +6,8 @@ import { generateThumbnailBestEffort } from '../src/services/thumbnailService.js
 function numberOption(name, fallback) {
   const prefix = `--${name}=`;
   const arg = process.argv.find((item) => item.startsWith(prefix));
-  const raw = arg ? arg.slice(prefix.length) : process.env[`THUMB_BACKFILL_${name.replace(/-/g, '_').toUpperCase()}`];
+  const envName = `THUMB_BACKFILL_${name.replace(/-/g, '_').toUpperCase()}`;
+  const raw = arg ? arg.slice(prefix.length) : process.env[envName];
   const n = Number(raw || fallback);
   return Number.isFinite(n) && n > 0 ? Math.floor(n) : fallback;
 }
@@ -14,12 +15,19 @@ function numberOption(name, fallback) {
 const batchSize = Math.min(100, Math.max(1, numberOption('batch-size', 20)));
 const maxBatches = numberOption('max-batches', 0);
 
+function printUsage() {
+  console.log('[thumb-backfill] Usage: pnpm run thumbs:backfill -- --batch-size=20');
+  console.log('[thumb-backfill] Test one batch: pnpm run thumbs:backfill -- --batch-size=20 --max-batches=1');
+}
+
 async function assertThumbColumnExists() {
   const [rows] = await pool.query(
     'SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME="images" AND COLUMN_NAME="thumb_url"'
   );
   if (!rows.length) {
-    throw new Error('images.thumb_url 字段不存在，请先部署包含数据库迁移的新版本，或先执行 ALTER TABLE images ADD COLUMN thumb_url VARCHAR(800) NULL AFTER url;');
+    throw new Error(
+      'images.thumb_url column does not exist. Deploy the DB migration first, or run: ALTER TABLE images ADD COLUMN thumb_url VARCHAR(800) NULL AFTER url;'
+    );
   }
 }
 
@@ -37,6 +45,7 @@ async function loadBatch(cursor) {
     cursorSql = ' AND (created_at>? OR (created_at=? AND id>?))';
     params.push(cursor.createdAt, cursor.createdAt, cursor.id);
   }
+
   const [rows] = await pool.query(
     `
     SELECT id, merchant_id, user_id, url, storage_key, source_type, created_at
@@ -54,6 +63,7 @@ async function loadBatch(cursor) {
 }
 
 async function main() {
+  printUsage();
   await assertThumbColumnExists();
 
   let cursor = null;
@@ -63,11 +73,11 @@ async function main() {
   let failed = 0;
 
   const startMissing = await countMissingThumbnails();
-  console.log(`[thumb-backfill] 开始处理：当前缺少缩略图 ${startMissing} 张；每批 ${batchSize} 张`);
+  console.log(`[thumb-backfill] Start. Missing thumbnails: ${startMissing}. Batch size: ${batchSize}.`);
 
   while (true) {
     if (maxBatches && batchNo >= maxBatches) {
-      console.log(`[thumb-backfill] 已达到 max-batches=${maxBatches}，停止本次运行`);
+      console.log(`[thumb-backfill] Reached max-batches=${maxBatches}. Stop this run.`);
       break;
     }
 
@@ -75,7 +85,7 @@ async function main() {
     if (!rows.length) break;
 
     batchNo += 1;
-    console.log(`[thumb-backfill] 第 ${batchNo} 批：读取 ${rows.length} 张`);
+    console.log(`[thumb-backfill] Batch ${batchNo}: loaded ${rows.length} images.`);
 
     for (const row of rows) {
       cursor = { createdAt: row.created_at, id: row.id };
@@ -91,27 +101,29 @@ async function main() {
         console.log(`[thumb-backfill] OK ${row.id} -> ${thumbUrl}`);
       } else {
         failed += 1;
-        console.warn(`[thumb-backfill] SKIP ${row.id}：缩略图生成失败，已跳过本次运行`);
+        console.warn(`[thumb-backfill] SKIP ${row.id}: thumbnail generation failed; skipped in this run.`);
       }
     }
 
     const remaining = await countMissingThumbnails();
-    console.log(`[thumb-backfill] 进度：已扫描 ${scanned}，成功 ${succeeded}，失败 ${failed}，当前仍缺少 ${remaining}`);
+    console.log(`[thumb-backfill] Progress: scanned=${scanned}, success=${succeeded}, failed=${failed}, remaining=${remaining}`);
   }
 
   const remaining = await countMissingThumbnails();
   if (remaining === 0) {
-    console.log('[thumb-backfill] 没有图片缺少缩略图，结束');
+    console.log('[thumb-backfill] No images without thumbnails. Finished.');
   } else {
-    console.warn(`[thumb-backfill] 本次扫描结束，但仍有 ${remaining} 张缺少缩略图。通常是原图读取失败或本次生成失败；修复原图/网络后重新运行脚本即可重试。`);
+    console.warn(
+      `[thumb-backfill] Scan finished, but ${remaining} images still have no thumbnail. Usually original file read failed or generation failed. Fix the original file/network and run again with pnpm run thumbs:backfill.`
+    );
   }
 
-  console.log(`[thumb-backfill] 汇总：扫描 ${scanned}，成功 ${succeeded}，失败 ${failed}`);
+  console.log(`[thumb-backfill] Summary: scanned=${scanned}, success=${succeeded}, failed=${failed}.`);
 }
 
 main()
   .catch((err) => {
-    console.error('[thumb-backfill] 运行失败：', err?.message || err);
+    console.error('[thumb-backfill] Failed:', err?.message || err);
     process.exitCode = 1;
   })
   .finally(async () => {
