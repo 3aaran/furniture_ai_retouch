@@ -71,7 +71,7 @@ function NoticeCenterModal({onClose,onUnreadChange}){
             ):<div className="noticeEmptyV2">暂无公告</div>}
           </div>
         </aside>
-        <article className="noticeDetailPaneV2">
+        {items.length>0&&<article className="noticeDetailPaneV2">
           {selected?<>
             <div className="noticeDetailMetaV2">
               <span className={selected.isRead?'read':'unread'}>{selected.isRead?'已读':'未读'}</span>
@@ -80,7 +80,7 @@ function NoticeCenterModal({onClose,onUnreadChange}){
             <h3>{selected.title}</h3>
             <p>{selected.content}</p>
           </>:<div className="noticeEmptyV2 large">请选择一条公告</div>}
-        </article>
+        </article>}
       </div>
     </div>
   </div>,document.body);
@@ -141,8 +141,9 @@ function MobileSideNavDrawer({open,page,go,nav,onClose,onFeedback,onEmail,notice
     byKey.workbench||['workbench','工作台',null],
     byKey.images||['images','历史',null],
     byKey.resources||['resources','资源库',null],
-    ['profile','我的',ShieldCheck]
-  ];
+    byKey.users&&['users','用户管理',byKey.users[2]||ShieldCheck],
+    byKey.promotion&&['promotion','推荐收益',byKey.promotion[2]||Ticket]
+  ].filter(Boolean);
   const closeAndGo=(key)=>{onClose();go(key)};
   return createPortal(<div className="mobileSideNavMaskV5" onClick={onClose}>
     <aside className="mobileSideNavPanelV5" aria-label="手机侧边导航" onClick={e=>e.stopPropagation()}>
@@ -152,7 +153,7 @@ function MobileSideNavDrawer({open,page,go,nav,onClose,onFeedback,onEmail,notice
       </div>
       <nav className="mobileSideNavListV5">
         {items.map(([key,title,Icon])=>{
-          const label=key==='images'?'历史':key==='workbench'?'工作台':key==='resources'?'资源库':'我的';
+          const label=key==='images'?'历史':key==='workbench'?'工作台':key==='resources'?'资源库':key==='users'?'用户管理':key==='promotion'?'推荐收益':title;
           const ActiveIcon=Icon||ShieldCheck;
           return <button key={key} type="button" className={page===key?'active':''} onClick={()=>closeAndGo(key)}>
             {ActiveIcon&&<ActiveIcon size={21}/>}<span>{label}</span>

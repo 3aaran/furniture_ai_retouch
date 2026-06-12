@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, Droplet } from 'lucide-react';
+import { ChevronDown, ChevronUp, Droplet } from 'lucide-react';
 
 export function WorkbenchUploadPanel({
   origin,
@@ -67,7 +67,7 @@ export function WorkbenchUploadPanel({
             aria-expanded={referenceOpen}
             onClick={() => setReferenceOpen(v => !v)}
           >
-            <ChevronDown size={18}/>
+            {referenceOpen ? <ChevronUp size={17}/> : <ChevronDown size={17}/>}
           </button>
         </div>
       </div>

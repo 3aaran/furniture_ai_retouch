@@ -1,0 +1,68 @@
+@media (max-width: 860px) {
+  .topApp .promotionInvitePanelV2 {
+    padding: 14px !important;
+    border-radius: 18px !important;
+  }
+
+  .topApp .promotionInviteHeadV2 {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .topApp .promotionInviteHeadV2 h2 {
+    margin: 0 !important;
+    font-size: 22px !important;
+    line-height: 1.15 !important;
+  }
+
+  .topApp .promotionInviteHeadV2 .seg {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .topApp .promotionInviteHeadV2 .seg button {
+    min-height: 42px !important;
+    padding: 8px 10px !important;
+    border-radius: 12px !important;
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+  }
+
+  .topApp .promotionMetricsV2 {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin: 10px 0 8px !important;
+  }
+
+  .topApp .promotionInvitePanelV2 .metric {
+    min-height: 72px !important;
+    padding: 11px 12px !important;
+    border-radius: 14px !important;
+  }
+
+  .topApp .promotionInvitePanelV2 .metric span {
+    font-size: 12px !important;
+    line-height: 1.2 !important;
+  }
+
+  .topApp .promotionInvitePanelV2 .metric b {
+    margin-top: 6px !important;
+    font-size: 21px !important;
+    line-height: 1.15 !important;
+  }
+
+  .topApp .promotionInvitePanelV2 .promotionLinkMetricV2 {
+    min-height: 0 !important;
+    padding: 10px 12px !important;
+  }
+
+  .topApp .promotionInvitePanelV2 .promotionLinkMetricV2 b.smallText {
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+    word-break: break-all !important;
+  }
+}

@@ -53,21 +53,21 @@ export default function Promotion({setMsg}){
   }
 
   return <div className="stack">
-    <section className="panel">
-      <div className="panelTitle">
+    <section className="panel promotionInvitePanelV2">
+      <div className="panelTitle promotionInviteHeadV2">
         <h2><Ticket/>推广邀请</h2>
         <div className="seg">
           <button type="button" onClick={()=>copyText(inviteCode,'邀请码')}><Copy size={16}/>复制邀请码</button>
           <button type="button" className="primary" onClick={()=>copyText(link,'邀请链接')}><LinkIcon size={16}/>复制邀请链接</button>
         </div>
       </div>
-      <div className="metrics">
+      <div className="metrics promotionMetricsV2">
         <div className="metric"><span>邀请码</span><b>{inviteCode||'-'}</b></div>
         <div className="metric"><span>已邀请门店</span><b>{Number(summary.invitedCount||0)}</b></div>
         <div className="metric"><span>已通过门店</span><b>{Number(summary.approvedCount||0)}</b></div>
         <div className="metric"><span>累计邀请收益</span><b>{quotaText(summary.benefitQuota)}</b></div>
       </div>
-      <div className="metric">
+      <div className="metric promotionLinkMetricV2">
         <span>邀请链接</span>
         <b className="smallText">{link||'-'}</b>
       </div>

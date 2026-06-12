@@ -1,0 +1,643 @@
+@media (max-width: 860px) {
+  .topApp .promotionInviteHeadV2 h2 {
+    display: none !important;
+  }
+
+  .topApp .storeUsersV2 {
+    gap: 14px !important;
+  }
+
+  .topApp .storeUsersHeroV2 {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    margin-top: -4px !important;
+  }
+
+  .topApp .storeUsersHeroV2 h1 {
+    display: none !important;
+  }
+
+  .topApp .storeUserQuotaCardV2 {
+    width: auto !important;
+    min-width: 176px !important;
+    height: 62px !important;
+    padding: 9px 14px !important;
+    border-radius: 16px !important;
+  }
+
+  .topApp .storeUserQuotaCardV2 span {
+    font-size: 12px !important;
+    line-height: 1.2 !important;
+  }
+
+  .topApp .storeUserQuotaCardV2 b {
+    font-size: 15px !important;
+    line-height: 1.2 !important;
+  }
+
+  .topApp .storeUserQuotaCardV2 em {
+    font-size: 23px !important;
+  }
+
+  .topApp .storeUsersTablePanelV2 {
+    overflow: visible !important;
+    border-radius: 18px !important;
+    background: transparent !important;
+    border: 0 !important;
+  }
+
+  .topApp .storeUsersTableV2,
+  .topApp .storeUsersTableV2 tbody,
+  .topApp .storeUsersTableV2 tr,
+  .topApp .storeUsersTableV2 td {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .topApp .storeUsersTableV2 {
+    min-width: 0 !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+  }
+
+  .topApp .storeUsersTableV2 thead {
+    display: none !important;
+  }
+
+  .topApp .storeUsersTableV2 tr {
+    margin-bottom: 12px !important;
+    padding: 14px !important;
+    border-radius: 18px !important;
+    border: 1px solid rgba(242, 213, 140, .16) !important;
+    background: linear-gradient(180deg, rgba(22, 29, 37, .98), rgba(14, 16, 19, .98)) !important;
+    box-shadow: 0 14px 38px rgba(0, 0, 0, .24) !important;
+  }
+
+  .topApp .storeUsersTableV2 td {
+    height: auto !important;
+    padding: 8px 0 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, .08) !important;
+    color: #f4efe5 !important;
+    white-space: normal !important;
+  }
+
+  .topApp .storeUsersTableV2 td:last-child {
+    border-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  .topApp .storeUsersTableV2 td::before {
+    display: block !important;
+    margin-bottom: 5px !important;
+    color: rgba(255, 244, 223, .54) !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+  }
+
+  .topApp .storeUsersTableV2 td:nth-child(1)::before { content: "用户名"; }
+  .topApp .storeUsersTableV2 td:nth-child(2)::before { content: "手机号"; }
+  .topApp .storeUsersTableV2 td:nth-child(3)::before { content: "邮箱"; }
+  .topApp .storeUsersTableV2 td:nth-child(4)::before { content: "角色"; }
+  .topApp .storeUsersTableV2 td:nth-child(5)::before { content: "用户类型"; }
+  .topApp .storeUsersTableV2 td:nth-child(6)::before { content: "算力点"; }
+  .topApp .storeUsersTableV2 td:nth-child(7)::before { content: "注册时间"; }
+  .topApp .storeUsersTableV2 td:nth-child(8)::before { content: "过期时间"; }
+  .topApp .storeUsersTableV2 td:nth-child(9)::before { content: "操作"; }
+
+  .topApp .storeUsersTableV2 td:nth-child(1) b {
+    color: #f4dc95 !important;
+    font-size: 18px !important;
+  }
+
+  .topApp .storeUsersTableV2 td:nth-child(4),
+  .topApp .storeUsersTableV2 td:nth-child(5),
+  .topApp .storeUsersTableV2 td:nth-child(6),
+  .topApp .storeUsersTableV2 td:nth-child(7),
+  .topApp .storeUsersTableV2 td:nth-child(8) {
+    display: inline-block !important;
+    width: 50% !important;
+    vertical-align: top !important;
+    padding-right: 8px !important;
+  }
+
+  .topApp .storeUsersTableV2 td:nth-child(9) {
+    text-align: left !important;
+  }
+
+  .topApp .storeUserActionsV2 {
+    justify-content: flex-start !important;
+    min-width: 0 !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .topApp .storeUsersPagerV2 {
+    margin-top: 4px !important;
+    padding: 10px 12px !important;
+    min-height: 52px !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    border: 1px solid rgba(242, 213, 140, .14) !important;
+    border-radius: 16px !important;
+    background: rgba(17, 21, 26, .9) !important;
+  }
+
+  .topApp .wbRefHeader {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+  }
+
+  .topApp .wbRefHeader > div:first-child {
+    min-width: 0 !important;
+  }
+
+  .topApp .wbRefHeaderActions {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    flex: 0 0 auto !important;
+    height: 40px !important;
+    padding: 4px !important;
+    border-radius: 999px !important;
+    border: 1px solid rgba(242, 213, 140, .26) !important;
+    background: linear-gradient(135deg, rgba(242, 213, 140, .12), rgba(255, 255, 255, .035)) !important;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .035) !important;
+  }
+
+  .topApp .wbRefHeaderActions strong {
+    height: 32px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 0 9px 0 11px !important;
+    border-radius: 999px !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #f4d98f !important;
+    font-size: 13px !important;
+    font-weight: 900 !important;
+    white-space: nowrap !important;
+  }
+
+  .topApp .wbRefToggle {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    border-radius: 50% !important;
+    border: 1px solid rgba(242, 213, 140, .28) !important;
+    background: rgba(242, 213, 140, .12) !important;
+    color: #f4d98f !important;
+    padding: 0 !important;
+    display: inline-grid !important;
+    place-items: center !important;
+  }
+
+  .topApp .wbRefToggle svg {
+    stroke-width: 2.4 !important;
+  }
+
+  .topApp .wbBottomBar {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(132px, .72fr) !important;
+    gap: 14px 12px !important;
+    align-items: end !important;
+  }
+
+  .topApp .wbBottomBar > .wbControlGroup:first-child {
+    grid-column: 1 / -1 !important;
+  }
+
+  .topApp .wbBottomBar .wbControlGroup.ratio {
+    grid-column: 1 / 2 !important;
+    min-width: 0 !important;
+  }
+
+  .topApp .wbBottomBar .wbActionGroup {
+    display: contents !important;
+  }
+
+  .topApp .wbBottomBar .wbGenerateMeta {
+    grid-column: 2 / 3 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    min-height: 52px !important;
+    padding: 8px 10px !important;
+    border-radius: 14px !important;
+    border: 1px solid rgba(242, 213, 140, .14) !important;
+    background: rgba(255, 255, 255, .035) !important;
+    color: rgba(255, 244, 223, .62) !important;
+    font-size: 12px !important;
+    line-height: 1.25 !important;
+  }
+
+  .topApp .wbBottomBar .wbGenerateMeta b {
+    display: block !important;
+    color: #f4dc95 !important;
+    font-size: 14px !important;
+    white-space: nowrap !important;
+  }
+
+  .topApp .wbBottomBar .wbGenerateBtn {
+    grid-column: 1 / -1 !important;
+    order: 4 !important;
+  }
+
+  .mobileSideNavPanelV5 {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .mobileSideNavToolsV5 {
+    margin-top: auto !important;
+    padding-top: 16px !important;
+    border-top: 0 !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, 48px) !important;
+    justify-content: center !important;
+    gap: 14px !important;
+  }
+
+  .mobileSideNavToolsV5 button {
+    position: relative !important;
+    width: 48px !important;
+    min-width: 48px !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+    border-radius: 15px !important;
+    border: 1px solid rgba(242, 213, 140, .48) !important;
+    background: rgba(242, 213, 140, .06) !important;
+    color: #f3d98f !important;
+  }
+
+  .mobileSideNavToolsV5 button span {
+    display: none !important;
+  }
+
+  .mobileSideNavToolsV5 button i {
+    position: absolute !important;
+    right: -6px !important;
+    top: -6px !important;
+    margin: 0 !important;
+  }
+
+  .topApp .taskMeta {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: baseline !important;
+    gap: 4px 10px !important;
+  }
+
+  .topApp .taskMeta strong {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .topApp .taskMeta span {
+    color: #c8c0ac !important;
+    font-size: 13px !important;
+    white-space: nowrap !important;
+  }
+
+  .topApp .taskMeta small {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+@media (max-width: 860px) {
+  .topApp .usersTablePanelLikePromotionV2 {
+    padding: 14px !important;
+    margin-bottom: 12px !important;
+    overflow: visible !important;
+    border-radius: 18px !important;
+    background: #17191c !important;
+    border: 1px solid rgba(255, 255, 255, .08) !important;
+  }
+
+  .topApp .usersTablePanelLikePromotionV2 .storeUsersTableWrapV2 {
+    overflow-x: auto !important;
+    border-radius: 16px !important;
+    border: 1px solid rgba(255, 255, 255, .08) !important;
+    background: #111821 !important;
+  }
+
+  .topApp .usersTablePanelLikePromotionV2 .storeUsersTableV2 {
+    display: table !important;
+    width: 100% !important;
+    min-width: 960px !important;
+    table-layout: auto !important;
+    border-collapse: collapse !important;
+  }
+
+  .topApp .usersTablePanelLikePromotionV2 .storeUsersTableV2 thead {
+    display: table-header-group !important;
+  }
+
+  .topApp .usersTablePanelLikePromotionV2 .storeUsersTableV2 tbody {
+    display: table-row-group !important;
+  }
+
+  .topApp .usersTablePanelLikePromotionV2 .storeUsersTableV2 tr {
+    display: table-row !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .topApp .usersTablePanelLikePromotionV2 .storeUsersTableV2 th,
+  .topApp .usersTablePanelLikePromotionV2 .storeUsersTableV2 td {
+    display: table-cell !important;
+    width: auto !important;
+    min-width: 0 !important;
+    height: auto !important;
+    padding: 14px 16px !important;
+    text-align: left !important;
+    vertical-align: middle !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    border-bottom: 1px solid rgba(255, 255, 255, .08) !important;
+    font-size: 14px !important;
+  }
+
+  .topApp .usersTablePanelLikePromotionV2 .storeUsersTableV2 th {
+    color: #9faaba !important;
+    background: #111821 !important;
+    font-weight: 700 !important;
+  }
+
+  .topApp .usersTablePanelLikePromotionV2 .storeUsersTableV2 td {
+    color: #e7edf5 !important;
+  }
+
+  .topApp .usersTablePanelLikePromotionV2 .storeUsersTableV2 td::before {
+    content: none !important;
+    display: none !important;
+  }
+
+  .topApp .usersTablePanelLikePromotionV2 .storeUsersTableV2 td:nth-child(1) b {
+    color: #f0d99b !important;
+    font-size: 14px !important;
+  }
+
+  .topApp .usersTablePanelLikePromotionV2 .storeUserActionsV2 {
+    min-width: 0 !important;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+  }
+
+  .topApp .usersTablePanelLikePromotionV2 .storeUsersPagerV2 {
+    display: none !important;
+  }
+
+  .topApp .usersTablePanelLikePromotionV2 .pager {
+    margin-top: 14px !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+  }
+}
+
+@media (max-width: 860px) {
+  .topApp .storeUsersTableV2 {
+    min-width: 1034px !important;
+    table-layout: fixed !important;
+  }
+
+  .topApp .storeUsersTableV2 th,
+  .topApp .storeUsersTableV2 td {
+    box-sizing: border-box !important;
+    text-align: left !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .topApp .storeUsersTableV2 th:nth-child(1),
+  .topApp .storeUsersTableV2 td:nth-child(1) {
+    width: 110px !important;
+  }
+
+  .topApp .storeUsersTableV2 th:nth-child(2),
+  .topApp .storeUsersTableV2 td:nth-child(2) {
+    width: 136px !important;
+  }
+
+  .topApp .storeUsersTableV2 th:nth-child(3),
+  .topApp .storeUsersTableV2 td:nth-child(3) {
+    width: 70px !important;
+  }
+
+  .topApp .storeUsersTableV2 th:nth-child(4),
+  .topApp .storeUsersTableV2 td:nth-child(4) {
+    width: 126px !important;
+  }
+
+  .topApp .storeUsersTableV2 th:nth-child(5),
+  .topApp .storeUsersTableV2 td:nth-child(5) {
+    width: 120px !important;
+  }
+
+  .topApp .storeUsersTableV2 th:nth-child(6),
+  .topApp .storeUsersTableV2 td:nth-child(6) {
+    width: 90px !important;
+  }
+
+  .topApp .storeUsersTableV2 th:nth-child(7),
+  .topApp .storeUsersTableV2 td:nth-child(7) {
+    width: 160px !important;
+  }
+
+  .topApp .storeUsersTableV2 th:nth-child(8),
+  .topApp .storeUsersTableV2 td:nth-child(8) {
+    width: 90px !important;
+  }
+
+  .topApp .storeUsersTableV2 th:nth-child(9),
+  .topApp .storeUsersTableV2 td:nth-child(9) {
+    width: 132px !important;
+  }
+
+  .topApp .storeUsersTableV2 td:nth-child(9) {
+    overflow: visible !important;
+  }
+}
+
+@media (max-width: 860px) {
+  .topApp .storeUserToolbarV2 {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    padding: 14px !important;
+    min-height: 0 !important;
+    border-radius: 18px !important;
+    background: #17191c !important;
+    border: 1px solid rgba(255, 255, 255, .08) !important;
+  }
+
+  .topApp .storeUserSearchV2 {
+    grid-column: 1 / -1 !important;
+  }
+
+  .topApp .storeUserToolbarV2 select,
+  .topApp .storeTrialBtnV2,
+  .topApp .storeCreateBtnV2,
+  .topApp .storeUserSearchV2 {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 46px !important;
+    min-height: 46px !important;
+    border-radius: 12px !important;
+  }
+
+  .topApp .storeTrialBtnV2,
+  .topApp .storeCreateBtnV2 {
+    padding: 0 10px !important;
+    font-size: 14px !important;
+    white-space: nowrap !important;
+  }
+
+  .topApp .storeUserToolbarSpacerV2 {
+    display: none !important;
+  }
+
+  .topApp .storeUsersTablePanelV2 {
+    overflow-x: auto !important;
+    border-radius: 18px !important;
+    background: #17191c !important;
+    border: 1px solid rgba(255, 255, 255, .08) !important;
+  }
+
+  .topApp .storeUsersTableV2 {
+    display: table !important;
+    width: 100% !important;
+    min-width: 860px !important;
+    border-collapse: collapse !important;
+    table-layout: auto !important;
+  }
+
+  .topApp .storeUsersTableV2 thead {
+    display: table-header-group !important;
+  }
+
+  .topApp .storeUsersTableV2 tbody {
+    display: table-row-group !important;
+  }
+
+  .topApp .storeUsersTableV2 tr {
+    display: table-row !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .topApp .storeUsersTableV2 th,
+  .topApp .storeUsersTableV2 td {
+    display: table-cell !important;
+    width: auto !important;
+    min-width: 0 !important;
+    height: auto !important;
+    padding: 13px 12px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, .08) !important;
+    vertical-align: middle !important;
+    white-space: nowrap !important;
+    font-size: 13px !important;
+  }
+
+  .topApp .storeUsersTableV2 th {
+    color: rgba(255, 244, 223, .66) !important;
+    background: rgba(255, 255, 255, .025) !important;
+    font-weight: 900 !important;
+  }
+
+  .topApp .storeUsersTableV2 td {
+    color: #f4efe5 !important;
+  }
+
+  .topApp .storeUsersTableV2 td::before {
+    content: none !important;
+    display: none !important;
+  }
+
+  .topApp .storeUsersTableV2 td:nth-child(1) b {
+    color: #f4dc95 !important;
+    font-size: 15px !important;
+  }
+
+  .topApp .storeUsersTableV2 td:nth-child(3),
+  .topApp .storeUsersTableV2 td:nth-child(8) {
+    color: rgba(255, 244, 223, .58) !important;
+  }
+
+  .topApp .storeRoleBadgeV2,
+  .topApp .storeTypeBadgeV2 {
+    height: 28px !important;
+    padding: 0 9px !important;
+    border-radius: 8px !important;
+    font-size: 12px !important;
+  }
+
+  .topApp .storeUserActionsV2 {
+    justify-content: flex-start !important;
+    min-width: 136px !important;
+    flex-wrap: nowrap !important;
+    gap: 7px !important;
+  }
+
+  .topApp .storeUserActionsV2 button {
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 8px !important;
+    background: rgba(255, 255, 255, .035) !important;
+  }
+
+  .topApp .storeUsersPagerV2 {
+    margin-top: 0 !important;
+    border-radius: 0 !important;
+    border: 0 !important;
+    border-top: 1px solid rgba(255, 255, 255, .08) !important;
+    background: transparent !important;
+  }
+
+  .topApp .wbRefHeaderActions {
+    gap: 8px !important;
+    height: auto !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .topApp .wbRefHeaderActions strong {
+    height: 34px !important;
+    padding: 0 10px !important;
+    border-radius: 10px !important;
+    border: 1px solid rgba(255, 255, 255, .1) !important;
+    background: rgba(255, 255, 255, .045) !important;
+    color: rgba(255, 244, 223, .72) !important;
+    font-size: 13px !important;
+  }
+
+  .topApp .wbRefToggle {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    border-radius: 10px !important;
+    border: 1px solid rgba(242, 213, 140, .26) !important;
+    background: rgba(242, 213, 140, .08) !important;
+    color: #f0d68a !important;
+  }
+}

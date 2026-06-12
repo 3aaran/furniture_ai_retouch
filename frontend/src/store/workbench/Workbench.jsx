@@ -1,5 +1,5 @@
 ﻿import React,{useEffect,useRef,useState}from'react';
-import{Brush,Camera,Clapperboard,Download,Eye,Image as ImageIcon,Layers,PenLine,Rotate3d,Search,Trash2,WandSparkles,X}from'lucide-react';
+import{Brush,Camera,Clapperboard,Download,Droplet,Eye,Image as ImageIcon,Layers,PenLine,Rotate3d,Search,Trash2,WandSparkles,X}from'lucide-react';
 import{API,token,req,reqForm,fmt,resTypeName,imageViewUrl,imageListUrl,assetUrl,fallbackToOriginalImage,openImageDownload}from'../../appShared.jsx';
 import{getFeatureDisplayName}from'../../config/uiText.js';
 import{featureConfig}from'../../config/featureConfig.jsx';
@@ -690,6 +690,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   const selectedTpl=currentTemplate();
   const currentFeatureLabel=mediaMode==='video'?'宣传视频生成':ops[op]?.label||'生图功能';
   const currentFeatureMode=mediaMode==='video'?'视频功能':isPromotionSelected?'宣传图':'生图功能';
+  const canConfigureWatermark=me?.role==='MERCHANT_OWNER'||me?.role==='MERCHANT_ADMIN';
   const workbenchUploadMainOptions=resourceUpload.resourceType==='scene'
     ? ['场景模板']
     : resourceUpload.resourceType==='user_reference'
@@ -1009,6 +1010,11 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
         <span>最近生成</span>
         <b>{recentItems.length}</b>
       </button>
+      {canConfigureWatermark&&<button type="button" className="wbRailBtn watermark" onClick={()=>setWatermarkOpen(true)}>
+        <Droplet size={20}/>
+        <span>水印</span>
+        <b>水印配置</b>
+      </button>}
     </div>
     <div className="wbSidePanel wbWorkbenchLeftDrawer">
       {renderFeaturePanel()}
@@ -1031,7 +1037,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
             dropUpload={dropUpload}
             openResourceModal={openResourceModal}
             onOpenWatermark={()=>setWatermarkOpen(true)}
-            canConfigureWatermark={me?.role==='MERCHANT_OWNER'||me?.role==='MERCHANT_ADMIN'}
+            canConfigureWatermark={canConfigureWatermark}
             clearSourceImage={clearSourceImage}
             clearReferenceImage={clearReferenceImage}
             setMsg={setMsg}

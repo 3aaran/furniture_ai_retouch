@@ -173,6 +173,12 @@ async function copyText(text){
   }
 }
 
+function canUseBrowserDownload(){
+  if(typeof document==='undefined')return false;
+  const link=document.createElement('a');
+  return typeof link.download==='string';
+}
+
 function TaskDetailModal({
   detail,
   onClose,
@@ -280,11 +286,16 @@ function TaskDetailModal({
   async function download(){
     if(isMobile){
       if(!resultUrl)return setMsg&&setMsg('图片地址不存在');
+      if(!canUseBrowserDownload()){
+        setMsg&&setMsg('可以打开浏览器下载');
+        return;
+      }
       if(!useWatermark){
-        window.dispatchEvent(new CustomEvent('mobile-image-save-preview',{detail:{
-          url:resultImageSrc,
-          title:detail.originalName||opLabel||'原图'
-        }}));
+        openImageDownload({
+          id:imageId,
+          url:resultUrl,
+          downloadUrl:selectedResultImage.downloadUrl||detail.downloadUrl||detail.resultImage?.downloadUrl
+        },setMsg);
         return;
       }
       if(!wmReady||!watermark.config){
@@ -294,12 +305,7 @@ function TaskDetailModal({
       try{
         setBusy('watermark');
         const blob=await createWatermarkedImageBlob(resultImageSrc,watermarkConfig);
-        const blobUrl=URL.createObjectURL(blob);
-        window.dispatchEvent(new CustomEvent('mobile-image-save-preview',{detail:{
-          url:blobUrl,
-          title:detail.originalName||opLabel||'带水印图片',
-          revokeOnClose:true
-        }}));
+        downloadBlob(blob,watermarkedFilename(detail.originalName||selectedResultImage.originalName||imageId));
       }catch(e){
         const message=e?.message?.includes('跨域')?e.message:'水印图片生成失败，请重试';
         setMsg&&setMsg(message);
@@ -554,21 +560,21 @@ function MobileTaskPreviewView({
           <div className="mobileTaskImageTitle">
             <div>
               <span>成品图</span>
-              <b>{detail.originalName||opLabel}</b>
             </div>
-            <em>{opLabel}</em>
+            <div className="mobileTaskTitleActions">
+              <em>{opLabel}</em>
+              {!isAdmin&&<button type="button" className="mobileContinueChip" onClick={onContinueImage} disabled={!resultUrl} aria-label="继续创作"><ChevronRight size={15}/><span>继续创作</span></button>}
+            </div>
           </div>
           <div className="mobileTaskImageStage">
             {resultUrl?<><img src={resultPreviewSrc} alt={detail.originalName||opLabel||'成品图'} onError={onPreviewError} loading="lazy" decoding="async"/>{watermarkActive&&<WatermarkOverlay config={watermarkConfig}/>}</>:<span>暂无生成图</span>}
           </div>
-          <p className="mobileLongPressHint">请长按图片保存到手机</p>
         </section>
 
         <nav className="mobileTaskActions" aria-label="任务操作">
-          <button type="button" onClick={onOpenProcess}><SlidersHorizontal size={18}/><span>参数</span></button>
-          <button type="button" className="primary" onClick={onSave} disabled={!resultUrl||busy==='watermark'}><Download size={18}/><span>保存</span></button>
-          {!isAdmin&&<button type="button" onClick={onContinueImage} disabled={!resultUrl}><ChevronRight size={18}/><span>继续创作</span></button>}
-          {!isAdmin&&<button type="button" className="danger" onClick={onDelete} disabled={!!busy}><Trash2 size={18}/><span>删除</span></button>}
+          <button type="button" onClick={onOpenProcess} aria-label="参数" title="参数"><SlidersHorizontal size={18}/></button>
+          <button type="button" className="primary downloadBtn" onClick={onSave} disabled={!resultUrl||busy==='watermark'} aria-label="下载" title="下载"><Download size={18}/><span>下载</span></button>
+          {!isAdmin&&<button type="button" className="danger" onClick={onDelete} disabled={!!busy} aria-label="删除" title="删除"><Trash2 size={18}/></button>}
         </nav>
 
         <section className="mobileTaskInfoCard">

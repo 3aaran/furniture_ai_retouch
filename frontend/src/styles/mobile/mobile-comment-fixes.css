@@ -1,0 +1,138 @@
+@media (max-width: 860px) {
+  .topApp .resourceDetailActionsV6,
+  .topApp .resourceActionPanelV7 .resourceDetailActionsV6,
+  .topApp .wbToolRail .wbRailBtn.watermark,
+  .mobileTaskWatermark {
+    display: none !important;
+  }
+
+  .topApp .wbToolRail {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .mobileTaskImageTitle {
+    align-items: center !important;
+  }
+
+  .mobileTaskImageTitle > div:first-child {
+    flex: 1 1 auto !important;
+  }
+
+  .mobileTaskTitleActions {
+    flex: 0 0 auto !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+  }
+
+  .mobileTaskTitleActions em {
+    max-width: 96px !important;
+  }
+
+  .mobileContinueChip {
+    height: 28px !important;
+    min-height: 28px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    padding: 0 8px !important;
+    border-radius: 999px !important;
+    border: 1px solid rgba(242, 213, 140, .34) !important;
+    background: rgba(242, 213, 140, .08) !important;
+    color: #f4d98f !important;
+    font-size: 12px !important;
+    font-weight: 900 !important;
+    white-space: nowrap !important;
+  }
+
+  .mobileContinueChip:disabled {
+    opacity: .45 !important;
+  }
+
+  .mobileTaskActions {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 10px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .mobileTaskActions button {
+    width: 100% !important;
+    min-width: 52px !important;
+    height: 48px !important;
+    padding: 0 !important;
+  }
+
+  .mobileTaskActions button span {
+    display: none !important;
+  }
+
+  .mobileTaskActions button.downloadBtn {
+    gap: 6px !important;
+  }
+
+  .mobileTaskActions button.downloadBtn span {
+    display: inline !important;
+  }
+
+  .mobileLongPressHint {
+    display: none !important;
+  }
+
+  .feedbackModalMaskV2 {
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 12px !important;
+  }
+
+  .noticeCenterModalV2 {
+    width: min(560px, calc(100vw - 24px)) !important;
+    height: auto !important;
+    max-height: calc(100dvh - 24px) !important;
+    border-radius: 22px !important;
+    overflow: hidden !important;
+  }
+
+  .noticeCenterModalV2 .feedbackModalHeadV2 {
+    min-height: 72px !important;
+    padding: 16px 18px !important;
+  }
+
+  .noticeCenterModalV2 .feedbackModalHeadV2 h2 {
+    font-size: 24px !important;
+    line-height: 1.15 !important;
+  }
+
+  .noticeCenterBodyV2 {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    max-height: calc(100dvh - 112px) !important;
+    overflow-y: auto !important;
+    padding: 14px !important;
+  }
+
+  .noticeListPaneV2,
+  .noticeDetailPaneV2 {
+    width: 100% !important;
+    min-height: 180px !important;
+    max-height: none !important;
+    border-radius: 18px !important;
+    overflow: hidden !important;
+  }
+
+  .noticeListV2 {
+    min-height: 180px !important;
+  }
+
+  .noticeEmptyV2 {
+    min-height: 180px !important;
+    display: grid !important;
+    place-items: center !important;
+  }
+}

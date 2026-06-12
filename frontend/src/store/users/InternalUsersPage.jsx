@@ -1,6 +1,6 @@
 import React,{useState}from'react';
 import{Search,WalletCards,Plus,Trash2,Power,Pencil}from'lucide-react';
-import{req,fmt,roleName,usePaged}from'../../appShared.jsx';
+import{req,fmt,roleName,usePaged,Pagination}from'../../appShared.jsx';
 import{TrialAccountTicket}from'./TrialAccountTicket.jsx';
 
 function StoreUsers({me,setMe,setMsg}){
@@ -14,7 +14,6 @@ function StoreUsers({me,setMe,setMsg}){
   const [rechargeAmount,setRechargeAmount]=useState(10);
   const roleOptions=me.role==='MERCHANT_OWNER'?[['MERCHANT_ADMIN','门店管理员'],['STAFF','普通用户']]:[['STAFF','普通用户']];
   const users=data.items||[];
-  const totalPages=Math.max(1,Math.ceil((data.total||0)/(data.pageSize||10)));
   const merchantCode=data.merchantCode||me?.merchantCode||String(me?.merchantId||'000000').replace(/-/g,'').slice(0,6)||'000000';
 
   function storeQuota(){return Number(data.merchantQuota ?? me?.merchantQuota ?? me?.quota ?? 0)}
@@ -104,7 +103,8 @@ function StoreUsers({me,setMe,setMsg}){
       <button className="storeTrialBtnV2" type="button" onClick={generateTrial}>生成体验账号</button>
       <button className="storeCreateBtnV2" type="button" onClick={()=>setCreateOpen(true)}><Plus size={18}/> 创建用户</button>
     </section>
-    <section className="storeUsersTablePanelV2">
+    <section className="panel storeUsersTablePanelV2 usersTablePanelLikePromotionV2">
+      <div className="tableWrap storeUsersTableWrapV2">
       <table className="storeUsersTableV2">
         <thead><tr><th>用户名</th><th>手机号</th><th>邮箱</th><th>角色</th><th>用户类型</th><th>算力点</th><th>注册时间</th><th>过期时间</th><th>操作</th></tr></thead>
         <tbody>{users.length?users.map(u=><tr key={u.id}>
@@ -114,7 +114,8 @@ function StoreUsers({me,setMe,setMsg}){
           <td><div className="storeUserActionsV2">{u.role==='MERCHANT_OWNER'?<span className="storeNoActionV2">主账号</span>:<><button type="button" title={u.status==='ACTIVE'?'禁用账号':'启用账号'} aria-label={u.status==='ACTIVE'?'禁用账号':'启用账号'} onClick={()=>status(u)}><Power size={17}/></button><button type="button" title="给用户充值" aria-label="给用户充值" onClick={()=>openRecharge(u)}><WalletCards size={17}/></button><button type="button" title="编辑基础信息" aria-label="编辑基础信息" onClick={()=>openEdit(u)}><Pencil size={17}/></button><button type="button" className="danger" title="删除账号" aria-label="删除账号" onClick={()=>del(u)}><Trash2 size={17}/></button></>}</div></td>
         </tr>):<tr><td colSpan="9"><div className="empty big">暂无用户</div></td></tr>}</tbody>
       </table>
-      <div className="storeUsersPagerV2"><span>每页显示</span><select value={data.pageSize||10} onChange={e=>setQuery(q=>({...q,page:1,pageSize:Number(e.target.value)}))}><option>10</option><option>20</option><option>50</option></select><b>{data.total?((data.page||1)-1)*(data.pageSize||10)+1:0}-{Math.min((data.page||1)*(data.pageSize||10),data.total||0)} / {data.total||0}</b><button disabled={(data.page||1)<=1} onClick={()=>setQuery(q=>({...q,page:(q.page||1)-1}))}>‹</button><button disabled={(data.page||1)>=totalPages} onClick={()=>setQuery(q=>({...q,page:(q.page||1)+1}))}>›</button></div>
+      </div>
+      <Pagination data={data} setQuery={setQuery}/>
     </section>
 
     {createOpen&&<div className="storeUserModalMaskV2"><div className="storeUserModalV2"><div className="storeUserModalHeadV2"><h2>创建用户</h2><button onClick={()=>setCreateOpen(false)}>×</button></div><div className="storeUserModalBodyV2"><label><span>用户角色</span><select value={f.role} onChange={e=>setF({...f,role:e.target.value})}>{roleOptions.map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></label><label><span>用户名 / 备注</span><input value={f.displayName} onChange={e=>setF({...f,displayName:e.target.value})}/></label><label><span>手机号</span><input value={f.phone} onChange={e=>setF({...f,phone:e.target.value})}/></label><label><span>初始密码</span><input value={f.password} onChange={e=>setF({...f,password:e.target.value})}/></label>{f.role!=='MERCHANT_ADMIN'&&<label><span>初始算力点</span><input type="number" min="0" value={f.quota} onChange={e=>setF({...f,quota:e.target.value})}/></label>}</div><div className="storeUserModalFootV2"><button onClick={()=>setCreateOpen(false)}>取消</button><button className="primary" onClick={()=>create()}>确认创建</button></div></div></div>}
