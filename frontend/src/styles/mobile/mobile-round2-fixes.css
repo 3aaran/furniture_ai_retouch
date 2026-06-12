@@ -640,4 +640,9 @@
     background: rgba(242, 213, 140, .08) !important;
     color: #f0d68a !important;
   }
+
+  .topApp .wbRefCard .wbRefToggle svg,
+  .topApp .wbRefCard.isOpen .wbRefToggle svg {
+    transform: none !important;
+  }
 }
