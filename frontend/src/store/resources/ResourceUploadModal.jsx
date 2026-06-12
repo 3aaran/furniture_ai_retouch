@@ -16,7 +16,8 @@ export default function ResourceUploadModal({
   categoryGroups,
   uploadSubOptions,
   closeUpload,
-  create
+  create,
+  uploadStatus
 }){
   return <div className="resourceUploadMaskV3">
     <div className="resourceUploadModalV3">
@@ -36,6 +37,7 @@ export default function ResourceUploadModal({
           {preview?
             <>
               <img src={preview} alt="preview" loading="lazy" decoding="async"/>
+              {uploadStatus&&<strong className={`resourceUploadStatusV3 ${uploadStatus==='上传失败'?'failed':uploadStatus==='上传成功'?'success':'uploading'}`}>{uploadStatus}</strong>}
               {files.length>1&&<span>已选择 {files.length} 张图片</span>}
             </>
             :

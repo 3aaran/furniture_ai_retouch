@@ -43,6 +43,9 @@ export function WorkbenchUploadPanel({
             onError={e => setMsg('图片已上传，但前端加载图片失败：' + e.currentTarget.src)}
           />
           <button className="wbClearImageBtn" type="button" onClick={e => { e.preventDefault(); e.stopPropagation(); clearSourceImage?.(); }}>清除</button>
+          {origin.uploadStatus && <span className={`wbUploadStatus ${origin.uploadStatus}`}>
+            {origin.uploadStatus === 'uploading' ? '上传中' : origin.uploadStatus === 'failed' ? '上传失败' : '上传成功'}
+          </span>}
         </div> : <div className="wbUploadInner">
           <div className="wbUploadCircle">+</div>
           <b>点击上传家具图片</b>
@@ -84,6 +87,9 @@ export function WorkbenchUploadPanel({
               onError={e => setMsg('参考图已上传，但前端加载失败：' + e.currentTarget.src)}
             />
             <button className="wbClearImageBtn small" type="button" onClick={e => { e.preventDefault(); e.stopPropagation(); clearReferenceImage?.(); }}>清除</button>
+            {reference.uploadStatus && <span className={`wbUploadStatus ${reference.uploadStatus}`}>
+              {reference.uploadStatus === 'uploading' ? '上传中' : reference.uploadStatus === 'failed' ? '上传失败' : '上传成功'}
+            </span>}
           </div> : <>
             <span>+</span>
             <em>上传参考图</em>

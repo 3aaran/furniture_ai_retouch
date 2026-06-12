@@ -8,11 +8,12 @@ import ResourceSpaceTabs from'./ResourceSpaceTabs.jsx';
 import ResourceToolbar from'./ResourceToolbar.jsx';
 import ResourceUploadModal from'./ResourceUploadModal.jsx';
 import{defaultCategoryGroups,fixedMainCategories,fixedCategoryUseLabel,normalizeResourceMain,normalizeResourceSub,resourceUseLabel}from'./resourceModel.js';
+import{compressImageForUpload,createLocalPreviewUrl,revokeLocalPreviewUrl}from'../../utils/imageUpload.js';
 
 function StoreResources({me,setMsg}){
   const isSystemAdmin=me?.role==='SYSTEM_ADMIN';
   const isStoreAdmin=me?.role==='MERCHANT_OWNER'||me?.role==='MERCHANT_ADMIN';
-  const {query,setQuery,data,load}=usePaged('/api/merchant/resources',{keyword:'',resourceType:'',mainCategory:'',subCategory:'',status:'',scope:'MERCHANT',page:1,pageSize:20});
+  const {query,setQuery,data,setData,load}=usePaged('/api/merchant/resources',{keyword:'',resourceType:'',mainCategory:'',subCategory:'',status:'',scope:'MERCHANT',page:1,pageSize:20});
   const [sys,setSys]=useState([]);
   const [space,setSpace]=useState(isSystemAdmin?'SYSTEM':isStoreAdmin?'STORE':'PERSONAL');
   const [sysPage,setSysPage]=useState(1);
@@ -35,6 +36,8 @@ function StoreResources({me,setMsg}){
   const [f,setF]=useState({name:'',resourceType:'user_reference',objectName:'',colorName:'',description:''});
   const [files,setFiles]=useState([]);
   const [preview,setPreview]=useState('');
+  const [uploadStatus,setUploadStatus]=useState('');
+  const previewUrlRef=React.useRef('');
 
   const pageSize=20;
   const canUpload=(isSystemAdmin&&space==='SYSTEM')||(isStoreAdmin&&space==='STORE')||(!isSystemAdmin&&space==='PERSONAL');
@@ -81,11 +84,16 @@ function StoreResources({me,setMsg}){
   },[space]);
 
   useEffect(()=>{loadCategories()},[categoryScope]);
+  useEffect(()=>()=>revokeLocalPreviewUrl(previewUrlRef.current),[]);
 
   function chooseFiles(list){
     const picked=Array.from(list||[]).filter(img=>String(img.type||'').startsWith('image/')).slice(0,50);
+    revokeLocalPreviewUrl(previewUrlRef.current);
+    const nextPreview=picked[0]?createLocalPreviewUrl(picked[0]):'';
+    previewUrlRef.current=nextPreview;
     setFiles(picked);
-    setPreview(picked[0]?URL.createObjectURL(picked[0]):'');
+    setPreview(nextPreview);
+    setUploadStatus(picked.length?'已选择':'');
   }
 
   function choose(e){
@@ -100,15 +108,18 @@ function StoreResources({me,setMsg}){
   }
 
   function resetUpload(){
+    revokeLocalPreviewUrl(previewUrlRef.current);
+    previewUrlRef.current='';
     setF({name:'',resourceType:'user_reference',objectName:'',colorName:'',description:''});
     setFiles([]);
     setPreview('');
+    setUploadStatus('');
     setDragging(false);
   }
 
   function closeUpload(){
     setUploadOpen(false);
-    setDragging(false);
+    resetUpload();
   }
 
   async function create(){
@@ -120,17 +131,31 @@ function StoreResources({me,setMsg}){
       Object.entries({...f,objectName:main==='未分类'?'':main,colorName:main?f.colorName:''}).forEach(([k,v])=>fd.append(k,v||''));
       if(files.length>1)fd.set('name','');
       fd.append('scope',categoryScope);
-      files.forEach(img=>fd.append('image',img));
+      setUploadStatus('上传中');
+      const uploadFiles=await Promise.all(files.map(img=>compressImageForUpload(img)));
+      uploadFiles.forEach(img=>fd.append('image',img));
 
       const result=await reqForm(isSystemAdmin&&space==='SYSTEM'?'/api/admin/resources':'/api/merchant/resources',fd);
       const count=Number(result?.count||files.length||1);
       setMsg(`${isSystemAdmin&&space==='SYSTEM'?'系统资源':categoryScope==='MERCHANT'?'门店资源':'个人资源'}已上传 ${count} 个`);
+      setUploadStatus('上传成功');
+      const inserted=Array.isArray(result?.items)?result.items:[].concat(result?.item||[]).filter(Boolean);
+      if(inserted.length){
+        if(isSystemAdmin&&space==='SYSTEM'){
+          setSys(prev=>[...inserted,...prev.filter(item=>!inserted.some(next=>String(next.id)===String(item.id)))]);
+        }else{
+          setData(prev=>({
+            ...prev,
+            items:[...inserted,...(prev.items||[]).filter(item=>!inserted.some(next=>String(next.id)===String(item.id)))].slice(0,prev.pageSize||query.pageSize||20),
+            total:Number(prev.total||0)+inserted.length
+          }));
+        }
+      }
       resetUpload();
       setUploadOpen(false);
       if(!isSystemAdmin)setSpace(categoryScope==='MERCHANT'?'STORE':'PERSONAL');
-      load();
-      req((isSystemAdmin?'/api/admin/resources':'/api/resources')+'?pageSize=20').then(d=>setSys((d.items||[]).filter(x=>x.scope==='SYSTEM'))).catch(()=>{});
     }catch(e){
+      setUploadStatus('上传失败');
       setMsg(e.message);
     }
   }
@@ -284,6 +309,7 @@ function StoreResources({me,setMsg}){
   }
 
   function imgUrl(r){
+    if(r.localPreviewUrl)return r.localPreviewUrl;
     if(!r.imageUrl)return '';
     return imageListUrl(r);
   }
@@ -758,6 +784,7 @@ function StoreResources({me,setMsg}){
       uploadSubOptions={uploadSubOptions}
       closeUpload={closeUpload}
       create={create}
+      uploadStatus={uploadStatus}
     />}
   </div>
 }

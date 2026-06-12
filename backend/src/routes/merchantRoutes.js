@@ -283,6 +283,7 @@ export function registerMerchantRoutes(app,deps){
           await assertUserStorageAvailable(pool, req.user.id, totalIncoming, {label:'资源上传'});
         }
         let totalSavedBytes=0;
+        const items=[];
         for(const file of targets){
           const uploadedUrl=file?await saveUploadedFile(file,{kind:'resource',merchantId:req.user.merchant_id,userId:req.user.id}):'';
           const finalUrl=uploadedUrl||imageUrl;
@@ -292,7 +293,7 @@ export function registerMerchantRoutes(app,deps){
           const meta=await getStoredFileMeta(finalUrl);
           totalSavedBytes+=Number(meta.sizeBytes||file?.size||0);
           await pool.query('INSERT INTO images(id,merchant_id,user_id,display_name,original_name,url,source_type,resource_scope,status,storage_provider,storage_key,file_name,mime_type,size_bytes,width,height) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',[id,req.user.merchant_id||null,req.user.id,displayName,originalName,finalUrl,'RESOURCE',scope,'ACTIVE',meta.storageProvider||'local',meta.storageKey||finalUrl,meta.fileName||file?.filename||'',meta.mimeType||file?.mimetype||'',Number(meta.sizeBytes||file?.size||0),meta.width||null,meta.height||null]);
-          await generateThumbnailBestEffort(pool, {
+          void generateThumbnailBestEffort(pool, {
             id,
             merchant_id: req.user.merchant_id || null,
             user_id: req.user.id,
@@ -303,9 +304,32 @@ export function registerMerchantRoutes(app,deps){
             await pool.query('INSERT INTO image_category_bindings(image_id,sub_category_id) VALUES(?,?) ON DUPLICATE KEY UPDATE sub_category_id=VALUES(sub_category_id)',[id,subId]);
           }
           ids.push(id);
+          items.push(mapResourceRow({
+            id,
+            merchant_id:req.user.merchant_id||null,
+            user_id:req.user.id,
+            display_name:displayName,
+            original_name:originalName,
+            url:finalUrl,
+            source_type:'RESOURCE',
+            resource_scope:scope,
+            status:'ACTIVE',
+            storage_provider:meta.storageProvider||'local',
+            storage_key:meta.storageKey||finalUrl,
+            file_name:meta.fileName||file?.filename||'',
+            mime_type:meta.mimeType||file?.mimetype||'',
+            size_bytes:Number(meta.sizeBytes||file?.size||0),
+            width:meta.width||null,
+            height:meta.height||null,
+            mainCategoryName:objectName||'未分类',
+            subCategoryName:colorName||'',
+            isMainOnly:colorName?0:1,
+            scope,
+            created_at:new Date()
+          }));
         }
         if(totalSavedBytes>0) await applyUserStorageDelta(pool, req.user.id, totalSavedBytes, {merchantId:req.user.merchant_id,action:'RESOURCE_UPLOAD',message:'resource upload'});
-        res.json({message:'资源已创建',ids,id:ids[0],count:ids.length});
+        res.json({message:'资源已创建',ids,id:ids[0],count:ids.length,items,item:items[0]||null});
       }catch(e){ res.status(400).json({message:e.message||'操作失败'}); }
     });
   });

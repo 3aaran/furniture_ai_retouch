@@ -220,7 +220,7 @@
 .resourcePlaceholderV3{
   width:100%;
   height:100%;
-  object-fit:cover;
+  object-fit:contain;
   display:grid;
   place-items:center;
   color:#141414;
@@ -918,6 +918,7 @@
 }
 
 .resourceDropV3{
+  position:relative;
   min-height:310px;
   border:1px dashed rgba(255,255,255,.18);
   border-radius:14px;
@@ -945,6 +946,29 @@
   object-fit:contain;
   border-radius:12px;
   background:#fff;
+}
+
+.resourceUploadStatusV3{
+  position:absolute;
+  left:18px;
+  top:18px;
+  padding:6px 11px;
+  border-radius:999px;
+  background:rgba(10,10,10,.72);
+  border:1px solid rgba(240,214,138,.36);
+  color:#f0d68a;
+  font-size:13px;
+  font-weight:900;
+}
+
+.resourceUploadStatusV3.success{
+  color:#9df0b5;
+  border-color:rgba(90,220,130,.38);
+}
+
+.resourceUploadStatusV3.failed{
+  color:#ffadad;
+  border-color:rgba(255,120,120,.4);
 }
 
 .resourceDropV3 b{

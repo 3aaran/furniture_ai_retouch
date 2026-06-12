@@ -107,10 +107,14 @@
 .wbRefUpload span{font-size:34px;line-height:1}
 .wbRefUpload em{font-style:normal;font-size:14px;margin-top:6px}
 .wbPreviewWrap,.wbRefPreviewWrap{position:relative;width:100%;height:100%}
-.wbPreviewWrap .wbPreview,.wbRefPreviewWrap img{display:block;width:100%;height:100%}
+.wbPreviewWrap .wbPreview,.wbRefPreviewWrap img{display:block;width:100%;height:100%;object-fit:contain}
 .wbClearImageBtn{position:absolute;right:14px;top:14px;z-index:4;height:34px;min-width:58px;padding:0 12px;border-radius:999px;border:1px solid rgba(255,255,255,.22);background:rgba(10,10,10,.72);color:#fff;font-size:13px;font-weight:800;backdrop-filter:blur(8px)}
 .wbClearImageBtn:hover{border-color:#f0d68a;color:#17120a;background:#f0d68a}
 .wbClearImageBtn.small{right:8px;top:8px;height:28px;min-width:48px;padding:0 9px;font-size:12px}
+.wbUploadStatus{position:absolute;left:14px;top:14px;z-index:4;height:34px;display:inline-flex;align-items:center;padding:0 12px;border-radius:999px;background:rgba(10,10,10,.72);border:1px solid rgba(255,255,255,.18);color:#f0d68a;font-size:13px;font-weight:900;backdrop-filter:blur(8px)}
+.wbUploadStatus.success{color:#9df0b5;border-color:rgba(90,220,130,.38)}
+.wbUploadStatus.failed{color:#ffadad;border-color:rgba(255,120,120,.4)}
+.wbUploadStatus.uploading{color:#f0d68a;border-color:rgba(240,214,138,.38)}
 .wbSelectedTip{padding:10px 14px;border-radius:12px;background:rgba(240,214,138,.10);border:1px solid rgba(240,214,138,.18);color:#e9dfc8}
 .wbPromptInput{width:100%;min-height:102px;border-radius:18px;border:1px solid rgba(255,255,255,.08);background:#141517;color:#f2eee5;padding:18px;resize:vertical;outline:none}
 .wbBottomBar{display:flex;align-items:flex-end;gap:20px;justify-content:space-between;margin-top:18px;flex-wrap:wrap}

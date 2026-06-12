@@ -344,7 +344,7 @@ app.post('/api/images/upload', requireAuth, (req,res)=>{
         action: 'UPLOAD',
         message: 'user image uploaded'
       });
-      const thumbUrl = await generateThumbnailBestEffort(pool, {
+      void generateThumbnailBestEffort(pool, {
         id: img.id,
         merchant_id: img.merchantId,
         user_id: img.userId,
@@ -355,7 +355,6 @@ app.post('/api/images/upload', requireAuth, (req,res)=>{
         id: img.id,
         url: img.url,
         storage_key: img.storageKey,
-        thumbUrl: thumbUrl || '',
         originalName: img.originalName
       });
       res.json({...img,...access,storage,createdAt:new Date().toISOString()});

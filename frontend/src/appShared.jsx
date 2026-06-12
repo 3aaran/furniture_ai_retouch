@@ -166,7 +166,7 @@ export function usePaged(url,init={}){
   const[loading,setLoading]=useState(false);
   const load=()=>{setLoading(true);req(url+qs(query)).then(setData).finally(()=>setLoading(false))};
   useEffect(load,[url,JSON.stringify(query)]);
-  return{query,setQuery,data,loading,load};
+  return{query,setQuery,data,setData,loading,load};
 }
 export function Pagination({data,setQuery}){
   const pages=Math.max(1,Math.ceil((data.total||0)/(data.pageSize||10)));

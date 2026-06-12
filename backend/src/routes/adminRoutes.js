@@ -401,6 +401,7 @@ export function registerAdminRoutes(app,{upload}){
     const subId=await ensureSystemSubCategory({mainName:objectName,subName:colorName,createdBy:req.user.id});
     const targets=files.length?files:[null];
     const ids=[];
+    const items=[];
     for(const file of targets){
       const uploadedUrl = file ? await saveUploadedFile(file,{kind:'resource',userId:req.user.id}) : '';
       const finalUrl=uploadedUrl || imageUrl || '';
@@ -409,7 +410,7 @@ export function registerAdminRoutes(app,{upload}){
       const id=uuid();
       const meta=await getStoredFileMeta(finalUrl);
       await pool.query('INSERT INTO images(id,user_id,display_name,original_name,url,source_type,resource_scope,status,storage_provider,storage_key,file_name,mime_type,size_bytes,width,height) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',[id,req.user.id,displayName,originalName,finalUrl,'RESOURCE','SYSTEM','ACTIVE',meta.storageProvider||'local',meta.storageKey||finalUrl,meta.fileName||file?.filename||'',meta.mimeType||file?.mimetype||'',Number(meta.sizeBytes||file?.size||0),meta.width||null,meta.height||null]);
-      await generateThumbnailBestEffort(pool, {
+      void generateThumbnailBestEffort(pool, {
         id,
         user_id: req.user.id,
         url: finalUrl,
@@ -419,8 +420,30 @@ export function registerAdminRoutes(app,{upload}){
         await pool.query('INSERT INTO image_category_bindings(image_id,sub_category_id) VALUES(?,?) ON DUPLICATE KEY UPDATE sub_category_id=VALUES(sub_category_id)',[id,subId]);
       }
       ids.push(id);
+      const access=imageSignedAccessFields({id,url:finalUrl,storage_key:meta.storageKey||finalUrl,originalName});
+      items.push({
+        ...access,
+        id,
+        name:stripImageExt(displayName),
+        resourceType:resourceTypeFromMain(objectName||'未分类'),
+        objectName:objectName||'未分类',
+        colorName:colorName||'',
+        mainCategoryName:objectName||'未分类',
+        subCategoryName:colorName||'',
+        imageUrl:access.url,
+        thumbUrl:access.thumbUrl,
+        downloadUrl:access.downloadUrl,
+        thumbStorageKey:'',
+        fileSize:Number(meta.sizeBytes||file?.size||0),
+        width:meta.width||null,
+        height:meta.height||null,
+        mimeType:meta.mimeType||file?.mimetype||'',
+        status:'ACTIVE',
+        scope:'SYSTEM',
+        createdAt:new Date()
+      });
     }
-    res.json({message:'资源已创建',ids,id:ids[0],count:ids.length});
+    res.json({message:'资源已创建',ids,id:ids[0],count:ids.length,items,item:items[0]||null});
   });
   
   app.patch('/api/admin/resources/:id', requireAuth, upload.single('image'), async (req,res)=>{

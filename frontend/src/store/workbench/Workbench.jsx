@@ -10,6 +10,7 @@ import ResourcePickerModal from'./ResourcePickerModal.jsx';
 import WorkbenchResourceUploadModal from'./WorkbenchResourceUploadModal.jsx';
 import WatermarkConfigModal from'./WatermarkConfigModal.jsx';
 import ConfirmDialog from'../../components/ConfirmDialog.jsx';
+import{compressImageForUpload,createLocalPreviewUrl,revokeLocalPreviewUrl}from'../../utils/imageUpload.js';
 
 const BASE_RATIO_OPTIONS=['自适应','1:1','4:3','3:4','16:9'];
 const BASE_RESOLUTION_OPTIONS=['1K','2K','4K'];
@@ -17,6 +18,7 @@ const BASE_RESOLUTION_OPTIONS=['1K','2K','4K'];
 function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   function imgSrc(input){
     if(!input)return '';
+    if(typeof input==='object'&&input.localPreviewUrl)return input.localPreviewUrl;
     if(typeof input==='object')return imageViewUrl(input);
     if(String(input).startsWith('http'))return input;
     return assetUrl(input);
@@ -94,6 +96,8 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   const [rightDrawerOpen,setRightDrawerOpen]=useState(false);
   const recentPreviewHideTimer=useRef(null);
   const storyboardsRef=useRef([]);
+  const uploadSeqRef=useRef({source:0,reference:0});
+  const uploadPreviewUrlsRef=useRef({source:'',reference:'',resource:''});
 
   useEffect(()=>{req('/api/resources?pageSize=20').then(d=>setResources(d.items||[])).catch(()=>{})},[]);
   useEffect(()=>{req('/api/settings/public').then(setCostSettings).catch(()=>{})},[]);
@@ -119,6 +123,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   useEffect(()=>()=>clearRecentPreviewTimer(),[]);
   useEffect(()=>{storyboardsRef.current=storyboards},[storyboards]);
   useEffect(()=>()=>storyboardsRef.current.forEach(item=>URL.revokeObjectURL(item.url)),[]);
+  useEffect(()=>()=>Object.values(uploadPreviewUrlsRef.current).forEach(revokeLocalPreviewUrl),[]);
 
   function clearRecentPreviewTimer(){
     if(recentPreviewHideTimer.current){
@@ -270,14 +275,41 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
     },2000);
   }
 
+  function replaceUploadPreview(type,url=''){
+    revokeLocalPreviewUrl(uploadPreviewUrlsRef.current[type]);
+    uploadPreviewUrlsRef.current[type]=url;
+  }
+
   async function uploadFile(img,type='source'){
     if(!img)return;
+    const seq=(uploadSeqRef.current[type]||0)+1;
+    uploadSeqRef.current[type]=seq;
+    const localPreviewUrl=createLocalPreviewUrl(img);
+    replaceUploadPreview(type,localPreviewUrl);
+    const localImage={
+      id:`local-${type}-${seq}`,
+      originalName:img.name||'local-preview',
+      localPreviewUrl,
+      imageUrl:localPreviewUrl,
+      uploadStatus:'uploading'
+    };
+    if(type==='source')setOrigin(localImage);
+    else setReference(localImage);
+    setMsg(type==='source'?'家具图片上传中':'参考图上传中');
     const fd=new FormData();
-    fd.append('image',img);
     try{
+      const uploadImage=await compressImageForUpload(img);
+      fd.append('image',uploadImage);
       const d=await reqForm('/api/images/upload',fd);
+      if(uploadSeqRef.current[type]!==seq){
+        revokeLocalPreviewUrl(localPreviewUrl);
+        return;
+      }
 
       if(!d?.id||!d?.url){
+        const failed={...localImage,uploadStatus:'failed',uploadError:'上传成功但后端没有返回图片编号或图片地址'};
+        if(type==='source')setOrigin(failed);
+        else setReference(failed);
         setMsg('上传成功但后端没有返回图片编号或图片地址');
         return;
       }
@@ -285,7 +317,8 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
       const uploadedImage={
         ...d,
         url:d.url,
-        imageUrl:imgSrc(d)
+        imageUrl:imgSrc(d),
+        uploadStatus:'success'
       };
 
       console.log('[upload success]',uploadedImage);
@@ -297,28 +330,42 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
         setReference(uploadedImage);
         setMsg('参考图上传成功');
       }
+      replaceUploadPreview(type,'');
 
       refreshRecent();
     }catch(err){
+      if(uploadSeqRef.current[type]===seq){
+        const failed={...localImage,uploadStatus:'failed',uploadError:err.message||'图片上传失败'};
+        if(type==='source')setOrigin(failed);
+        else setReference(failed);
+      }else{
+        revokeLocalPreviewUrl(localPreviewUrl);
+      }
       setMsg(err.message||'图片上传失败');
     }
   }
 
-  async function chooseSource(e){ await uploadFile(e.target.files?.[0],'source') }
-  async function chooseReference(e){ await uploadFile(e.target.files?.[0],'reference') }
+  async function chooseSource(e){ await uploadFile(e.target.files?.[0],'source'); e.target.value=''; }
+  async function chooseReference(e){ await uploadFile(e.target.files?.[0],'reference'); e.target.value=''; }
 
   function clearSourceImage(){
+    uploadSeqRef.current.source+=1;
+    replaceUploadPreview('source','');
     setOrigin(null);
     setMsg('已清除当前展示的家具原图');
   }
 
   function clearReferenceImage(){
+    uploadSeqRef.current.reference+=1;
+    replaceUploadPreview('reference','');
     setReference(null);
     setMsg('已清除当前展示的参考图');
   }
 
   function continueWithImage(img){
     if(!img?.id||!img?.url)return setMsg('当前图片不可继续创作');
+    uploadSeqRef.current.source+=1;
+    replaceUploadPreview('source','');
     setOrigin({...img,imageUrl:img.imageUrl||imgSrc(img)});
     setTaskDetail(null);
     goPage&&goPage('workbench');
@@ -358,9 +405,13 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
         originalName:r.name||r.originalName||'resource'
       };
       if(resourceModal.target==='source'){
+        uploadSeqRef.current.source+=1;
+        replaceUploadPreview('source','');
         setOrigin(picked);
         setMsg('已选择产品原图');
       }else{
+        uploadSeqRef.current.reference+=1;
+        replaceUploadPreview('reference','');
         setReference(picked);
         setMsg('已选择参考图');
       }
@@ -647,8 +698,18 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   }
 
   function chooseWorkbenchResourceFile(file){
+    replaceUploadPreview('resource','');
     setResourceUploadFile(file||null);
-    setResourceUploadPreview(file?URL.createObjectURL(file):'');
+    const url=file?createLocalPreviewUrl(file):'';
+    uploadPreviewUrlsRef.current.resource=url;
+    setResourceUploadPreview(url);
+  }
+
+  function closeWorkbenchResourceUpload(){
+    setResourceUploadOpen(false);
+    setResourceUploadFile(null);
+    replaceUploadPreview('resource','');
+    setResourceUploadPreview('');
   }
 
   async function createWorkbenchResource(){
@@ -657,16 +718,14 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
       if(!resourceUpload.name.trim())return setMsg('请输入资源名称');
       const fd=new FormData();
       Object.entries(resourceUpload).forEach(([k,v])=>fd.append(k,v||''));
-      fd.append('image',resourceUploadFile);
-      await reqForm('/api/merchant/resources',fd);
+      fd.append('image',await compressImageForUpload(resourceUploadFile));
+      const result=await reqForm('/api/merchant/resources',fd);
       setMsg((me?.role==='MERCHANT_OWNER'||me?.role==='MERCHANT_ADMIN')?'门店资源已上传':'个人资源已上传');
-      setResourceUploadOpen(false);
-      setResourceUploadFile(null);
-      setResourceUploadPreview('');
+      closeWorkbenchResourceUpload();
       const nextType=op==='replace_bg'?'scene':'material';
       setResourceUpload({name:'',resourceType:nextType,objectName:nextType==='scene'?'场景模板':'材质',colorName:'',description:''});
-      const d=await req('/api/resources?pageSize=20');
-      setResources(d.items||[]);
+      const inserted=Array.isArray(result?.items)?result.items:[].concat(result?.item||[]).filter(Boolean);
+      if(inserted.length)setResources(prev=>[...inserted,...prev.filter(item=>!inserted.some(next=>String(next.id)===String(item.id)))]);
       setResourceScope((me?.role==='MERCHANT_OWNER'||me?.role==='MERCHANT_ADMIN')?'MERCHANT':'ALL');
     }catch(e){setMsg(e.message)}
   }
@@ -1155,7 +1214,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
     workbenchUploadMainOptions={workbenchUploadMainOptions}
     workbenchUploadSubOptions={workbenchUploadSubOptions}
     createWorkbenchResource={createWorkbenchResource}
-    onClose={()=>setResourceUploadOpen(false)}
+    onClose={closeWorkbenchResourceUpload}
   />}
   </>
 }
