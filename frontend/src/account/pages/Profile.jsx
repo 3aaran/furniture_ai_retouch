@@ -1,17 +1,27 @@
-// 该文件用于封装个人中心页面，包括头像、基础资料、密码和图片存储空间展示。
 import React,{useEffect,useRef,useState}from'react';
-import{Camera,HardDrive,LockKeyhole,ShieldCheck,UserRound}from'lucide-react';
+import{Camera,HardDrive,LockKeyhole,MessageSquare,ShieldCheck,UserRound,CircleHelp,X}from'lucide-react';
 import{avatarViewUrl,req,reqForm,roleName}from'../../appShared.jsx';
 
 export default function Profile({me,setMe,setMsg}){
   const[info,setInfo]=useState({displayName:me.displayName||''});
   const[pwd,setPwd]=useState({oldPassword:'',newPassword:'',confirm:''});
+  const[forgotOpen,setForgotOpen]=useState(false);
+  const[reset,setReset]=useState({code:'',newPassword:'',confirm:''});
+  const[resetCountdown,setResetCountdown]=useState(0);
   const[storage,setStorage]=useState(null);
   const[avatarBusy,setAvatarBusy]=useState(false);
   const fileRef=useRef(null);
+
   useEffect(()=>{req('/api/storage/me').then(setStorage).catch(()=>{})},[]);
+  useEffect(()=>{
+    if(resetCountdown<=0) return undefined;
+    const timer=setInterval(()=>setResetCountdown(v=>Math.max(0,v-1)),1000);
+    return ()=>clearInterval(timer);
+  },[resetCountdown]);
+
   const avatarUrl=avatarViewUrl(me);
   const initials=String(me.displayName||me.phone||me.username||'用').slice(0,1);
+
   async function saveInfo(){
     try{
       const d=await req('/api/me/profile',{method:'PATCH',body:JSON.stringify(info)});
@@ -19,6 +29,7 @@ export default function Profile({me,setMe,setMsg}){
       setMsg('已保存');
     }catch(e){setMsg(e.message)}
   }
+
   async function uploadAvatar(file){
     if(!file)return;
     try{
@@ -34,6 +45,7 @@ export default function Profile({me,setMe,setMsg}){
       if(fileRef.current)fileRef.current.value='';
     }
   }
+
   async function savePwd(){
     if(pwd.newPassword!==pwd.confirm)return setMsg('两次密码不一致');
     try{
@@ -42,6 +54,26 @@ export default function Profile({me,setMe,setMsg}){
       setMsg('密码已修改');
     }catch(e){setMsg(e.message)}
   }
+
+  async function sendResetCode(){
+    if(resetCountdown>0)return;
+    try{
+      await req('/api/me/password/reset-code',{method:'POST',body:JSON.stringify({})});
+      setResetCountdown(60);
+      setMsg('验证码已发送');
+    }catch(e){setMsg(e.message)}
+  }
+
+  async function resetPwdByCode(){
+    if(reset.newPassword!==reset.confirm)return setMsg('两次密码不一致');
+    try{
+      await req('/api/me/password/reset',{method:'PATCH',body:JSON.stringify({code:reset.code,newPassword:reset.newPassword})});
+      setReset({code:'',newPassword:'',confirm:''});
+      setForgotOpen(false);
+      setMsg('密码已修改');
+    }catch(e){setMsg(e.message)}
+  }
+
   return <div className="profilePageV3">
     <section className="profileHeroV3">
       <div className="profileAvatarV3">
@@ -70,7 +102,10 @@ export default function Profile({me,setMe,setMsg}){
       </div>
 
       <div className="profileCardV3">
-        <h3><LockKeyhole size={20}/>修改密码</h3>
+        <div className="profileCardTitleRowV3">
+          <h3><LockKeyhole size={20}/>修改密码</h3>
+          <button type="button" className="profileForgotBtnV3" onClick={()=>setForgotOpen(true)}><CircleHelp size={17}/>忘记密码</button>
+        </div>
         <label><span>原密码</span><input type="password" value={pwd.oldPassword} onChange={e=>setPwd({...pwd,oldPassword:e.target.value})}/></label>
         <label><span>新密码</span><input type="password" value={pwd.newPassword} onChange={e=>setPwd({...pwd,newPassword:e.target.value})}/></label>
         <label><span>确认新密码</span><input type="password" value={pwd.confirm} onChange={e=>setPwd({...pwd,confirm:e.target.value})}/></label>
@@ -87,8 +122,25 @@ export default function Profile({me,setMe,setMsg}){
           <div><span>剩余</span><b>{storage.remainingText}</b></div>
         </div>
         <div className="storageBarV3"><i style={{width:(storage.percent||0)+'%'}}/></div>
-        <p>图片已使用{storage.percent||0}%的空间</p>
+        <p>图片已使用 {storage.percent||0}% 的空间</p>
       </>:<div className="empty">正在读取存储空间...</div>}
     </section>
+
+    {forgotOpen&&<div className="modalMask profileResetMaskV3">
+      <div className="modalCard profileResetModalV3">
+        <div className="profileResetHeadV3">
+          <h3><MessageSquare size={20}/>验证码修改密码</h3>
+          <button type="button" onClick={()=>setForgotOpen(false)}><X size={18}/></button>
+        </div>
+        <p>验证码将发送到当前账号手机号：<b>{me.phone||'未绑定手机号'}</b></p>
+        <label><span>短信验证码</span><div className="profileCodeRowV3"><input value={reset.code} onChange={e=>setReset({...reset,code:e.target.value.replace(/\D/g,'').slice(0,6)})} placeholder="请输入 6 位验证码"/><button type="button" onClick={sendResetCode} disabled={resetCountdown>0}>{resetCountdown>0?`${resetCountdown}s`:'发送验证码'}</button></div></label>
+        <label><span>新密码</span><input type="password" value={reset.newPassword} onChange={e=>setReset({...reset,newPassword:e.target.value})}/></label>
+        <label><span>确认新密码</span><input type="password" value={reset.confirm} onChange={e=>setReset({...reset,confirm:e.target.value})}/></label>
+        <div className="profileResetActionsV3">
+          <button type="button" onClick={()=>setForgotOpen(false)}>取消</button>
+          <button type="button" className="primary" onClick={resetPwdByCode}>确认修改</button>
+        </div>
+      </div>
+    </div>}
   </div>;
 }

@@ -82,7 +82,7 @@ function canManageRole(actor,targetRole){ return roleRank[actor.role] > roleRank
 function validPhone(phone){ return /^1[3-9]\d{9}$/.test(String(phone||'')); }
 function normalizeSmsScene(scene){
   const raw = String(scene || 'LOGIN').trim().toUpperCase();
-  return ['LOGIN','APPLICATION'].includes(raw) ? raw : 'LOGIN';
+  return ['LOGIN','APPLICATION','PASSWORD_RESET'].includes(raw) ? raw : 'LOGIN';
 }
 function clientIp(req){
   const forwarded = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
@@ -327,6 +327,39 @@ app.post('/api/sms/verify-code', async (req,res)=>{
   }catch(e){
     res.status(400).json({success:false,message:e.message || '验证失败'});
   }
+});
+
+app.post('/api/me/password/reset-code', requireAuth, async (req,res)=>{
+  const phone = String(req.user.phone || '').trim();
+  if(!validPhone(phone)) return res.status(400).json({success:false,message:'当前账号未绑定可接收验证码的手机号'});
+  const originalBody = req.body;
+  try{
+    req.body = { phone };
+    await createAndSendSmsCode(req, 'PASSWORD_RESET');
+    res.json({success:true,message:'验证码已发送'});
+  }catch(e){
+    console.error('[sms] password reset send failed', { userId:req.user.id, phone, message:e.message });
+    const message = e.status && e.status < 500 ? e.message : '短信发送失败';
+    res.status(e.status || 500).json({success:false,message});
+  }finally{
+    req.body = originalBody;
+  }
+});
+
+app.patch('/api/me/password/reset', requireAuth, async (req,res)=>{
+  const phone = String(req.user.phone || '').trim();
+  const code = String(req.body.code || '').trim();
+  const newPassword = String(req.body.newPassword || '');
+  if(!validPhone(phone)) return res.status(400).json({message:'当前账号未绑定可接收验证码的手机号'});
+  if(!/^\d{6}$/.test(code)) return res.status(400).json({message:'请输入 6 位短信验证码'});
+  if(newPassword.length < 6) return res.status(400).json({message:'密码至少 6 位'});
+  try{
+    await consumeSmsCode(phone, code, 'PASSWORD_RESET');
+  }catch(e){
+    return res.status(400).json({message:e.message || '验证码错误或已过期'});
+  }
+  await pool.query('UPDATE users SET password_hash=? WHERE id=?',[await bcrypt.hash(newPassword,10),req.user.id]);
+  res.json({message:'密码已修改'});
 });
 
 app.post('/api/auth/send-code', async (req,res)=>{

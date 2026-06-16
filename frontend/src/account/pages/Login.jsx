@@ -1,6 +1,6 @@
 // 登录与商家入驻页：保留账号密码登录，同时支持手机号验证码登录和入驻前手机号校验。
 import React,{useEffect,useState}from'react';
-import{ArrowRight,Building2,LockKeyhole,Phone,UserRound}from'lucide-react';
+import{ArrowLeft,ArrowRight,Building2,LockKeyhole,Phone,UserRound}from'lucide-react';
 import{req}from'../../appShared.jsx';
 import BrandMark from'../../components/BrandMark.jsx';
 import{APP_NAME,LOGIN_SUBTITLE}from'../../config/appConfig.js';
@@ -129,8 +129,10 @@ export default function Login(){
         <div className="switch authSwitchV2">没有门店？<b onClick={()=>setMode('apply')}>提交商家申请</b></div>
       </>:<>
         <div className="authCardHeadV2">
-          <span><Building2 size={18}/>入驻申请</span>
-          <h2>提交商家信息</h2>
+          <div className="authHeadRowV2">
+            <span><Building2 size={18}/>入驻申请</span>
+            <button type="button" className="authBackBtnV2" onClick={()=>setMode('login')}><ArrowLeft size={17}/>返回登录</button>
+          </div>
         </div>
         <div className="grid2 authApplyGridV2">
           <label className="authFieldV2">商家名称<input value={f.companyName} onChange={e=>setField('companyName',e.target.value)}/></label>
@@ -146,7 +148,6 @@ export default function Login(){
         </label>
         <label className="authFieldV2">申请说明<textarea value={f.note} onChange={e=>setField('note',e.target.value)}/></label>
         <button className="submit authSubmitV2" type="button" onClick={apply} disabled={loading}>{loading?'处理中...':'提交申请'}<ArrowRight size={18}/></button>
-        <div className="switch authSwitchV2"><b onClick={()=>setMode('login')}>返回登录</b></div>
       </>}
       {msg&&<div className="toast inline authMsgV2">{msg}</div>}
     </div>

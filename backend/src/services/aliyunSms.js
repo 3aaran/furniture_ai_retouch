@@ -1,5 +1,5 @@
-import Dysmsapi20170525, * as $Dysmsapi20170525 from '@alicloud/dysmsapi20170525';
-import OpenApi, * as $OpenApi from '@alicloud/openapi-client';
+import * as $Dysmsapi20170525 from '@alicloud/dysmsapi20170525';
+import * as $OpenApi from '@alicloud/openapi-client';
 
 let smsClient = null;
 
@@ -20,7 +20,8 @@ function getClient(accessKeyId, accessKeySecret) {
   if (smsClient) return smsClient;
   const config = new $OpenApi.Config({ accessKeyId, accessKeySecret });
   config.endpoint = 'dysmsapi.aliyuncs.com';
-  smsClient = new Dysmsapi20170525(config);
+  const SmsClient = $Dysmsapi20170525.default?.default || $Dysmsapi20170525.default;
+  smsClient = new SmsClient(config);
   return smsClient;
 }
 

@@ -696,6 +696,36 @@ body{
   color:#fff;
   font-size:21px;
 }
+.profileCardTitleRowV3{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:20px;
+}
+.profileCardTitleRowV3 h3{
+  margin:0;
+}
+.profileCardV3 .profileForgotBtnV3{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  min-width:0;
+  width:auto;
+  height:34px;
+  margin:0;
+  padding:0 12px;
+  border-radius:10px;
+  border:1px solid rgba(242,213,140,.36);
+  background:rgba(242,213,140,.08);
+  color:#f0d68a;
+  font-size:14px;
+  font-weight:900;
+}
+.profileCardV3 .profileForgotBtnV3:hover{
+  background:rgba(242,213,140,.16);
+}
 .profileCardV3 label{
   display:grid;
   gap:8px;
@@ -718,6 +748,88 @@ body{
   margin-top:6px;
   min-width:128px;
   height:46px;
+  border-radius:12px;
+  font-weight:900;
+}
+.profileResetModalV3{
+  display:grid;
+  gap:16px;
+}
+.profileResetHeadV3{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.profileResetHeadV3 h3{
+  margin:0;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:#fff;
+}
+.profileResetHeadV3 button{
+  width:40px;
+  height:40px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.06);
+  color:#fff;
+}
+.profileResetModalV3 p{
+  margin:0;
+  color:#b9c1cc;
+}
+.profileResetModalV3 p b{
+  color:#f0d68a;
+}
+.profileResetModalV3 label{
+  display:grid;
+  gap:8px;
+  color:#d7cdbb;
+  font-weight:900;
+}
+.profileResetModalV3 input{
+  width:100%;
+  height:48px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:12px;
+  background:#111214;
+  color:#fff;
+  padding:0 14px;
+}
+.profileCodeRowV3{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.profileCodeRowV3 input{
+  min-width:0;
+  flex:1;
+  border-radius:12px;
+}
+.profileCodeRowV3 button{
+  flex:0 0 118px;
+  height:48px;
+  border-radius:12px;
+  border:1px solid rgba(242,213,140,.36);
+  background:rgba(242,213,140,.10);
+  color:#f0d68a;
+  line-height:1.1;
+  font-weight:900;
+}
+.profileCodeRowV3 button:disabled{
+  opacity:.7;
+  cursor:not-allowed;
+}
+.profileResetActionsV3{
+  display:flex;
+  justify-content:flex-end;
+  gap:12px;
+}
+.profileResetActionsV3 button{
+  min-width:104px;
+  height:42px;
   border-radius:12px;
   font-weight:900;
 }
