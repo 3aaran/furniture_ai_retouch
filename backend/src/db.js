@@ -115,6 +115,22 @@ export async function initDb(){
     INDEX idx_phone(phone)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`);
 
+  await pool.query(`CREATE TABLE IF NOT EXISTS sms_codes (
+    id VARCHAR(36) PRIMARY KEY,
+    phone VARCHAR(20) NOT NULL,
+    code_hash VARCHAR(128) NOT NULL,
+    scene VARCHAR(40) NOT NULL DEFAULT 'LOGIN',
+    ip VARCHAR(64) NULL,
+    used TINYINT(1) NOT NULL DEFAULT 0,
+    expires_at DATETIME NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    used_at DATETIME NULL,
+    INDEX idx_sms_phone_scene_created(phone, scene, created_at),
+    INDEX idx_sms_ip_created(ip, created_at),
+    INDEX idx_sms_expires(expires_at),
+    INDEX idx_sms_used(used)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`);
+
   await pool.query(`CREATE TABLE IF NOT EXISTS app_settings (
     setting_key VARCHAR(80) PRIMARY KEY,
     setting_value TEXT NOT NULL,

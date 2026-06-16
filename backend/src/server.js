@@ -5,6 +5,7 @@ import multer from 'multer';
 import bcrypt from 'bcryptjs';
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import { v4 as uuid } from 'uuid';
 import { initDb, pool, publicUser, publicApplication, findUserByUsername } from './db.js';
 import { requireAuth, sign } from './auth.js';
@@ -21,6 +22,7 @@ import { recycleExpiredTrialAccount } from './services/trialAccountService.js';
 import { bindImageToResourceCategory } from './services/resourceBindingService.js';
 import { processStoredImage, processTypeForOperation } from './services/imageProcessService.js';
 import { generateThumbnailBestEffort, thumbnailAccessUrl } from './services/thumbnailService.js';
+import { sendSmsCode } from './services/aliyunSms.js';
 
 await initDb();
 const app = express();
@@ -74,11 +76,61 @@ function readAppConfigValue(key, fallback = '') {
 const APP_NAME = process.env.APP_NAME || readConfiguredAppName() || '家具修图';
 const roleRank = { SYSTEM_ADMIN:100, MERCHANT_OWNER:80, MERCHANT_ADMIN:60, STAFF:30, TRIAL:10 };
 const validSubRoles = ['MERCHANT_ADMIN','STAFF','TRIAL'];
-const smsCodes = new Map();
 function isSystemAdmin(u){ return u?.role === 'SYSTEM_ADMIN'; }
 function isMerchantPower(u){ return ['MERCHANT_OWNER','MERCHANT_ADMIN'].includes(u?.role); }
 function canManageRole(actor,targetRole){ return roleRank[actor.role] > roleRank[targetRole]; }
 function validPhone(phone){ return /^1[3-9]\d{9}$/.test(String(phone||'')); }
+function normalizeSmsScene(scene){
+  const raw = String(scene || 'LOGIN').trim().toUpperCase();
+  return ['LOGIN','APPLICATION'].includes(raw) ? raw : 'LOGIN';
+}
+function clientIp(req){
+  const forwarded = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
+  return forwarded || req.ip || req.socket?.remoteAddress || '';
+}
+function hashSmsCode(phone, code){
+  const pepper = String(process.env.SMS_CODE_PEPPER || process.env.JWT_SECRET || 'sms_code_pepper');
+  return crypto.createHash('sha256').update(`${phone}:${code}:${pepper}`).digest('hex');
+}
+function randomSmsCode(){
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+function safeEqual(a,b){
+  const left = Buffer.from(String(a || ''));
+  const right = Buffer.from(String(b || ''));
+  return left.length === right.length && crypto.timingSafeEqual(left, right);
+}
+function smsTokenSignature(phone, scene, codeId, expiresAt){
+  const secret = String(process.env.JWT_SECRET || 'sms_token_secret');
+  return crypto.createHmac('sha256', secret).update(`${phone}:${scene}:${codeId}:${expiresAt}`).digest('hex');
+}
+function createSmsVerifyToken(phone, scene, codeId){
+  const expiresAt = Date.now() + 10 * 60 * 1000;
+  return `${codeId}.${expiresAt}.${smsTokenSignature(phone, scene, codeId, expiresAt)}`;
+}
+async function assertSmsVerifyToken(phone, scene, token){
+  const parts = String(token || '').split('.');
+  if(parts.length !== 3) throw new Error('请先完成手机号验证码验证');
+  const [codeId, expiresAtRaw, signature] = parts;
+  const expiresAt = Number(expiresAtRaw);
+  if(!codeId || !Number.isFinite(expiresAt) || expiresAt < Date.now()) throw new Error('手机号验证已过期，请重新验证');
+  const expected = smsTokenSignature(phone, scene, codeId, expiresAt);
+  if(!safeEqual(signature, expected)) throw new Error('手机号验证无效，请重新验证');
+  const [[row]] = await pool.query('SELECT id FROM sms_codes WHERE id=? AND phone=? AND scene=? AND used=1 LIMIT 1',[codeId,phone,scene]);
+  if(!row) throw new Error('手机号验证无效，请重新验证');
+}
+async function consumeSmsCode(phone, code, scene){
+  const [rows] = await pool.query(
+    'SELECT * FROM sms_codes WHERE phone=? AND scene=? AND used=0 AND expires_at>NOW() ORDER BY created_at DESC LIMIT 1',
+    [phone, scene]
+  );
+  const row = rows[0];
+  if(!row || !safeEqual(row.code_hash, hashSmsCode(phone, code))) {
+    throw new Error('验证码错误或已过期');
+  }
+  await pool.query('UPDATE sms_codes SET used=1, used_at=NOW() WHERE id=? AND used=0',[row.id]);
+  return row;
+}
 function randomPassword(){ return Math.random().toString(36).slice(2,6).toUpperCase()+Math.random().toString(36).slice(2,6); }
 async function generateInternalAccount(merchantId, role){
   const prefix = role==='MERCHANT_ADMIN'?'MA':role==='TRIAL'?'TY':'YG';
@@ -178,6 +230,63 @@ app.get('/api/health/public-url', async (req,res)=>{
   });
 });
 
+async function createAndSendSmsCode(req, scene){
+  const phone = String(req.body.phone || '').trim();
+  if(!validPhone(phone)) {
+    const err = new Error('请输入正确手机号');
+    err.status = 400;
+    throw err;
+  }
+
+  if(scene === 'LOGIN'){
+    const [users] = await pool.query('SELECT id FROM users WHERE phone=? AND status<>"DELETED" LIMIT 1',[phone]);
+    if(!users.length){
+      const err = new Error('该手机号未开通账号');
+      err.status = 404;
+      throw err;
+    }
+  }
+
+  const ip = clientIp(req);
+  const [[recentPhone]] = await pool.query(
+    'SELECT id FROM sms_codes WHERE phone=? AND created_at>=DATE_SUB(NOW(), INTERVAL 60 SECOND) LIMIT 1',
+    [phone]
+  );
+  if(recentPhone){
+    const err = new Error('验证码发送过于频繁，请稍后再试');
+    err.status = 429;
+    throw err;
+  }
+
+  const [[dailyPhone]] = await pool.query(
+    'SELECT COUNT(*) total FROM sms_codes WHERE phone=? AND created_at>=CURDATE()',
+    [phone]
+  );
+  if(Number(dailyPhone?.total || 0) >= 5){
+    const err = new Error('该手机号今日验证码次数已用完');
+    err.status = 429;
+    throw err;
+  }
+
+  const [[minuteIp]] = await pool.query(
+    'SELECT COUNT(*) total FROM sms_codes WHERE ip=? AND created_at>=DATE_SUB(NOW(), INTERVAL 1 MINUTE)',
+    [ip]
+  );
+  if(Number(minuteIp?.total || 0) >= 5){
+    const err = new Error('请求过于频繁，请稍后再试');
+    err.status = 429;
+    throw err;
+  }
+
+  const code = randomSmsCode();
+  await sendSmsCode(phone, code);
+  await pool.query(
+    'INSERT INTO sms_codes(id,phone,code_hash,scene,ip,used,expires_at) VALUES(?,?,?,?,?,0,DATE_ADD(NOW(), INTERVAL 5 MINUTE))',
+    [uuid(), phone, hashSmsCode(phone, code), scene, ip]
+  );
+  return phone;
+}
+
 app.post('/api/auth/login', async (req,res)=>{
   const identifier=String(req.body.identifier||req.body.username||req.body.phone||'').trim();
   const password=String(req.body.password||'');
@@ -195,29 +304,63 @@ app.post('/api/auth/login', async (req,res)=>{
   res.json({token:sign(user),user:await publicMe(user)});
 });
 
+app.post('/api/sms/send-code', async (req,res)=>{
+  const scene = normalizeSmsScene(req.body.scene);
+  try{
+    await createAndSendSmsCode(req, scene);
+    res.json({success:true,message:'验证码已发送'});
+  }catch(e){
+    console.error('[sms] send code failed', { scene, phone:req.body?.phone, message:e.message });
+    const message = e.status && e.status < 500 ? e.message : '短信发送失败';
+    res.status(e.status || 500).json({success:false,message});
+  }
+});
+
+app.post('/api/sms/verify-code', async (req,res)=>{
+  const phone = String(req.body.phone || '').trim();
+  const code = String(req.body.code || '').trim();
+  const scene = normalizeSmsScene(req.body.scene);
+  try{
+    if(!validPhone(phone) || !/^\d{6}$/.test(code)) return res.status(400).json({success:false,message:'请输入正确手机号和验证码'});
+    const row = await consumeSmsCode(phone, code, scene);
+    res.json({success:true,message:'验证成功',smsToken:createSmsVerifyToken(phone, scene, row.id)});
+  }catch(e){
+    res.status(400).json({success:false,message:e.message || '验证失败'});
+  }
+});
+
 app.post('/api/auth/send-code', async (req,res)=>{
-  const phone=String(req.body.phone||'').trim();
-  if(!validPhone(phone)) return res.status(400).json({message:'请输入正确手机号'});
-  const [rows]=await pool.query('SELECT * FROM users WHERE phone=? AND role="MERCHANT_OWNER" AND status<>"DELETED" LIMIT 1',[phone]);
-  if(!rows[0]) return res.status(404).json({message:'该手机号未开通门店管理员账号'});
-  const code=String(Math.floor(100000 + Math.random()*900000));
-  smsCodes.set(phone,{code,expires:Date.now()+5*60*1000});
-  // 开发阶段不接短信平台，直接返回验证码；上线时改成阿里云/腾讯云短信发送。
-  res.json({message:'验证码已生成（开发模式）', code});
+  try{
+    await createAndSendSmsCode(req, 'LOGIN');
+    res.json({success:true,message:'验证码已发送'});
+  }catch(e){
+    console.error('[sms] legacy auth send failed', { phone:req.body?.phone, message:e.message });
+    const message = e.status && e.status < 500 ? e.message : '短信发送失败';
+    res.status(e.status || 500).json({success:false,message});
+  }
 });
 
 app.post('/api/auth/code-login', async (req,res)=>{
   const phone=String(req.body.phone||'').trim();
   const code=String(req.body.code||'').trim();
-  const saved=smsCodes.get(phone);
-  if(!saved || saved.expires<Date.now() || saved.code!==code) return res.status(401).json({message:'验证码错误或已过期'});
-  const [rows]=await pool.query('SELECT * FROM users WHERE phone=? AND role="MERCHANT_OWNER" AND status<>"DELETED" LIMIT 1',[phone]);
+  if(!validPhone(phone) || !/^\d{6}$/.test(code)) return res.status(400).json({message:'请输入正确手机号和验证码'});
+  try{
+    await consumeSmsCode(phone, code, 'LOGIN');
+  }catch(e){
+    return res.status(401).json({message:e.message || '验证码错误或已过期'});
+  }
+  const [rows]=await pool.query('SELECT * FROM users WHERE phone=? AND status<>"DELETED" LIMIT 1',[phone]);
   const user=rows[0];
-  if(!user) return res.status(404).json({message:'该手机号未开通门店管理员账号'});
+  if(!user) return res.status(404).json({message:'该手机号未开通账号'});
   if(user.status!=='ACTIVE') return res.status(403).json({message:'璐﹀彿宸茶绂佺敤'});
-  const [[m]]=await pool.query('SELECT status FROM merchants WHERE id=?',[user.merchant_id]);
-  if(!m || m.status!=='ACTIVE') return res.status(403).json({message:'所属门店已被平台禁用'});
-  smsCodes.delete(phone);
+  if(user.role==='TRIAL'){
+    const trial=await recycleExpiredTrialAccount(user);
+    if(trial.expired) return res.status(403).json({message:'体验账号已过期，账号已删除，剩余额度已退回门店额度池'});
+  }
+  if(user.merchant_id){
+    const [[m]]=await pool.query('SELECT status FROM merchants WHERE id=?',[user.merchant_id]);
+    if(!m || m.status!=='ACTIVE') return res.status(403).json({message:'所属门店已被平台禁用'});
+  }
   res.json({token:sign(user),user:await publicMe(user)});
 });
 app.get('/api/me', requireAuth, async (req,res)=>res.json(await publicMe(req.user)));
@@ -230,8 +373,13 @@ app.get('/api/storage/me', requireAuth, async (req,res)=>{
 });
 
 app.post('/api/applications', async (req,res)=>{
-  const {companyName,contactName,phone,inviteCode,note}=req.body;
+  const {companyName,contactName,phone,inviteCode,note,smsToken}=req.body;
   if(!companyName || !contactName || !validPhone(phone)) return res.status(400).json({message:'请填写公司名称、联系人和正确手机号'});
+  try{
+    await assertSmsVerifyToken(String(phone).trim(), 'APPLICATION', smsToken);
+  }catch(e){
+    return res.status(400).json({message:e.message || '请先完成手机号验证码验证'});
+  }
   const [exists]=await pool.query('SELECT id FROM merchant_applications WHERE phone=? AND status="PENDING" UNION SELECT id FROM merchants WHERE phone=?',[phone,phone]);
   if(exists.length) return res.status(400).json({message:'该手机号已提交申请或已开通商家'});
   await pool.query('INSERT INTO merchant_applications(id,company_name,contact_name,phone,invite_code,note) VALUES(?,?,?,?,?,?)',[uuid(),companyName,contactName,phone,inviteCode||null,note||null]);

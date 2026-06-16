@@ -223,15 +223,28 @@
   min-height:112px;
 }
 
+.authCodeRowV2{
+  display:flex;
+  align-items:stretch;
+}
+
 .authCodeRowV2 input{
+  flex:1;
+  min-width:0;
   border-radius:8px 0 0 8px;
 }
 
 .authCodeRowV2 button{
   height:52px;
   margin-top:8px;
+  min-width:124px;
   border-radius:0 8px 8px 0;
   border-color:rgba(242,213,140,.35);
+}
+
+.authCodeRowV2 button:disabled{
+  opacity:.7;
+  cursor:not-allowed;
 }
 
 .authSubmitV2{

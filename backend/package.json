@@ -9,6 +9,8 @@
     "thumbs:backfill": "node scripts/backfill-thumbnails.js"
   },
   "dependencies": {
+    "@alicloud/dysmsapi20170525": "^4.5.1",
+    "@alicloud/openapi-client": "^0.4.15",
     "ali-oss": "^6.23.0",
     "axios": "^1.6.8",
     "bcryptjs": "^2.4.3",
