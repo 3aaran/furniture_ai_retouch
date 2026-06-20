@@ -8,6 +8,7 @@ import{TaskDetailModal}from'./components/TaskDetailModal.jsx';
 import BrandMark from'./components/BrandMark.jsx';
 import{avatarViewUrl,roleName,userFriendlyMessage,recordClientFailure,req,fmt}from'./appShared.jsx';
 import{APP_NAME,APP_SUBTITLE}from'./config/appConfig.js';
+import{navigateWorkflow}from'./admin/workflows/workflowRoute.js';
 
 const DEFAULT_AVATAR='/default-avatar.svg';
 function NoticeCenterModal({onClose,onUnreadChange}){
@@ -305,6 +306,7 @@ function Shell({me,setMe}){
     location.reload();
   }
   function go(k){
+    if(k==='workflows'){navigateWorkflow('list');return}
     const next=pageKeys.has(k)?k:(isAdmin?'dashboard':'workbench');
     setPage(next);
     setMenu(false);

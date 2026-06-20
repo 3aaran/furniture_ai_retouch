@@ -13,6 +13,7 @@
   Image,
   Ticket,
   WalletCards
+  ,Workflow
 } from 'lucide-react';
 
 export const adminPages = [
@@ -25,13 +26,14 @@ export const adminPages = [
   ['settings', '系统配置', Settings],
   ['merchants', '商家管理', Building2],
   ['announcements', '发布公告', Bell]
+  ,['workflows', '工作流管理', Workflow]
 ];
 
 export const adminNavGroups = [
   { key: 'browse', title: '浏览', items: adminPages.filter(([key]) => ['dashboard', 'logs'].includes(key)) },
   { key: 'todo', title: '待处理事项', items: adminPages.filter(([key]) => ['applications', 'feedbacks'].includes(key)) },
   { key: 'config', title: '配置', items: adminPages.filter(([key]) => ['resources', 'aiConfig', 'settings'].includes(key)) },
-  { key: 'manage', title: '管理', items: adminPages.filter(([key]) => ['merchants', 'announcements'].includes(key)) }
+  { key: 'manage', title: '管理', items: adminPages.filter(([key]) => ['merchants', 'announcements', 'workflows'].includes(key)) }
 ];
 
 export const storeAdminPages = [

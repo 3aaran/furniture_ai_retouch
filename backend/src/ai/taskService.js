@@ -917,6 +917,40 @@ export async function getAiTaskStatus(taskId, user) {
   return publicTask(task);
 }
 
+export async function waitForTaskCompletion({
+  readTask,
+  taskId,
+  timeoutMs = 15 * 60 * 1000,
+  pollMs = 1000
+}) {
+  const startedAt = Date.now();
+  while (Date.now() - startedAt <= timeoutMs) {
+    const task = await readTask(taskId);
+    if (task?.status === 'succeeded') return task;
+    if (task?.status === 'failed') {
+      const error = new Error(task.errorMessage || 'AI 任务执行失败');
+      error.code = task.failureCode || 'AI_TASK_FAILED';
+      throw error;
+    }
+    await new Promise(resolve => setTimeout(resolve, pollMs));
+  }
+  const error = new Error('AI 任务等待超时');
+  error.code = 'AI_TASK_TIMEOUT';
+  throw error;
+}
+
+export async function waitForAiTaskCompletion(taskId, user, options = {}) {
+  return waitForTaskCompletion({
+    ...options,
+    taskId,
+    readTask: async id => {
+      const task = await getTaskForUser(id, user);
+      if (!task) throw new Error('任务不存在');
+      return publicTask(task);
+    }
+  });
+}
+
 export async function getAiTaskDetail(taskId, user) {
   const task = await getTaskForUser(taskId, user);
   if (!task) throw new Error('任务不存在');
@@ -1174,6 +1208,8 @@ export default {
   runAiTask,
   markTaskFailed,
   getAiTaskStatus,
+  waitForTaskCompletion,
+  waitForAiTaskCompletion,
   getAiTaskDetail,
   getRecentAiTasks,
   getAdminAiTasks

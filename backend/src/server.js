@@ -18,6 +18,7 @@ import { registerAdminRoutes } from './routes/adminRoutes.js';
 import { registerMerchantRoutes } from './routes/merchantRoutes.js';
 import { registerResourceCategoryRoutes } from './routes/resourceCategoryRoutes.js';
 import { registerProfileRoutes } from './routes/profileRoutes.js';
+import { registerWorkflowRoutes } from './routes/workflowRoutes.js';
 import { recycleExpiredTrialAccount } from './services/trialAccountService.js';
 import { bindImageToResourceCategory } from './services/resourceBindingService.js';
 import { processStoredImage, processTypeForOperation } from './services/imageProcessService.js';
@@ -453,6 +454,7 @@ app.post('/api/announcements/:id/read', requireAuth, async (req,res)=>{
 });
 
 registerAdminRoutes(app,{upload});
+registerWorkflowRoutes(app);
 
 registerResourceCategoryRoutes(app);
 

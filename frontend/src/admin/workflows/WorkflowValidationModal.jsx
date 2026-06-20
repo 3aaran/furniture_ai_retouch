@@ -1,0 +1,3 @@
+import React from'react';
+import{CheckCircle2,X,XCircle}from'lucide-react';
+export default function WorkflowValidationModal({result,onClose,onFocusNode}){return <div className="workflowModalMask"><section className="workflowValidationModal"><header><div>{result.valid?<CheckCircle2/>:<XCircle/>}<h2>{result.valid?'校验通过':'发现工作流问题'}</h2></div><button onClick={onClose}><X/></button></header>{result.valid?<p>节点、连线和必填配置均符合发布要求。</p>:<ul>{result.errors.map((error,index)=><li key={`${error.code}-${index}`}><button onClick={()=>error.nodeId&&onFocusNode(error.nodeId)}><b>{error.message}</b><small>{error.code}{error.field?` · ${error.field}`:''}</small></button></li>)}</ul>}</section></div>}

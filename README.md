@@ -23,6 +23,35 @@ npm run dev
 
 启动后会自动创建数据库和表。
 
+### 工作流管理后端
+
+平台管理员可通过 `/admin/workflows` 管理工作流。数据保存在 MySQL 的
+`workflow_templates` 表，不再使用浏览器 `localStorage`。
+
+当前采用轻量单表方案：
+
+- 只保存当前内容，不保存不可变历史版本。
+- 发布时校验工作流、更新状态，并将发布次数加一。
+- 已发布工作流可以继续直接修改。
+- 两条初始示例工作流可以删除；删除后不会在每次重启时重新创建。
+
+主要接口均要求 `SYSTEM_ADMIN`：
+
+```text
+GET    /api/admin/workflows
+POST   /api/admin/workflows
+GET    /api/admin/workflows/:id
+PUT    /api/admin/workflows/:id
+POST   /api/admin/workflows/:id/validate
+POST   /api/admin/workflows/:id/publish
+POST   /api/admin/workflows/:id/disable
+POST   /api/admin/workflows/:id/duplicate
+DELETE /api/admin/workflows/:id
+```
+
+线上如果设置了 `AUTO_INIT_DB=false`，部署此版本时需要先在维护窗口临时执行一次
+`AUTO_INIT_DB=true npm start` 完成建表，然后恢复为 `AUTO_INIT_DB=false`。
+
 ## 测试账号
 
 ```text

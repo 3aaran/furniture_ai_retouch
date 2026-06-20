@@ -3,10 +3,12 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test"
   },
   "dependencies": {
     "@vitejs/plugin-react": "4.3.4",
+    "@xyflow/react": "^12.11.0",
     "furniture-retouch": "file:..",
     "gsap": "^3.15.0",
     "lucide-react": "^0.468.0",

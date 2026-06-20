@@ -138,6 +138,64 @@ export async function initDb(){
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`);
 
+  await pool.query(`CREATE TABLE IF NOT EXISTS workflow_templates (
+    id VARCHAR(36) PRIMARY KEY,
+    name VARCHAR(160) NOT NULL,
+    code VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT NULL,
+    type ENUM('IMAGE','VIDEO','MIXED') NOT NULL DEFAULT 'IMAGE',
+    scene VARCHAR(120) NULL,
+    status ENUM('DRAFT','PUBLISHED','DISABLED') NOT NULL DEFAULT 'DRAFT',
+    version INT NOT NULL DEFAULT 0,
+    canvas_json JSON NOT NULL,
+    config_json JSON NOT NULL,
+    is_example TINYINT(1) NOT NULL DEFAULT 0,
+    created_by VARCHAR(36) NULL,
+    updated_by VARCHAR(36) NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_workflow_status(status),
+    INDEX idx_workflow_type(type),
+    INDEX idx_workflow_updated(updated_at)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`);
+
+  await pool.query(`CREATE TABLE IF NOT EXISTS workflow_runs (
+    id VARCHAR(36) PRIMARY KEY,
+    workflow_template_id VARCHAR(36) NOT NULL,
+    user_id VARCHAR(36) NOT NULL,
+    merchant_id VARCHAR(36) NULL,
+    status ENUM('queued','running','succeeded','failed') NOT NULL DEFAULT 'queued',
+    origin_image_id VARCHAR(36) NOT NULL,
+    result_image_id VARCHAR(36) NULL,
+    current_node_id VARCHAR(80) NULL,
+    error_message TEXT NULL,
+    started_at DATETIME NULL,
+    finished_at DATETIME NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_workflow_run_template(workflow_template_id),
+    INDEX idx_workflow_run_user(user_id),
+    INDEX idx_workflow_run_status(status)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`);
+
+  await pool.query(`CREATE TABLE IF NOT EXISTS workflow_run_nodes (
+    id VARCHAR(36) PRIMARY KEY,
+    workflow_run_id VARCHAR(36) NOT NULL,
+    node_id VARCHAR(80) NOT NULL,
+    node_type VARCHAR(60) NOT NULL,
+    feature_key VARCHAR(80) NULL,
+    status ENUM('pending','running','succeeded','failed','skipped') NOT NULL DEFAULT 'pending',
+    input_image_id VARCHAR(36) NULL,
+    output_image_id VARCHAR(36) NULL,
+    ai_task_id VARCHAR(36) NULL,
+    error_message TEXT NULL,
+    started_at DATETIME NULL,
+    finished_at DATETIME NULL,
+    sort_order INT NOT NULL DEFAULT 0,
+    UNIQUE KEY uk_workflow_run_node(workflow_run_id,node_id),
+    INDEX idx_workflow_run_node_order(workflow_run_id,sort_order),
+    INDEX idx_workflow_run_node_task(ai_task_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`);
+
   await pool.query(`CREATE TABLE IF NOT EXISTS announcements (
     id VARCHAR(36) PRIMARY KEY,
     title VARCHAR(160) NOT NULL,
