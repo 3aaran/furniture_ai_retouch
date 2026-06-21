@@ -8,7 +8,8 @@ import{TaskDetailModal}from'./components/TaskDetailModal.jsx';
 import BrandMark from'./components/BrandMark.jsx';
 import{avatarViewUrl,roleName,userFriendlyMessage,recordClientFailure,req,fmt}from'./appShared.jsx';
 import{APP_NAME,APP_SUBTITLE}from'./config/appConfig.js';
-import{navigateWorkflow}from'./admin/workflows/workflowRoute.js';
+import WorkflowAdminApp from'./admin/workflows/WorkflowAdminApp.jsx';
+import{navigateWorkflow,parseWorkflowHash}from'./admin/workflows/workflowRoute.js';
 
 const DEFAULT_AVATAR='/default-avatar.svg';
 function NoticeCenterModal({onClose,onUnreadChange}){
@@ -196,6 +197,20 @@ function MobileImageSavePreview({image,onClose,setMsg}){
   </div>,document.body);
 }
 
+function AdminNavGroup({group,page,open,onToggle,onGo,active}){
+  const GroupIcon=group.icon;
+  return <div className="navGroup">
+    <button className={active?'active':''} onClick={onToggle} aria-label={group.title} title={group.title}>
+      {GroupIcon&&<GroupIcon className="navGroupIcon" size={18}/>}
+      <span className="navGroupLabel">{group.title}</span>
+      <span className="navArrow">▾</span>
+    </button>
+    {open&&<div className="navDropdown">
+      {group.items.map(([k,t,I])=><button key={k} className={page===k?'active itemActive':''} onClick={()=>onGo(k)}><I size={17}/>{t}</button>)}
+    </div>}
+  </div>;
+}
+
 function Shell({me,setMe}){
   const nav=roleNav(me.role);
   const isAdmin=me.role==='SYSTEM_ADMIN';
@@ -206,11 +221,13 @@ function Shell({me,setMe}){
     return keys;
   },[nav]);
   function pageFromHash(){
+    if(isAdmin&&parseWorkflowHash(window.location.hash))return'workflows';
     const raw=String(window.location.hash||'').replace(/^#\/?/,'').trim();
     return pageKeys.has(raw)?raw:'';
   }
   const initial=pageFromHash()||(isAdmin?'dashboard':'workbench');
   const[page,setPage]=useState(initial);
+  const[workflowRoute,setWorkflowRoute]=useState(()=>isAdmin?parseWorkflowHash(window.location.hash):null);
   const[msg,setMsg]=useState('');
   const[menu,setMenu]=useState(false);
   const menuTimer=useRef(null);
@@ -311,6 +328,7 @@ function Shell({me,setMe}){
     setPage(next);
     setMenu(false);
     setNavDrop(null);
+    setWorkflowRoute(null);
     if(window.location.hash!==`#/${next}`)window.history.replaceState(null,'',`#/${next}`);
   }
   function openHome(){
@@ -340,13 +358,18 @@ function Shell({me,setMe}){
   useEffect(()=>{if(!msg)return;const t=setTimeout(()=>setMsg(''),2600);return()=>clearTimeout(t)},[msg]);
   useEffect(()=>{if(rawToastText&&rawToastText!==toastText)recordClientFailure('toast',rawToastText)},[rawToastText,toastText]);
   useEffect(()=>()=>menuTimer.current&&clearTimeout(menuTimer.current),[]);
-  useEffect(()=>{if(window.location.hash!==`#/${page}`)window.history.replaceState(null,'',`#/${page}`)},[]);
+  useEffect(()=>{
+    if(page==='workflows')return;
+    if(window.location.hash!==`#/${page}`)window.history.replaceState(null,'',`#/${page}`);
+  },[]);
   useEffect(()=>{
     if(isAdmin)return;
     req('/api/announcements').then(d=>setNoticeUnread(Number(d.unreadCount||0))).catch(()=>{});
   },[isAdmin]);
   useEffect(()=>{
     const onHashChange=()=>{
+      const nextWorkflow=isAdmin?parseWorkflowHash(window.location.hash):null;
+      setWorkflowRoute(nextWorkflow);
       const next=pageFromHash();
       if(next&&next!==page){
         setPage(next);
@@ -356,7 +379,7 @@ function Shell({me,setMe}){
     };
     window.addEventListener('hashchange',onHashChange);
     return()=>window.removeEventListener('hashchange',onHashChange);
-  },[page,pageKeys]);
+  },[page,pageKeys,isAdmin]);
 
   const fallbackTitle={profile:'个人中心',quota:'额度明细',redeem:'兑换码创建',feedbacks:'问题反馈'};
   const shouldShowMobileTabBar=!isAdmin&&isMobile&&mobileTopLevelPages.has(page)&&!mobileModalOpen&&!mobileSaveImage&&!redeemOpen&&!feedbackOpen&&!emailOpen&&!menu;
@@ -371,14 +394,7 @@ function Shell({me,setMe}){
 
       <nav className="topNav" onClick={e=>e.stopPropagation()}>
         {isAdmin?adminNavGroups.map(g=>
-          <div className="navGroup" key={g.key}>
-            <button className={adminGroupActive(g)?'active':''} onClick={()=>setNavDrop(navDrop===g.key?null:g.key)}>
-              {g.title}<span className="navArrow">▾</span>
-            </button>
-            {navDrop===g.key&&<div className="navDropdown">
-              {g.items.map(([k,t,I])=><button key={k} className={page===k?'active itemActive':''} onClick={()=>go(k)}><I size={17}/>{t}</button>)}
-            </div>}
-          </div>
+          <AdminNavGroup key={g.key} group={g} page={page} open={navDrop===g.key} onToggle={()=>setNavDrop(navDrop===g.key?null:g.key)} onGo={go} active={adminGroupActive(g)}/>
         ):nav.map(([k,t,I])=><button key={k} className={page===k?'active':''} onClick={()=>go(k)}><I size={17}/>{t}</button>)}
 
         {!isAdmin&&<div className="topNavActions">
@@ -403,9 +419,11 @@ function Shell({me,setMe}){
     {isAdmin&&<MobileAdminNav page={page} go={go}/>}
 
     <main className="topMain">
-      {!(page==='workbench'&&!isAdmin)&&<div className="pageHead"><h1>{nav.find(n=>n[0]===page)?.[1]||(fallbackTitle[page]||'管理页面')}</h1></div>}
+      {page!=='workflows'&&!(page==='workbench'&&!isAdmin)&&<div className="pageHead"><h1>{nav.find(n=>n[0]===page)?.[1]||(fallbackTitle[page]||'管理页面')}</h1></div>}
       {msg&&createPortal(<div className={`globalToastV2 ${toastKind==='error'?'error':'success'}`}><span>{toastKind==='error'?<AlertCircle size={20}/>:<CheckCircle2 size={20}/>}</span><b>{toastText}</b><button aria-label="关闭提示" onClick={()=>setMsg('')}><X size={18}/></button></div>,document.body)}
-      <Comp me={me} setMe={setMe} setMsg={setMsg} goPage={go} TaskDetailModal={TaskDetailModal}/>
+      {page==='workflows'
+        ?<WorkflowAdminApp route={workflowRoute||{name:'list',id:null}} me={me} setMe={setMe}/>
+        :<Comp me={me} setMe={setMe} setMsg={setMsg} goPage={go} TaskDetailModal={TaskDetailModal}/>}
     </main>
 
     {!isAdmin&&<MobileSideNavDrawer

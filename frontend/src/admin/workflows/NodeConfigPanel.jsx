@@ -1,5 +1,6 @@
 import React from 'react';
 import { AVAILABLE_INPUTS, MODEL_OPTIONS, MODEL_TYPES, OUTPUT_TYPES, PRESET_OPTIONS, USAGE_MODES } from './workflowDefinitions.js';
+import {deriveInputOutputs} from './workflowPresentation.js';
 
 const Field = ({ label, error, children }) => <label className={error ? 'fieldError' : ''}><span>{label}</span>{children}{error && <small>{error.message}</small>}</label>;
 const Toggle = ({ label, value, onChange }) => <label className="workflowToggle"><input type="checkbox" checked={!!value} onChange={event => onChange(event.target.checked)}/><span>{label}</span></label>;
@@ -65,7 +66,10 @@ export default function NodeConfigPanel({ workflow, selectedNode, validationErro
     const image = config.image || {};
     const video = config.video || {};
     const audio = config.audio || {};
-    const setGroup = (group, patch) => setConfig({ [group]: { ...(config[group] || {}), ...patch } });
+    const setGroup = (group, patch) => {
+      const nextConfig={...config,[group]:{...(config[group]||{}),...patch}};
+      setConfig({[group]:nextConfig[group],outputs:deriveInputOutputs(nextConfig)});
+    };
     return <aside className="workflowConfigPanel"><div className="workflowPanelHead"><span>节点配置 - 输入节点</span><small>配置用户可提交的内容</small></div><div className="workflowConfigBody">
       <Field label="节点名称"><input value={selectedNode.data.label} onChange={event => onNodeChange({ label: event.target.value, title: '第1步：输入节点' })}/></Field>
       <h3>文本输入</h3>

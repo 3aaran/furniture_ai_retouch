@@ -2779,3 +2779,127 @@ body{
   }
 }
 
+.topApp .navGroupIcon{
+  display:none;
+}
+
+/* Keep desktop navigation in one row until the real mobile breakpoint. */
+@media (min-width:861px) and (max-width:1180px){
+  .topApp .topbar{
+    height:78px !important;
+    min-height:78px !important;
+    padding:0 14px !important;
+    gap:10px !important;
+    flex-wrap:nowrap !important;
+  }
+
+  .topApp .topBrand{
+    flex:0 1 210px !important;
+    min-width:168px !important;
+    gap:10px !important;
+  }
+
+  .topApp .topBrand .brandMark{
+    width:44px !important;
+    height:44px !important;
+    flex:0 0 44px !important;
+  }
+
+  .topApp .topBrand b{font-size:20px !important}
+  .topApp .topBrand small{font-size:11px !important}
+
+  .topApp .topNav{
+    order:0 !important;
+    flex:1 1 auto !important;
+    flex-basis:auto !important;
+    width:auto !important;
+    min-width:0 !important;
+    justify-content:center !important;
+    gap:2px !important;
+    overflow:visible !important;
+    padding:0 !important;
+  }
+
+  .topApp .navGroup{flex:0 0 auto !important}
+
+  .topApp .topNav > .navGroup > button{
+    min-height:40px !important;
+    padding:8px !important;
+    gap:4px !important;
+    font-size:14px !important;
+  }
+
+  .topApp .topNav > .navGroup > button.active:after{
+    bottom:-18px !important;
+  }
+
+  .topApp .topRight{
+    flex:0 0 auto !important;
+    min-width:0 !important;
+    gap:6px !important;
+  }
+
+  .topApp .quotaPill{
+    height:42px !important;
+    padding:0 12px !important;
+  }
+
+  .topApp .avatarBtn{
+    gap:6px !important;
+    padding:4px !important;
+  }
+
+  .topApp .avatarBtn > span{
+    width:40px !important;
+    height:40px !important;
+  }
+
+  .topApp .avatarBtn b{font-size:14px !important}
+  .topApp .avatarBtn small{font-size:11px !important}
+
+  .topApp .navDropdown{
+    top:52px !important;
+    left:50% !important;
+    transform:translateX(-50%) !important;
+  }
+
+  .topApp .topMain{
+    padding:102px 20px 70px !important;
+  }
+}
+
+@media (min-width:861px) and (max-width:980px){
+  .topApp .topBrand{
+    flex-basis:150px !important;
+    min-width:120px !important;
+  }
+
+  .topApp .topBrand small,
+  .topApp .avatarBtn > div{
+    display:none !important;
+  }
+
+  .topApp .topNav > .navGroup > button{
+    width:44px !important;
+    padding:8px 6px !important;
+    justify-content:center !important;
+  }
+
+  .topApp .navGroupLabel{
+    display:none !important;
+  }
+
+  .topApp .navGroupIcon{
+    display:block !important;
+    flex:0 0 auto !important;
+  }
+}
+
+@media (min-width:861px){
+  .topApp .topMain:has(.workflowAdminSurface){
+    width:100% !important;
+    max-width:none !important;
+    margin:0 !important;
+    padding:78px 0 0 !important;
+  }
+}

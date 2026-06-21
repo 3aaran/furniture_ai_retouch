@@ -30,10 +30,10 @@ export const adminPages = [
 ];
 
 export const adminNavGroups = [
-  { key: 'browse', title: '浏览', items: adminPages.filter(([key]) => ['dashboard', 'logs'].includes(key)) },
-  { key: 'todo', title: '待处理事项', items: adminPages.filter(([key]) => ['applications', 'feedbacks'].includes(key)) },
-  { key: 'config', title: '配置', items: adminPages.filter(([key]) => ['resources', 'aiConfig', 'settings'].includes(key)) },
-  { key: 'manage', title: '管理', items: adminPages.filter(([key]) => ['merchants', 'announcements', 'workflows'].includes(key)) }
+  { key: 'browse', title: '浏览', icon: LayoutDashboard, items: adminPages.filter(([key]) => ['dashboard', 'logs'].includes(key)) },
+  { key: 'todo', title: '待处理事项', icon: FileText, items: adminPages.filter(([key]) => ['applications', 'feedbacks'].includes(key)) },
+  { key: 'config', title: '配置', icon: Settings, items: adminPages.filter(([key]) => ['resources', 'aiConfig', 'settings'].includes(key)) },
+  { key: 'manage', title: '管理', icon: Building2, items: adminPages.filter(([key]) => ['merchants', 'announcements', 'workflows'].includes(key)) }
 ];
 
 export const storeAdminPages = [

@@ -52,7 +52,7 @@ export default function WorkflowEditorPage({workflowId,mode,me,onBack}){
   return <main className="workflowEditorPage">
     <header className="workflowEditorToolbar">
       <button onClick={back}><ArrowLeft size={17}/>返回</button>
-      <div className="workflowEditorTitle"><span><b>工作流创建</b><small>三节点工作流编辑器</small></span></div>
+      <div className="workflowEditorTitle"><span><b>{workflow.name||'未命名工作流'}</b><small>三节点工作流编辑器</small></span></div>
       <div className="workflowGraphStats">{workflow.canvasJson.nodes.length} 节点 · {workflow.canvasJson.edges.length} 连线</div>
       <div className="workflowToolbarActions"><button className="saveOutline" onClick={()=>saveDraft().catch(e=>setMessage(e.message))}><Save size={17}/>保存</button><button className="primary" onClick={runTest}><Play size={17}/>运行测试</button></div>
     </header>
