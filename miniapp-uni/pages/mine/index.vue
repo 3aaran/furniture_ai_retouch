@@ -186,6 +186,7 @@ import {
 import { getCurrentUser, getQuotaLogs, getStorageSummary } from '../../api/user.js';
 import { isMockLoggedIn, mockLogout } from '../../utils/mockSession.js';
 import { clearToken, getToken, setUseMockApi, useMockApi } from '../../utils/request.js';
+import { requireLogin } from '../../utils/auth.js';
 import AppTopbar from '../../components/app-topbar/app-topbar.vue';
 
 const roleNameMap = {
@@ -299,6 +300,7 @@ export default {
     }
   },
   onShow() {
+    if (!requireLogin()) return;
     this.loadAccount();
   },
   methods: {
@@ -352,7 +354,7 @@ export default {
       this.loadAccount();
     },
     goLogin() {
-      uni.navigateTo({ url: '/pages/login/login' });
+      uni.navigateTo({ url: '/pages/login/index' });
     },
     togglePanel(key) {
       this.activePanel = this.activePanel === key ? '' : key;
@@ -403,6 +405,7 @@ export default {
       this.loggedIn = false;
       this.activePanel = '';
       uni.showToast({ title: '已退出', icon: 'success' });
+      uni.reLaunch({ url: '/pages/login/index' });
     }
   }
 };

@@ -60,6 +60,7 @@ import { getCurrentUser, getQuotaLogs } from '../../api/user.js';
 import { getFeatureTypes, getMockTasks, getMockUser } from '../../utils/mockStore.js';
 import { isMockLoggedIn } from '../../utils/mockSession.js';
 import { getToken, useMockApi } from '../../utils/request.js';
+import { requireLogin } from '../../utils/auth.js';
 import AppTopbar from '../../components/app-topbar/app-topbar.vue';
 
 const roleNameMap = {
@@ -105,6 +106,7 @@ export default {
     }
   },
   onShow() {
+    if (!requireLogin()) return;
     this.loadUser();
     this.features = getFeatureTypes();
     this.recentTasks = getMockTasks().slice(0, 3);
@@ -143,7 +145,7 @@ export default {
       uni.switchTab({ url: '/pages/tasks/index' });
     },
     goLogin() {
-      uni.navigateTo({ url: '/pages/login/login' });
+      uni.navigateTo({ url: '/pages/login/index' });
     },
     goMine() {
       uni.switchTab({ url: '/pages/mine/index' });

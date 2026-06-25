@@ -1,6 +1,9 @@
 import { getApiBaseUrl, isMockEnabled, setMockEnabled } from '../config/env.js';
+import { clearLoginState, getToken as getStoredToken, setLoginState, TOKEN_KEY, USER_KEY, QUOTA_KEY } from './auth.js';
 
-export const AUTH_TOKEN_KEY = 'miniapp_auth_token';
+export const AUTH_TOKEN_KEY = TOKEN_KEY;
+export const AUTH_USER_KEY = USER_KEY;
+export const AUTH_QUOTA_KEY = QUOTA_KEY;
 export const MOCK_TOKEN_KEY = 'miniapp_mock_token';
 
 let isRedirectingLogin = false;
@@ -14,18 +17,24 @@ function normalizePath(url = '') {
 }
 
 export function getToken() {
-  return uni.getStorageSync(AUTH_TOKEN_KEY) || '';
+  return getStoredToken();
 }
 
 export function setToken(token) {
-  if (token) uni.setStorageSync(AUTH_TOKEN_KEY, token);
-  else uni.removeStorageSync(AUTH_TOKEN_KEY);
+  if (token) setLoginState({ token });
+  else clearLoginState();
 }
 
 export function clearToken() {
-  uni.removeStorageSync(AUTH_TOKEN_KEY);
-  uni.removeStorageSync(MOCK_TOKEN_KEY);
-  uni.removeStorageSync('miniapp_mock_user');
+  clearLoginState();
+}
+
+export function setAuthUser(user) {
+  setLoginState({ user });
+}
+
+export function setAuthQuota(quota) {
+  setLoginState({ quota });
 }
 
 function buildHeaders(header = {}, auth = true, includeJsonContentType = true) {
@@ -53,23 +62,30 @@ function showError(message) {
   });
 }
 
+function getCurrentRoute() {
+  const pages = getCurrentPages ? getCurrentPages() : [];
+  const currentPage = pages && pages.length ? pages[pages.length - 1] : null;
+  return currentPage && currentPage.route ? `/${currentPage.route}` : '';
+}
+
 function redirectToLogin() {
+  if (getCurrentRoute() === '/pages/login/index') return;
   if (isRedirectingLogin) return;
   isRedirectingLogin = true;
-  setTimeout(() => {
-    isRedirectingLogin = false;
-  }, 1200);
-  uni.navigateTo({
-    url: '/pages/login/login',
-    fail() {
-      uni.reLaunch({ url: '/pages/login/login' });
+  uni.reLaunch({
+    url: '/pages/login/index',
+    complete() {
+      setTimeout(() => {
+        isRedirectingLogin = false;
+      }, 500);
     }
   });
 }
 
-function handleUnauthorized(message = '登录已过期，请重新登录') {
-  clearToken();
-  showError(message);
+function handleUnauthorized() {
+  clearLoginState();
+  if (isRedirectingLogin) return;
+  showError('登录已失效，请重新登录');
   redirectToLogin();
 }
 

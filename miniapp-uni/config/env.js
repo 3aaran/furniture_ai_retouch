@@ -1,26 +1,10 @@
-const MODE = typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'production'
-  ? 'production'
-  : 'development';
-
 export const API_MOCK_KEY = 'miniapp_api_use_mock';
 export const API_BASE_URL_KEY = 'miniapp_api_base_url';
 
-const ENV_CONFIG = {
-  development: {
-    baseURL: 'http://127.0.0.1:3001',
-    useMock: false
-  },
-  production: {
-    baseURL: 'https://api.example.com',
-    useMock: false
-  }
-};
-
-export const APP_ENV = MODE;
-export const API_BASE_URL = ENV_CONFIG[MODE].baseURL;
-
-// 页面仍可走 mock 数据。后续接真实接口时可把 useMock 改为 false，或通过 setMockEnabled 动态切换。
-export const USE_MOCK = ENV_CONFIG[MODE].useMock;
+export const APP_ENV = 'production';
+export const API_BASE_URL = 'https://www.xungang.xin';
+export const FILE_BASE_URL = 'https://www.xungang.xin';
+export const USE_MOCK = false;
 
 export function isMockEnabled() {
   const saved = uni.getStorageSync(API_MOCK_KEY);
@@ -34,22 +18,25 @@ export function setMockEnabled(value) {
 }
 
 export function getApiBaseUrl() {
-  const saved = uni.getStorageSync(API_BASE_URL_KEY);
-  return String(saved || API_BASE_URL).replace(/\/$/, '');
+  return API_BASE_URL;
 }
 
-export function setApiBaseUrl(url) {
-  const value = String(url || '').trim().replace(/\/$/, '');
-  if (value) uni.setStorageSync(API_BASE_URL_KEY, value);
-  else uni.removeStorageSync(API_BASE_URL_KEY);
+export function setApiBaseUrl() {
+  uni.removeStorageSync(API_BASE_URL_KEY);
+}
+
+export function getFileBaseUrl() {
+  return FILE_BASE_URL;
 }
 
 export default {
   env: APP_ENV,
   baseURL: API_BASE_URL,
+  fileBaseURL: FILE_BASE_URL,
   useMock: USE_MOCK,
   isMockEnabled,
   setMockEnabled,
   getApiBaseUrl,
-  setApiBaseUrl
+  setApiBaseUrl,
+  getFileBaseUrl
 };

@@ -40,7 +40,7 @@
 		methods: {
 			handleLogin() {
 				if (!this.loggedIn) {
-					uni.navigateTo({ url: '/pages/login/login' });
+					uni.navigateTo({ url: '/pages/login/index' });
 					return;
 				}
 				mockLogout();

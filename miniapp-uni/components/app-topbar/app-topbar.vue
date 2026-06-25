@@ -2,9 +2,9 @@
   <view class="app-topbar">
     <view class="topbar-inner">
       <view class="menu-btn" @click="$emit('menu')">
-        <text></text>
-        <text></text>
-        <text></text>
+        <text class="menu-line"></text>
+        <text class="menu-line"></text>
+        <text class="menu-line"></text>
       </view>
       <view class="brand-text">
         <view class="brand-title">{{ title || '勋港家具 AI' }}</view>
@@ -82,7 +82,7 @@ export default {
   background: rgba(255, 255, 255, 0.035);
 }
 
-.menu-btn text {
+.menu-line {
   width: 30rpx;
   height: 3rpx;
   border-radius: 999rpx;

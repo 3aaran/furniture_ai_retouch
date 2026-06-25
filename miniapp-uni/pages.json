@@ -1,6 +1,20 @@
 {
   "pages": [
     {
+      "path": "pages/login/index",
+      "style": {
+        "navigationBarTitleText": "登录",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "勋港家具 AI",
+        "navigationStyle": "custom"
+      }
+    },
+    {
       "path": "pages/workbench/index",
       "style": {
         "navigationBarTitleText": "勋港家具 AI",
@@ -27,20 +41,6 @@
         "navigationBarTitleText": "我的",
         "navigationStyle": "custom"
       }
-    },
-    {
-      "path": "pages/login/login",
-      "style": {
-        "navigationBarTitleText": "登录",
-        "navigationStyle": "custom"
-      }
-    },
-    {
-      "path": "pages/index/index",
-      "style": {
-        "navigationBarTitleText": "勋港家具 AI",
-        "navigationStyle": "custom"
-      }
     }
   ],
   "globalStyle": {
@@ -57,12 +57,16 @@
     "borderStyle": "black",
     "list": [
       {
+        "pagePath": "pages/index/index",
+        "text": "首页"
+      },
+      {
         "pagePath": "pages/workbench/index",
         "text": "工作台"
       },
       {
         "pagePath": "pages/tasks/index",
-        "text": "历史"
+        "text": "任务"
       },
       {
         "pagePath": "pages/resources/index",

@@ -65,14 +65,14 @@
       <view class="image-compare">
         <view class="image-box">
           <view :class="['image-thumb', featureClass(task)]">
-            <image v-if="task.originImage && (task.originImage.thumbUrl || task.originImage.url)" class="task-real-img" :src="task.originImage.thumbUrl || task.originImage.url" mode="aspectFill" />
+            <image v-if="task.originImage && (task.originImage.thumbUrl || task.originImage.url)" class="task-real-img" :src="normalizeFileUrl(task.originImage.thumbUrl || task.originImage.url)" mode="aspectFill" />
             <view v-else class="furniture-shape"></view>
           </view>
           <view class="image-label">原图</view>
         </view>
         <view class="image-box">
           <view :class="['image-thumb', task.resultImage ? 'result' : 'empty', featureClass(task)]">
-            <image v-if="task.resultImage && (task.resultImage.thumbUrl || task.resultImage.url)" class="task-real-img" :src="task.resultImage.thumbUrl || task.resultImage.url" mode="aspectFill" />
+            <image v-if="task.resultImage && (task.resultImage.thumbUrl || task.resultImage.url)" class="task-real-img" :src="normalizeFileUrl(task.resultImage.thumbUrl || task.resultImage.url)" mode="aspectFill" />
             <view v-else-if="task.resultImage" class="furniture-shape"></view>
           </view>
           <view class="image-label">结果</view>
@@ -129,8 +129,10 @@
 <script>
 import { advanceMockTasks, getFeatureTypes, getMockTasks, getMockUser, retryMockTask } from '../../utils/mockStore.js';
 import AppTopbar from '../../components/app-topbar/app-topbar.vue';
-import { useMockApi } from '../../utils/request.js';
+import { getToken, useMockApi } from '../../utils/request.js';
 import { getRecentAiTasks } from '../../api/task.js';
+import { normalizeFileUrl } from '../../utils/fileUrl.js';
+import { requireLogin } from '../../utils/auth.js';
 
 export default {
   components: {
@@ -186,6 +188,7 @@ export default {
     }
   },
   onShow() {
+    if (!requireLogin()) return;
     this.features = getFeatureTypes();
     this.refreshTasks();
     this.startProgressTimer();
@@ -197,9 +200,16 @@ export default {
     this.stopProgressTimer();
   },
   methods: {
+    normalizeFileUrl,
     async refreshTasks() {
       this.useMock = useMockApi();
       if (!this.useMock) {
+        if (!getToken()) {
+          this.tasks = [];
+          if (this.detailTask) this.detailTask = null;
+          uni.showToast({ title: '请先登录后查看历史', icon: 'none' });
+          return;
+        }
         await this.refreshRealTasks();
         return;
       }
@@ -268,7 +278,7 @@ export default {
             if (found) this.detailTask = found;
           }
         } else {
-          this.refreshRealTasks();
+          if (getToken()) this.refreshRealTasks();
         }
       }, 1200);
     },

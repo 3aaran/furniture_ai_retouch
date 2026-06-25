@@ -31,10 +31,15 @@
       </view>
     </scroll-view>
 
-    <view class="resource-grid">
+    <view v-if="loginRequired" class="empty-card">
+      <view>请先登录后查看资源库</view>
+      <button class="secondary-btn login-btn" @click="goLogin">去登录</button>
+    </view>
+
+    <view v-else class="resource-grid">
       <view class="resource-card" v-for="item in filteredResources" :key="item.id">
         <view :class="['resource-thumb', resourceClass(item)]" @click="openDetail(item)">
-          <image v-if="item.thumbUrl || item.imageUrl || item.url" class="resource-real-img" :src="item.thumbUrl || item.imageUrl || item.url" mode="aspectFill" />
+          <image v-if="item.thumbUrl || item.imageUrl || item.url" class="resource-real-img" :src="normalizeFileUrl(item.thumbUrl || item.imageUrl || item.url)" mode="aspectFill" />
           <view v-else class="thumb-text">{{ item.thumbText }}</view>
           <view v-if="!(item.thumbUrl || item.imageUrl || item.url)" class="furniture-shape"></view>
         </view>
@@ -49,7 +54,7 @@
       </view>
     </view>
 
-    <view v-if="!filteredResources.length" class="empty-card">暂无素材</view>
+    <view v-if="!loginRequired && !filteredResources.length" class="empty-card">暂无素材</view>
 
     <view v-if="detailResource" class="modal-mask" @click="detailResource = null">
       <view class="detail-card" @click.stop>
@@ -61,7 +66,7 @@
           <text @click="detailResource = null">关闭</text>
         </view>
         <view :class="['preview-box', resourceClass(detailResource)]">
-          <image v-if="detailResource.imageUrl || detailResource.url || detailResource.thumbUrl" class="resource-real-img" :src="detailResource.imageUrl || detailResource.url || detailResource.thumbUrl" mode="aspectFill" />
+          <image v-if="detailResource.imageUrl || detailResource.url || detailResource.thumbUrl" class="resource-real-img" :src="normalizeFileUrl(detailResource.imageUrl || detailResource.url || detailResource.thumbUrl)" mode="aspectFill" />
           <view v-else class="thumb-text">{{ detailResource.thumbText }}</view>
           <view v-if="!(detailResource.imageUrl || detailResource.url || detailResource.thumbUrl)" class="furniture-shape"></view>
         </view>
@@ -82,8 +87,10 @@
 <script>
 import { getMockResources, getMockUser, setWorkbenchResource } from '../../utils/mockStore.js';
 import AppTopbar from '../../components/app-topbar/app-topbar.vue';
-import { useMockApi } from '../../utils/request.js';
+import { getToken, useMockApi } from '../../utils/request.js';
 import { getResources } from '../../api/resource.js';
+import { normalizeFileUrl } from '../../utils/fileUrl.js';
+import { requireLogin } from '../../utils/auth.js';
 
 export default {
   components: {
@@ -96,6 +103,7 @@ export default {
       resources: [],
       user: getMockUser(),
       useMock: true,
+      loginRequired: false,
       detailResource: null,
       filters: [
         { key: 'all', label: '全部' },
@@ -127,16 +135,24 @@ export default {
     }
   },
   onLoad() {
-    this.loadResources();
+    // 不在 onLoad 请求需要登录的接口，避免未登录时出现 401 或启动路由错误。
   },
   onShow() {
+    if (!requireLogin()) return;
     this.loadResources();
   },
   methods: {
+    normalizeFileUrl,
     loadResources() {
       this.useMock = useMockApi();
+      this.loginRequired = false;
       if (this.useMock) {
         this.resources = getMockResources();
+        return;
+      }
+      if (!getToken()) {
+        this.resources = [];
+        this.loginRequired = true;
         return;
       }
       this.loadRealResources();
@@ -147,8 +163,13 @@ export default {
         const items = Array.isArray(data?.items) ? data.items : [];
         this.resources = items.map(this.normalizeRealResource);
       } catch (error) {
-        uni.showToast({ title: error.message || '资源库读取失败', icon: 'none' });
-        this.resources = [];
+        if (error.statusCode === 401) {
+          this.resources = [];
+          this.loginRequired = true;
+          return;
+        }
+        uni.showToast({ title: error.message || '资源库读取失败，已显示 mock 数据', icon: 'none' });
+        this.resources = getMockResources();
       }
     },
     normalizeRealResource(item = {}) {
@@ -195,6 +216,9 @@ export default {
     },
     goMine() {
       uni.switchTab({ url: '/pages/mine/index' });
+    },
+    goLogin() {
+      uni.navigateTo({ url: '/pages/login/index' });
     }
   }
 };
@@ -389,6 +413,10 @@ export default {
   color: rgba(255, 244, 223, 0.58);
   text-align: center;
   font-size: 26rpx;
+}
+
+.login-btn {
+  margin-top: 20rpx;
 }
 
 .modal-mask {

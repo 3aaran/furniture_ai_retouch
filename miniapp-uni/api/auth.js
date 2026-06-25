@@ -1,8 +1,31 @@
-import { clearToken, post, setToken } from '../utils/request.js';
+import { clearToken, post, setAuthQuota, setAuthUser, setToken } from '../utils/request.js';
 
-function saveLoginToken(data) {
-  if (data && data.token) setToken(data.token);
-  return data;
+export function getAuthTokenFromResponse(response = {}) {
+  return response.token || response.accessToken || response.data?.token || response.data?.accessToken || '';
+}
+
+function getAuthUserFromResponse(response = {}) {
+  return response.user || response.data?.user || response.profile || response.data?.profile || null;
+}
+
+function getAuthQuotaFromResponse(response = {}, user = null) {
+  return response.quota ?? response.data?.quota ?? response.quotaSummary ?? response.data?.quotaSummary ?? user?.quota ?? null;
+}
+
+function saveLoginToken(response) {
+  const token = getAuthTokenFromResponse(response || {});
+  const user = getAuthUserFromResponse(response || {});
+  const quota = getAuthQuotaFromResponse(response || {}, user);
+
+  if (!token) {
+    console.warn('[miniapp-auth] 登录接口返回中未找到 token/accessToken/data.token/data.accessToken', response);
+    return response;
+  }
+
+  setToken(token);
+  setAuthUser(user);
+  setAuthQuota(quota);
+  return response;
 }
 
 export function loginByPassword(payload) {

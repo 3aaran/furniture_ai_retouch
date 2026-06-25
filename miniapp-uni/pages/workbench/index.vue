@@ -49,7 +49,7 @@
         </view>
         <view v-else class="thumb-strip">
           <view v-for="image in inputImages" :key="image.id" class="thumb-item">
-            <image v-if="image.imageUrl || image.url" class="real-thumb" :src="image.imageUrl || image.url" mode="aspectFill" />
+            <image v-if="image.imageUrl || image.url" class="real-thumb" :src="normalizeFileUrl(image.imageUrl || image.url)" mode="aspectFill" />
             <view v-else class="mock-thumb"><view class="furniture-shape"></view></view>
             <text>{{ image.name }}</text>
           </view>
@@ -98,7 +98,7 @@
           :class="['resource-chip', inputResource && inputResource.id === item.id ? 'active' : '']"
           @click="useResourceAsInput(item)"
         >
-          <image v-if="item.thumbUrl || item.imageUrl || item.url" class="chip-thumb real-chip-thumb" :src="item.thumbUrl || item.imageUrl || item.url" mode="aspectFill" />
+          <image v-if="item.thumbUrl || item.imageUrl || item.url" class="chip-thumb real-chip-thumb" :src="normalizeFileUrl(item.thumbUrl || item.imageUrl || item.url)" mode="aspectFill" />
           <view v-else class="chip-thumb"><view class="furniture-shape small"></view></view>
           <view>
             <b>{{ item.name }}</b>
@@ -180,10 +180,12 @@ import {
   getMockTasks
 } from '../../utils/mockStore.js';
 import AppTopbar from '../../components/app-topbar/app-topbar.vue';
-import { useMockApi } from '../../utils/request.js';
+import { getToken, useMockApi } from '../../utils/request.js';
 import { uploadImage } from '../../api/upload.js';
 import { createAiTask } from '../../api/task.js';
 import { getResources } from '../../api/resource.js';
+import { normalizeFileUrl } from '../../utils/fileUrl.js';
+import { requireLogin } from '../../utils/auth.js';
 
 const FEATURE_KEY = 'miniapp_pending_feature_key';
 
@@ -308,6 +310,7 @@ export default {
     this.loadData();
   },
   onShow() {
+    if (!requireLogin()) return;
     this.loadData();
     const pendingFeature = uni.getStorageSync(FEATURE_KEY);
     if (pendingFeature) {
@@ -319,12 +322,13 @@ export default {
     if (resource) this.applyIncomingResource(resource);
   },
   methods: {
+    normalizeFileUrl,
     loadData() {
       this.useMock = useMockApi();
       this.features = getFeatureTypes();
       this.featureGroups = getFeatureGroups();
       this.tasks = getMockTasks();
-      if (this.useMock) {
+      if (this.useMock || !getToken()) {
         this.resources = getMockResources();
       } else {
         this.loadRealResources();
