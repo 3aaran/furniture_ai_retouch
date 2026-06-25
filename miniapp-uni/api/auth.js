@@ -1,10 +1,12 @@
-import { post, clearToken, setToken } from '../utils/request.js';
+import { clearToken, post, setToken } from '../utils/request.js';
+
+function saveLoginToken(data) {
+  if (data && data.token) setToken(data.token);
+  return data;
+}
 
 export function loginByPassword(payload) {
-  return post('/api/auth/login', payload, { auth: false, loadingText: '登录中' }).then((data) => {
-    if (data?.token) setToken(data.token);
-    return data;
-  });
+  return post('/api/auth/login', payload, { auth: false, loadingText: '登录中' }).then(saveLoginToken);
 }
 
 export function sendSmsCode({ phone, scene = 'LOGIN' }) {
@@ -16,10 +18,12 @@ export function verifySmsCode(payload) {
 }
 
 export function loginByCode(payload) {
-  return post('/api/auth/code-login', payload, { auth: false, loadingText: '登录中' }).then((data) => {
-    if (data?.token) setToken(data.token);
-    return data;
-  });
+  return post('/api/auth/code-login', payload, { auth: false, loadingText: '登录中' }).then(saveLoginToken);
+}
+
+// 后端保留的旧登录验证码入口；小程序默认优先使用 /api/sms/send-code。
+export function sendAuthLoginCode(payload) {
+  return post('/api/auth/send-code', payload, { auth: false, loadingText: '发送中' });
 }
 
 export function submitMerchantApplication(payload) {

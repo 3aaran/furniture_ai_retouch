@@ -20,6 +20,26 @@ export function deleteAiTask(taskId) {
   return del(`/api/ai/tasks/${encodeURIComponent(taskId)}`, {}, { loadingText: '删除中' });
 }
 
+export function getTaskImages(params = {}, options = {}) {
+  return get('/api/images', { task: 'ai', ...params }, options);
+}
+
+export function getRecentImages(params = {}, options = {}) {
+  return get('/api/images/recent', params, options);
+}
+
+export function getTaskImageDetail(imageId, options = {}) {
+  return get(`/api/images/${encodeURIComponent(imageId)}/detail-rich`, {}, options);
+}
+
+export function getTaskImageSource(imageId, options = {}) {
+  return get(`/api/images/${encodeURIComponent(imageId)}/source`, {}, options);
+}
+
+export function deleteTaskImage(imageId) {
+  return del(`/api/images/${encodeURIComponent(imageId)}`, {}, { loadingText: '删除中' });
+}
+
 export function createWorkflowRun(workflowId, originImageId) {
   return post(`/api/workflows/${encodeURIComponent(workflowId)}/runs`, { originImageId }, { loadingText: '提交工作流' });
 }

@@ -1,65 +1,68 @@
 {
   "pages": [
     {
-      "path": "pages/index/index",
-      "style": {
-        "navigationBarTitleText": "勋港家具 AI"
-      }
-    },
-    {
       "path": "pages/workbench/index",
       "style": {
-        "navigationBarTitleText": "工作台"
+        "navigationBarTitleText": "勋港家具 AI",
+        "navigationStyle": "custom"
       }
     },
     {
       "path": "pages/tasks/index",
       "style": {
-        "navigationBarTitleText": "任务"
+        "navigationBarTitleText": "历史",
+        "navigationStyle": "custom"
       }
     },
     {
       "path": "pages/resources/index",
       "style": {
-        "navigationBarTitleText": "资源库"
+        "navigationBarTitleText": "资源库",
+        "navigationStyle": "custom"
       }
     },
     {
       "path": "pages/mine/index",
       "style": {
-        "navigationBarTitleText": "我的"
+        "navigationBarTitleText": "我的",
+        "navigationStyle": "custom"
       }
     },
     {
       "path": "pages/login/login",
       "style": {
-        "navigationBarTitleText": "登录"
+        "navigationBarTitleText": "登录",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "勋港家具 AI",
+        "navigationStyle": "custom"
       }
     }
   ],
   "globalStyle": {
-    "navigationBarTextStyle": "black",
+    "navigationBarTextStyle": "white",
     "navigationBarTitleText": "勋港家具 AI",
-    "navigationBarBackgroundColor": "#F5F7FB",
-    "backgroundColor": "#F5F7FB"
+    "navigationBarBackgroundColor": "#0C1015",
+    "backgroundColor": "#0C1015",
+    "navigationStyle": "custom"
   },
   "tabBar": {
-    "color": "#748198",
-    "selectedColor": "#1F6FEB",
-    "backgroundColor": "#FFFFFF",
-    "borderStyle": "white",
+    "color": "#CFC8B8",
+    "selectedColor": "#F0D68A",
+    "backgroundColor": "#08090C",
+    "borderStyle": "black",
     "list": [
-      {
-        "pagePath": "pages/index/index",
-        "text": "首页"
-      },
       {
         "pagePath": "pages/workbench/index",
         "text": "工作台"
       },
       {
         "pagePath": "pages/tasks/index",
-        "text": "任务"
+        "text": "历史"
       },
       {
         "pagePath": "pages/resources/index",

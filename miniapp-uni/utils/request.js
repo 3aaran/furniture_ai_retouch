@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '../config/env.js';
+import { getApiBaseUrl, isMockEnabled, setMockEnabled } from '../config/env.js';
 
 export const AUTH_TOKEN_KEY = 'miniapp_auth_token';
 export const MOCK_TOKEN_KEY = 'miniapp_mock_token';
@@ -8,13 +8,13 @@ let isRedirectingLogin = false;
 function normalizePath(url = '') {
   const text = String(url || '').trim();
   if (/^https?:\/\//i.test(text)) return text;
-  const base = API_BASE_URL.replace(/\/$/, '');
+  const base = getApiBaseUrl().replace(/\/$/, '');
   const path = text.startsWith('/') ? text : `/${text}`;
   return `${base}${path}`;
 }
 
 export function getToken() {
-  return uni.getStorageSync(AUTH_TOKEN_KEY) || uni.getStorageSync(MOCK_TOKEN_KEY) || '';
+  return uni.getStorageSync(AUTH_TOKEN_KEY) || '';
 }
 
 export function setToken(token) {
@@ -62,7 +62,7 @@ function redirectToLogin() {
   uni.navigateTo({
     url: '/pages/login/login',
     fail() {
-      uni.switchTab({ url: '/pages/me/me' });
+      uni.reLaunch({ url: '/pages/login/login' });
     }
   });
 }
@@ -106,7 +106,7 @@ export function request(options = {}) {
   return new Promise((resolve, reject) => {
     uni.request({
       url: normalizePath(url),
-      method,
+      method: String(method || 'GET').toUpperCase(),
       data,
       timeout,
       header: buildHeaders(header, auth, true),
@@ -209,5 +209,7 @@ export const post = (url, data = {}, options = {}) => request({ ...options, url,
 export const put = (url, data = {}, options = {}) => request({ ...options, url, method: 'PUT', data });
 export const patch = (url, data = {}, options = {}) => request({ ...options, url, method: 'PATCH', data });
 export const del = (url, data = {}, options = {}) => request({ ...options, url, method: 'DELETE', data });
+export const useMockApi = isMockEnabled;
+export const setUseMockApi = setMockEnabled;
 
 export default request;

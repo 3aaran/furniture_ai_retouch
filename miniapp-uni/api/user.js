@@ -37,3 +37,23 @@ export function resetPassword(payload) {
 export function getQuotaLogs(params = {}, options = {}) {
   return get('/api/merchant/quota-logs', params, options);
 }
+
+export function getAnnouncements(options = {}) {
+  return get('/api/announcements', {}, options);
+}
+
+export function markAnnouncementRead(id) {
+  return post(`/api/announcements/${encodeURIComponent(id)}/read`, {}, { showLoading: false });
+}
+
+export function submitFeedback(payload) {
+  return post('/api/feedbacks', payload, { loadingText: '提交中' });
+}
+
+export function getPromotion(params = {}, options = {}) {
+  return get('/api/merchant/promotion', params, options);
+}
+
+export function getUserAvatar(userId, options = {}) {
+  return get(`/api/users/${encodeURIComponent(userId)}/avatar`, {}, options);
+}

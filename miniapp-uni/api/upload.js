@@ -10,6 +10,10 @@ export function uploadImage(filePath, formData = {}) {
   });
 }
 
+export function uploadFurnitureImage(filePath, formData = {}) {
+  return uploadImage(filePath, formData);
+}
+
 export function processImage(imageId, payload = {}) {
   return post(`/api/images/${encodeURIComponent(imageId)}/process`, payload, { loadingText: '处理中' });
 }
