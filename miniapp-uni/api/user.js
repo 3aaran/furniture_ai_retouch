@@ -1,4 +1,4 @@
-import { get, patch, post, uploadFile } from '../utils/request.js';
+import { del, get, patch, post, uploadFile } from '../utils/request.js';
 
 export function getCurrentUser(options = {}) {
   return get('/api/me', {}, options);
@@ -52,6 +52,30 @@ export function submitFeedback(payload) {
 
 export function getPromotion(params = {}, options = {}) {
   return get('/api/merchant/promotion', params, options);
+}
+
+export function getMerchantUsers(params = {}, options = {}) {
+  return get('/api/merchant/users', params, options);
+}
+
+export function createMerchantUser(payload) {
+  return post('/api/merchant/users', payload, { loadingText: '创建用户' });
+}
+
+export function updateMerchantUser(userId, payload) {
+  return patch(`/api/merchant/users/${encodeURIComponent(userId)}`, payload, { loadingText: '保存用户' });
+}
+
+export function updateMerchantUserStatus(userId, status) {
+  return patch(`/api/merchant/users/${encodeURIComponent(userId)}/status`, { status }, { loadingText: '更新状态' });
+}
+
+export function adjustMerchantUserQuota(userId, amount) {
+  return patch(`/api/merchant/users/${encodeURIComponent(userId)}/quota`, { amount }, { loadingText: '调整算力' });
+}
+
+export function deleteMerchantUser(userId) {
+  return del(`/api/merchant/users/${encodeURIComponent(userId)}`, {}, { loadingText: '删除用户' });
 }
 
 export function getUserAvatar(userId, options = {}) {

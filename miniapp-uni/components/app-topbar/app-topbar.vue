@@ -1,7 +1,10 @@
 <template>
   <view class="topbar-wrap">
     <view class="topbar">
-      <view class="menu-button" @click="openMenu">
+      <view v-if="showBack" class="back-button" @click="goBack">
+        <text class="back-icon">‹</text>
+      </view>
+      <view v-else class="menu-button" @click="openMenu">
         <text class="menu-line menu-line-long"></text>
         <text class="menu-line"></text>
         <text class="menu-line menu-line-long"></text>
@@ -38,8 +41,8 @@
       </view>
 
       <view class="menu-bottom">
-        <view class="menu-round" @click="showComing('问题反馈')">▢</view>
-        <view class="menu-round" @click="showComing('站内信')">✉</view>
+        <view class="menu-round" @click="navigateQuick('/pages/feedback/index')">▢</view>
+        <view class="menu-round" @click="navigateQuick('/pages/announcements/index')">✉</view>
       </view>
     </view>
   </view>
@@ -55,7 +58,9 @@ export default {
     avatarText: { type: String, default: '勋' },
     avatarUrl: { type: String, default: '' },
     logo: { type: String, default: '' },
-    showAvatar: { type: Boolean, default: true }
+    showAvatar: { type: Boolean, default: true },
+    showBack: { type: Boolean, default: false },
+    backUrl: { type: String, default: '/pages/workbench/index' }
   },
   data() {
     return {
@@ -65,8 +70,9 @@ export default {
         { key: 'workbench', label: '工作台', icon: '⌁', url: '/pages/workbench/index' },
         { key: 'tasks', label: '历史', icon: '▧', url: '/pages/tasks/index' },
         { key: 'resources', label: '资源库', icon: '▰', url: '/pages/resources/index' },
-        { key: 'mine', label: '用户管理', icon: '♙', url: '/pages/mine/index' },
-        { key: 'promotion', label: '推荐收益', icon: '▣', url: '' }
+        { key: 'users', label: '用户管理', icon: '♟', url: '/pages/users/index', secondary: true },
+        { key: 'mine', label: '我的', icon: '♙', url: '/pages/mine/index' },
+        { key: 'promotion', label: '推荐收益', icon: '▣', url: '/pages/promotion/index', secondary: true }
       ]
     };
   },
@@ -83,25 +89,34 @@ export default {
       const route = pages.length ? pages[pages.length - 1].route : '';
       if (route.indexOf('tasks') >= 0) this.activeKey = 'tasks';
       else if (route.indexOf('resources') >= 0) this.activeKey = 'resources';
-      else if (route.indexOf('mine') >= 0) this.activeKey = 'mine';
+      else if (route.indexOf('users') >= 0) this.activeKey = 'users';
+      else if (route.indexOf('promotion') >= 0) this.activeKey = 'promotion';
+      else if (route.indexOf('mine') >= 0 || route.indexOf('quota') >= 0 || route.indexOf('feedback') >= 0 || route.indexOf('announcements') >= 0) this.activeKey = 'mine';
       else this.activeKey = 'workbench';
     },
     navigateMenu(item) {
-      if (!item.url) {
-        this.showComing(item.label);
-        return;
-      }
+      if (!item.url) return;
       this.closeMenu();
       const current = getCurrentPages && getCurrentPages().length ? '/' + getCurrentPages()[getCurrentPages().length - 1].route : '';
       if (current === item.url) return;
-      uni.reLaunch({ url: item.url });
+      if (item.secondary) uni.navigateTo({ url: item.url });
+      else uni.reLaunch({ url: item.url });
+    },
+    goBack() {
+      const pages = getCurrentPages ? getCurrentPages() : [];
+      if (pages.length > 1) {
+        uni.navigateBack({ delta: 1 });
+        return;
+      }
+      uni.reLaunch({ url: this.backUrl || '/pages/workbench/index' });
     },
     goProfile() {
       this.$emit('profile');
       uni.reLaunch({ url: '/pages/mine/index' });
     },
-    showComing(text) {
-      uni.showToast({ title: `${text}后续接入`, icon: 'none' });
+    navigateQuick(url) {
+      this.closeMenu();
+      uni.navigateTo({ url });
     }
   }
 };
@@ -124,7 +139,8 @@ export default {
   background: rgba(7, 8, 10, 0.96);
   border-bottom: 1rpx solid rgba(226, 199, 115, 0.14);
 }
-.menu-button {
+.menu-button,
+.back-button {
   width: 88rpx;
   height: 88rpx;
   flex: 0 0 88rpx;
@@ -136,6 +152,12 @@ export default {
   border-radius: 25rpx;
   border: 1rpx solid rgba(226, 199, 115, 0.24);
   background: rgba(255, 255, 255, 0.035);
+}
+.back-icon {
+  color: #efd482;
+  font-size: 62rpx;
+  line-height: 1;
+  font-weight: 500;
 }
 .menu-line {
   width: 34rpx;

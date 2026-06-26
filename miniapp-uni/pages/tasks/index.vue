@@ -17,7 +17,7 @@
     <view v-if="errorText" class="error-card">{{ errorText }}</view>
 
     <view class="record-list">
-      <view v-for="task in filteredTasks" :key="task.id" class="record-card">
+      <view v-for="task in filteredTasks" :key="task.id" class="record-card" @click="previewTask(task)">
         <view class="record-thumb">
           <image v-if="task.image" :src="task.image" mode="aspectFill" />
           <text v-else>{{ task.featureShort }}</text>
@@ -27,6 +27,10 @@
           <view class="feature-pill">{{ task.featureName }}</view>
           <text>{{ task.statusClass === 'failed' || task.statusClass === 'error' ? '失败，已退回算力' : task.createdAtText }}</text>
           <small>{{ task.id }}</small>
+        </view>
+        <view class="record-actions">
+          <button @click.stop="previewTask(task)">详情</button>
+          <button @click.stop="copyImageUrl(task)">下载</button>
         </view>
       </view>
     </view>
@@ -104,6 +108,17 @@ export default {
         image: normalizeFileUrl(imageOf(item))
       };
     },
+    previewTask(task) {
+      if (task.image) {
+        uni.previewImage({ urls: [task.image], current: task.image });
+        return;
+      }
+      uni.showToast({ title: '暂无图片可预览', icon: 'none' });
+    },
+    copyImageUrl(task) {
+      if (!task.image) return uni.showToast({ title: '暂无图片链接', icon: 'none' });
+      uni.setClipboardData({ data: task.image, success: () => uni.showToast({ title: '图片链接已复制', icon: 'success' }) });
+    },
     goMine() { uni.reLaunch({ url: '/pages/mine/index' }); }
   }
 };
@@ -117,14 +132,16 @@ export default {
 .head-actions button { width: 72rpx; height: 72rpx; padding: 0; border-radius: 22rpx; color: #efd482; background: rgba(255,255,255,.055); border: 1rpx solid rgba(255,255,255,.13); }
 .search-box { height: 78rpx; display: flex; align-items: center; gap: 16rpx; padding: 0 24rpx; margin-bottom: 22rpx; border-radius: 22rpx; border: 1rpx solid rgba(255,255,255,.1); background: rgba(255,255,255,.035); color: rgba(255,246,220,.7); }
 .search-box input { flex: 1; color: #fff6dc; font-size: 28rpx; }
-.record-list { display: flex; flex-direction: column; gap: 22rpx; }
-.record-card { display: flex; gap: 18rpx; padding: 18rpx; border-radius: 24rpx; border: 1rpx solid rgba(255,255,255,.1); background: rgba(255,255,255,.045); }
-.record-thumb { position: relative; width: 156rpx; height: 156rpx; flex: 0 0 156rpx; overflow: hidden; border-radius: 20rpx; background: rgba(226,199,115,.1); display: flex; align-items: center; justify-content: center; color: #efd482; font-weight: 900; }
+.record-list { display: flex; flex-direction: column; gap: 28rpx; }
+.record-card { overflow: hidden; border-radius: 28rpx; border: 1rpx solid rgba(255,255,255,.1); background: rgba(255,255,255,.045); }
+.record-thumb { position: relative; width: 100%; height: 428rpx; overflow: hidden; border-radius: 28rpx 28rpx 0 0; background: rgba(226,199,115,.1); display: flex; align-items: center; justify-content: center; color: #efd482; font-size: 42rpx; font-weight: 900; }
 .record-thumb image { width: 100%; height: 100%; }
 .fail-badge { position: absolute; right: 8rpx; bottom: 8rpx; padding: 7rpx 14rpx; border-radius: 999rpx; color: #fff; background: #cf304b; font-size: 23rpx; font-weight: 900; }
-.record-copy { flex: 1; min-width: 0; }
-.feature-pill { height: 42rpx; display: flex; align-items: center; padding: 0 18rpx; border-radius: 999rpx; color: #fff; background: #06c968; font-size: 24rpx; font-weight: 900; }
+.record-copy { min-width: 0; padding: 18rpx 20rpx 8rpx; }
+.feature-pill { max-width: 100%; height: 42rpx; display: inline-flex; align-items: center; padding: 0 18rpx; border-radius: 999rpx; color: #fff; background: #06c968; font-size: 24rpx; font-weight: 900; }
 .record-copy text, .record-copy small { display: block; margin-top: 13rpx; color: rgba(255,246,220,.58); font-size: 24rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.record-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 16rpx; padding: 14rpx 20rpx 20rpx; }
+.record-actions button { height: 72rpx; border-radius: 18rpx; border: 1rpx solid rgba(255,255,255,.11); background: rgba(255,255,255,.045); color: #fff6dc; font-size: 26rpx; font-weight: 900; }
 .empty-card, .error-card { margin-top: 20rpx; padding: 24rpx; border-radius: 22rpx; background: rgba(255,255,255,.04); color: rgba(255,246,220,.62); font-size: 26rpx; border: 1rpx solid rgba(255,255,255,.08); }
 .error-card { color: #ffb4a8; border-color: rgba(255,112,112,.22); }
 .more-btn { margin-top: 24rpx; }

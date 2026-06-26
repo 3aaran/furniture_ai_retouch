@@ -8,7 +8,7 @@
       <view class="metric-card" @click="openDrawer('features')">
         <view class="metric-icon">▰</view>
         <view class="metric-copy">
-          <text>生图功能</text>
+          <text>{{ currentFeatureMode }}</text>
           <b>{{ currentFeature.name }}</b>
         </view>
       </view>
@@ -40,11 +40,24 @@
       </view>
     </view>
 
-    <view class="fold-card" @click="openDrawer(needsResource ? 'resources' : 'features')">
-      <view class="fold-title">{{ needsResource ? resourceLabel : '参考图（可选）' }}</view>
-      <view class="fold-state">
-        <text>{{ selectedResource ? selectedResource.name : '未添加' }}</text>
-        <view class="fold-arrow">⌄</view>
+    <view :class="['ref-card', referenceOpen ? 'is-open' : '']">
+      <view class="ref-header" @click="referenceOpen = !referenceOpen">
+        <view class="fold-title">参考图（可选）</view>
+        <view class="fold-state">
+          <text>{{ referenceStateText }}</text>
+          <view class="fold-arrow">{{ referenceOpen ? '⌃' : '⌄' }}</view>
+        </view>
+      </view>
+      <view v-if="referenceOpen" class="ref-body">
+        <view class="ref-upload" @click="chooseReferenceImage">
+          <image v-if="referenceImage && referenceImage.imageUrl" :src="referenceImage.imageUrl" mode="aspectFill" />
+          <template v-else>
+            <text>＋</text>
+            <b>上传参考图</b>
+          </template>
+        </view>
+        <button class="secondary-btn ref-resource-btn" @click="openDrawer('resources')">从资源库选择</button>
+        <view v-if="selectedResource" class="selected-tip">已选择资源模板：{{ selectedResource.name }}</view>
       </view>
     </view>
 
@@ -83,7 +96,7 @@
         <button class="drawer-close" @click="closeDrawer">×</button>
       </view>
       <view class="group-tabs">
-        <text v-for="group in featureGroups" :key="group.key" :class="featureGroup === group.key ? 'active' : ''" @click="featureGroup = group.key">{{ group.name }}</text>
+        <text v-for="group in featureGroups" :key="group.key" :class="[featureGroup === group.key ? 'active' : '', group.key === 'video' ? 'is-coming' : '']" @click="selectFeatureGroup(group.key)">{{ group.name }}</text>
       </view>
       <view class="feature-grid">
         <view v-for="feature in drawerFeatures" :key="feature.key" :class="['feature-btn', selectedFeatureKey === feature.key ? 'active' : '']" @click="selectFeature(feature.key)">
@@ -94,7 +107,16 @@
       </view>
       <view class="drawer-section">
         <view class="hint-line">当前参数：{{ optionsSummary }}</view>
-        <view v-if="selectedFeatureKey === 'remove_bg'" class="option-stack">
+        <view v-if="isPromotionSelected" class="option-stack promo-options">
+          <view v-for="field in promotionFields" :key="field.key" class="option-row">
+            <text>{{ field.label }}</text>
+            <picker :range="field.choices" :value="field.choices.indexOf(promotionOptionValue(field.key))" @change="changePromotionOption(field.key, field.choices[$event.detail.value])">
+              <view class="option-picker">{{ promotionOptionValue(field.key) }}</view>
+            </picker>
+          </view>
+          <textarea v-if="selectedFeatureKey === 'promo_poster_image' && promotionOptionValue('posterTextMode') === 'custom'" class="promo-textarea" v-model="promotionOptions.promo_poster_image.posterText" placeholder="例如：舒适入座&#10;自然木质" />
+        </view>
+        <view v-else-if="selectedFeatureKey === 'remove_bg'" class="option-stack">
           <label class="switch-row"><checkbox :checked="removeOpts.whiteBg" @click="removeOpts.whiteBg = !removeOpts.whiteBg" /> <text>白底图</text></label>
           <label class="switch-row"><checkbox :checked="removeOpts.mirror" @click="removeOpts.mirror = !removeOpts.mirror" /> <text>镜像产品</text></label>
         </view>
@@ -112,7 +134,7 @@
       <view class="drawer-top compact-top">
         <view>
           <text>{{ resourceLabel }}</text>
-          <b>{{ selectedFeatureKey === 'material' ? '选择材质' : '选择参考素材' }}</b>
+          <b>{{ resourceDrawerTitle }}</b>
         </view>
         <button class="drawer-close" @click="closeDrawer">×</button>
       </view>
@@ -175,6 +197,7 @@ import { uploadImage } from '../../api/upload.js';
 import { createAiTask, getRecentAiTasks, getRecentImages } from '../../api/task.js';
 import { getResources } from '../../api/resource.js';
 import { normalizeFileUrl } from '../../utils/fileUrl.js';
+import { get } from '../../utils/request.js';
 import { requireLogin } from '../../utils/auth.js';
 import { displayName, featureName, fmtTime, imageOf, statusText, unwrapList, unwrapUser, userQuota } from '../../utils/model.js';
 
@@ -194,6 +217,27 @@ const promoFeatures = [
   { key: 'promo_poster_image', group: 'promotion', name: '广告海报图', tag: '海报', desc: '带广告构图和文案留白。', cost: 14 },
   { key: 'promo_detail_image', group: 'promotion', name: '产品细节图', tag: '细节', desc: '突出材质、纹理和工艺细节。', cost: 12 }
 ];
+const promotionOptionDefaults = {
+  promo_main_image: { mainBackground: '暖灰渐变商业摄影背景', mainComposition: '主体居中', mainWhitespace: '少量留白' },
+  promo_poster_image: { posterTextMode: 'auto', posterText: '', posterCopyPlacement: '右侧留白', posterTone: '温暖家居' },
+  promo_detail_image: { detailLayout: '四宫格', detailFocus: '材质纹理、边角工艺', detailTextMode: '留白不生成文字' }
+};
+const promotionOptionChoices = {
+  mainBackground: ['暖灰渐变商业摄影背景', '浅米色高级背景', '米白色柔和光影', '极简空间背景'],
+  mainComposition: ['主体居中', '左侧留白', '右侧留白', '主体偏下'],
+  mainWhitespace: ['少量留白', '不留白', '顶部留白', '侧边留白'],
+  posterTextMode: ['auto', 'custom', 'none'],
+  posterCopyPlacement: ['右侧留白', '左侧留白', '顶部留白', '下方留白'],
+  posterTone: ['温暖家居', '现代简约', '高级质感', '自然木质'],
+  detailLayout: ['四宫格', '三宫格', '拼合排版', '多区域细节'],
+  detailFocus: ['材质纹理、边角工艺', '结构连接、坐垫厚度', '木纹质感、扶手造型', '布料纹理、靠背弧度'],
+  detailTextMode: ['留白不生成文字', '完全不留文字区']
+};
+const promotionPrompts = {
+  promo_main_image: '基于 Image A 中的家具生成一张产品主图。严格保留家具主体造型、结构比例、颜色、材质纹理和主要轮廓，背景干净高级，主体突出，不生成文字、水印、Logo 或人物。',
+  promo_poster_image: '基于 Image A 中的家具生成一张广告海报图。严格保留家具主体，画面具有家具品牌广告感和高级商业宣传效果，预留干净文案区域，不生成文字、水印、Logo 或人物。',
+  promo_detail_image: '基于 Image A 中的家具生成一张产品细节图。严格保留材质、颜色、纹理和结构，突出布料纹理、木纹、边角工艺、结构连接、坐垫厚度或靠背弧度等细节。'
+};
 
 export default {
   components: { AppTopbar },
@@ -202,21 +246,33 @@ export default {
       user: {}, features: [...baseFeatures, ...promoFeatures],
       featureGroups: [{ key: 'base', name: '基础' }, { key: 'promotion', name: '宣传图' }, { key: 'video', name: '宣传短视频' }],
       featureGroup: 'base', resources: [], recentTasks: [], activeDrawer: '', selectedFeatureKey: 'material',
-      inputImages: [], selectedResource: null, custom: '', resolution: '2K', ratio: '自适应',
+      inputImages: [], referenceImage: null, referenceOpen: false, selectedResource: null, custom: '', resolution: '2K', ratio: '自适应',
       removeOpts: { whiteBg: false, mirror: false }, enhanceOpts: { focus: false, angle: '不变' }, multiView: '三角度视图',
       resourceScopeIndex: 0, resourceKeyword: '', recentKeyword: '', uploadBusy: false, submitBusy: false,
       resourceScopes: [{ key: 'ALL', name: '系统空间' }, { key: 'SYSTEM', name: '系统素材' }, { key: 'MERCHANT', name: '门店素材' }, { key: 'USER', name: '个人素材' }],
-      enhanceAngles: ['不变', '正面', '45度', '侧面'], multiViewOptions: ['三角度视图', '四角度视图'], errorText: ''
+      enhanceAngles: ['不变', '正面', '45度', '侧面'], multiViewOptions: ['三角度视图', '四角度视图'], errorText: '',
+      costSettings: {},
+      promotionOptions: JSON.parse(JSON.stringify(promotionOptionDefaults))
     };
   },
   computed: {
     quotaText() { return userQuota(this.user); },
     topbarAvatar() { return displayName(this.user).slice(0, 1) || '勋'; },
     currentFeature() { return this.features.find((item) => item.key === this.selectedFeatureKey) || this.features[0]; },
-    currentCost() { const base = Number(this.currentFeature.cost || 10); return this.resolution === '4K' ? base * 2 : base; },
+    isPromotionSelected() { return this.currentFeature.group === 'promotion'; },
+    currentFeatureMode() { return this.isPromotionSelected ? '宣传图' : '生图功能'; },
+    currentCost() {
+      const opMap = { material: 'cost_material', replace_bg: 'cost_replace_bg', remove_bg: 'cost_remove_bg', enhance: 'cost_enhance', lineart: 'cost_lineart', multiview: 'cost_multiview', promo_main_image: 'cost_replace_bg', promo_poster_image: 'cost_replace_bg', promo_detail_image: 'cost_enhance' };
+      const mulKeyMap = { '1K': 'resolution_multiplier_1k', '2K': 'resolution_multiplier_2k', '4K': 'resolution_multiplier_4k' };
+      const defaultMul = { '1K': 1, '2K': 2, '4K': 4 };
+      const base = Number(this.costSettings[opMap[this.selectedFeatureKey]] ?? this.currentFeature.cost ?? 0);
+      const mul = Number(this.costSettings[mulKeyMap[this.resolution]] ?? defaultMul[this.resolution] ?? 2);
+      return Math.max(0, Math.ceil(base * mul));
+    },
     drawerFeatures() { return this.features.filter((item) => item.group === this.featureGroup); },
     needsResource() { return this.selectedFeatureKey === 'material' || this.selectedFeatureKey === 'replace_bg'; },
-    resourceLabel() { return this.selectedFeatureKey === 'material' ? '参考图（可选）' : '场景模板（可选）'; },
+    resourceLabel() { return this.selectedFeatureKey === 'replace_bg' ? '场景模板（可选）' : '参考图（可选）'; },
+    resourceDrawerTitle() { return this.selectedFeatureKey === 'material' ? '选择材质' : this.selectedFeatureKey === 'replace_bg' ? '选择场景' : '选择参考素材'; },
     originImage() { return this.inputImages[0] || null; },
     resolutionOptions() { return ['1K', '2K', '4K']; },
     ratioOptions() { return this.featureGroup === 'video' ? ['16:9', '9:16', '1:1', '4:3', '3:4'] : ['自适应', '1:1', '4:3', '3:4', '16:9']; },
@@ -224,15 +280,42 @@ export default {
     filteredResources() {
       const scope = this.resourceScopes[this.resourceScopeIndex]?.key || 'ALL';
       const kw = String(this.resourceKeyword || '').trim().toLowerCase();
-      return this.resources.filter((item) => (scope === 'ALL' || item.scope === scope) && (!kw || String(item.name || '').toLowerCase().includes(kw)));
+      return this.resources.filter((item) => {
+        if (scope !== 'ALL' && item.scope !== scope) return false;
+        if (this.selectedFeatureKey === 'material' && !['material', ''].includes(item.resourceType || item.type || '')) return false;
+        if (this.selectedFeatureKey === 'replace_bg' && (item.resourceType || item.type || '') !== 'scene') return false;
+        if (!['material', 'replace_bg'].includes(this.selectedFeatureKey) && !this.referenceOpen) return false;
+        if (!kw) return true;
+        return [item.name, item.objectName, item.colorName, item.description, item.mainCategoryName, item.subCategoryName].filter(Boolean).join(' ').toLowerCase().includes(kw);
+      });
     },
     filteredRecentTasks() {
       const kw = String(this.recentKeyword || '').trim().toLowerCase();
       return this.recentTasks.filter((item) => !kw || String(item.id || '').toLowerCase().includes(kw) || String(item.featureName || '').toLowerCase().includes(kw));
     },
     promptPlaceholder() { return '选填：如有特殊要求，可以简短说明'; },
-    generateLabel() { return '生成效果'; },
+    generateLabel() { return this.isPromotionSelected ? '生成宣传图' : '生成效果'; },
+    referenceStateText() { return this.referenceImage || this.selectedResource ? '已添加' : '未添加'; },
+    promotionFields() {
+      if (this.selectedFeatureKey === 'promo_main_image') return [
+        { key: 'mainBackground', label: '背景风格', choices: promotionOptionChoices.mainBackground },
+        { key: 'mainComposition', label: '主图构图', choices: promotionOptionChoices.mainComposition },
+        { key: 'mainWhitespace', label: '留白要求', choices: promotionOptionChoices.mainWhitespace }
+      ];
+      if (this.selectedFeatureKey === 'promo_poster_image') return [
+        { key: 'posterTextMode', label: '海报文字', choices: promotionOptionChoices.posterTextMode },
+        { key: 'posterCopyPlacement', label: '文案区域', choices: promotionOptionChoices.posterCopyPlacement },
+        { key: 'posterTone', label: '海报氛围', choices: promotionOptionChoices.posterTone }
+      ];
+      if (this.selectedFeatureKey === 'promo_detail_image') return [
+        { key: 'detailLayout', label: '细节排版', choices: promotionOptionChoices.detailLayout },
+        { key: 'detailFocus', label: '细节重点', choices: promotionOptionChoices.detailFocus },
+        { key: 'detailTextMode', label: '文字策略', choices: promotionOptionChoices.detailTextMode }
+      ];
+      return [];
+    },
     optionsSummary() {
+      if (this.isPromotionSelected) return '按 Web 工作台宣传图固定要求生成';
       if (this.selectedFeatureKey === 'remove_bg') return `${this.removeOpts.whiteBg ? '白底图' : '原背景净化'}${this.removeOpts.mirror ? '，镜像' : ''}`;
       if (this.selectedFeatureKey === 'enhance') return `${this.enhanceOpts.focus ? '产品聚焦，' : ''}${this.enhanceOpts.angle}`;
       if (this.selectedFeatureKey === 'multiview') return this.multiView;
@@ -247,6 +330,7 @@ export default {
     async loadData() {
       this.errorText = '';
       try { this.user = unwrapUser(await getCurrentUser({ showLoading: false, showErrorToast: false })) || {}; } catch (e) {}
+      try { this.costSettings = await get('/api/settings/public', {}, { showLoading: false, showErrorToast: false }) || {}; } catch (e) {}
       await Promise.all([this.loadResources(), this.loadRecent()]);
     },
     async loadResources() {
@@ -264,7 +348,7 @@ export default {
     normalizeResource(item = {}) {
       const scope = item.scope || item.space || '';
       const type = item.resourceType || item.type || '';
-      return { ...item, id: item.id, name: item.name || item.title || '未命名资源', image: normalizeFileUrl(imageOf(item)), scope, typeText: type || '素材', categoryText: [item.mainCategoryName || item.objectName, item.subCategoryName || item.colorName].filter(Boolean).join(' / ') || '未分类' };
+      return { ...item, id: item.id, name: item.name || item.title || '未命名资源', image: normalizeFileUrl(imageOf(item)), imageUrl: normalizeFileUrl(imageOf(item)), scope, resourceType: type, typeText: type || '素材', categoryText: [item.mainCategoryName || item.objectName, item.subCategoryName || item.colorName].filter(Boolean).join(' / ') || '未分类' };
     },
     normalizeTask(item = {}) {
       const key = item.featureKey || item.operation || item.kind || item.type || '';
@@ -273,17 +357,30 @@ export default {
     },
     openDrawer(name) { this.activeDrawer = name; },
     closeDrawer() { this.activeDrawer = ''; },
+    selectFeatureGroup(key) {
+      if (key === 'video') {
+        uni.showToast({ title: '宣传短视频开发中', icon: 'none' });
+        return;
+      }
+      this.featureGroup = key;
+      if (key === 'base' && this.isPromotionSelected) this.selectedFeatureKey = 'material';
+      if (key === 'promotion' && !this.isPromotionSelected) this.selectedFeatureKey = 'promo_main_image';
+      this.selectedResource = null;
+    },
     selectFeature(key) { this.selectedFeatureKey = key; const feature = this.features.find((item) => item.key === key); this.featureGroup = feature?.group || this.featureGroup; this.selectedResource = null; this.closeDrawer(); },
     selectResource(item) { this.selectedResource = item; this.closeDrawer(); },
+    promotionOptionValue(key) { return this.promotionOptions[this.selectedFeatureKey]?.[key] || promotionOptionDefaults[this.selectedFeatureKey]?.[key] || ''; },
+    changePromotionOption(key, value) { this.promotionOptions = { ...this.promotionOptions, [this.selectedFeatureKey]: { ...(promotionOptionDefaults[this.selectedFeatureKey] || {}), ...(this.promotionOptions[this.selectedFeatureKey] || {}), [key]: value } }; },
     changeResourceScope(e) { this.resourceScopeIndex = Number(e.detail.value) || 0; },
     applyPendingFeature() { const key = uni.getStorageSync(FEATURE_KEY); if (key && this.features.some((item) => item.key === key)) { this.selectedFeatureKey = key; const feature = this.features.find((item) => item.key === key); this.featureGroup = feature.group || 'base'; uni.removeStorageSync(FEATURE_KEY); } },
     applyPendingResource() { const resource = uni.getStorageSync(RESOURCE_KEY); if (resource && resource.id) { this.selectedResource = resource; uni.removeStorageSync(RESOURCE_KEY); } },
-    chooseInputImage() { if (this.uploadBusy) return; uni.chooseImage({ count: Math.max(1, 4 - this.inputImages.length), sizeType: ['compressed'], sourceType: ['album', 'camera'], success: async (res) => { for (const path of (res.tempFilePaths || [])) await this.uploadOne(path); } }); },
-    async uploadOne(filePath) { this.uploadBusy = true; try { const response = await uploadImage(filePath, { source: 'miniapp_workbench' }); const image = response.image || response.data?.image || response.item || response.data || response; this.inputImages.push({ ...image, id: image.id || image.imageId, name: image.originalName || image.name || '上传图片', imageUrl: normalizeFileUrl(imageOf(image)) }); } catch (error) { this.errorText = error.message || '上传失败'; } finally { this.uploadBusy = false; } },
+    chooseInputImage() { if (this.uploadBusy) return; uni.chooseImage({ count: Math.max(1, 4 - this.inputImages.length), sizeType: ['compressed'], sourceType: ['album', 'camera'], success: async (res) => { for (const path of (res.tempFilePaths || [])) await this.uploadOne(path, 'source'); } }); },
+    chooseReferenceImage() { if (this.uploadBusy) return; uni.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'], success: async (res) => { const path = (res.tempFilePaths || [])[0]; if (path) await this.uploadOne(path, 'reference'); } }); },
+    async uploadOne(filePath, target = 'source') { this.uploadBusy = true; try { const response = await uploadImage(filePath, { source: target === 'reference' ? 'miniapp_workbench_reference' : 'miniapp_workbench' }); const image = response.image || response.data?.image || response.item || response.data || response; const next = { ...image, id: image.id || image.imageId, name: image.originalName || image.name || '上传图片', imageUrl: normalizeFileUrl(imageOf(image)) }; if (target === 'reference') this.referenceImage = next; else this.inputImages.push(next); } catch (error) { this.errorText = error.message || '上传失败'; } finally { this.uploadBusy = false; } },
     changeRatio(e) { this.ratio = this.ratioOptions[Number(e.detail.value)] || this.ratio; },
     changeEnhanceAngle(e) { this.enhanceOpts.angle = this.enhanceAngles[Number(e.detail.value)] || '不变'; },
-    buildOptions() { const base = { resolution: this.resolution, ratio: this.ratio }; if (this.selectedFeatureKey === 'material') { const tpl = this.selectedResource || {}; return { ...base, materialName: tpl.name || '', materialColor: tpl.colorName || '', materialCategory: tpl.subCategoryName || tpl.mainCategoryName || '', resourceName: tpl.name || '', templateName: tpl.name || '', keepStructure: true, keepAngle: true, keepProportion: true }; } if (this.selectedFeatureKey === 'replace_bg') { const tpl = this.selectedResource || {}; return { ...base, sceneType: tpl.name || tpl.subCategoryName || tpl.mainCategoryName || '真实室内商业场景', sceneName: tpl.name || '', sceneDesc: tpl.description || '', resourceName: tpl.name || '', templateName: tpl.name || '', keepLighting: true, keepPerspective: true }; } if (this.selectedFeatureKey === 'remove_bg') return { ...base, whiteBg: !!this.removeOpts.whiteBg, mirror: !!this.removeOpts.mirror, backgroundTone: this.removeOpts.whiteBg ? 'Pure white' : 'Warm white', shadowStyle: '柔和阴影' }; if (this.selectedFeatureKey === 'enhance') return { ...base, focus: !!this.enhanceOpts.focus, angle: this.enhanceOpts.angle, enhanceSharpness: true, enhanceLight: true, enhanceTexture: true, enhanceColor: true, commercialStyle: true }; if (this.selectedFeatureKey === 'lineart') return { ...base, lineStyle: 'Simple line art', lineColor: '黑色', keepDetailLevel: '中等', withShadow: false }; if (this.selectedFeatureKey === 'multiview') { const viewCount = this.multiView === '三角度视图' ? 3 : 4; return { ...base, view: this.multiView, viewCount, layoutType: viewCount === 3 ? '横排' : '宫格', backgroundStyle: '纯白' }; } return base; },
-    async submitTask() { if (!this.originImage) return uni.showToast({ title: '请先上传家具原图', icon: 'none' }); this.submitBusy = true; this.errorText = ''; try { const tpl = this.selectedResource; await createAiTask({ originImageId: this.originImage.id || this.originImage.imageId, featureKey: this.selectedFeatureKey, selectedResourceId: tpl?.id || null, selectedResourceSnapshot: tpl ? { id: tpl.id, imageId: tpl.id, name: tpl.name, resourceType: tpl.resourceType, mainCategoryName: tpl.mainCategoryName || tpl.objectName || '', subCategoryName: tpl.subCategoryName || tpl.colorName || '', imageUrl: tpl.imageUrl || tpl.url || '' } : null, functionalReferenceImageId: null, templatePrompt: tpl ? (tpl.description || tpl.name) : '', userPrompt: this.custom.trim(), userReferenceImageIds: [], referenceImageIds: [], resolution: this.resolution, ratio: this.ratio, options: this.buildOptions() }); uni.showToast({ title: '任务已提交', icon: 'success' }); await this.loadRecent(); this.openDrawer('recent'); } catch (error) { this.errorText = error.message || '任务提交失败'; } finally { this.submitBusy = false; } },
+    buildOptions() { const base = { resolution: this.resolution, ratio: this.ratio }; if (this.isPromotionSelected) return { taskType: this.selectedFeatureKey === 'promo_main_image' ? 'PROMO_MAIN_IMAGE' : this.selectedFeatureKey === 'promo_poster_image' ? 'PROMO_POSTER_IMAGE' : 'PROMO_DETAIL_IMAGE', promotionType: this.currentFeature.name, ...base, ...(promotionOptionDefaults[this.selectedFeatureKey] || {}), ...(this.promotionOptions[this.selectedFeatureKey] || {}), promptTemplate: promotionPrompts[this.selectedFeatureKey], keepSubject: true, forbidGeneratedText: true, forbidLogo: true, forbidPeople: true }; if (this.selectedFeatureKey === 'material') { const tpl = this.selectedResource || {}; return { ...base, materialName: tpl.name || '', materialColor: tpl.colorName || '', materialCategory: tpl.subCategoryName || tpl.mainCategoryName || tpl.objectName || tpl.category || '', resourceName: tpl.name || '', templateName: tpl.name || '', keepStructure: true, keepAngle: true, keepProportion: true }; } if (this.selectedFeatureKey === 'replace_bg') { const tpl = this.selectedResource || {}; return { ...base, sceneType: tpl.name || tpl.subCategoryName || tpl.mainCategoryName || tpl.category || '真实室内商业场景', sceneName: tpl.name || '', sceneDesc: tpl.description || '', resourceName: tpl.name || '', templateName: tpl.name || '', keepLighting: true, keepPerspective: true }; } if (this.selectedFeatureKey === 'remove_bg') return { ...base, whiteBg: !!this.removeOpts.whiteBg, mirror: !!this.removeOpts.mirror, backgroundTone: this.removeOpts.whiteBg ? 'Pure white' : 'Warm white', shadowStyle: '柔和阴影' }; if (this.selectedFeatureKey === 'enhance') return { ...base, focus: !!this.enhanceOpts.focus, angle: this.enhanceOpts.angle, enhanceSharpness: true, enhanceLight: true, enhanceTexture: true, enhanceColor: true, commercialStyle: true }; if (this.selectedFeatureKey === 'lineart') return { ...base, lineStyle: 'Simple line art', lineColor: '黑色', keepDetailLevel: '中等', withShadow: false }; if (this.selectedFeatureKey === 'multiview') { const viewCount = this.multiView === '三角度视图' ? 3 : 4; return { ...base, view: this.multiView, viewCount, layoutType: viewCount === 3 ? '横排' : '宫格', backgroundStyle: '纯白' }; } return base; },
+    async submitTask() { if (!this.originImage) return uni.showToast({ title: '请先上传家具原图', icon: 'none' }); this.submitBusy = true; this.errorText = ''; try { const tpl = this.selectedResource; const referenceIds = this.referenceImage?.id ? [this.referenceImage.id] : []; const result = await createAiTask({ originImageId: this.originImage.id || this.originImage.imageId, featureKey: this.selectedFeatureKey, selectedResourceId: tpl?.id || null, selectedResourceSnapshot: tpl ? { id: tpl.id, imageId: tpl.id, name: tpl.name, resourceType: tpl.resourceType, mainCategoryName: tpl.mainCategoryName || tpl.objectName || '', subCategoryName: tpl.subCategoryName || tpl.colorName || '', imageUrl: tpl.imageUrl || tpl.image || tpl.url || '' } : null, functionalReferenceImageId: null, templatePrompt: tpl ? (tpl.description || tpl.name) : '', userPrompt: this.custom.trim(), userReferenceImageIds: referenceIds, referenceImageIds: referenceIds, resolution: this.resolution, ratio: this.ratio, options: this.buildOptions() }); if (result?.user) this.user = result.user; uni.showToast({ title: '任务已提交，正在生成', icon: 'success' }); await this.loadRecent(); this.openDrawer('recent'); } catch (error) { this.errorText = error.message || '任务提交失败'; } finally { this.submitBusy = false; } },
     goHistory() { uni.reLaunch({ url: '/pages/tasks/index' }); },
     goMine() { uni.reLaunch({ url: '/pages/mine/index' }); }
   }
@@ -292,45 +389,55 @@ export default {
 
 <style>
 .workbench-page { padding-bottom: 40rpx; }
-.metric-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16rpx; margin: 34rpx 0 24rpx; }
-.metric-card { min-height: 92rpx; display: flex; align-items: center; gap: 18rpx; padding: 18rpx 22rpx; border-radius: 28rpx; border: 1rpx solid rgba(226,199,115,.45); background: linear-gradient(180deg, rgba(226,199,115,.13), rgba(255,255,255,.035)); }
-.metric-icon { color: #ecd17d; font-size: 40rpx; }
-.metric-copy text { display: block; color: rgba(239,216,141,.74); font-size: 23rpx; font-weight: 800; }
-.metric-copy b { display: block; margin-top: 2rpx; color: #fff6dc; font-size: 31rpx; font-weight: 900; }
-.work-card, .fold-card, .requirement-input { border-radius: 34rpx; border: 1rpx solid rgba(255,255,255,.11); background: rgba(255,255,255,.035); }
-.upload-card { padding: 30rpx; }
-.block-title { color: #fff6dc; font-size: 38rpx; font-weight: 900; margin-bottom: 24rpx; }
-.upload-zone { min-height: 500rpx; border-radius: 28rpx; border: 2rpx dashed rgba(226,199,115,.45); background: rgba(255,255,255,.018); overflow: hidden; }
-.upload-empty { height: 500rpx; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20rpx; color: #fff6dc; }
-.upload-plus { width: 112rpx; height: 112rpx; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(226,199,115,.18); color: #ffe597; font-size: 66rpx; font-weight: 900; }
-.upload-empty b { font-size: 42rpx; font-weight: 900; }
-.upload-empty text { color: rgba(239,216,141,.72); font-size: 28rpx; }
-.resource-select-btn { min-width: 260rpx; height: 76rpx; display: flex; align-items: center; justify-content: center; border-radius: 999rpx; border: 1rpx solid rgba(255,255,255,.18); color: #fff6dc; font-size: 28rpx; }
-.upload-preview { position: relative; height: 500rpx; }
+.metric-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12rpx; margin: 22rpx 0 18rpx; }
+.metric-card { min-height: 80rpx; display: flex; align-items: center; gap: 14rpx; padding: 14rpx 18rpx; border-radius: 22rpx; border: 1rpx solid rgba(255,255,255,.1); background: rgba(255,255,255,.045); }
+.metric-card:first-child { border-color: rgba(226,199,115,.34); background: linear-gradient(135deg, rgba(226,199,115,.16), rgba(255,255,255,.035)); }
+.metric-icon { width: 42rpx; color: #ecd17d; font-size: 34rpx; text-align: center; }
+.metric-copy { min-width: 0; }
+.metric-copy text { display: block; color: rgba(239,216,141,.68); font-size: 21rpx; font-weight: 800; }
+.metric-copy b { display: block; margin-top: 2rpx; color: #fff6dc; font-size: 27rpx; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.work-card, .ref-card, .requirement-input { border-radius: 28rpx; border: 1rpx solid rgba(255,255,255,.09); background: linear-gradient(180deg, rgba(22,23,25,.96), rgba(13,14,16,.98)); }
+.upload-card { padding: 22rpx; }
+.block-title { color: #fff6dc; font-size: 32rpx; font-weight: 900; margin-bottom: 18rpx; }
+.upload-zone { min-height: 408rpx; border-radius: 24rpx; border: 2rpx dashed rgba(226,199,115,.4); background: rgba(255,255,255,.018); overflow: hidden; }
+.upload-empty { height: 408rpx; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14rpx; color: #fff6dc; }
+.upload-plus { width: 92rpx; height: 92rpx; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(226,199,115,.18); color: #ffe597; font-size: 56rpx; font-weight: 900; }
+.upload-empty b { font-size: 34rpx; font-weight: 900; }
+.upload-empty text { color: rgba(239,216,141,.66); font-size: 24rpx; }
+.resource-select-btn { min-width: 236rpx; height: 68rpx; display: flex; align-items: center; justify-content: center; border-radius: 999rpx; border: 1rpx solid rgba(255,255,255,.18); color: #fff6dc; font-size: 26rpx; }
+.upload-preview { position: relative; height: 408rpx; }
 .upload-preview image { width: 100%; height: 100%; }
 .upload-preview-meta { position: absolute; left: 20rpx; right: 20rpx; bottom: 20rpx; padding: 18rpx; border-radius: 20rpx; color: #fff; background: rgba(0,0,0,.62); }
 .upload-preview-meta b, .upload-preview-meta text { display: block; }
-.fold-card { margin-top: 28rpx; min-height: 118rpx; padding: 0 28rpx; display: flex; align-items: center; justify-content: space-between; }
+.ref-card { margin-top: 28rpx; overflow: hidden; }
+.ref-header { min-height: 118rpx; padding: 0 28rpx; display: flex; align-items: center; justify-content: space-between; }
 .fold-title { color: #fff6dc; font-size: 34rpx; font-weight: 900; }
 .fold-state { display: flex; align-items: center; gap: 16rpx; color: rgba(255,246,220,.65); font-size: 28rpx; }
 .fold-state text { max-width: 300rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fold-arrow { width: 72rpx; height: 72rpx; display: flex; align-items: center; justify-content: center; border-radius: 18rpx; color: #efd482; border: 1rpx solid rgba(226,199,115,.32); background: rgba(226,199,115,.08); font-size: 32rpx; }
-.requirement-input { box-sizing: border-box; width: 100%; min-height: 172rpx; padding: 26rpx; margin-top: 28rpx; color: #fff6dc; font-size: 30rpx; }
-.param-block { margin-top: 28rpx; }
-.param-title { color: #fff6dc; font-size: 30rpx; font-weight: 900; margin-bottom: 16rpx; }
-.resolution-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20rpx; }
-.resolution-grid button { height: 86rpx; border-radius: 24rpx; color: #f7f1de; background: rgba(255,255,255,.05); border: 1rpx solid rgba(255,255,255,.1); font-size: 32rpx; }
+.ref-body { display: grid; grid-template-columns: 1fr; gap: 18rpx; padding: 0 28rpx 28rpx; }
+.ref-upload { min-height: 178rpx; border-radius: 24rpx; border: 2rpx dashed rgba(226,199,115,.32); background: rgba(255,255,255,.02); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10rpx; overflow: hidden; color: #fff6dc; }
+.ref-upload image { width: 100%; height: 260rpx; display: block; }
+.ref-upload text { color: #efd482; font-size: 54rpx; font-weight: 900; }
+.ref-upload b { color: #fff6dc; font-size: 28rpx; font-weight: 900; }
+.ref-resource-btn { width: 100%; }
+.selected-tip { padding: 16rpx 18rpx; border-radius: 18rpx; color: #efd482; background: rgba(226,199,115,.09); font-size: 24rpx; }
+.requirement-input { box-sizing: border-box; width: 100%; min-height: 148rpx; padding: 22rpx; margin-top: 22rpx; color: #fff6dc; font-size: 28rpx; }
+.param-block { margin-top: 22rpx; }
+.param-title { color: #fff6dc; font-size: 28rpx; font-weight: 900; margin-bottom: 14rpx; }
+.resolution-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12rpx; }
+.resolution-grid button { height: 78rpx; border-radius: 20rpx; color: #f7f1de; background: rgba(255,255,255,.05); border: 1rpx solid rgba(255,255,255,.1); font-size: 28rpx; }
 .resolution-grid button.active { color: #171208; background: linear-gradient(135deg,#fff1b8,#d6a942); border-color: transparent; }
-.ratio-cost-row { display: grid; grid-template-columns: 1.2fr .9fr; gap: 18rpx; align-items: end; }
-.ratio-picker, .cost-box { height: 88rpx; box-sizing: border-box; border-radius: 24rpx; border: 1rpx solid rgba(255,255,255,.11); background: rgba(255,255,255,.035); }
-.ratio-picker { display: flex; align-items: center; justify-content: space-between; padding: 0 28rpx; color: #fff6dc; font-size: 30rpx; }
-.cost-box { padding: 14rpx 20rpx; color: rgba(255,246,220,.65); font-size: 23rpx; }
-.cost-box b { display: block; margin-top: 4rpx; color: #ffe597; font-size: 29rpx; }
-.generate-button { margin-top: 28rpx; }
+.ratio-cost-row { display: grid; grid-template-columns: 1fr; gap: 14rpx; align-items: stretch; }
+.ratio-picker, .cost-box { height: 82rpx; box-sizing: border-box; border-radius: 20rpx; border: 1rpx solid rgba(255,255,255,.1); background: rgba(255,255,255,.035); }
+.ratio-picker { display: flex; align-items: center; justify-content: space-between; padding: 0 24rpx; color: #fff6dc; font-size: 28rpx; }
+.cost-box { display: flex; align-items: center; justify-content: space-between; gap: 16rpx; padding: 0 22rpx; color: rgba(255,246,220,.65); font-size: 23rpx; }
+.cost-box b { color: #ffe597; font-size: 26rpx; }
+.generate-button { margin-top: 24rpx; }
 .drawer-mask { position: fixed; left: 0; right: 0; top: 0; bottom: 0; z-index: 78; background: rgba(0,0,0,.58); backdrop-filter: blur(8px); }
 .feature-drawer, .resource-drawer, .recent-drawer { position: fixed; top: 0; bottom: 0; z-index: 80; box-sizing: border-box; padding: calc(var(--status-bar-height) + 32rpx) 28rpx 40rpx; background: linear-gradient(180deg, #101113 0%, #090a0c 100%); border-right: 1rpx solid rgba(226,199,115,.22); overflow-y: auto; transition: transform .22s ease; }
-.feature-drawer, .resource-drawer { left: 0; width: 82vw; transform: translateX(-104%); }
-.recent-drawer { right: 0; width: 82vw; transform: translateX(104%); border-right: 0; border-left: 1rpx solid rgba(226,199,115,.22); }
+.feature-drawer, .resource-drawer { left: 0; width: 86vw; max-width: 660rpx; transform: translateX(-104%); }
+.recent-drawer { right: 0; width: 86vw; max-width: 660rpx; transform: translateX(104%); border-right: 0; border-left: 1rpx solid rgba(226,199,115,.22); }
 .drawer-show { transform: translateX(0); }
 .drawer-top, .recent-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20rpx; }
 .drawer-top text { display: block; color: rgba(239,216,141,.72); font-size: 24rpx; font-weight: 800; }
@@ -339,6 +446,7 @@ export default {
 .group-tabs { display: grid; grid-template-columns: repeat(3,1fr); gap: 10rpx; margin-bottom: 20rpx; }
 .group-tabs text { height: 60rpx; display: flex; align-items: center; justify-content: center; border-radius: 12rpx; color: #f7f1de; background: rgba(255,255,255,.045); border: 1rpx solid rgba(255,255,255,.09); font-size: 24rpx; font-weight: 800; }
 .group-tabs text.active { color: #171208; background: linear-gradient(135deg,#fff1b8,#d6a942); }
+.group-tabs text.is-coming { color: rgba(255,246,220,.48); }
 .feature-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 14rpx; }
 .feature-btn { min-height: 102rpx; padding: 14rpx 16rpx; border-radius: 16rpx; background: rgba(255,255,255,.045); border: 1rpx solid rgba(255,255,255,.1); }
 .feature-btn.active { border-color: rgba(226,199,115,.65); background: rgba(226,199,115,.11); }
@@ -348,6 +456,9 @@ export default {
 .hint-line, .empty-drawer { padding: 18rpx; border-radius: 16rpx; color: rgba(255,246,220,.6); background: rgba(255,255,255,.04); font-size: 24rpx; }
 .switch-row, .option-row { min-height: 70rpx; display: flex; align-items: center; justify-content: space-between; color: #fff6dc; font-size: 26rpx; }
 .option-picker { min-width: 180rpx; height: 64rpx; display: flex; align-items: center; justify-content: center; border-radius: 16rpx; color: #fff6dc; background: rgba(255,255,255,.055); }
+.promo-options { display: grid; gap: 12rpx; margin-top: 16rpx; }
+.promo-options .option-row { padding: 0 18rpx; border-radius: 18rpx; background: rgba(255,255,255,.04); border: 1rpx solid rgba(255,255,255,.08); }
+.promo-textarea { width: 100%; min-height: 136rpx; box-sizing: border-box; padding: 20rpx; border-radius: 18rpx; color: #fff6dc; background: rgba(255,255,255,.05); border: 1rpx solid rgba(255,255,255,.1); font-size: 26rpx; }
 .mini-pills { display: flex; gap: 12rpx; }
 .mini-pills button { flex: 1; height: 66rpx; border-radius: 16rpx; background: rgba(255,255,255,.055); color: #fff6dc; }
 .mini-pills button.active { color: #171208; background: #e9c85e; }

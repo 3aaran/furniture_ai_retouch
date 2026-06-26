@@ -1,6 +1,6 @@
 <template>
   <view class="page mine-page">
-    <app-topbar title="我的" subtitle="账号与额度" :quota="quotaText" :avatar-text="topbarAvatar" />
+    <app-topbar title="" subtitle="" :quota="quotaText" :avatar-text="topbarAvatar" />
 
     <view v-if="errorText" class="error-card">{{ errorText }}</view>
 
@@ -28,6 +28,7 @@
 
     <view class="panel-card">
       <view class="panel-title">服务入口</view>
+      <button class="secondary-btn panel-btn" @click="goUsers">用户管理</button>
       <button class="secondary-btn panel-btn" @click="goQuota">额度明细</button>
       <button class="secondary-btn panel-btn" @click="goFeedback">问题反馈</button>
       <button class="secondary-btn panel-btn" @click="goAnnouncements">公告通知</button>
@@ -71,9 +72,10 @@ export default {
         this.errorText = error.message || '账号信息读取失败';
       }
     },
-    goQuota() { uni.showToast({ title: '额度明细使用 Web 端同接口，后续独立页面接入', icon: 'none' }); },
-    goFeedback() { uni.showToast({ title: '问题反馈后续接入 /api/feedbacks', icon: 'none' }); },
-    goAnnouncements() { uni.showToast({ title: '公告后续接入 /api/announcements', icon: 'none' }); },
+    goUsers() { uni.navigateTo({ url: '/pages/users/index' }); },
+    goQuota() { uni.navigateTo({ url: '/pages/quota/index' }); },
+    goFeedback() { uni.navigateTo({ url: '/pages/feedback/index' }); },
+    goAnnouncements() { uni.navigateTo({ url: '/pages/announcements/index' }); },
     logout() {
       clearLoginState();
       uni.reLaunch({ url: '/pages/login/index' });

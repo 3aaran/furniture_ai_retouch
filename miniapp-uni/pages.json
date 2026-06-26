@@ -34,6 +34,41 @@
         "navigationBarTitleText": "我的",
         "navigationStyle": "custom"
       }
+    },
+    {
+      "path": "pages/quota/index",
+      "style": {
+        "navigationBarTitleText": "额度明细",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/feedback/index",
+      "style": {
+        "navigationBarTitleText": "问题反馈",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/announcements/index",
+      "style": {
+        "navigationBarTitleText": "公告邮箱",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/promotion/index",
+      "style": {
+        "navigationBarTitleText": "推荐收益",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/users/index",
+      "style": {
+        "navigationBarTitleText": "用户管理",
+        "navigationStyle": "custom"
+      }
     }
   ],
   "globalStyle": {

@@ -1,0 +1,128 @@
+<template>
+  <view class="page announcements-page">
+    <app-topbar title="" subtitle="" :avatar-text="topbarAvatar" show-back back-url="/pages/mine/index" @profile="goMine" />
+
+    <view class="page-head">
+      <b>公告邮箱</b>
+      <text>{{ unreadCount }} 条未读</text>
+    </view>
+
+    <view v-if="errorText" class="error-card">{{ errorText }}</view>
+
+    <view class="notice-list">
+      <view v-for="item in items" :key="item.id" :class="['notice-card', item.isRead ? 'is-read' : 'is-unread']" @click="openNotice(item)">
+        <view class="notice-state">{{ item.isRead ? '已读' : '未读' }}</view>
+        <view class="notice-copy">
+          <b>{{ item.title }}</b>
+          <text>{{ item.content }}</text>
+          <small>{{ fmtTime(item.createdAt) }}</small>
+        </view>
+      </view>
+    </view>
+
+    <view v-if="!items.length && !loading" class="empty-card">暂无公告</view>
+    <view v-if="loading" class="empty-card">公告加载中...</view>
+
+    <view v-if="selected" class="modal-mask" @click="selected = null">
+      <view class="notice-modal" @click.stop>
+        <view class="modal-head">
+          <view>
+            <text>{{ selected.isRead ? '已读' : '未读' }}</text>
+            <b>{{ selected.title }}</b>
+          </view>
+          <button @click="selected = null">×</button>
+        </view>
+        <scroll-view scroll-y class="modal-body">
+          <text>{{ selected.content }}</text>
+        </scroll-view>
+        <small>{{ fmtTime(selected.createdAt) }}</small>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+import AppTopbar from '../../components/app-topbar/app-topbar.vue';
+import { getAnnouncements, getCurrentUser, markAnnouncementRead } from '../../api/user.js';
+import { requireLogin } from '../../utils/auth.js';
+import { displayName, fmtTime, unwrapUser } from '../../utils/model.js';
+
+export default {
+  components: { AppTopbar },
+  data() {
+    return {
+      user: {},
+      items: [],
+      unreadCount: 0,
+      selected: null,
+      loading: false,
+      errorText: ''
+    };
+  },
+  computed: {
+    topbarAvatar() { return displayName(this.user).slice(0, 1) || '勋'; }
+  },
+  onShow() {
+    if (!requireLogin()) return;
+    this.loadUser();
+    this.reload();
+  },
+  methods: {
+    fmtTime,
+    async loadUser() {
+      try { this.user = unwrapUser(await getCurrentUser({ showLoading: false, showErrorToast: false })) || {}; } catch (e) {}
+    },
+    async reload() {
+      this.loading = true;
+      this.errorText = '';
+      try {
+        const payload = await getAnnouncements({ showLoading: false });
+        this.items = Array.isArray(payload?.items) ? payload.items : [];
+        this.unreadCount = Number(payload?.unreadCount || this.items.filter(item => !item.isRead).length);
+      } catch (error) {
+        this.errorText = error.message || '公告读取失败';
+        this.items = [];
+      } finally {
+        this.loading = false;
+      }
+    },
+    async openNotice(item) {
+      this.selected = item;
+      if (item.isRead) return;
+      item.isRead = true;
+      this.unreadCount = Math.max(0, this.unreadCount - 1);
+      try {
+        await markAnnouncementRead(item.id);
+      } catch (error) {
+        this.errorText = error.message || '公告已读状态同步失败';
+      }
+    },
+    goMine() { uni.reLaunch({ url: '/pages/mine/index' }); }
+  }
+};
+</script>
+
+<style>
+.page-head { display: flex; align-items: end; justify-content: space-between; gap: 20rpx; margin: 24rpx 0 18rpx; }
+.page-head b { color: #fff6dc; font-size: 38rpx; font-weight: 900; }
+.page-head text { color: rgba(255,246,220,.58); font-size: 24rpx; }
+.notice-list { display: grid; gap: 18rpx; }
+.notice-card { display: flex; gap: 18rpx; padding: 20rpx; border-radius: 24rpx; background: rgba(255,255,255,.045); border: 1rpx solid rgba(255,255,255,.1); }
+.notice-card.is-unread { border-color: rgba(242,213,140,.42); background: rgba(242,213,140,.08); }
+.notice-state { width: 76rpx; height: 44rpx; flex: 0 0 76rpx; display: flex; align-items: center; justify-content: center; border-radius: 999rpx; background: #e8c763; color: #171208; font-size: 22rpx; font-weight: 900; }
+.notice-card.is-read .notice-state { background: rgba(255,255,255,.08); color: rgba(255,246,220,.6); }
+.notice-copy { flex: 1; min-width: 0; }
+.notice-copy b { display: block; color: #fff6dc; font-size: 29rpx; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.notice-copy text { display: block; margin-top: 8rpx; color: rgba(255,246,220,.62); font-size: 24rpx; line-height: 1.45; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.notice-copy small { display: block; margin-top: 10rpx; color: rgba(255,246,220,.42); font-size: 22rpx; }
+.modal-mask { position: fixed; inset: 0; z-index: 100; display: flex; align-items: flex-end; padding: 20rpx; box-sizing: border-box; background: rgba(0,0,0,.58); }
+.notice-modal { width: 100%; max-height: 78vh; box-sizing: border-box; padding: 24rpx; border-radius: 30rpx 30rpx 0 0; background: #111317; border: 1rpx solid rgba(242,213,140,.18); }
+.modal-head { display: flex; justify-content: space-between; gap: 18rpx; margin-bottom: 18rpx; }
+.modal-head text { display: block; color: #efd482; font-size: 23rpx; }
+.modal-head b { display: block; margin-top: 4rpx; color: #fff6dc; font-size: 34rpx; font-weight: 900; }
+.modal-head button { width: 72rpx; height: 72rpx; padding: 0; border-radius: 22rpx; color: #efd482; background: rgba(255,255,255,.055); border: 1rpx solid rgba(255,255,255,.13); font-size: 30rpx; }
+.modal-body { max-height: 52vh; color: rgba(255,246,220,.82); font-size: 28rpx; line-height: 1.7; white-space: pre-wrap; }
+.notice-modal small { display: block; margin-top: 18rpx; color: rgba(255,246,220,.42); font-size: 22rpx; }
+.empty-card, .error-card { margin-top: 20rpx; padding: 24rpx; border-radius: 22rpx; background: rgba(255,255,255,.04); color: rgba(255,246,220,.62); font-size: 26rpx; border: 1rpx solid rgba(255,255,255,.08); }
+.error-card { color: #ffb4a8; border-color: rgba(255,112,112,.22); }
+</style>
