@@ -70,9 +70,8 @@ export default {
         { key: 'workbench', label: '工作台', icon: '⌁', url: '/pages/workbench/index' },
         { key: 'tasks', label: '历史', icon: '▧', url: '/pages/tasks/index' },
         { key: 'resources', label: '资源库', icon: '▰', url: '/pages/resources/index' },
-        { key: 'users', label: '用户管理', icon: '♟', url: '/pages/users/index', secondary: true },
-        { key: 'mine', label: '我的', icon: '♙', url: '/pages/mine/index' },
-        { key: 'promotion', label: '推荐收益', icon: '▣', url: '/pages/promotion/index', secondary: true }
+        { key: 'users', label: '用户管理', icon: '♟', url: '/pages/users/index' },
+        { key: 'promotion', label: '推荐收益', icon: '▣', url: '/pages/promotion/index' }
       ]
     };
   },
@@ -99,8 +98,7 @@ export default {
       this.closeMenu();
       const current = getCurrentPages && getCurrentPages().length ? '/' + getCurrentPages()[getCurrentPages().length - 1].route : '';
       if (current === item.url) return;
-      if (item.secondary) uni.navigateTo({ url: item.url });
-      else uni.reLaunch({ url: item.url });
+uni.reLaunch({ url: item.url });
     },
     goBack() {
       const pages = getCurrentPages ? getCurrentPages() : [];
