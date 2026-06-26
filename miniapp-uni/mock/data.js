@@ -6,7 +6,7 @@ export const featureGroups = [
 
 export const featureTypes = [
   {
-    key: 'background_clean',
+    key: 'remove_bg',
     group: 'base',
     apiFeatureKey: 'remove_bg',
     name: '背景净化',
@@ -16,7 +16,7 @@ export const featureTypes = [
     scene: '白底、上架、详情页'
   },
   {
-    key: 'material_replace',
+    key: 'material',
     group: 'base',
     apiFeatureKey: 'material',
     name: '材质替换',
@@ -26,7 +26,7 @@ export const featureTypes = [
     scene: 'SKU、选色、方案沟通'
   },
   {
-    key: 'scene_fusion',
+    key: 'replace_bg',
     group: 'base',
     apiFeatureKey: 'replace_bg',
     name: '场景融合',
@@ -36,7 +36,7 @@ export const featureTypes = [
     scene: '主图、海报、搭配图'
   },
   {
-    key: 'photo_enhance',
+    key: 'enhance',
     group: 'base',
     apiFeatureKey: 'enhance',
     name: '摄影增强',
@@ -46,7 +46,7 @@ export const featureTypes = [
     scene: '门店实拍、商品图库'
   },
   {
-    key: 'line_drawing',
+    key: 'lineart',
     group: 'base',
     apiFeatureKey: 'lineart',
     name: '线稿图',
@@ -56,7 +56,7 @@ export const featureTypes = [
     scene: '设计沟通、尺寸说明'
   },
   {
-    key: 'multi_view',
+    key: 'multiview',
     group: 'base',
     apiFeatureKey: 'multiview',
     name: '多角度视图',
@@ -265,7 +265,7 @@ export const mockTasks = [
   {
     id: 'T20260625001',
     title: '北欧布艺沙发背景净化',
-    featureKey: 'background_clean',
+    featureKey: 'remove_bg',
     apiFeatureKey: 'remove_bg',
     featureName: '背景净化',
     status: 'queued',
@@ -282,7 +282,7 @@ export const mockTasks = [
   {
     id: 'T20260625002',
     title: '胡桃木餐桌材质替换',
-    featureKey: 'material_replace',
+    featureKey: 'material',
     apiFeatureKey: 'material',
     featureName: '材质替换',
     status: 'running',
@@ -299,7 +299,7 @@ export const mockTasks = [
   {
     id: 'T20260624018',
     title: '单人椅场景融合主图',
-    featureKey: 'scene_fusion',
+    featureKey: 'replace_bg',
     apiFeatureKey: 'replace_bg',
     featureName: '场景融合',
     status: 'succeeded',
@@ -333,7 +333,7 @@ export const mockTasks = [
   {
     id: 'T20260624009',
     title: '床垫多角度生成',
-    featureKey: 'multi_view',
+    featureKey: 'multiview',
     apiFeatureKey: 'multiview',
     featureName: '多角度视图',
     status: 'failed',

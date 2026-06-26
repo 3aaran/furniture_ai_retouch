@@ -54,7 +54,7 @@ function normalizeImage(image = {}, index = 1) {
 }
 
 function normalizeTask(task = {}) {
-  const featureKey = task.type || task.featureKey || 'background_clean';
+  const featureKey = task.type || task.featureKey || 'remove_bg';
   const feature = getFeatureByKey(featureKey);
   const status = task.status === 'succeeded' || task.status === 'failed' || task.status === 'queued' || task.status === 'running'
     ? task.status

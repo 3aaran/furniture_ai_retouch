@@ -502,20 +502,25 @@ export default {
   background: repeating-linear-gradient(135deg, #101318 0, #101318 14rpx, #1a2029 14rpx, #1a2029 28rpx);
 }
 
+.feature-material,
 .feature-material_replace {
   background: linear-gradient(135deg, #3b2f22, #7c6338);
 }
 
+.feature-replace_bg,
 .feature-scene_fusion {
   background: linear-gradient(135deg, #1e3340, #244235);
 }
 
+.feature-enhance,
 .feature-photo_enhance,
 .feature-promo_poster_image {
   background: linear-gradient(135deg, #4a3c20, #233b54);
 }
 
+.feature-lineart,
 .feature-line_drawing,
+.feature-multiview,
 .feature-multi_view {
   background: linear-gradient(135deg, #1f2630, #343b48);
 }
