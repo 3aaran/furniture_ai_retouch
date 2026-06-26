@@ -1,480 +1,375 @@
 <template>
   <view class="page workbench-page">
-    <app-topbar
-      title="勋港家具 AI"
-      subtitle="智能家具修图平台"
-      :quota="topbarQuota"
-      :avatar-text="topbarAvatar"
-      @profile="goMine"
-    />
+    <app-topbar title="" subtitle="" :avatar-text="topbarAvatar" @profile="goMine" />
 
-    <view :class="['wb-screen', activeDrawer ? 'drawer-open' : '']">
-      <view v-if="activeDrawer" class="wb-drawer-mask" @click="closeDrawer"></view>
+    <view v-if="errorText" class="error-card">{{ errorText }}</view>
 
-      <view class="wb-tool-rail">
-        <view class="wb-rail-btn primary" @click="openDrawer('features')">
-          <text class="rail-icon">▦</text>
-          <view><text>{{ currentFeatureMode }}</text><b>{{ currentFeatureLabel }}</b></view>
-        </view>
-        <view class="wb-rail-btn" @click="openDrawer('recent')">
-          <text class="rail-icon">◉</text>
-          <view><text>最近生成</text><b>{{ recentTasks.length }}</b></view>
-        </view>
-        <view class="wb-rail-btn" @click="showWatermarkTip">
-          <text class="rail-icon">◎</text>
-          <view><text>水印</text><b>水印配置</b></view>
+    <view class="metric-row">
+      <view class="metric-card" @click="openDrawer('features')">
+        <view class="metric-icon">▰</view>
+        <view class="metric-copy">
+          <text>生图功能</text>
+          <b>{{ currentFeature.name }}</b>
         </view>
       </view>
-
-      <view :class="['wb-drawer', 'left', activeDrawer === 'features' ? 'show' : '']">
-        <view class="drawer-head">
-          <view><text>{{ currentFeatureMode }}</text><b>{{ currentFeatureLabel }}</b></view>
-          <button class="drawer-close" @click="closeDrawer">×</button>
-        </view>
-
-        <view class="wb-section-tabs">
-          <button :class="featureGroup === 'base' ? 'active' : ''" @click="selectFeatureGroup('base')">基础</button>
-          <button :class="featureGroup === 'promotion' ? 'active' : ''" @click="selectFeatureGroup('promotion')">宣传图</button>
-          <button :class="featureGroup === 'video' ? 'active' : ''" @click="selectFeatureGroup('video')">宣传短视频</button>
-        </view>
-
-        <view class="wb-feature-grid">
-          <button
-            v-for="item in drawerFeatures"
-            :key="item.key"
-            :class="['wb-feature-btn', selectedFeatureKey === item.key ? 'active' : '']"
-            @click="selectFeature(item)"
-          >
-            <text class="feature-tag">{{ item.shortName || item.tag || item.name.slice(0, 2) }}</text>
-            <text>{{ item.name }}</text>
-          </button>
-        </view>
-
-        <view class="wb-divider"></view>
-
-        <view v-if="selectedFeatureKey === 'material' || selectedFeatureKey === 'replace_bg'" class="drawer-section">
-          <view class="drawer-title">
-            <b>{{ selectedFeatureKey === 'material' ? '材质参考' : '场景模板' }}</b>
-            <text>系统 / 门店 / 个人</text>
-          </view>
-          <view class="scope-tabs">
-            <text v-for="item in resourceScopes" :key="item.key" :class="resourceScope === item.key ? 'active' : ''" @click="resourceScope = item.key">{{ item.name }}</text>
-          </view>
-          <view class="resource-list">
-            <view
-              v-for="item in filteredResources"
-              :key="item.id"
-              :class="['resource-row', selectedResource && selectedResource.id === item.id ? 'active' : '']"
-              @click="selectResource(item)"
-            >
-              <view class="resource-thumb">
-                <image v-if="item.thumbUrl || item.imageUrl || item.url" :src="normalizeFileUrl(item.thumbUrl || item.imageUrl || item.url)" mode="aspectFill" />
-                <text v-else>{{ item.thumbText || '素材' }}</text>
-              </view>
-              <view class="resource-info"><b>{{ item.name }}</b><text>{{ item.typeText }} · {{ item.subCategoryName || item.mainCategoryName }}</text></view>
-            </view>
-            <view v-if="!filteredResources.length" class="drawer-empty">暂无匹配素材</view>
-          </view>
-        </view>
-
-        <view class="drawer-section">
-          <view class="drawer-title"><b>功能参数</b><text>与 Web 工作台参数一致</text></view>
-          <view v-if="selectedFeatureKey === 'remove_bg'" class="option-stack">
-            <label class="switch-row"><checkbox :checked="removeOpts.whiteBg" @click="removeOpts.whiteBg = !removeOpts.whiteBg" /> <text>白底图</text></label>
-            <label class="switch-row"><checkbox :checked="removeOpts.mirror" @click="removeOpts.mirror = !removeOpts.mirror" /> <text>镜像产品</text></label>
-          </view>
-          <view v-else-if="selectedFeatureKey === 'enhance'" class="option-stack">
-            <label class="switch-row"><checkbox :checked="enhanceOpts.focus" @click="enhanceOpts.focus = !enhanceOpts.focus" /> <text>产品聚焦</text></label>
-            <view class="param-line"><text>角度</text><picker :range="enhanceAngles" :value="enhanceAngleIndex" @change="changeEnhanceAngle"><view class="select-box">{{ enhanceOpts.angle }}</view></picker></view>
-          </view>
-          <view v-else-if="selectedFeatureKey === 'multiview'" class="pill-grid">
-            <text v-for="item in multiViewOptions" :key="item" :class="multiView === item ? 'active' : ''" @click="multiView = item">{{ item }}</text>
-          </view>
-          <view v-else-if="isPromotionSelected" class="option-stack">
-            <view v-for="row in promotionRows" :key="row.key" class="param-line"><text>{{ row.label }}</text><picker :range="row.items" :value="row.items.indexOf(promotionOptions[selectedFeatureKey][row.key])" @change="changePromotionOption(row, $event)"><view class="select-box">{{ promotionOptions[selectedFeatureKey][row.key] }}</view></picker></view>
-          </view>
-          <view v-else class="drawer-hint">当前功能主要依赖原图和参考素材，生成前可在主面板补充要求。</view>
+      <view class="metric-card" @click="openDrawer('recent')">
+        <view class="metric-icon">◎</view>
+        <view class="metric-copy">
+          <text>最近生成</text>
+          <b>{{ recentTasks.length }}</b>
         </view>
       </view>
+    </view>
 
-      <view :class="['wb-drawer', 'right', activeDrawer === 'recent' ? 'show' : '']">
-        <view class="drawer-head">
-          <view><text>最近生成</text><b>历史任务</b></view>
-          <button class="drawer-close" @click="closeDrawer">×</button>
+    <view class="work-card upload-card">
+      <view class="block-title">产品原图</view>
+      <view class="upload-zone" @click="chooseInputImage">
+        <view v-if="!originImage" class="upload-empty">
+          <view class="upload-plus">＋</view>
+          <b>点击上传家具图片</b>
+          <text>或</text>
+          <view class="resource-select-btn" @click.stop="openDrawer('resources')">从资源库选择</view>
         </view>
-        <view class="recent-list">
-          <view v-for="task in recentTasks" :key="task.id" class="recent-item" @click="goHistory">
-            <view class="recent-thumb"><view class="furniture-shape small"></view><text v-if="task.status === 'failed'">失败</text></view>
-            <view class="recent-info"><b>{{ task.featureName }}</b><text>{{ task.status === 'running' ? '生成中...' : task.status === 'failed' ? '失败，已退回算力' : task.createdAt }}</text><small>{{ task.id }}</small></view>
-          </view>
-          <view v-if="!recentTasks.length" class="drawer-empty">暂无生成记录</view>
-        </view>
-        <button class="secondary-btn drawer-more" @click="goHistory">查看更多记录</button>
-      </view>
-
-      <view class="wb-center-panel">
-        <view class="wb-main-block source-block">
-          <view class="wb-source-head">
-            <view><b>产品原图</b><text>上传或从资源库选择要处理的家具图片</text></view>
-            <button class="watermark-btn" @click="showWatermarkTip">水印配置</button>
-          </view>
-          <view class="upload-box" @click="chooseInputImage">
-            <view v-if="!originImage" class="upload-inner">
-              <view class="upload-circle">＋</view>
-              <b>点击上传家具原图</b>
-              <text>支持相册/拍照，最多 {{ maxImageCount }} 张</text>
-            </view>
-            <view v-else class="image-preview">
-              <image v-if="originImage.imageUrl || originImage.url" :src="normalizeFileUrl(originImage.imageUrl || originImage.url)" mode="aspectFill" />
-              <view v-else class="mock-preview"><view class="furniture-shape"></view></view>
-              <view class="preview-meta"><b>{{ originImage.name }}</b><text>{{ inputImages.length }} 张输入图</text></view>
-            </view>
-          </view>
-          <view class="upload-actions">
-            <button class="secondary-btn compact" @click.stop="chooseInputImage">继续上传</button>
-            <button class="secondary-btn compact" @click.stop="openDrawer('features')">选择功能</button>
-            <button class="secondary-btn compact" @click.stop="clearInputs">清空</button>
-          </view>
-        </view>
-
-        <view v-if="selectedFeatureKey === 'material' || selectedFeatureKey === 'replace_bg'" class="wb-main-block reference-block">
-          <view class="wb-source-head">
-            <view><b>{{ selectedFeatureKey === 'material' ? '材质参考' : '场景模板' }}</b><text>{{ selectedResource ? selectedResource.name : '未选择参考素材' }}</text></view>
-            <button class="watermark-btn" @click="openDrawer('features')">选择素材</button>
-          </view>
-          <view class="selected-resource" @click="openDrawer('features')">
-            <view class="resource-thumb large"><text>{{ selectedResource ? (selectedResource.thumbText || selectedResource.name.slice(0, 2)) : '参考' }}</text></view>
-            <view><b>{{ selectedResource ? selectedResource.name : '从左侧功能面板选择资源' }}</b><text>{{ selectedResource ? selectedResource.desc || selectedResource.typeText : '材质替换选择材质，场景融合选择场景模板' }}</text></view>
-          </view>
-        </view>
-
-        <view class="generation-card">
-          <textarea class="prompt-input" v-model="custom" :placeholder="promptPlaceholder" />
-          <view class="bottom-bar">
-            <view class="control-group">
-              <text>分辨率</text>
-              <view class="pills"><button v-for="item in resolutionOptions" :key="item" :class="resolution === item ? 'active' : ''" @click="resolution = item">{{ item }}</button></view>
-            </view>
-            <view class="control-group ratio">
-              <text>比例</text>
-              <picker :range="ratioOptions" :value="ratioOptions.indexOf(ratio)" @change="changeRatio"><view class="select-box dark">{{ ratio }}</view></picker>
-            </view>
-            <view class="action-group">
-              <button class="primary-btn generate-btn" @click="submitTask">{{ generateLabel }}</button>
-              <text>消耗 {{ calcCost }} 点算力　剩余：{{ user.quota }}</text>
-            </view>
+        <view v-else class="upload-preview">
+          <image v-if="originImage.imageUrl" :src="originImage.imageUrl" mode="aspectFill" />
+          <view class="upload-preview-meta">
+            <b>{{ originImage.name }}</b>
+            <text>{{ inputImages.length }} 张输入图</text>
           </view>
         </view>
       </view>
+    </view>
+
+    <view class="fold-card" @click="openDrawer(needsResource ? 'resources' : 'features')">
+      <view class="fold-title">{{ needsResource ? resourceLabel : '参考图（可选）' }}</view>
+      <view class="fold-state">
+        <text>{{ selectedResource ? selectedResource.name : '未添加' }}</text>
+        <view class="fold-arrow">⌄</view>
+      </view>
+    </view>
+
+    <textarea class="requirement-input" v-model="custom" :placeholder="promptPlaceholder" />
+
+    <view class="param-block">
+      <view class="param-title">分辨率</view>
+      <view class="resolution-grid">
+        <button v-for="item in resolutionOptions" :key="item" :class="resolution === item ? 'active' : ''" @click="resolution = item">{{ item }}</button>
+      </view>
+    </view>
+
+    <view class="param-block ratio-cost-row">
+      <view class="ratio-box">
+        <view class="param-title">比例</view>
+        <picker :range="ratioOptions" :value="ratioOptions.indexOf(ratio)" @change="changeRatio">
+          <view class="ratio-picker">{{ ratio }}<text>⌄</text></view>
+        </picker>
+      </view>
+      <view class="cost-box">
+        <text>消耗 {{ currentCost }} 点算力</text>
+        <b>剩余：{{ quotaText || '-' }}</b>
+      </view>
+    </view>
+
+    <button class="primary-btn generate-button" :disabled="submitBusy" @click="submitTask">{{ submitBusy ? '提交中' : generateLabel }}</button>
+
+    <view v-if="activeDrawer" class="drawer-mask" @click="closeDrawer"></view>
+
+    <view :class="['feature-drawer', activeDrawer === 'features' ? 'drawer-show' : '']">
+      <view class="drawer-top">
+        <view>
+          <text>生图功能</text>
+          <b>{{ currentFeature.name }}</b>
+        </view>
+        <button class="drawer-close" @click="closeDrawer">×</button>
+      </view>
+      <view class="group-tabs">
+        <text v-for="group in featureGroups" :key="group.key" :class="featureGroup === group.key ? 'active' : ''" @click="featureGroup = group.key">{{ group.name }}</text>
+      </view>
+      <view class="feature-grid">
+        <view v-for="feature in drawerFeatures" :key="feature.key" :class="['feature-btn', selectedFeatureKey === feature.key ? 'active' : '']" @click="selectFeature(feature.key)">
+          <text class="feature-tag">{{ feature.tag }}</text>
+          <b>{{ feature.name }}</b>
+        </view>
+        <view v-if="!drawerFeatures.length" class="empty-drawer">当前分类暂无真实功能</view>
+      </view>
+      <view class="drawer-section">
+        <view class="hint-line">当前参数：{{ optionsSummary }}</view>
+        <view v-if="selectedFeatureKey === 'remove_bg'" class="option-stack">
+          <label class="switch-row"><checkbox :checked="removeOpts.whiteBg" @click="removeOpts.whiteBg = !removeOpts.whiteBg" /> <text>白底图</text></label>
+          <label class="switch-row"><checkbox :checked="removeOpts.mirror" @click="removeOpts.mirror = !removeOpts.mirror" /> <text>镜像产品</text></label>
+        </view>
+        <view v-else-if="selectedFeatureKey === 'enhance'" class="option-stack">
+          <label class="switch-row"><checkbox :checked="enhanceOpts.focus" @click="enhanceOpts.focus = !enhanceOpts.focus" /> <text>产品聚焦</text></label>
+          <view class="option-row"><text>角度</text><picker :range="enhanceAngles" :value="enhanceAngles.indexOf(enhanceOpts.angle)" @change="changeEnhanceAngle"><view class="option-picker">{{ enhanceOpts.angle }}</view></picker></view>
+        </view>
+        <view v-else-if="selectedFeatureKey === 'multiview'" class="mini-pills">
+          <button v-for="item in multiViewOptions" :key="item" :class="multiView === item ? 'active' : ''" @click="multiView = item">{{ item }}</button>
+        </view>
+      </view>
+    </view>
+
+    <view :class="['resource-drawer', activeDrawer === 'resources' ? 'drawer-show' : '']">
+      <view class="drawer-top compact-top">
+        <view>
+          <text>{{ resourceLabel }}</text>
+          <b>{{ selectedFeatureKey === 'material' ? '选择材质' : '选择参考素材' }}</b>
+        </view>
+        <button class="drawer-close" @click="closeDrawer">×</button>
+      </view>
+      <view class="search-box">
+        <text>⌕</text>
+        <input v-model="resourceKeyword" placeholder="搜索资源..." />
+      </view>
+      <picker :range="resourceScopeNames" :value="resourceScopeIndex" @change="changeResourceScope">
+        <view class="space-picker">{{ resourceScopes[resourceScopeIndex] ? resourceScopes[resourceScopeIndex].name : '全部空间' }}<text>⌄</text></view>
+      </picker>
+      <view class="resource-grid">
+        <view class="upload-resource" @click="chooseInputImage">
+          <text>＋</text>
+          <b>上传</b>
+        </view>
+        <view v-for="item in filteredResources" :key="item.id" :class="['resource-tile', selectedResource && selectedResource.id === item.id ? 'active' : '']" @click="selectResource(item)">
+          <image v-if="item.image" :src="item.image" mode="aspectFill" />
+          <view v-else class="resource-empty-thumb">图</view>
+          <b>{{ item.name }}</b>
+          <text>{{ item.categoryText }}</text>
+        </view>
+      </view>
+      <view v-if="!filteredResources.length" class="empty-drawer">暂无真实资源数据</view>
+    </view>
+
+    <view :class="['recent-drawer', activeDrawer === 'recent' ? 'drawer-show' : '']">
+      <view class="recent-top">
+        <b>最近图片</b>
+        <view class="drawer-actions">
+          <button @click="loadRecent">↻</button>
+          <button @click="closeDrawer">×</button>
+        </view>
+      </view>
+      <view class="search-box">
+        <text>⌕</text>
+        <input v-model="recentKeyword" placeholder="搜索任务编号..." />
+      </view>
+      <view class="recent-list">
+        <view v-for="task in filteredRecentTasks" :key="task.id" class="recent-card" @click="goHistory">
+          <view class="recent-image">
+            <image v-if="task.image" :src="task.image" mode="aspectFill" />
+            <text v-else>{{ task.featureShort }}</text>
+          </view>
+          <view class="recent-copy">
+            <view class="green-pill">{{ task.featureName }}</view>
+            <text>{{ task.statusText === '失败' ? '失败，已退回算力' : task.createdAtText }}</text>
+            <small>{{ task.id }}</small>
+          </view>
+        </view>
+      </view>
+      <button class="secondary-btn drawer-more" @click="goHistory">查看更多记录</button>
     </view>
   </view>
 </template>
 
 <script>
-import { consumeWorkbenchResource, createMockTask, getFeatureGroups, getFeatureTypes, getMockUser, getMockResources, getMockTasks } from '../../utils/mockStore.js';
 import AppTopbar from '../../components/app-topbar/app-topbar.vue';
-import { getToken, useMockApi } from '../../utils/request.js';
+import { getCurrentUser } from '../../api/user.js';
 import { uploadImage } from '../../api/upload.js';
-import { createAiTask } from '../../api/task.js';
+import { createAiTask, getRecentAiTasks, getRecentImages } from '../../api/task.js';
 import { getResources } from '../../api/resource.js';
 import { normalizeFileUrl } from '../../utils/fileUrl.js';
 import { requireLogin } from '../../utils/auth.js';
+import { displayName, featureName, fmtTime, imageOf, statusText, unwrapList, unwrapUser, userQuota } from '../../utils/model.js';
 
+const RESOURCE_KEY = 'miniapp_workbench_resource';
 const FEATURE_KEY = 'miniapp_pending_feature_key';
-const BASE_RATIO_OPTIONS = ['自适应', '1:1', '4:3', '3:4', '16:9'];
-const BASE_RESOLUTION_OPTIONS = ['1K', '2K', '4K'];
+
+const baseFeatures = [
+  { key: 'material', group: 'base', name: '材质替换', tag: '材质', desc: '替换产品表面材质，快速预览 SKU 效果。', cost: 10 },
+  { key: 'replace_bg', group: 'base', name: '场景融合', tag: '场景', desc: '将产品放入真实营销场景。', cost: 12 },
+  { key: 'remove_bg', group: 'base', name: '背景净化', tag: '净化', desc: '清理背景并保留产品主体。', cost: 10 },
+  { key: 'enhance', group: 'base', name: '摄影增强', tag: '增强', desc: '提升产品照片质感，同时保持真实效果。', cost: 8 },
+  { key: 'lineart', group: 'base', name: '线稿图', tag: '线稿', desc: '根据图片生成干净的产品线稿。', cost: 8 },
+  { key: 'multiview', group: 'base', name: '多角度视图', tag: '多角度', desc: '生成适合产品展示的多角度视图。', cost: 20 }
+];
+const promoFeatures = [
+  { key: 'promo_main_image', group: 'promotion', name: '产品主图', tag: '主图', desc: '适合电商首图和产品封面。', cost: 12 },
+  { key: 'promo_poster_image', group: 'promotion', name: '广告海报图', tag: '海报', desc: '带广告构图和文案留白。', cost: 14 },
+  { key: 'promo_detail_image', group: 'promotion', name: '产品细节图', tag: '细节', desc: '突出材质、纹理和工艺细节。', cost: 12 }
+];
 
 export default {
   components: { AppTopbar },
   data() {
     return {
-      features: [],
-      featureGroups: [],
-      featureGroup: 'base',
-      resources: [],
-      tasks: [],
-      user: getMockUser(),
-      useMock: true,
-      activeDrawer: '',
-      selectedFeatureKey: 'material',
-      inputImages: [],
-      selectedResource: null,
-      custom: '',
-      resolution: '2K',
-      ratio: '自适应',
-      removeOpts: { whiteBg: false, mirror: false },
-      enhanceOpts: { focus: false, angle: '不变' },
-      multiView: '三角度视图',
-      resourceScope: 'ALL',
-      uploadBusy: false,
-      submitBusy: false,
-      promotionOptions: {
-        promo_main_image: { mainBackground: '暖灰渐变商业摄影背景', mainComposition: '主体居中', mainWhitespace: '少量留白' },
-        promo_poster_image: { posterTextMode: 'auto', posterCopyPlacement: '右侧留白', posterTone: '温暖家居' },
-        promo_detail_image: { detailLayout: '四宫格', detailFocus: '材质纹理、边角工艺', detailTextMode: '留白不生成文字' }
-      },
-      resourceScopes: [
-        { key: 'ALL', name: '全部' },
-        { key: 'SYSTEM', name: '系统' },
-        { key: 'MERCHANT', name: '门店' },
-        { key: 'USER', name: '个人' }
-      ],
-      enhanceAngles: ['不变', '正面', '45度', '侧面'],
-      multiViewOptions: ['三角度视图', '四角度视图']
+      user: {}, features: [...baseFeatures, ...promoFeatures],
+      featureGroups: [{ key: 'base', name: '基础' }, { key: 'promotion', name: '宣传图' }, { key: 'video', name: '宣传短视频' }],
+      featureGroup: 'base', resources: [], recentTasks: [], activeDrawer: '', selectedFeatureKey: 'material',
+      inputImages: [], selectedResource: null, custom: '', resolution: '2K', ratio: '自适应',
+      removeOpts: { whiteBg: false, mirror: false }, enhanceOpts: { focus: false, angle: '不变' }, multiView: '三角度视图',
+      resourceScopeIndex: 0, resourceKeyword: '', recentKeyword: '', uploadBusy: false, submitBusy: false,
+      resourceScopes: [{ key: 'ALL', name: '系统空间' }, { key: 'SYSTEM', name: '系统素材' }, { key: 'MERCHANT', name: '门店素材' }, { key: 'USER', name: '个人素材' }],
+      enhanceAngles: ['不变', '正面', '45度', '侧面'], multiViewOptions: ['三角度视图', '四角度视图'], errorText: ''
     };
   },
   computed: {
-    currentFeature() { return this.features.find((item) => item.key === this.selectedFeatureKey) || {}; },
-    currentFeatureMode() { return this.featureGroup === 'promotion' ? '宣传图' : this.featureGroup === 'video' ? '短视频' : '基础'; },
-    currentFeatureLabel() { return this.currentFeature.name || '材质替换'; },
+    quotaText() { return userQuota(this.user); },
+    topbarAvatar() { return displayName(this.user).slice(0, 1) || '勋'; },
+    currentFeature() { return this.features.find((item) => item.key === this.selectedFeatureKey) || this.features[0]; },
+    currentCost() { const base = Number(this.currentFeature.cost || 10); return this.resolution === '4K' ? base * 2 : base; },
     drawerFeatures() { return this.features.filter((item) => item.group === this.featureGroup); },
-    isPromotionSelected() { return ['promo_main_image','promo_poster_image','promo_detail_image'].includes(this.selectedFeatureKey); },
-    maxImageCount() { return 4; },
+    needsResource() { return this.selectedFeatureKey === 'material' || this.selectedFeatureKey === 'replace_bg'; },
+    resourceLabel() { return this.selectedFeatureKey === 'material' ? '参考图（可选）' : '场景模板（可选）'; },
     originImage() { return this.inputImages[0] || null; },
-    recentTasks() { return this.tasks.slice(0, 8); },
-    topbarQuota() { return this.user && this.user.quota !== undefined ? this.user.quota : ''; },
-    topbarAvatar() { const name = this.user.displayName || this.user.username || this.user.phone || '用'; return String(name).slice(0, 1); },
-    resolutionOptions() { return BASE_RESOLUTION_OPTIONS; },
-    ratioOptions() { return this.featureGroup === 'video' ? ['16:9', '9:16', '1:1', '4:3', '3:4'] : BASE_RATIO_OPTIONS; },
-    calcCost() { const mul = { '1K': 1, '2K': 2, '4K': 4 }[this.resolution] || 2; return Math.ceil(Number(this.currentFeature.cost || 0) * mul); },
-    generateLabel() { return this.featureGroup === 'promotion' ? '生成宣传图' : this.featureGroup === 'video' ? '生成视频' : '生成效果'; },
-    promptPlaceholder() { return this.isPromotionSelected ? '选填：补充颜色、空间、风格或卖点要求' : '选填：如有特殊要求，可以简短说明'; },
+    resolutionOptions() { return ['1K', '2K', '4K']; },
+    ratioOptions() { return this.featureGroup === 'video' ? ['16:9', '9:16', '1:1', '4:3', '3:4'] : ['自适应', '1:1', '4:3', '3:4', '16:9']; },
+    resourceScopeNames() { return this.resourceScopes.map((item) => item.name); },
     filteredResources() {
-      const target = this.selectedFeatureKey === 'material' ? 'material' : this.selectedFeatureKey === 'replace_bg' ? 'scene' : '';
-      if (!target) return [];
-      return this.resources.filter((item) => {
-        if (this.resourceScope !== 'ALL' && item.scope !== this.resourceScope) return false;
-        return item.resourceType === target;
-      });
+      const scope = this.resourceScopes[this.resourceScopeIndex]?.key || 'ALL';
+      const kw = String(this.resourceKeyword || '').trim().toLowerCase();
+      return this.resources.filter((item) => (scope === 'ALL' || item.scope === scope) && (!kw || String(item.name || '').toLowerCase().includes(kw)));
     },
-    enhanceAngleIndex() { return Math.max(0, this.enhanceAngles.indexOf(this.enhanceOpts.angle)); },
-    promotionRows() {
-      const map = {
-        promo_main_image: [
-          { label: '背景', key: 'mainBackground', items: ['暖灰渐变商业摄影背景', '浅米色高级背景', '米白色柔和光影', '极简空间背景'] },
-          { label: '构图', key: 'mainComposition', items: ['主体居中', '左侧留白', '右侧留白', '主体偏下'] },
-          { label: '留白', key: 'mainWhitespace', items: ['少量留白', '不留白', '顶部留白', '侧边留白'] }
-        ],
-        promo_poster_image: [
-          { label: '文字', key: 'posterTextMode', items: ['auto', 'custom', 'none'] },
-          { label: '留白', key: 'posterCopyPlacement', items: ['右侧留白', '左侧留白', '顶部留白', '下方留白'] },
-          { label: '氛围', key: 'posterTone', items: ['温暖家居', '现代简约', '高级质感', '自然木质'] }
-        ],
-        promo_detail_image: [
-          { label: '排版', key: 'detailLayout', items: ['四宫格', '三宫格', '拼合排版', '多区域细节'] },
-          { label: '重点', key: 'detailFocus', items: ['材质纹理、边角工艺', '结构连接、坐垫厚度', '木纹质感、扶手造型', '布料纹理、靠背弧度'] },
-          { label: '文字', key: 'detailTextMode', items: ['留白不生成文字', '完全不留文字区'] }
-        ]
-      };
-      return map[this.selectedFeatureKey] || [];
+    filteredRecentTasks() {
+      const kw = String(this.recentKeyword || '').trim().toLowerCase();
+      return this.recentTasks.filter((item) => !kw || String(item.id || '').toLowerCase().includes(kw) || String(item.featureName || '').toLowerCase().includes(kw));
+    },
+    promptPlaceholder() { return '选填：如有特殊要求，可以简短说明'; },
+    generateLabel() { return '生成效果'; },
+    optionsSummary() {
+      if (this.selectedFeatureKey === 'remove_bg') return `${this.removeOpts.whiteBg ? '白底图' : '原背景净化'}${this.removeOpts.mirror ? '，镜像' : ''}`;
+      if (this.selectedFeatureKey === 'enhance') return `${this.enhanceOpts.focus ? '产品聚焦，' : ''}${this.enhanceOpts.angle}`;
+      if (this.selectedFeatureKey === 'multiview') return this.multiView;
+      return '按 Web 工作台默认参数生成';
     }
   },
-  onLoad() {},
   onShow() {
     if (!requireLogin()) return;
-    this.loadData();
-    const pendingFeature = uni.getStorageSync(FEATURE_KEY);
-    if (pendingFeature) {
-      const feature = this.features.find((item) => item.key === pendingFeature || item.apiFeatureKey === pendingFeature);
-      if (feature) this.selectFeature(feature);
-      uni.removeStorageSync(FEATURE_KEY);
-    }
-    const resource = consumeWorkbenchResource();
-    if (resource) this.applyIncomingResource(resource);
+    this.applyPendingFeature(); this.applyPendingResource(); this.loadData();
   },
   methods: {
-    normalizeFileUrl,
-    loadData() {
-      this.useMock = useMockApi();
-      this.features = getFeatureTypes();
-      this.featureGroups = getFeatureGroups();
-      this.tasks = getMockTasks();
-      if (this.useMock || !getToken()) this.resources = getMockResources(); else this.loadRealResources();
+    async loadData() {
+      this.errorText = '';
+      try { this.user = unwrapUser(await getCurrentUser({ showLoading: false, showErrorToast: false })) || {}; } catch (e) {}
+      await Promise.all([this.loadResources(), this.loadRecent()]);
     },
-    async loadRealResources() {
+    async loadResources() {
+      try { this.resources = unwrapList(await getResources({ pageSize: 80 }, { showLoading: false, showErrorToast: false })).map(this.normalizeResource); } catch (error) { this.resources = []; }
+    },
+    async loadRecent() {
       try {
-        const data = await getResources({ pageSize: 50 }, { showLoading: false, showErrorToast: false });
-        const items = Array.isArray(data?.items) ? data.items : [];
-        this.resources = items.map((item) => ({ ...item, type: item.scope === 'SYSTEM' ? 'system' : item.scope === 'MERCHANT' ? 'merchant' : 'personal', typeText: item.scope === 'SYSTEM' ? '系统素材' : item.scope === 'MERCHANT' ? '门店素材' : '个人素材', thumbText: item.name || '素材', imageId: item.id }));
-      } catch (error) {
-        this.resources = getMockResources();
-      }
+        const [tasksPayload, imagesPayload] = await Promise.all([
+          getRecentAiTasks({ pageSize: 20 }, { showLoading: false, showErrorToast: false }).catch(() => null),
+          getRecentImages({ pageSize: 20 }, { showLoading: false, showErrorToast: false }).catch(() => null)
+        ]);
+        this.recentTasks = [...unwrapList(tasksPayload).map(this.normalizeTask), ...unwrapList(imagesPayload).map(this.normalizeTask)].slice(0, 20);
+      } catch (error) { this.recentTasks = []; }
     },
-    openDrawer(type) { this.activeDrawer = type; },
+    normalizeResource(item = {}) {
+      const scope = item.scope || item.space || '';
+      const type = item.resourceType || item.type || '';
+      return { ...item, id: item.id, name: item.name || item.title || '未命名资源', image: normalizeFileUrl(imageOf(item)), scope, typeText: type || '素材', categoryText: [item.mainCategoryName || item.objectName, item.subCategoryName || item.colorName].filter(Boolean).join(' / ') || '未分类' };
+    },
+    normalizeTask(item = {}) {
+      const key = item.featureKey || item.operation || item.kind || item.type || '';
+      const name = featureName(key, item.featureName || item.operationName || item.kindName || '生成记录');
+      return { ...item, id: item.id || item.taskId, featureName: name, featureShort: name.slice(0, 2), statusText: statusText(item.status || 'success'), createdAtText: fmtTime(item.createdAt || item.created_at), image: normalizeFileUrl(imageOf(item)) };
+    },
+    openDrawer(name) { this.activeDrawer = name; },
     closeDrawer() { this.activeDrawer = ''; },
-    selectFeatureGroup(group) {
-      this.featureGroup = group;
-      const first = this.features.find((item) => item.group === group);
-      if (first) this.selectFeature(first);
-      this.ratio = this.ratioOptions.includes(this.ratio) ? this.ratio : this.ratioOptions[0];
-    },
-    selectFeature(item) {
-      this.selectedFeatureKey = item.key;
-      this.featureGroup = item.group || this.featureGroup;
-      this.selectedResource = null;
-      this.ratio = this.ratioOptions.includes(this.ratio) ? this.ratio : this.ratioOptions[0];
-    },
-    selectResource(item) { this.selectedResource = item; },
-    changeRatio(e) { this.ratio = this.ratioOptions[Number(e.detail.value)] || this.ratioOptions[0]; },
+    selectFeature(key) { this.selectedFeatureKey = key; const feature = this.features.find((item) => item.key === key); this.featureGroup = feature?.group || this.featureGroup; this.selectedResource = null; this.closeDrawer(); },
+    selectResource(item) { this.selectedResource = item; this.closeDrawer(); },
+    changeResourceScope(e) { this.resourceScopeIndex = Number(e.detail.value) || 0; },
+    applyPendingFeature() { const key = uni.getStorageSync(FEATURE_KEY); if (key && this.features.some((item) => item.key === key)) { this.selectedFeatureKey = key; const feature = this.features.find((item) => item.key === key); this.featureGroup = feature.group || 'base'; uni.removeStorageSync(FEATURE_KEY); } },
+    applyPendingResource() { const resource = uni.getStorageSync(RESOURCE_KEY); if (resource && resource.id) { this.selectedResource = resource; uni.removeStorageSync(RESOURCE_KEY); } },
+    chooseInputImage() { if (this.uploadBusy) return; uni.chooseImage({ count: Math.max(1, 4 - this.inputImages.length), sizeType: ['compressed'], sourceType: ['album', 'camera'], success: async (res) => { for (const path of (res.tempFilePaths || [])) await this.uploadOne(path); } }); },
+    async uploadOne(filePath) { this.uploadBusy = true; try { const response = await uploadImage(filePath, { source: 'miniapp_workbench' }); const image = response.image || response.data?.image || response.item || response.data || response; this.inputImages.push({ ...image, id: image.id || image.imageId, name: image.originalName || image.name || '上传图片', imageUrl: normalizeFileUrl(imageOf(image)) }); } catch (error) { this.errorText = error.message || '上传失败'; } finally { this.uploadBusy = false; } },
+    changeRatio(e) { this.ratio = this.ratioOptions[Number(e.detail.value)] || this.ratio; },
     changeEnhanceAngle(e) { this.enhanceOpts.angle = this.enhanceAngles[Number(e.detail.value)] || '不变'; },
-    changePromotionOption(row, e) { this.promotionOptions[this.selectedFeatureKey][row.key] = row.items[Number(e.detail.value)] || row.items[0]; },
-    chooseInputImage() {
-      if (this.useMock) { this.mockUpload(); return; }
-      if (this.uploadBusy) return;
-      const remain = this.maxImageCount - this.inputImages.length;
-      if (remain <= 0) return uni.showToast({ title: `最多 ${this.maxImageCount} 张`, icon: 'none' });
-      uni.chooseImage({ count: remain, sizeType: ['compressed', 'original'], sourceType: ['album', 'camera'], success: async (result) => {
-        const paths = result.tempFilePaths || [];
-        this.uploadBusy = true;
-        try {
-          for (let index = 0; index < paths.length; index += 1) {
-            const uploaded = await uploadImage(paths[index], {});
-            this.inputImages.push({ id: uploaded.id, name: uploaded.originalName || uploaded.fileName || `家具原图 ${this.inputImages.length + 1}`, imageUrl: uploaded.thumbUrl || uploaded.url, url: uploaded.url, status: 'success', source: 'upload' });
-          }
-          uni.showToast({ title: '图片已上传', icon: 'success' });
-        } catch (error) { uni.showToast({ title: error.message || '上传失败', icon: 'none' }); }
-        finally { this.uploadBusy = false; }
-      }});
-    },
-    mockUpload() {
-      if (this.inputImages.length >= this.maxImageCount) return uni.showToast({ title: `最多 ${this.maxImageCount} 张`, icon: 'none' });
-      const index = this.inputImages.length + 1;
-      this.inputImages.push({ id: `upload_${Date.now()}_${index}`, name: `家具原图 ${index}`, thumbText: `原图${index}`, status: 'success' });
-    },
-    clearInputs() { this.inputImages = []; },
-    applyIncomingResource(resource) {
-      if (resource.resourceType === 'material' || resource.resourceType === 'scene') {
-        this.selectedResource = resource;
-        if (resource.resourceType === 'material') this.selectFeature(this.features.find((item) => item.key === 'material'));
-        if (resource.resourceType === 'scene') this.selectFeature(this.features.find((item) => item.key === 'replace_bg'));
-        return;
-      }
-      this.inputImages = [{ id: resource.imageId || resource.id, name: resource.name, thumbText: resource.thumbText, status: 'resource', resourceId: resource.id, imageUrl: resource.thumbUrl || resource.imageUrl || resource.url, url: resource.imageUrl || resource.url }, ...this.inputImages].slice(0, this.maxImageCount);
-    },
-    validateTask() {
-      if (!this.inputImages.length && this.featureGroup !== 'video') return '请先上传家具原图';
-      if (this.selectedFeatureKey === 'material' && !this.selectedResource && !String(this.custom || '').trim()) return '请选择材质参考或填写材质要求';
-      if (this.selectedFeatureKey === 'replace_bg' && !this.selectedResource && !String(this.custom || '').trim()) return '请选择场景模板或填写场景要求';
-      return '';
-    },
-    submitTask() {
-      const msg = this.validateTask();
-      if (msg) return uni.showToast({ title: msg, icon: 'none' });
-      if (this.useMock) {
-        createMockTask({ title: this.inputImages[0]?.name || '宣传视频分镜', featureKey: this.selectedFeatureKey, inputImages: this.inputImages, selectedResource: this.selectedResource, userPrompt: this.custom, params: this.buildOptions() });
-        uni.showToast({ title: '已创建任务', icon: 'success' });
-        setTimeout(() => uni.switchTab({ url: '/pages/tasks/index' }), 350);
-      } else this.submitRealTask();
-    },
-    async submitRealTask() {
-      if (this.selectedFeatureKey === 'video_generate') return uni.showToast({ title: '宣传视频真实接口后续接入', icon: 'none' });
-      const origin = this.inputImages[0];
-      const reference = this.selectedResource;
-      const payload = { originImageId: origin.id, featureKey: this.currentFeature.apiFeatureKey || this.selectedFeatureKey, selectedResourceId: reference?.id || null, selectedResourceSnapshot: reference ? { id: reference.id, imageId: reference.imageId || reference.id, name: reference.name, resourceType: reference.resourceType, mainCategoryName: reference.mainCategoryName || '', subCategoryName: reference.subCategoryName || '', imageUrl: reference.imageUrl || reference.url || '' } : null, userPrompt: this.custom, resolution: this.resolution, ratio: this.ratio, options: this.buildOptions() };
-      try { await createAiTask(payload); uni.showToast({ title: '已提交生成', icon: 'success' }); setTimeout(() => uni.switchTab({ url: '/pages/tasks/index' }), 350); }
-      catch (error) { uni.showToast({ title: error.message || '任务提交失败', icon: 'none' }); }
-    },
-    buildOptions() {
-      if (this.selectedFeatureKey === 'material') return { resolution: this.resolution, ratio: this.ratio, materialName: this.selectedResource?.name || '', materialColor: this.selectedResource?.colorName || '', materialCategory: this.selectedResource?.subCategoryName || this.selectedResource?.mainCategoryName || '', keepStructure: true, keepAngle: true, keepProportion: true };
-      if (this.selectedFeatureKey === 'replace_bg') return { resolution: this.resolution, ratio: this.ratio, sceneType: this.selectedResource?.name || '真实室内商业场景', sceneName: this.selectedResource?.name || '', sceneDesc: this.selectedResource?.description || '', keepLighting: true, keepPerspective: true };
-      if (this.selectedFeatureKey === 'remove_bg') return { resolution: this.resolution, ratio: this.ratio, whiteBg: !!this.removeOpts.whiteBg, mirror: !!this.removeOpts.mirror, backgroundTone: this.removeOpts.whiteBg ? 'Pure white' : 'Warm white', shadowStyle: '柔和阴影' };
-      if (this.selectedFeatureKey === 'enhance') return { resolution: this.resolution, ratio: this.ratio, focus: !!this.enhanceOpts.focus, angle: this.enhanceOpts.angle, enhanceSharpness: true, enhanceLight: true, enhanceTexture: true, commercialStyle: true };
-      if (this.selectedFeatureKey === 'lineart') return { resolution: this.resolution, ratio: this.ratio, lineStyle: 'Simple line art', lineColor: '黑色', keepDetailLevel: '中等', withShadow: false };
-      if (this.selectedFeatureKey === 'multiview') return { resolution: this.resolution, ratio: this.ratio, viewMode: this.multiView, viewCount: this.multiView === '三角度视图' ? 3 : 4 };
-      if (this.isPromotionSelected) return { resolution: this.resolution, ratio: this.ratio, ...this.promotionOptions[this.selectedFeatureKey], keepSubject: true, forbidGeneratedText: true, forbidLogo: true, forbidPeople: true };
-      return { resolution: this.resolution, ratio: this.ratio };
-    },
-    showWatermarkTip() { uni.showToast({ title: '水印配置后续接入', icon: 'none' }); },
-    goHistory() { uni.switchTab({ url: '/pages/tasks/index' }); },
-    goMine() { uni.switchTab({ url: '/pages/mine/index' }); }
+    buildOptions() { const base = { resolution: this.resolution, ratio: this.ratio }; if (this.selectedFeatureKey === 'material') { const tpl = this.selectedResource || {}; return { ...base, materialName: tpl.name || '', materialColor: tpl.colorName || '', materialCategory: tpl.subCategoryName || tpl.mainCategoryName || '', resourceName: tpl.name || '', templateName: tpl.name || '', keepStructure: true, keepAngle: true, keepProportion: true }; } if (this.selectedFeatureKey === 'replace_bg') { const tpl = this.selectedResource || {}; return { ...base, sceneType: tpl.name || tpl.subCategoryName || tpl.mainCategoryName || '真实室内商业场景', sceneName: tpl.name || '', sceneDesc: tpl.description || '', resourceName: tpl.name || '', templateName: tpl.name || '', keepLighting: true, keepPerspective: true }; } if (this.selectedFeatureKey === 'remove_bg') return { ...base, whiteBg: !!this.removeOpts.whiteBg, mirror: !!this.removeOpts.mirror, backgroundTone: this.removeOpts.whiteBg ? 'Pure white' : 'Warm white', shadowStyle: '柔和阴影' }; if (this.selectedFeatureKey === 'enhance') return { ...base, focus: !!this.enhanceOpts.focus, angle: this.enhanceOpts.angle, enhanceSharpness: true, enhanceLight: true, enhanceTexture: true, enhanceColor: true, commercialStyle: true }; if (this.selectedFeatureKey === 'lineart') return { ...base, lineStyle: 'Simple line art', lineColor: '黑色', keepDetailLevel: '中等', withShadow: false }; if (this.selectedFeatureKey === 'multiview') { const viewCount = this.multiView === '三角度视图' ? 3 : 4; return { ...base, view: this.multiView, viewCount, layoutType: viewCount === 3 ? '横排' : '宫格', backgroundStyle: '纯白' }; } return base; },
+    async submitTask() { if (!this.originImage) return uni.showToast({ title: '请先上传家具原图', icon: 'none' }); this.submitBusy = true; this.errorText = ''; try { const tpl = this.selectedResource; await createAiTask({ originImageId: this.originImage.id || this.originImage.imageId, featureKey: this.selectedFeatureKey, selectedResourceId: tpl?.id || null, selectedResourceSnapshot: tpl ? { id: tpl.id, imageId: tpl.id, name: tpl.name, resourceType: tpl.resourceType, mainCategoryName: tpl.mainCategoryName || tpl.objectName || '', subCategoryName: tpl.subCategoryName || tpl.colorName || '', imageUrl: tpl.imageUrl || tpl.url || '' } : null, functionalReferenceImageId: null, templatePrompt: tpl ? (tpl.description || tpl.name) : '', userPrompt: this.custom.trim(), userReferenceImageIds: [], referenceImageIds: [], resolution: this.resolution, ratio: this.ratio, options: this.buildOptions() }); uni.showToast({ title: '任务已提交', icon: 'success' }); await this.loadRecent(); this.openDrawer('recent'); } catch (error) { this.errorText = error.message || '任务提交失败'; } finally { this.submitBusy = false; } },
+    goHistory() { uni.reLaunch({ url: '/pages/tasks/index' }); },
+    goMine() { uni.reLaunch({ url: '/pages/mine/index' }); }
   }
 };
 </script>
 
 <style>
-.workbench-page { padding-top: 12rpx; }
-.wb-screen { position: relative; }
-.wb-tool-rail { position: sticky; top: 0; z-index: 30; display: grid; grid-template-columns: minmax(0,1fr) minmax(120rpx,.72fr) minmax(120rpx,.72fr); gap: 12rpx; margin: -4rpx 0 16rpx; padding-bottom: 10rpx; background: #07090c; }
-.wb-rail-btn { min-width: 0; min-height: 92rpx; display: grid; grid-template-columns: 38rpx minmax(0,1fr); gap: 4rpx 14rpx; align-items: center; padding: 14rpx 16rpx; border-radius: 18rpx; border: 1rpx solid rgba(242,213,140,.16); background: rgba(13,15,18,.94); color: #f5f0e6; box-shadow: 0 12rpx 36rpx rgba(0,0,0,.26); }
-.wb-rail-btn.primary { background: linear-gradient(135deg, rgba(242,213,140,.2), rgba(18,20,22,.96)); border-color: rgba(242,213,140,.34); }
-.rail-icon { grid-row: 1 / 3; color: #f3dc9a; font-size: 28rpx; font-weight: 900; }
-.wb-rail-btn text, .wb-rail-btn b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.wb-rail-btn view text { display: block; color: rgba(255,244,223,.58); font-size: 22rpx; }
-.wb-rail-btn b { display: block; margin-top: 4rpx; color: #fff5dc; font-size: 28rpx; line-height: 1.15; }
-.wb-drawer-mask { position: fixed; inset: 0; z-index: 230; background: rgba(0,0,0,.55); backdrop-filter: blur(4px); }
-.wb-drawer { position: fixed; top: 0; bottom: 0; z-index: 240; width: min(414px, calc(100vw - 40px)); max-width: calc(100vw - 40px); height: 100vh; overflow-y: auto; box-sizing: border-box; padding: calc(24rpx + var(--status-bar-height)) 28rpx 36rpx; background: linear-gradient(180deg, rgba(18,20,23,.99), rgba(9,10,12,.99)); box-shadow: 0 0 70rpx rgba(0,0,0,.62); transition: transform .22s ease; }
-.wb-drawer.left { left: 0; border-right: 1rpx solid rgba(242,213,140,.18); transform: translateX(-105%); }
-.wb-drawer.right { right: 0; border-left: 1rpx solid rgba(242,213,140,.18); transform: translateX(105%); }
-.wb-drawer.show { transform: translateX(0); }
-.drawer-head { display: flex; align-items: center; justify-content: space-between; gap: 12rpx; margin-bottom: 20rpx; }
-.drawer-head view text, .drawer-head view b { display: block; max-width: 520rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.drawer-head view text { color: rgba(255,244,223,.55); font-size: 22rpx; font-weight: 800; }
-.drawer-head view b { color: #fff4df; font-size: 34rpx; line-height: 1.2; }
-.drawer-close { width: 72rpx; height: 72rpx; border-radius: 22rpx; border: 1rpx solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); color: #f5ead0; font-size: 38rpx; line-height: 1; }
-.wb-section-tabs { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10rpx; }
-.wb-section-tabs button { height: 70rpx; border: 1rpx solid rgba(255,255,255,.1); border-radius: 18rpx; background: rgba(255,255,255,.035); color: #cfc8b8; font-size: 24rpx; font-weight: 900; }
-.wb-section-tabs button.active { border-color: transparent; background: linear-gradient(135deg,#f3da94,#c79b3b); color: #181207; }
-.wb-feature-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12rpx; margin-top: 16rpx; }
-.wb-feature-btn { min-height: 96rpx; display: flex; align-items: center; gap: 12rpx; justify-content: flex-start; padding: 0 16rpx; border-radius: 18rpx; border: 1rpx solid rgba(255,255,255,.1); background: rgba(255,255,255,.04); color: #f5f0e6; font-size: 25rpx; font-weight: 900; }
-.wb-feature-btn.active { border-color: rgba(242,213,140,.42); background: rgba(242,213,140,.12); color: #f2d58c; }
-.feature-tag { flex: 0 0 auto; padding: 6rpx 10rpx; border-radius: 999rpx; background: rgba(242,213,140,.12); color: #f0d68a; font-size: 20rpx; }
-.wb-divider { height: 1rpx; margin: 22rpx 0; background: rgba(255,255,255,.08); }
-.drawer-section { margin-top: 20rpx; }
-.drawer-title { display: flex; align-items: center; justify-content: space-between; gap: 12rpx; margin-bottom: 14rpx; }
-.drawer-title b { color: #fff4df; font-size: 29rpx; }
-.drawer-title text, .drawer-hint { color: rgba(255,244,223,.55); font-size: 22rpx; line-height: 1.55; }
-.scope-tabs { display: grid; grid-template-columns: repeat(4,1fr); gap: 8rpx; margin-bottom: 12rpx; }
-.scope-tabs text { height: 56rpx; display: flex; align-items: center; justify-content: center; border-radius: 15rpx; background: rgba(255,255,255,.05); color: rgba(255,244,223,.62); font-size: 22rpx; font-weight: 800; }
-.scope-tabs text.active { background: rgba(242,213,140,.14); color: #f0d68a; }
-.resource-list, .recent-list { display: grid; gap: 12rpx; }
-.resource-row, .recent-item, .selected-resource { display: flex; align-items: center; gap: 14rpx; padding: 14rpx; border-radius: 18rpx; border: 1rpx solid rgba(255,255,255,.1); background: rgba(255,255,255,.035); }
-.resource-row.active { border-color: rgba(242,213,140,.5); background: rgba(242,213,140,.1); }
-.resource-thumb, .recent-thumb { width: 86rpx; height: 72rpx; flex: 0 0 86rpx; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 16rpx; border: 1rpx solid rgba(242,213,140,.14); background: linear-gradient(135deg,#202731,#11161d); color: #f0d68a; font-size: 22rpx; font-weight: 900; }
-.resource-thumb image { width: 100%; height: 100%; display: block; }
-.resource-thumb.large { width: 116rpx; height: 92rpx; }
-.resource-info, .recent-info, .selected-resource view:last-child { flex: 1; min-width: 0; }
-.resource-info b, .recent-info b, .selected-resource b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #fff4df; font-size: 25rpx; font-weight: 900; }
-.resource-info text, .recent-info text, .selected-resource text, .recent-info small { display: block; margin-top: 6rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: rgba(255,244,223,.55); font-size: 21rpx; }
-.drawer-empty { padding: 28rpx; border: 1rpx dashed rgba(242,213,140,.18); border-radius: 18rpx; color: rgba(255,244,223,.55); text-align: center; font-size: 23rpx; }
-.option-stack { display: grid; gap: 14rpx; }
-.switch-row, .param-line { display: flex; align-items: center; justify-content: space-between; gap: 16rpx; min-height: 66rpx; color: #fff4df; font-size: 25rpx; font-weight: 900; }
-.select-box { min-width: 210rpx; padding: 16rpx 18rpx; border-radius: 16rpx; background: rgba(255,255,255,.06); color: #f0d68a; text-align: center; font-size: 24rpx; font-weight: 900; }
-.select-box.dark { min-width: 150rpx; background: #101216; }
-.pill-grid { display: flex; flex-wrap: wrap; gap: 10rpx; }
-.pill-grid text { padding: 12rpx 18rpx; border-radius: 999rpx; background: rgba(255,255,255,.07); color: #cfc8b8; font-size: 23rpx; font-weight: 800; }
-.pill-grid text.active { background: #f0d68a; color: #181207; }
-.wb-center-panel { width: 100%; min-height: auto; }
-.wb-main-block, .generation-card { margin-top: 16rpx; padding: 20rpx; border: 1rpx solid rgba(242,213,140,.12); border-radius: 26rpx; background: rgba(255,255,255,.04); box-shadow: 0 24rpx 70rpx rgba(0,0,0,.32); }
-.wb-source-head { display: flex; align-items: center; justify-content: space-between; gap: 16rpx; margin-bottom: 16rpx; }
-.wb-source-head b, .wb-source-head text { display: block; }
-.wb-source-head b { color: #fff4df; font-size: 30rpx; font-weight: 1000; }
-.wb-source-head text { margin-top: 6rpx; color: rgba(255,244,223,.55); font-size: 22rpx; }
-.watermark-btn { flex: 0 0 auto; min-height: 66rpx; padding: 0 18rpx; border-radius: 18rpx; border: 1rpx solid rgba(240,214,138,.52); background: rgba(240,214,138,.06); color: #f0d68a; font-size: 24rpx; font-weight: 900; }
-.upload-box { min-height: 300rpx; border: 1rpx dashed rgba(242,213,140,.22); border-radius: 24rpx; background: radial-gradient(circle at 70% -20%, rgba(242,213,140,.13), transparent 45%), rgba(8,10,13,.8); overflow: hidden; }
-.upload-inner { min-height: 300rpx; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-.upload-circle { width: 86rpx; height: 86rpx; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: linear-gradient(135deg,#f3da94,#c79b3b); color: #181207; font-size: 46rpx; font-weight: 1000; }
-.upload-inner b { margin-top: 16rpx; color: #fff4df; font-size: 31rpx; }
-.upload-inner text { margin-top: 8rpx; color: rgba(255,244,223,.56); font-size: 24rpx; }
-.image-preview { position: relative; min-height: 300rpx; }
-.image-preview image, .mock-preview { width: 100%; height: 300rpx; display: block; }
-.mock-preview { position: relative; background: linear-gradient(135deg,#202731,#11161d); }
-.preview-meta { position: absolute; left: 14rpx; right: 14rpx; bottom: 14rpx; padding: 14rpx; border-radius: 16rpx; background: rgba(0,0,0,.58); }
-.preview-meta b, .preview-meta text { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.preview-meta b { color: #fff4df; font-size: 25rpx; }
-.preview-meta text { margin-top: 4rpx; color: rgba(255,244,223,.58); font-size: 21rpx; }
-.furniture-shape { position: absolute; left: 24rpx; right: 24rpx; bottom: 24rpx; height: 34rpx; border-radius: 999rpx 999rpx 12rpx 12rpx; background: rgba(242,213,140,.26); }
-.furniture-shape.small { left: 12rpx; right: 12rpx; bottom: 13rpx; height: 18rpx; }
-.upload-actions { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12rpx; margin-top: 16rpx; }
-.compact { height: 70rpx; font-size: 24rpx; }
-.reference-block .selected-resource { margin-top: 4rpx; }
-.prompt-input { width: 100%; min-height: 148rpx; box-sizing: border-box; padding: 18rpx; border-radius: 20rpx; border: 1rpx solid rgba(255,255,255,.1); background: #101216; color: #fff4df; font-size: 25rpx; line-height: 1.55; }
-.bottom-bar { display: grid; gap: 18rpx; margin-top: 18rpx; }
-.control-group { display: flex; align-items: center; justify-content: space-between; gap: 16rpx; color: rgba(255,244,223,.58); font-size: 23rpx; font-weight: 900; }
-.pills { display: flex; gap: 8rpx; }
-.pills button { min-width: 76rpx; height: 58rpx; border-radius: 999rpx; border: 0; background: rgba(255,255,255,.07); color: #cfc8b8; font-size: 23rpx; font-weight: 900; }
-.pills button.active { background: #f0d68a; color: #181207; }
-.action-group { display: grid; gap: 8rpx; }
-.generate-btn { height: 84rpx; }
-.action-group text { color: rgba(255,244,223,.58); font-size: 22rpx; text-align: center; }
-.drawer-more { margin-top: 16rpx; }
+.workbench-page { padding-bottom: 40rpx; }
+.metric-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16rpx; margin: 34rpx 0 24rpx; }
+.metric-card { min-height: 92rpx; display: flex; align-items: center; gap: 18rpx; padding: 18rpx 22rpx; border-radius: 28rpx; border: 1rpx solid rgba(226,199,115,.45); background: linear-gradient(180deg, rgba(226,199,115,.13), rgba(255,255,255,.035)); }
+.metric-icon { color: #ecd17d; font-size: 40rpx; }
+.metric-copy text { display: block; color: rgba(239,216,141,.74); font-size: 23rpx; font-weight: 800; }
+.metric-copy b { display: block; margin-top: 2rpx; color: #fff6dc; font-size: 31rpx; font-weight: 900; }
+.work-card, .fold-card, .requirement-input { border-radius: 34rpx; border: 1rpx solid rgba(255,255,255,.11); background: rgba(255,255,255,.035); }
+.upload-card { padding: 30rpx; }
+.block-title { color: #fff6dc; font-size: 38rpx; font-weight: 900; margin-bottom: 24rpx; }
+.upload-zone { min-height: 500rpx; border-radius: 28rpx; border: 2rpx dashed rgba(226,199,115,.45); background: rgba(255,255,255,.018); overflow: hidden; }
+.upload-empty { height: 500rpx; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20rpx; color: #fff6dc; }
+.upload-plus { width: 112rpx; height: 112rpx; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(226,199,115,.18); color: #ffe597; font-size: 66rpx; font-weight: 900; }
+.upload-empty b { font-size: 42rpx; font-weight: 900; }
+.upload-empty text { color: rgba(239,216,141,.72); font-size: 28rpx; }
+.resource-select-btn { min-width: 260rpx; height: 76rpx; display: flex; align-items: center; justify-content: center; border-radius: 999rpx; border: 1rpx solid rgba(255,255,255,.18); color: #fff6dc; font-size: 28rpx; }
+.upload-preview { position: relative; height: 500rpx; }
+.upload-preview image { width: 100%; height: 100%; }
+.upload-preview-meta { position: absolute; left: 20rpx; right: 20rpx; bottom: 20rpx; padding: 18rpx; border-radius: 20rpx; color: #fff; background: rgba(0,0,0,.62); }
+.upload-preview-meta b, .upload-preview-meta text { display: block; }
+.fold-card { margin-top: 28rpx; min-height: 118rpx; padding: 0 28rpx; display: flex; align-items: center; justify-content: space-between; }
+.fold-title { color: #fff6dc; font-size: 34rpx; font-weight: 900; }
+.fold-state { display: flex; align-items: center; gap: 16rpx; color: rgba(255,246,220,.65); font-size: 28rpx; }
+.fold-state text { max-width: 300rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fold-arrow { width: 72rpx; height: 72rpx; display: flex; align-items: center; justify-content: center; border-radius: 18rpx; color: #efd482; border: 1rpx solid rgba(226,199,115,.32); background: rgba(226,199,115,.08); font-size: 32rpx; }
+.requirement-input { box-sizing: border-box; width: 100%; min-height: 172rpx; padding: 26rpx; margin-top: 28rpx; color: #fff6dc; font-size: 30rpx; }
+.param-block { margin-top: 28rpx; }
+.param-title { color: #fff6dc; font-size: 30rpx; font-weight: 900; margin-bottom: 16rpx; }
+.resolution-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20rpx; }
+.resolution-grid button { height: 86rpx; border-radius: 24rpx; color: #f7f1de; background: rgba(255,255,255,.05); border: 1rpx solid rgba(255,255,255,.1); font-size: 32rpx; }
+.resolution-grid button.active { color: #171208; background: linear-gradient(135deg,#fff1b8,#d6a942); border-color: transparent; }
+.ratio-cost-row { display: grid; grid-template-columns: 1.2fr .9fr; gap: 18rpx; align-items: end; }
+.ratio-picker, .cost-box { height: 88rpx; box-sizing: border-box; border-radius: 24rpx; border: 1rpx solid rgba(255,255,255,.11); background: rgba(255,255,255,.035); }
+.ratio-picker { display: flex; align-items: center; justify-content: space-between; padding: 0 28rpx; color: #fff6dc; font-size: 30rpx; }
+.cost-box { padding: 14rpx 20rpx; color: rgba(255,246,220,.65); font-size: 23rpx; }
+.cost-box b { display: block; margin-top: 4rpx; color: #ffe597; font-size: 29rpx; }
+.generate-button { margin-top: 28rpx; }
+.drawer-mask { position: fixed; left: 0; right: 0; top: 0; bottom: 0; z-index: 78; background: rgba(0,0,0,.58); backdrop-filter: blur(8px); }
+.feature-drawer, .resource-drawer, .recent-drawer { position: fixed; top: 0; bottom: 0; z-index: 80; box-sizing: border-box; padding: calc(var(--status-bar-height) + 32rpx) 28rpx 40rpx; background: linear-gradient(180deg, #101113 0%, #090a0c 100%); border-right: 1rpx solid rgba(226,199,115,.22); overflow-y: auto; transition: transform .22s ease; }
+.feature-drawer, .resource-drawer { left: 0; width: 82vw; transform: translateX(-104%); }
+.recent-drawer { right: 0; width: 82vw; transform: translateX(104%); border-right: 0; border-left: 1rpx solid rgba(226,199,115,.22); }
+.drawer-show { transform: translateX(0); }
+.drawer-top, .recent-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20rpx; }
+.drawer-top text { display: block; color: rgba(239,216,141,.72); font-size: 24rpx; font-weight: 800; }
+.drawer-top b, .recent-top b { display: block; color: #fff6dc; font-size: 34rpx; font-weight: 900; }
+.drawer-close, .drawer-actions button { width: 72rpx; height: 72rpx; padding: 0; border-radius: 22rpx; color: #efd482; background: rgba(255,255,255,.055); border: 1rpx solid rgba(255,255,255,.13); font-size: 30rpx; }
+.group-tabs { display: grid; grid-template-columns: repeat(3,1fr); gap: 10rpx; margin-bottom: 20rpx; }
+.group-tabs text { height: 60rpx; display: flex; align-items: center; justify-content: center; border-radius: 12rpx; color: #f7f1de; background: rgba(255,255,255,.045); border: 1rpx solid rgba(255,255,255,.09); font-size: 24rpx; font-weight: 800; }
+.group-tabs text.active { color: #171208; background: linear-gradient(135deg,#fff1b8,#d6a942); }
+.feature-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 14rpx; }
+.feature-btn { min-height: 102rpx; padding: 14rpx 16rpx; border-radius: 16rpx; background: rgba(255,255,255,.045); border: 1rpx solid rgba(255,255,255,.1); }
+.feature-btn.active { border-color: rgba(226,199,115,.65); background: rgba(226,199,115,.11); }
+.feature-tag { display: inline-flex; padding: 3rpx 10rpx; border-radius: 999rpx; color: #171208; background: #e9c85e; font-size: 18rpx; font-weight: 900; }
+.feature-btn b { display: block; margin-top: 8rpx; color: #fff6dc; font-size: 26rpx; font-weight: 900; }
+.drawer-section { margin-top: 26rpx; }
+.hint-line, .empty-drawer { padding: 18rpx; border-radius: 16rpx; color: rgba(255,246,220,.6); background: rgba(255,255,255,.04); font-size: 24rpx; }
+.switch-row, .option-row { min-height: 70rpx; display: flex; align-items: center; justify-content: space-between; color: #fff6dc; font-size: 26rpx; }
+.option-picker { min-width: 180rpx; height: 64rpx; display: flex; align-items: center; justify-content: center; border-radius: 16rpx; color: #fff6dc; background: rgba(255,255,255,.055); }
+.mini-pills { display: flex; gap: 12rpx; }
+.mini-pills button { flex: 1; height: 66rpx; border-radius: 16rpx; background: rgba(255,255,255,.055); color: #fff6dc; }
+.mini-pills button.active { color: #171208; background: #e9c85e; }
+.search-box { height: 72rpx; display: flex; align-items: center; gap: 14rpx; padding: 0 22rpx; margin-bottom: 16rpx; border-radius: 18rpx; border: 1rpx solid rgba(255,255,255,.1); background: rgba(255,255,255,.035); color: rgba(255,246,220,.7); }
+.search-box input { flex: 1; color: #fff6dc; }
+.space-picker { height: 68rpx; display: flex; align-items: center; justify-content: space-between; padding: 0 22rpx; margin-bottom: 18rpx; border-radius: 16rpx; color: #fff6dc; background: rgba(255,255,255,.04); border: 1rpx solid rgba(255,255,255,.1); }
+.resource-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 16rpx; }
+.upload-resource, .resource-tile { min-height: 172rpx; border-radius: 18rpx; overflow: hidden; background: rgba(255,255,255,.04); border: 1rpx solid rgba(255,255,255,.1); }
+.upload-resource { display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff6dc; font-size: 24rpx; }
+.upload-resource text { font-size: 44rpx; color: #efd482; }
+.resource-tile.active { border-color: rgba(226,199,115,.75); }
+.resource-tile image, .resource-empty-thumb { width: 100%; height: 112rpx; display: flex; align-items: center; justify-content: center; color: #efd482; background: rgba(226,199,115,.08); }
+.resource-tile b { display: block; padding: 9rpx 10rpx 0; color: #fff6dc; font-size: 20rpx; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.resource-tile text { display: block; padding: 2rpx 10rpx 10rpx; color: rgba(255,246,220,.54); font-size: 17rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.drawer-actions { display: flex; gap: 12rpx; }
+.recent-list { display: flex; flex-direction: column; gap: 18rpx; }
+.recent-card { display: flex; gap: 16rpx; padding: 16rpx; border-radius: 20rpx; border: 1rpx solid rgba(255,255,255,.1); background: rgba(255,255,255,.045); }
+.recent-image { width: 130rpx; height: 130rpx; flex: 0 0 130rpx; border-radius: 16rpx; overflow: hidden; display: flex; align-items: center; justify-content: center; background: rgba(226,199,115,.1); color: #efd482; }
+.recent-image image { width: 100%; height: 100%; }
+.recent-copy { flex: 1; min-width: 0; }
+.green-pill { height: 42rpx; display: flex; align-items: center; padding: 0 18rpx; border-radius: 999rpx; color: #fff; background: #06c968; font-size: 23rpx; font-weight: 900; }
+.recent-copy text, .recent-copy small { display: block; margin-top: 11rpx; color: rgba(255,246,220,.58); font-size: 23rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.drawer-more { margin-top: 20rpx; }
+.error-card { margin: 18rpx 0; padding: 18rpx; border-radius: 18rpx; background: rgba(255,112,112,.08); color: #ffb4a8; border: 1rpx solid rgba(255,112,112,.22); font-size: 24rpx; }
 </style>

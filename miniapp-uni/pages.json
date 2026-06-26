@@ -8,16 +8,9 @@
       }
     },
     {
-      "path": "pages/index/index",
-      "style": {
-        "navigationBarTitleText": "勋港家具 AI",
-        "navigationStyle": "custom"
-      }
-    },
-    {
       "path": "pages/workbench/index",
       "style": {
-        "navigationBarTitleText": "勋港家具 AI",
+        "navigationBarTitleText": "工作台",
         "navigationStyle": "custom"
       }
     },
@@ -46,37 +39,9 @@
   "globalStyle": {
     "navigationBarTextStyle": "white",
     "navigationBarTitleText": "勋港家具 AI",
-    "navigationBarBackgroundColor": "#0C1015",
-    "backgroundColor": "#0C1015",
+    "navigationBarBackgroundColor": "#07080a",
+    "backgroundColor": "#07080a",
     "navigationStyle": "custom"
-  },
-  "tabBar": {
-    "color": "#CFC8B8",
-    "selectedColor": "#F0D68A",
-    "backgroundColor": "#08090C",
-    "borderStyle": "black",
-    "list": [
-      {
-        "pagePath": "pages/index/index",
-        "text": "首页"
-      },
-      {
-        "pagePath": "pages/workbench/index",
-        "text": "工作台"
-      },
-      {
-        "pagePath": "pages/tasks/index",
-        "text": "任务"
-      },
-      {
-        "pagePath": "pages/resources/index",
-        "text": "资源库"
-      },
-      {
-        "pagePath": "pages/mine/index",
-        "text": "我的"
-      }
-    ]
   },
   "uniIdRouter": {}
 }

@@ -1,10 +1,9 @@
-import { getApiBaseUrl, isMockEnabled, setMockEnabled } from '../config/env.js';
+import { getApiBaseUrl } from '../config/env.js';
 import { clearLoginState, getToken as getStoredToken, setLoginState, TOKEN_KEY, USER_KEY, QUOTA_KEY } from './auth.js';
 
 export const AUTH_TOKEN_KEY = TOKEN_KEY;
 export const AUTH_USER_KEY = USER_KEY;
 export const AUTH_QUOTA_KEY = QUOTA_KEY;
-export const MOCK_TOKEN_KEY = 'miniapp_mock_token';
 
 let isRedirectingLogin = false;
 
@@ -225,7 +224,5 @@ export const post = (url, data = {}, options = {}) => request({ ...options, url,
 export const put = (url, data = {}, options = {}) => request({ ...options, url, method: 'PUT', data });
 export const patch = (url, data = {}, options = {}) => request({ ...options, url, method: 'PATCH', data });
 export const del = (url, data = {}, options = {}) => request({ ...options, url, method: 'DELETE', data });
-export const useMockApi = isMockEnabled;
-export const setUseMockApi = setMockEnabled;
 
 export default request;

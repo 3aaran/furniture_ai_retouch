@@ -3,8 +3,6 @@ export const USER_KEY = 'user';
 export const QUOTA_KEY = 'quota';
 
 const LEGACY_TOKEN_KEY = 'miniapp_auth_token';
-const MOCK_TOKEN_KEY = 'miniapp_mock_token';
-const MOCK_USER_KEY = 'miniapp_mock_user';
 const LOGIN_URL = '/pages/login/index';
 
 let isRedirectingLogin = false;
@@ -36,8 +34,6 @@ export function clearLoginState() {
   uni.removeStorageSync(USER_KEY);
   uni.removeStorageSync(QUOTA_KEY);
   uni.removeStorageSync(LEGACY_TOKEN_KEY);
-  uni.removeStorageSync(MOCK_TOKEN_KEY);
-  uni.removeStorageSync(MOCK_USER_KEY);
 }
 
 export function isLoggedIn() {
