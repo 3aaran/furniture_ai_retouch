@@ -114,3 +114,28 @@ test('workbench distinguishes product origin resource selection from reference r
   assert.match(workbench, /selectOriginResource/);
   assert.match(workbench, /resourcePickTarget === 'origin'/);
 });
+
+test('miniapp login follows WeChat authorization flow before manual fallback', () => {
+  const login = read('pages/login/index.vue');
+  const authApi = read('api/auth.js');
+  const server = fs.readFileSync(new URL('../../backend/src/server.js', import.meta.url), 'utf8');
+  const db = fs.readFileSync(new URL('../../backend/src/db.js', import.meta.url), 'utf8');
+
+  assert.match(login, /open-type="getPhoneNumber"/);
+  assert.match(login, /@getphonenumber="handleWechatPhoneLogin"/);
+  assert.match(login, /tryWechatSilentLogin/);
+  assert.match(login, /wechatSilentLogin/);
+  assert.match(login, /wechatPhoneLogin/);
+  assert.match(authApi, /\/api\/auth\/wechat\/silent-login/);
+  assert.match(authApi, /\/api\/auth\/wechat\/phone-login/);
+  assert.match(server, /app\.post\('\/api\/auth\/wechat\/silent-login'/);
+  assert.match(server, /app\.post\('\/api\/auth\/wechat\/phone-login'/);
+  assert.match(server, /jscode2session/);
+  assert.match(server, /getuserphonenumber/);
+  assert.match(server, /getWechatPhoneIdentityStatus/);
+  assert.match(server, /APPLICATION_PENDING/);
+  assert.match(server, /NOT_FOUND/);
+  assert.match(login, /不发送验证码/);
+  assert.match(db, /wechat_openid/);
+  assert.match(db, /wechat_bound_at/);
+});

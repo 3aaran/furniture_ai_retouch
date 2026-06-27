@@ -40,6 +40,16 @@ async function ensureColumn(table, column, definition, afterColumn = '') {
   }
 }
 
+async function ensureIndex(table, indexName, definition) {
+  const [rows] = await pool.query(
+    'SELECT INDEX_NAME FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=? AND INDEX_NAME=? LIMIT 1',
+    [table, indexName]
+  );
+  if (!rows.length) {
+    await pool.query(`ALTER TABLE ${table} ADD ${definition}`);
+  }
+}
+
 export async function initDb(){
   // AUTO_INIT_DB=false 用于线上跳过自动初始化。
   if (!envFlag('AUTO_INIT_DB', true)) {
@@ -81,6 +91,9 @@ export async function initDb(){
     avatar_url VARCHAR(500) NULL,
     company_name VARCHAR(160) NULL,
     password_hash VARCHAR(255) NULL,
+    wechat_openid VARCHAR(64) NULL,
+    wechat_unionid VARCHAR(64) NULL,
+    wechat_bound_at DATETIME NULL,
     role ENUM('SYSTEM_ADMIN','MERCHANT_OWNER','MERCHANT_ADMIN','STAFF','TRIAL') NOT NULL,
     quota_balance INT NOT NULL DEFAULT 0,
     storage_limit_bytes BIGINT NOT NULL DEFAULT ${DEFAULT_USER_STORAGE_LIMIT_BYTES},
@@ -96,6 +109,10 @@ export async function initDb(){
     CONSTRAINT fk_users_merchant FOREIGN KEY(merchant_id) REFERENCES merchants(id) ON DELETE SET NULL
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`);
   await ensureColumn('users', 'avatar_url', 'VARCHAR(500) NULL', 'display_name');
+  await ensureColumn('users', 'wechat_openid', 'VARCHAR(64) NULL', 'password_hash');
+  await ensureColumn('users', 'wechat_unionid', 'VARCHAR(64) NULL', 'wechat_openid');
+  await ensureColumn('users', 'wechat_bound_at', 'DATETIME NULL', 'wechat_unionid');
+  await ensureIndex('users', 'uniq_users_wechat_openid', 'UNIQUE INDEX uniq_users_wechat_openid (wechat_openid)');
   await ensureColumn('users', 'storage_limit_bytes', `BIGINT NOT NULL DEFAULT ${DEFAULT_USER_STORAGE_LIMIT_BYTES}`, 'quota_balance');
   await ensureColumn('users', 'storage_used_bytes', 'BIGINT NOT NULL DEFAULT 0', 'storage_limit_bytes');
   await pool.query(`CREATE TABLE IF NOT EXISTS merchant_applications (

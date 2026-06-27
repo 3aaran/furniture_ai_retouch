@@ -18,7 +18,7 @@ function saveLoginToken(response) {
   const quota = getAuthQuotaFromResponse(response || {}, user);
 
   if (!token) {
-    console.warn('[miniapp-auth] 登录接口返回中未找到 token/accessToken/data.token/data.accessToken', response);
+    if (!response?.needPhoneAuth) console.warn('[miniapp-auth] 登录接口返回中未找到 token/accessToken/data.token/data.accessToken', response);
     return response;
   }
 
@@ -42,6 +42,14 @@ export function verifySmsCode(payload) {
 
 export function loginByCode(payload) {
   return post('/api/auth/code-login', payload, { auth: false, loadingText: '登录中' }).then(saveLoginToken);
+}
+
+export function wechatSilentLogin(payload) {
+  return post('/api/auth/wechat/silent-login', payload, { auth: false, showLoading: false, showErrorToast: false }).then(saveLoginToken);
+}
+
+export function wechatPhoneLogin(payload) {
+  return post('/api/auth/wechat/phone-login', payload, { auth: false, loadingText: '登录中' }).then(saveLoginToken);
 }
 
 // 后端保留的旧登录验证码入口；小程序默认优先使用 /api/sms/send-code。

@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
 import bcrypt from 'bcryptjs';
+import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
@@ -72,6 +73,133 @@ function readAppConfigValue(key, fallback = '') {
   } catch {
     return fallback;
   }
+}
+
+let wxAccessTokenCache = { token: '', expiresAt: 0 };
+function wxMiniConfig() {
+  return {
+    appid: String(process.env.WX_MINIAPP_APPID || process.env.WECHAT_MINIAPP_APPID || '').trim(),
+    secret: String(process.env.WX_MINIAPP_SECRET || process.env.WECHAT_MINIAPP_SECRET || '').trim()
+  };
+}
+function assertWxMiniConfig() {
+  const cfg = wxMiniConfig();
+  if (!cfg.appid || !cfg.secret) {
+    const err = new Error('微信小程序登录未配置，请设置 WX_MINIAPP_APPID 和 WX_MINIAPP_SECRET');
+    err.status = 500;
+    throw err;
+  }
+  return cfg;
+}
+async function getWechatSession(code) {
+  const jsCode = String(code || '').trim();
+  if (!jsCode) {
+    const err = new Error('缺少微信登录 code');
+    err.status = 400;
+    throw err;
+  }
+  const cfg = assertWxMiniConfig();
+  const { data } = await axios.get('https://api.weixin.qq.com/sns/jscode2session', {
+    timeout: 10000,
+    params: { appid: cfg.appid, secret: cfg.secret, js_code: jsCode, grant_type: 'authorization_code' }
+  });
+  if (!data?.openid) {
+    const err = new Error(data?.errmsg || '微信静默登录失败');
+    err.status = 400;
+    throw err;
+  }
+  return data;
+}
+async function getWechatAccessToken() {
+  const now = Date.now();
+  if (wxAccessTokenCache.token && wxAccessTokenCache.expiresAt > now + 60000) return wxAccessTokenCache.token;
+  const cfg = assertWxMiniConfig();
+  const { data } = await axios.get('https://api.weixin.qq.com/cgi-bin/token', {
+    timeout: 10000,
+    params: { grant_type: 'client_credential', appid: cfg.appid, secret: cfg.secret }
+  });
+  if (!data?.access_token) {
+    const err = new Error(data?.errmsg || '获取微信 access_token 失败');
+    err.status = 400;
+    throw err;
+  }
+  wxAccessTokenCache = { token: data.access_token, expiresAt: now + Math.max(300, Number(data.expires_in || 7200) - 120) * 1000 };
+  return wxAccessTokenCache.token;
+}
+async function getWechatPhoneNumber(phoneCode) {
+  const code = String(phoneCode || '').trim();
+  if (!code) {
+    const err = new Error('缺少微信手机号授权 code');
+    err.status = 400;
+    throw err;
+  }
+  const accessToken = await getWechatAccessToken();
+  const { data } = await axios.post(
+    `https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=${encodeURIComponent(accessToken)}`,
+    { code },
+    { timeout: 10000 }
+  );
+  const phone = String(data?.phone_info?.phoneNumber || data?.phone_info?.purePhoneNumber || '').trim();
+  if (!phone) {
+    const err = new Error(data?.errmsg || '获取微信手机号失败');
+    err.status = 400;
+    throw err;
+  }
+  return { phone, phoneInfo: data.phone_info || {} };
+}
+async function assertLoginUserAvailable(user) {
+  if (!user) {
+    const err = new Error('账号不存在');
+    err.status = 404;
+    throw err;
+  }
+  if (user.status !== 'ACTIVE') {
+    const err = new Error('账号已被禁用');
+    err.status = 403;
+    throw err;
+  }
+  if (user.role === 'TRIAL') {
+    const trial = await recycleExpiredTrialAccount(user);
+    if (trial.expired) {
+      const err = new Error('体验账号已过期，账号已删除，剩余额度已退回门店额度池');
+      err.status = 403;
+      throw err;
+    }
+  }
+  if (user.merchant_id) {
+    const [[m]] = await pool.query('SELECT status FROM merchants WHERE id=?', [user.merchant_id]);
+    if (!m || m.status !== 'ACTIVE') {
+      const err = new Error('所属门店已被平台禁用');
+      err.status = 403;
+      throw err;
+    }
+  }
+}
+async function loginResponseForUser(user) {
+  await assertLoginUserAvailable(user);
+  const [[fresh]] = await pool.query('SELECT * FROM users WHERE id=? LIMIT 1', [user.id]);
+  return { token: sign(fresh || user), user: await publicMe(fresh || user) };
+}
+async function getWechatPhoneIdentityStatus(phone) {
+  const [users] = await pool.query('SELECT * FROM users WHERE phone=? AND status<>"DELETED" LIMIT 1', [phone]);
+  if (users[0]) return { type: 'USER', user: users[0] };
+
+  const [applications] = await pool.query(
+    'SELECT id,status,company_name companyName,contact_name contactName,reject_reason rejectReason,created_at createdAt FROM merchant_applications WHERE phone=? ORDER BY created_at DESC LIMIT 1',
+    [phone]
+  );
+  if (applications[0]) {
+    const app = applications[0];
+    const status = String(app.status || '').toUpperCase();
+    if (status === 'PENDING') return { type: 'APPLICATION_PENDING', application: app, message: '该手机号的入驻申请正在审核中，请等待管理员审核通过后再登录' };
+    if (status === 'REJECTED') return { type: 'APPLICATION_REJECTED', application: app, message: app.rejectReason ? `入驻申请已被拒绝：${app.rejectReason}` : '该手机号的入驻申请已被拒绝，请联系平台管理员' };
+    if (status === 'APPROVED') return { type: 'APPLICATION_APPROVED_NO_USER', application: app, message: '该手机号的入驻申请已通过，但未找到登录账号，请联系平台管理员处理' };
+  }
+
+  const [merchants] = await pool.query('SELECT id,status,company_name companyName,contact_name contactName FROM merchants WHERE phone=? LIMIT 1', [phone]);
+  if (merchants[0]) return { type: 'MERCHANT_NO_USER', merchant: merchants[0], message: '该手机号已存在门店信息，但未找到登录账号，请联系平台管理员处理' };
+
+  return { type: 'NOT_FOUND', message: '该手机号未开通账号，请先提交入驻申请或联系门店管理员' };
 }
 
 const APP_NAME = process.env.APP_NAME || readConfiguredAppName() || '家具修图';
@@ -287,6 +415,47 @@ async function createAndSendSmsCode(req, scene){
   );
   return phone;
 }
+
+app.post('/api/auth/wechat/silent-login', async (req,res)=>{
+  try {
+    const session = await getWechatSession(req.body.code);
+    const [rows] = await pool.query('SELECT * FROM users WHERE wechat_openid=? AND status<>"DELETED" LIMIT 1', [session.openid]);
+    const user = rows[0];
+    if (!user) {
+      return res.json({ success: true, needPhoneAuth: true, message: '请授权手机号完成登录' });
+    }
+    return res.json({ ...(await loginResponseForUser(user)), success: true, needPhoneAuth: false });
+  } catch (e) {
+    return res.status(e.status || 500).json({ success: false, message: e.message || '微信静默登录失败' });
+  }
+});
+
+app.post('/api/auth/wechat/phone-login', async (req,res)=>{
+  try {
+    const session = await getWechatSession(req.body.loginCode || req.body.code);
+    const phoneResult = await getWechatPhoneNumber(req.body.phoneCode);
+    const phone = phoneResult.phone;
+    if (!validPhone(phone)) return res.status(400).json({ success: false, message: '微信返回的手机号格式不正确' });
+
+    const identity = await getWechatPhoneIdentityStatus(phone);
+    if (identity.type !== 'USER') {
+      const statusCode = identity.type === 'NOT_FOUND' ? 404 : 409;
+      return res.status(statusCode).json({ success: false, needApplication: identity.type === 'NOT_FOUND', identityType: identity.type, phone, message: identity.message });
+    }
+    const user = identity.user;
+
+    const [openidRows] = await pool.query('SELECT id,phone FROM users WHERE wechat_openid=? AND id<>? AND status<>"DELETED" LIMIT 1', [session.openid, user.id]);
+    if (openidRows.length) return res.status(409).json({ success: false, message: '当前微信已绑定其他账号，请联系管理员处理' });
+    if (user.wechat_openid && user.wechat_openid !== session.openid) return res.status(409).json({ success: false, message: '该手机号已绑定其他微信，请联系管理员处理' });
+
+    await assertLoginUserAvailable(user);
+    await pool.query('UPDATE users SET wechat_openid=?, wechat_unionid=?, wechat_bound_at=COALESCE(wechat_bound_at,NOW()) WHERE id=?', [session.openid, session.unionid || user.wechat_unionid || null, user.id]);
+    const [[fresh]] = await pool.query('SELECT * FROM users WHERE id=? LIMIT 1', [user.id]);
+    return res.json({ ...(await loginResponseForUser(fresh || user)), success: true, needPhoneAuth: false, phone });
+  } catch (e) {
+    return res.status(e.status || 500).json({ success: false, message: e.message || '微信手机号登录失败' });
+  }
+});
 
 app.post('/api/auth/login', async (req,res)=>{
   const identifier=String(req.body.identifier||req.body.username||req.body.phone||'').trim();
