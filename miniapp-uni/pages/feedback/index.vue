@@ -3,8 +3,13 @@
     <app-topbar title="" subtitle="" :avatar-text="topbarAvatar" show-back back-url="/pages/mine/index" @profile="goMine" />
 
     <view class="page-head">
-      <b>问题反馈</b>
-      <text>提交后平台管理员会在后台统一处理</text>
+      <view class="page-head-main">
+        <view class="page-icon"><app-icon name="message" tone="dark" :size="34" /></view>
+        <view class="page-title-text">
+          <b>问题反馈</b>
+          <text>提交后平台管理员会在后台统一处理</text>
+        </view>
+      </view>
     </view>
 
     <view v-if="errorText" class="error-card">{{ errorText }}</view>
@@ -77,9 +82,6 @@ export default {
 </script>
 
 <style>
-.page-head { margin: 24rpx 0 18rpx; }
-.page-head b { display: block; color: #fff6dc; font-size: 38rpx; font-weight: 900; }
-.page-head text { display: block; margin-top: 6rpx; color: rgba(255,246,220,.58); font-size: 24rpx; }
 .form-card { display: grid; gap: 20rpx; padding: 24rpx; border-radius: 28rpx; background: #111317; border: 1rpx solid rgba(255,255,255,.09); }
 .form-card label { display: grid; gap: 12rpx; }
 .form-card label text { color: rgba(255,246,220,.72); font-size: 25rpx; font-weight: 800; }

@@ -80,3 +80,37 @@ test('users page keeps mini-program template expressions simple', () => {
   assert.doesNotMatch(users, /<template[\s\S]*@click="[^"]*=[^"]*"[\s\S]*<\/template>/);
   assert.match(users, /viewItems/);
 });
+
+test('workbench template attributes do not compile into multiline WXML values', () => {
+  const workbench = read('pages/workbench/index.vue');
+  assert.doesNotMatch(workbench, /&#(?:10|13);|&#x0*[ad];/i);
+});
+
+test('workbench feature drawer keeps function selection open and shows resource references inline', () => {
+  const workbench = read('pages/workbench/index.vue');
+  assert.doesNotMatch(workbench, /selectFeature\(key\)\s*\{[^}]*closeDrawer\(\)/, 'selecting a feature must not close the feature drawer');
+  assert.match(workbench, /v-if="needsResource"[\s\S]*resource-grid/, 'material and scene features must show reference resources inside the feature drawer');
+  assert.match(workbench, /featureMatchesResource/, 'resource filtering must tolerate real category data, not only exact resourceType values');
+});
+
+test('resources page follows Web space and purpose classification', () => {
+  const resources = read('pages/resources/index.vue');
+  assert.match(resources, /系统空间/);
+  assert.match(resources, /门店空间/);
+  assert.match(resources, /我的空间/);
+  assert.match(resources, /产品图/);
+  assert.match(resources, /材质替换/);
+  assert.match(resources, /场景融合/);
+  assert.match(resources, /normalizeSpaceKey/);
+  assert.match(resources, /filterResourcesBySpaceAndPurpose/);
+  assert.doesNotMatch(resources, /spaceTabs:\s*\[[\s\S]*\{ key: 'ALL'/, 'resource library must not use a mixed all-space tab as the primary Web-style category');
+});
+
+test('workbench distinguishes product origin resource selection from reference resources', () => {
+  const workbench = read('pages/workbench/index.vue');
+  assert.match(workbench, /resourcePickTarget/);
+  assert.match(workbench, /openResourceDrawer\('origin'\)/);
+  assert.match(workbench, /openResourceDrawer\('reference'\)/);
+  assert.match(workbench, /selectOriginResource/);
+  assert.match(workbench, /resourcePickTarget === 'origin'/);
+});

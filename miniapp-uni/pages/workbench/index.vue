@@ -6,14 +6,14 @@
 
     <view class="metric-row">
       <view class="metric-card" @click="openDrawer('features')">
-        <view class="metric-icon">▰</view>
+        <view class="metric-icon"><app-icon name="layers" :size="34" /></view>
         <view class="metric-copy">
           <text>{{ currentFeatureMode }}</text>
           <b>{{ currentFeature.name }}</b>
         </view>
       </view>
       <view class="metric-card" @click="openDrawer('recent')">
-        <view class="metric-icon">◎</view>
+        <view class="metric-icon"><app-icon name="eye" :size="34" /></view>
         <view class="metric-copy">
           <text>最近生成</text>
           <b>{{ recentTasks.length }}</b>
@@ -22,13 +22,13 @@
     </view>
 
     <view class="work-card upload-card">
-      <view class="block-title">产品原图</view>
+      <view class="block-title"><app-icon name="image" :size="34" />产品原图</view>
       <view class="upload-zone" @click="chooseInputImage">
         <view v-if="!originImage" class="upload-empty">
-          <view class="upload-plus">＋</view>
+          <view class="upload-plus"><app-icon name="upload" tone="dark" :size="44" /></view>
           <b>点击上传家具图片</b>
           <text>或</text>
-          <view class="resource-select-btn" @click.stop="openDrawer('resources')">从资源库选择</view>
+          <view class="resource-select-btn" @click.stop="openResourceDrawer('origin')">从资源库选择</view>
         </view>
         <view v-else class="upload-preview">
           <image v-if="originImage.imageUrl" :src="originImage.imageUrl" mode="aspectFill" />
@@ -42,7 +42,7 @@
 
     <view :class="['ref-card', referenceOpen ? 'is-open' : '']">
       <view class="ref-header" @click="referenceOpen = !referenceOpen">
-        <view class="fold-title">参考图（可选）</view>
+        <view class="fold-title"><app-icon name="image" :size="34" />参考图</view>
         <view class="fold-state">
           <text>{{ referenceStateText }}</text>
           <view class="fold-arrow">{{ referenceOpen ? '⌃' : '⌄' }}</view>
@@ -52,11 +52,11 @@
         <view class="ref-upload" @click="chooseReferenceImage">
           <image v-if="referenceImage && referenceImage.imageUrl" :src="referenceImage.imageUrl" mode="aspectFill" />
           <template v-else>
-            <text>＋</text>
+            <app-icon name="plus" :size="48" />
             <b>上传参考图</b>
           </template>
         </view>
-        <button class="secondary-btn ref-resource-btn" @click="openDrawer('resources')">从资源库选择</button>
+        <button class="secondary-btn ref-resource-btn" @click="openResourceDrawer('reference')">从资源库选择</button>
         <view v-if="selectedResource" class="selected-tip">已选择资源模板：{{ selectedResource.name }}</view>
       </view>
     </view>
@@ -93,7 +93,7 @@
           <text>生图功能</text>
           <b>{{ currentFeature.name }}</b>
         </view>
-        <button class="drawer-close" @click="closeDrawer">×</button>
+        <button class="drawer-close" @click="closeDrawer"><app-icon name="x" :size="28" /></button>
       </view>
       <view class="group-tabs">
         <text v-for="group in featureGroups" :key="group.key" :class="[featureGroup === group.key ? 'active' : '', group.key === 'video' ? 'is-coming' : '']" @click="selectFeatureGroup(group.key)">{{ group.name }}</text>
@@ -103,18 +103,45 @@
           <text class="feature-tag">{{ feature.tag }}</text>
           <b>{{ feature.name }}</b>
         </view>
-        <view v-if="!drawerFeatures.length" class="empty-drawer">当前分类暂无真实功能</view>
+        <view v-if="!drawerFeatures.length" class="empty-drawer">当前分类暂无功能</view>
       </view>
       <view class="drawer-section">
-        <view class="hint-line">当前参数：{{ optionsSummary }}</view>
+        <view v-if="needsResource" class="feature-resource-panel">
+          <view class="feature-desc-row">
+            <text>✓</text>
+            <b>{{ currentFeature.desc }}</b>
+          </view>
+          <view class="search-box feature-search-box">
+            <app-icon name="search" :size="28" />
+            <input v-model="resourceKeyword" placeholder="搜索资源..." />
+          </view>
+          <picker :range="resourceScopeNames" :value="resourceScopeIndex" @change="changeResourceScope">
+            <view class="space-picker">{{ resourceScopes[resourceScopeIndex] ? resourceScopes[resourceScopeIndex].name : '系统空间' }}<text>⌄</text></view>
+          </picker>
+          <view class="resource-section-title">{{ resourceSectionTitle }}</view>
+          <view class="resource-grid feature-resource-grid">
+            <view class="upload-resource" @click="chooseReferenceImage">
+              <app-icon name="upload" :size="42" />
+              <b>上传</b>
+            </view>
+            <view v-for="item in filteredResources" :key="item.id" :class="['resource-tile', selectedResource && selectedResource.id === item.id ? 'active' : '']" @click="selectFeatureResource(item)">
+              <image v-if="item.image" :src="item.image" mode="aspectFill" />
+              <view v-else class="resource-empty-thumb">图</view>
+              <b>{{ item.name }}</b>
+              <text>{{ item.categoryText }}</text>
+            </view>
+          </view>
+          <view v-if="!filteredResources.length" class="empty-drawer">暂无资源，切换空间或在资源库上传后再试</view>
+        </view>
+        <view v-else class="hint-line">当前参数：{{ optionsSummary }}</view>
         <view v-if="isPromotionSelected" class="option-stack promo-options">
           <view v-for="field in promotionFields" :key="field.key" class="option-row">
-            <text>{{ field.label }}</text>
+            <text class="icon-label">{{ field.label }}</text>
             <picker :range="field.choices" :value="field.choices.indexOf(promotionOptionValue(field.key))" @change="changePromotionOption(field.key, field.choices[$event.detail.value])">
               <view class="option-picker">{{ promotionOptionValue(field.key) }}</view>
             </picker>
           </view>
-          <textarea v-if="selectedFeatureKey === 'promo_poster_image' && promotionOptionValue('posterTextMode') === 'custom'" class="promo-textarea" v-model="promotionOptions.promo_poster_image.posterText" placeholder="例如：舒适入座&#10;自然木质" />
+          <textarea v-if="selectedFeatureKey === 'promo_poster_image' && promotionOptionValue('posterTextMode') === '自定义文案'" class="promo-textarea" v-model="promotionOptions.promo_poster_image.posterText" placeholder="例如：舒适入座，自然木质" />
         </view>
         <view v-else-if="selectedFeatureKey === 'remove_bg'" class="option-stack">
           <label class="switch-row"><checkbox :checked="removeOpts.whiteBg" @click="removeOpts.whiteBg = !removeOpts.whiteBg" /> <text>白底图</text></label>
@@ -136,40 +163,40 @@
           <text>{{ resourceLabel }}</text>
           <b>{{ resourceDrawerTitle }}</b>
         </view>
-        <button class="drawer-close" @click="closeDrawer">×</button>
+        <button class="drawer-close" @click="closeDrawer"><app-icon name="x" :size="28" /></button>
       </view>
       <view class="search-box">
-        <text>⌕</text>
+        <app-icon name="search" :size="28" />
         <input v-model="resourceKeyword" placeholder="搜索资源..." />
       </view>
       <picker :range="resourceScopeNames" :value="resourceScopeIndex" @change="changeResourceScope">
         <view class="space-picker">{{ resourceScopes[resourceScopeIndex] ? resourceScopes[resourceScopeIndex].name : '全部空间' }}<text>⌄</text></view>
       </picker>
       <view class="resource-grid">
-        <view class="upload-resource" @click="chooseInputImage">
-          <text>＋</text>
+        <view class="upload-resource" @click="chooseResourceUpload">
+          <app-icon name="upload" :size="42" />
           <b>上传</b>
         </view>
-        <view v-for="item in filteredResources" :key="item.id" :class="['resource-tile', selectedResource && selectedResource.id === item.id ? 'active' : '']" @click="selectResource(item)">
+        <view v-for="item in filteredResources" :key="item.id" :class="['resource-tile', resourceTileActive(item) ? 'active' : '']" @click="selectResource(item)">
           <image v-if="item.image" :src="item.image" mode="aspectFill" />
           <view v-else class="resource-empty-thumb">图</view>
           <b>{{ item.name }}</b>
           <text>{{ item.categoryText }}</text>
         </view>
       </view>
-      <view v-if="!filteredResources.length" class="empty-drawer">暂无真实资源数据</view>
+      <view v-if="!filteredResources.length" class="empty-drawer">暂无资源</view>
     </view>
 
     <view :class="['recent-drawer', activeDrawer === 'recent' ? 'drawer-show' : '']">
       <view class="recent-top">
         <b>最近图片</b>
         <view class="drawer-actions">
-          <button @click="loadRecent">↻</button>
-          <button @click="closeDrawer">×</button>
+          <button @click="loadRecent"><app-icon name="refresh" :size="28" /></button>
+          <button @click="closeDrawer"><app-icon name="x" :size="28" /></button>
         </view>
       </view>
       <view class="search-box">
-        <text>⌕</text>
+        <app-icon name="search" :size="28" />
         <input v-model="recentKeyword" placeholder="搜索任务编号..." />
       </view>
       <view class="recent-list">
@@ -219,14 +246,14 @@ const promoFeatures = [
 ];
 const promotionOptionDefaults = {
   promo_main_image: { mainBackground: '暖灰渐变商业摄影背景', mainComposition: '主体居中', mainWhitespace: '少量留白' },
-  promo_poster_image: { posterTextMode: 'auto', posterText: '', posterCopyPlacement: '右侧留白', posterTone: '温暖家居' },
+  promo_poster_image: { posterTextMode: '自动文案', posterText: '', posterCopyPlacement: '右侧留白', posterTone: '温暖家居' },
   promo_detail_image: { detailLayout: '四宫格', detailFocus: '材质纹理、边角工艺', detailTextMode: '留白不生成文字' }
 };
 const promotionOptionChoices = {
   mainBackground: ['暖灰渐变商业摄影背景', '浅米色高级背景', '米白色柔和光影', '极简空间背景'],
   mainComposition: ['主体居中', '左侧留白', '右侧留白', '主体偏下'],
   mainWhitespace: ['少量留白', '不留白', '顶部留白', '侧边留白'],
-  posterTextMode: ['auto', 'custom', 'none'],
+  posterTextMode: ['自动文案', '自定义文案', '不生成文字'],
   posterCopyPlacement: ['右侧留白', '左侧留白', '顶部留白', '下方留白'],
   posterTone: ['温暖家居', '现代简约', '高级质感', '自然木质'],
   detailLayout: ['四宫格', '三宫格', '拼合排版', '多区域细节'],
@@ -248,8 +275,8 @@ export default {
       featureGroup: 'base', resources: [], recentTasks: [], activeDrawer: '', selectedFeatureKey: 'material',
       inputImages: [], referenceImage: null, referenceOpen: false, selectedResource: null, custom: '', resolution: '2K', ratio: '自适应',
       removeOpts: { whiteBg: false, mirror: false }, enhanceOpts: { focus: false, angle: '不变' }, multiView: '三角度视图',
-      resourceScopeIndex: 0, resourceKeyword: '', recentKeyword: '', uploadBusy: false, submitBusy: false,
-      resourceScopes: [{ key: 'ALL', name: '系统空间' }, { key: 'SYSTEM', name: '系统素材' }, { key: 'MERCHANT', name: '门店素材' }, { key: 'USER', name: '个人素材' }],
+      resourceScopeIndex: 0, resourceKeyword: '', recentKeyword: '', uploadBusy: false, submitBusy: false, resourcePickTarget: 'reference',
+      resourceScopes: [{ key: 'SYSTEM', name: '系统空间' }, { key: 'MERCHANT', name: '门店空间' }, { key: 'USER', name: '个人空间' }, { key: 'ALL', name: '全部空间' }],
       enhanceAngles: ['不变', '正面', '45度', '侧面'], multiViewOptions: ['三角度视图', '四角度视图'], errorText: '',
       costSettings: {},
       promotionOptions: JSON.parse(JSON.stringify(promotionOptionDefaults))
@@ -271,8 +298,9 @@ export default {
     },
     drawerFeatures() { return this.features.filter((item) => item.group === this.featureGroup); },
     needsResource() { return this.selectedFeatureKey === 'material' || this.selectedFeatureKey === 'replace_bg'; },
-    resourceLabel() { return this.selectedFeatureKey === 'replace_bg' ? '场景模板（可选）' : '参考图（可选）'; },
-    resourceDrawerTitle() { return this.selectedFeatureKey === 'material' ? '选择材质' : this.selectedFeatureKey === 'replace_bg' ? '选择场景' : '选择参考素材'; },
+    resourceLabel() { if (this.resourcePickTarget === 'origin') return '产品原图'; return this.selectedFeatureKey === 'replace_bg' ? '场景模板（可选）' : '参考图（可选）'; },
+    resourceDrawerTitle() { if (this.resourcePickTarget === 'origin') return '选择产品图'; return this.selectedFeatureKey === 'material' ? '选择材质' : this.selectedFeatureKey === 'replace_bg' ? '选择场景' : '选择参考素材'; },
+    resourceSectionTitle() { return this.selectedFeatureKey === 'replace_bg' ? '场景融合资源' : '材质替换'; },
     originImage() { return this.inputImages[0] || null; },
     resolutionOptions() { return ['1K', '2K', '4K']; },
     ratioOptions() { return this.featureGroup === 'video' ? ['16:9', '9:16', '1:1', '4:3', '3:4'] : ['自适应', '1:1', '4:3', '3:4', '16:9']; },
@@ -282,11 +310,9 @@ export default {
       const kw = String(this.resourceKeyword || '').trim().toLowerCase();
       return this.resources.filter((item) => {
         if (scope !== 'ALL' && item.scope !== scope) return false;
-        if (this.selectedFeatureKey === 'material' && !['material', ''].includes(item.resourceType || item.type || '')) return false;
-        if (this.selectedFeatureKey === 'replace_bg' && (item.resourceType || item.type || '') !== 'scene') return false;
-        if (!['material', 'replace_bg'].includes(this.selectedFeatureKey) && !this.referenceOpen) return false;
+        if (this.resourcePickTarget === 'origin' ? !this.originMatchesResource(item) : !this.featureMatchesResource(item)) return false;
         if (!kw) return true;
-        return [item.name, item.objectName, item.colorName, item.description, item.mainCategoryName, item.subCategoryName].filter(Boolean).join(' ').toLowerCase().includes(kw);
+        return this.resourceSearchText(item).includes(kw);
       });
     },
     filteredRecentTasks() {
@@ -346,8 +372,8 @@ export default {
       } catch (error) { this.recentTasks = []; }
     },
     normalizeResource(item = {}) {
-      const scope = item.scope || item.space || '';
-      const type = item.resourceType || item.type || '';
+      const scope = String(item.scope || item.space || '').toUpperCase();
+      const type = String(item.resourceType || item.resource_type || item.type || '').toLowerCase();
       return { ...item, id: item.id, name: item.name || item.title || '未命名资源', image: normalizeFileUrl(imageOf(item)), imageUrl: normalizeFileUrl(imageOf(item)), scope, resourceType: type, typeText: type || '素材', categoryText: [item.mainCategoryName || item.objectName, item.subCategoryName || item.colorName].filter(Boolean).join(' / ') || '未分类' };
     },
     normalizeTask(item = {}) {
@@ -356,6 +382,7 @@ export default {
       return { ...item, id: item.id || item.taskId, featureName: name, featureShort: name.slice(0, 2), statusText: statusText(item.status || 'success'), createdAtText: fmtTime(item.createdAt || item.created_at), image: normalizeFileUrl(imageOf(item)) };
     },
     openDrawer(name) { this.activeDrawer = name; },
+    openResourceDrawer(target = 'reference') { this.resourcePickTarget = target; this.openDrawer('resources'); },
     closeDrawer() { this.activeDrawer = ''; },
     selectFeatureGroup(key) {
       if (key === 'video') {
@@ -367,13 +394,30 @@ export default {
       if (key === 'promotion' && !this.isPromotionSelected) this.selectedFeatureKey = 'promo_main_image';
       this.selectedResource = null;
     },
-    selectFeature(key) { this.selectedFeatureKey = key; const feature = this.features.find((item) => item.key === key); this.featureGroup = feature?.group || this.featureGroup; this.selectedResource = null; this.closeDrawer(); },
-    selectResource(item) { this.selectedResource = item; this.closeDrawer(); },
+    selectFeature(key) { this.selectedFeatureKey = key; const feature = this.features.find((item) => item.key === key); this.featureGroup = feature?.group || this.featureGroup; this.selectedResource = null; },
+    resourceSearchText(item = {}) { return [item.name, item.objectName, item.colorName, item.description, item.mainCategoryName, item.subCategoryName, item.categoryText, item.typeText, item.resourceType].filter(Boolean).join(' ').toLowerCase(); },
+    originMatchesResource(item = {}) {
+      const type = String(item.resourceType || item.type || '').toLowerCase();
+      const text = this.resourceSearchText(item);
+      return type === 'user_reference' || type === 'image' || text.includes('产品') || text.includes('原图') || text.includes('参考');
+    },
+    featureMatchesResource(item = {}) {
+      const type = String(item.resourceType || item.type || '').toLowerCase();
+      const text = this.resourceSearchText(item);
+      if (this.selectedFeatureKey === 'material') return type === 'material' || text.includes('材质') || text.includes('软体') || text.includes('布料') || text.includes('皮革') || text.includes('皮质') || text.includes('木纹');
+      if (this.selectedFeatureKey === 'replace_bg') return type === 'scene' || text.includes('场景') || text.includes('空间') || text.includes('客厅') || text.includes('卧室') || text.includes('餐厅') || text.includes('室内') || text.includes('背景');
+      return this.referenceOpen;
+    },
+    resourceTileActive(item = {}) { return this.resourcePickTarget === 'origin' ? !!(this.originImage && this.originImage.id === item.id) : !!(this.selectedResource && this.selectedResource.id === item.id); },
+    selectOriginResource(item = {}) { this.inputImages = [{ ...item, imageUrl: item.imageUrl || item.image, name: item.name || '资源图片' }]; this.selectedResource = null; this.referenceImage = null; },
+    selectFeatureResource(item) { this.selectedResource = item; },
+    selectResource(item) { if (this.resourcePickTarget === 'origin') this.selectOriginResource(item); else this.selectedResource = item; this.closeDrawer(); },
     promotionOptionValue(key) { return this.promotionOptions[this.selectedFeatureKey]?.[key] || promotionOptionDefaults[this.selectedFeatureKey]?.[key] || ''; },
     changePromotionOption(key, value) { this.promotionOptions = { ...this.promotionOptions, [this.selectedFeatureKey]: { ...(promotionOptionDefaults[this.selectedFeatureKey] || {}), ...(this.promotionOptions[this.selectedFeatureKey] || {}), [key]: value } }; },
     changeResourceScope(e) { this.resourceScopeIndex = Number(e.detail.value) || 0; },
     applyPendingFeature() { const key = uni.getStorageSync(FEATURE_KEY); if (key && this.features.some((item) => item.key === key)) { this.selectedFeatureKey = key; const feature = this.features.find((item) => item.key === key); this.featureGroup = feature.group || 'base'; uni.removeStorageSync(FEATURE_KEY); } },
     applyPendingResource() { const resource = uni.getStorageSync(RESOURCE_KEY); if (resource && resource.id) { this.selectedResource = resource; uni.removeStorageSync(RESOURCE_KEY); } },
+    chooseResourceUpload() { if (this.resourcePickTarget === 'origin') return this.chooseInputImage(); return this.chooseReferenceImage(); },
     chooseInputImage() { if (this.uploadBusy) return; uni.chooseImage({ count: Math.max(1, 4 - this.inputImages.length), sizeType: ['compressed'], sourceType: ['album', 'camera'], success: async (res) => { for (const path of (res.tempFilePaths || [])) await this.uploadOne(path, 'source'); } }); },
     chooseReferenceImage() { if (this.uploadBusy) return; uni.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'], success: async (res) => { const path = (res.tempFilePaths || [])[0]; if (path) await this.uploadOne(path, 'reference'); } }); },
     async uploadOne(filePath, target = 'source') { this.uploadBusy = true; try { const response = await uploadImage(filePath, { source: target === 'reference' ? 'miniapp_workbench_reference' : 'miniapp_workbench' }); const image = response.image || response.data?.image || response.item || response.data || response; const next = { ...image, id: image.id || image.imageId, name: image.originalName || image.name || '上传图片', imageUrl: normalizeFileUrl(imageOf(image)) }; if (target === 'reference') this.referenceImage = next; else this.inputImages.push(next); } catch (error) { this.errorText = error.message || '上传失败'; } finally { this.uploadBusy = false; } },
@@ -392,13 +436,13 @@ export default {
 .metric-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12rpx; margin: 22rpx 0 18rpx; }
 .metric-card { min-height: 80rpx; display: flex; align-items: center; gap: 14rpx; padding: 14rpx 18rpx; border-radius: 22rpx; border: 1rpx solid rgba(255,255,255,.1); background: rgba(255,255,255,.045); }
 .metric-card:first-child { border-color: rgba(226,199,115,.34); background: linear-gradient(135deg, rgba(226,199,115,.16), rgba(255,255,255,.035)); }
-.metric-icon { width: 42rpx; color: #ecd17d; font-size: 34rpx; text-align: center; }
+.metric-icon { width: 42rpx; display: flex; align-items: center; justify-content: center; color: #ecd17d; }
 .metric-copy { min-width: 0; }
 .metric-copy text { display: block; color: rgba(239,216,141,.68); font-size: 21rpx; font-weight: 800; }
 .metric-copy b { display: block; margin-top: 2rpx; color: #fff6dc; font-size: 27rpx; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .work-card, .ref-card, .requirement-input { border-radius: 28rpx; border: 1rpx solid rgba(255,255,255,.09); background: linear-gradient(180deg, rgba(22,23,25,.96), rgba(13,14,16,.98)); }
 .upload-card { padding: 22rpx; }
-.block-title { color: #fff6dc; font-size: 32rpx; font-weight: 900; margin-bottom: 18rpx; }
+.block-title { display: flex; align-items: center; gap: 10rpx; color: #fff6dc; font-size: 32rpx; font-weight: 900; margin-bottom: 18rpx; }
 .upload-zone { min-height: 408rpx; border-radius: 24rpx; border: 2rpx dashed rgba(226,199,115,.4); background: rgba(255,255,255,.018); overflow: hidden; }
 .upload-empty { height: 408rpx; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14rpx; color: #fff6dc; }
 .upload-plus { width: 92rpx; height: 92rpx; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(226,199,115,.18); color: #ffe597; font-size: 56rpx; font-weight: 900; }
@@ -411,14 +455,14 @@ export default {
 .upload-preview-meta b, .upload-preview-meta text { display: block; }
 .ref-card { margin-top: 28rpx; overflow: hidden; }
 .ref-header { min-height: 118rpx; padding: 0 28rpx; display: flex; align-items: center; justify-content: space-between; }
-.fold-title { color: #fff6dc; font-size: 34rpx; font-weight: 900; }
+.fold-title { display: flex; align-items: center; gap: 10rpx; color: #fff6dc; font-size: 34rpx; font-weight: 900; }
 .fold-state { display: flex; align-items: center; gap: 16rpx; color: rgba(255,246,220,.65); font-size: 28rpx; }
 .fold-state text { max-width: 300rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fold-arrow { width: 72rpx; height: 72rpx; display: flex; align-items: center; justify-content: center; border-radius: 18rpx; color: #efd482; border: 1rpx solid rgba(226,199,115,.32); background: rgba(226,199,115,.08); font-size: 32rpx; }
 .ref-body { display: grid; grid-template-columns: 1fr; gap: 18rpx; padding: 0 28rpx 28rpx; }
 .ref-upload { min-height: 178rpx; border-radius: 24rpx; border: 2rpx dashed rgba(226,199,115,.32); background: rgba(255,255,255,.02); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10rpx; overflow: hidden; color: #fff6dc; }
 .ref-upload image { width: 100%; height: 260rpx; display: block; }
-.ref-upload text { color: #efd482; font-size: 54rpx; font-weight: 900; }
+.ref-upload .app-icon { color: #efd482; }
 .ref-upload b { color: #fff6dc; font-size: 28rpx; font-weight: 900; }
 .ref-resource-btn { width: 100%; }
 .selected-tip { padding: 16rpx 18rpx; border-radius: 18rpx; color: #efd482; background: rgba(226,199,115,.09); font-size: 24rpx; }
@@ -454,6 +498,13 @@ export default {
 .feature-btn b { display: block; margin-top: 8rpx; color: #fff6dc; font-size: 26rpx; font-weight: 900; }
 .drawer-section { margin-top: 26rpx; }
 .hint-line, .empty-drawer { padding: 18rpx; border-radius: 16rpx; color: rgba(255,246,220,.6); background: rgba(255,255,255,.04); font-size: 24rpx; }
+.feature-resource-panel { display: grid; gap: 16rpx; }
+.feature-desc-row { display: flex; align-items: flex-start; gap: 14rpx; color: rgba(255,246,220,.72); font-size: 26rpx; line-height: 1.55; }
+.feature-desc-row text { color: #f3dc9a; font-size: 30rpx; font-weight: 900; }
+.feature-desc-row b { flex: 1; font-weight: 500; }
+.feature-search-box { margin-bottom: 0; }
+.resource-section-title { color: #fff6dc; font-size: 27rpx; font-weight: 900; }
+.feature-resource-grid { margin-top: 0; }
 .switch-row, .option-row { min-height: 70rpx; display: flex; align-items: center; justify-content: space-between; color: #fff6dc; font-size: 26rpx; }
 .option-picker { min-width: 180rpx; height: 64rpx; display: flex; align-items: center; justify-content: center; border-radius: 16rpx; color: #fff6dc; background: rgba(255,255,255,.055); }
 .promo-options { display: grid; gap: 12rpx; margin-top: 16rpx; }
@@ -468,7 +519,7 @@ export default {
 .resource-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 16rpx; }
 .upload-resource, .resource-tile { min-height: 172rpx; border-radius: 18rpx; overflow: hidden; background: rgba(255,255,255,.04); border: 1rpx solid rgba(255,255,255,.1); }
 .upload-resource { display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff6dc; font-size: 24rpx; }
-.upload-resource text { font-size: 44rpx; color: #efd482; }
+.upload-resource .app-icon { color: #efd482; }
 .resource-tile.active { border-color: rgba(226,199,115,.75); }
 .resource-tile image, .resource-empty-thumb { width: 100%; height: 112rpx; display: flex; align-items: center; justify-content: center; color: #efd482; background: rgba(226,199,115,.08); }
 .resource-tile b { display: block; padding: 9rpx 10rpx 0; color: #fff6dc; font-size: 20rpx; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

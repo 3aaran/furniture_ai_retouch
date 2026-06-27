@@ -1,20 +1,21 @@
 <template>
   <view class="page home-page">
-    <app-topbar title="勋港家具 AI" subtitle="智能家具修图平台" :quota="quotaText" :avatar-text="topbarAvatar" @profile="goMine" />
+    <app-topbar title="勋港家具 AI" subtitle="智能修图平台" :quota="quotaText" :avatar-text="topbarAvatar" @profile="goMine" />
 
     <view class="home-hero">
-      <view class="hero-meta">勋港智能家具 AI 修图平台</view>
-      <view class="hero-title">门店商品图处理工作台</view>
-      <view class="hero-desc">上传家具原图，调用 Web 端一致的材质替换、场景融合、背景净化、摄影增强、线稿图、多角度视图等能力。</view>
+      <view class="hero-mark"><app-icon name="brush" tone="dark" :size="34" /></view>
+      <view class="hero-meta">勋港家具 AI</view>
+      <view class="hero-title">商品图工作台</view>
+      <view class="hero-desc">上传家具原图，选择修图能力，快速生成商品图。</view>
       <view class="hero-actions">
-        <button class="primary-btn hero-btn" @click="goWorkbench">进入工作台</button>
-        <button class="secondary-btn hero-btn" @click="goTasks">查看历史</button>
+        <button class="primary-btn hero-btn" @click="goWorkbench">AI 工作台</button>
+        <button class="secondary-btn hero-btn" @click="goTasks">历史任务</button>
       </view>
     </view>
 
     <view class="quota-card">
       <view>
-        <view class="quota-label">当前可用算力</view>
+        <view class="quota-label">当前算力</view>
         <view class="quota-value">{{ quotaText || '-' }}</view>
       </view>
       <view class="quota-side">
@@ -26,12 +27,12 @@
 
     <view class="entry-grid">
       <view class="entry-card primary" @click="goWorkbench">
-        <view class="entry-kicker">Workbench</view>
-        <view class="entry-title">智能工作台</view>
-        <text>上传图片、选择能力、提交生成</text>
+        <view class="entry-kicker"><app-icon name="brush" :size="30" /></view>
+        <view class="entry-title">AI 工作台</view>
+        <text>上传、选择、生成</text>
       </view>
       <view class="entry-card" @click="goResources">
-        <view class="entry-kicker">Assets</view>
+        <view class="entry-kicker"><app-icon name="layers" :size="30" /></view>
         <view class="entry-title">资源库</view>
         <text>系统素材、门店素材、个人素材</text>
       </view>
@@ -50,8 +51,8 @@
         </view>
         <view :class="['status-pill', task.statusClass]">{{ task.statusText }}</view>
       </view>
-      <view v-if="!recentTasks.length && !loading" class="empty-card">暂无真实任务记录。</view>
-      <view v-if="loading" class="empty-card">正在读取真实数据...</view>
+      <view v-if="!recentTasks.length && !loading" class="empty-card">暂无记录</view>
+      <view v-if="loading" class="empty-card">数据加载中...</view>
     </view>
   </view>
 </template>
@@ -143,7 +144,8 @@ export default {
 
 <style>
 .home-hero { padding: 30rpx 24rpx; border-radius: 32rpx; background: linear-gradient(135deg, rgba(242,213,140,.16), rgba(255,255,255,.035)); border: 1rpx solid rgba(242,213,140,.16); }
-.hero-meta { color: #d9bb6a; font-size: 23rpx; font-weight: 800; }
+.hero-mark { width: 74rpx; height: 74rpx; display: flex; align-items: center; justify-content: center; border-radius: 24rpx; color: #181207; background: linear-gradient(135deg,#f3da94,#c79b3b); }
+.hero-meta { margin-top: 18rpx; color: #d9bb6a; font-size: 23rpx; font-weight: 800; }
 .hero-title { margin-top: 12rpx; color: #fff4df; font-size: 44rpx; font-weight: 900; }
 .hero-desc { margin-top: 12rpx; color: rgba(255,244,223,.62); font-size: 25rpx; line-height: 1.65; }
 .hero-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 14rpx; margin-top: 26rpx; }

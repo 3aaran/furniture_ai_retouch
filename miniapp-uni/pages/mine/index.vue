@@ -9,13 +9,13 @@
       <view class="profile-main">
         <view class="profile-name">{{ displayNameText }}</view>
         <view class="muted">{{ roleLine }}</view>
-        <view class="muted">{{ merchantName || '未返回门店信息' }}</view>
+        <view class="muted">{{ merchantName || '暂无门店' }}</view>
       </view>
     </view>
 
     <view class="stat-grid">
       <view class="stat-card"><text>当前算力</text><b>{{ quotaText || '-' }}</b></view>
-      <view class="stat-card"><text>账号状态</text><b>{{ user.status || '-' }}</b></view>
+      <view class="stat-card"><text>账号状态</text><b>{{ statusText }}</b></view>
     </view>
 
     <view class="panel-card">
@@ -27,11 +27,13 @@
     </view>
 
     <view class="panel-card">
-      <view class="panel-title">服务入口</view>
-      <button class="secondary-btn panel-btn" @click="goUsers">用户管理</button>
-      <button class="secondary-btn panel-btn" @click="goQuota">额度明细</button>
-      <button class="secondary-btn panel-btn" @click="goFeedback">问题反馈</button>
-      <button class="secondary-btn panel-btn" @click="goAnnouncements">公告通知</button>
+      <view class="panel-title">服务</view>
+      <view class="service-grid">
+        <view class="service-item" @click="goUsers"><app-icon name="users" :size="34" /><b>用户</b></view>
+        <view class="service-item" @click="goQuota"><app-icon name="wallet" :size="34" /><b>额度</b></view>
+        <view class="service-item" @click="goFeedback"><app-icon name="message" :size="34" /><b>反馈</b></view>
+        <view class="service-item" @click="goAnnouncements"><app-icon name="mail" :size="34" /><b>公告</b></view>
+      </view>
     </view>
 
     <button class="secondary-btn logout-btn" @click="logout">退出登录</button>
@@ -57,7 +59,11 @@ export default {
     quotaText() { return userQuota(this.user); },
     topbarAvatar() { return this.displayNameText.slice(0, 1); },
     roleLine() { return roleText(this.user.role); },
-    merchantName() { return this.user.companyName || this.user.company || this.user.merchantName || this.user.merchant?.name || ''; }
+    merchantName() { return this.user.companyName || this.user.company || this.user.merchantName || this.user.merchant?.name || ''; },
+    statusText() {
+      const map = { ACTIVE: '启用', DISABLED: '禁用', enabled: '启用', disabled: '禁用' };
+      return map[this.user.status] || this.user.status || '-';
+    }
   },
   onShow() {
     if (!requireLogin()) return;
@@ -98,7 +104,10 @@ export default {
 .info-row { display: flex; justify-content: space-between; gap: 20rpx; padding: 16rpx 0; border-bottom: 1rpx solid rgba(255,255,255,.06); color: rgba(255,244,223,.62); font-size: 24rpx; }
 .info-row:last-child { border-bottom: 0; }
 .info-row b { color: #fff4df; text-align: right; font-weight: 700; }
-.panel-btn { margin-bottom: 12rpx; }
+.service-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12rpx; }
+.service-item { min-height: 118rpx; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8rpx; border-radius: 22rpx; color: #fff4df; background: rgba(255,255,255,.045); border: 1rpx solid rgba(255,255,255,.08); }
+.service-item .app-icon { color: #f3dc9a; }
+.service-item b { font-size: 24rpx; }
 .logout-btn { margin-top: 20rpx; }
 .error-card { margin-bottom: 18rpx; padding: 18rpx; border-radius: 18rpx; background: rgba(255,112,112,.08); color: #ffb4a8; border: 1rpx solid rgba(255,112,112,.22); font-size: 24rpx; }
 </style>

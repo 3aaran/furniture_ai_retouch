@@ -1,12 +1,15 @@
 <template>
   <view class="page users-page">
-    <app-topbar title="用户管理" subtitle="门店成员与算力分配" :avatar-text="topbarAvatar" show-back back-url="/pages/workbench/index" @profile="goMine" />
+    <app-topbar title="用户管理" subtitle="成员与算力" :avatar-text="topbarAvatar" show-back back-url="/pages/workbench/index" @profile="goMine" />
 
     <view class="users-summary">
       <view class="summary-main">
-        <text class="summary-kicker">门店成员</text>
-        <text class="summary-title">用户管理</text>
-        <text class="summary-desc">管理门店管理员、普通用户与体验账号。</text>
+        <view class="summary-icon"><app-icon name="users" tone="dark" :size="34" /></view>
+        <view>
+          <text class="summary-kicker">门店成员</text>
+          <text class="summary-title">用户管理</text>
+          <text class="summary-desc">成员、体验账号、算力。</text>
+        </view>
       </view>
       <view class="summary-quota">
         <text class="summary-label">剩余算力</text>
@@ -22,7 +25,7 @@
 
     <view v-else class="toolbar-card">
       <view class="search-box">
-        <text class="search-icon">⌕</text>
+        <app-icon name="search" :size="28" />
         <input class="search-input" v-model="query.keyword" placeholder="搜索用户名、手机号" confirm-type="search" @confirm="reload" />
       </view>
       <view class="filter-row">
@@ -34,7 +37,7 @@
         </picker>
       </view>
       <view class="action-row">
-        <button class="secondary-btn action-btn" @click="generateTrial">生成体验账号</button>
+        <button class="secondary-btn action-btn" @click="generateTrial">体验账号</button>
         <button class="primary-btn action-btn" @click="openCreate">创建用户</button>
       </view>
     </view>
@@ -81,7 +84,7 @@
       <view class="modal-card" @click.stop>
         <view class="modal-head">
           <text class="modal-title">体验账号</text>
-          <text class="modal-close" @click="closeTrial">×</text>
+          <view class="modal-close" @click="closeTrial"><app-icon name="x" :size="28" /></view>
         </view>
         <view class="ticket-box">
           <view class="ticket-row"><text class="ticket-label">账号</text><text class="ticket-value">{{ trialAccountText }}</text></view>
@@ -97,7 +100,7 @@
       <view class="modal-card" @click.stop>
         <view class="modal-head">
           <text class="modal-title">{{ modalTitle }}</text>
-          <text class="modal-close" @click="closeModal">×</text>
+          <view class="modal-close" @click="closeModal"><app-icon name="x" :size="28" /></view>
         </view>
 
         <view v-if="createOpen" class="form-grid">
@@ -407,7 +410,8 @@ export default {
 
 <style>
 .users-summary { margin-top: 22rpx; display: flex; align-items: stretch; gap: 16rpx; }
-.summary-main { flex: 1; min-width: 0; padding: 24rpx; border-radius: 26rpx; background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.025)); border: 1rpx solid rgba(255,255,255,.09); }
+.summary-main { flex: 1; min-width: 0; padding: 24rpx; border-radius: 26rpx; display: flex; align-items: center; gap: 16rpx; background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.025)); border: 1rpx solid rgba(255,255,255,.09); }
+.summary-icon { width: 72rpx; height: 72rpx; flex: 0 0 72rpx; display: flex; align-items: center; justify-content: center; border-radius: 22rpx; color: #181207; background: linear-gradient(135deg,#f3da94,#c79b3b); }
 .summary-kicker { display: block; color: rgba(255,246,220,.55); font-size: 22rpx; }
 .summary-title { display: block; margin-top: 6rpx; color: #fff6dc; font-size: 42rpx; font-weight: 900; }
 .summary-desc { display: block; margin-top: 6rpx; color: rgba(255,246,220,.58); font-size: 23rpx; }

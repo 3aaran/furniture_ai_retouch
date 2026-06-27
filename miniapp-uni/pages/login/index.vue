@@ -3,15 +3,21 @@
     <app-topbar title="勋港家具 AI" subtitle="登录 / 注册" :show-avatar="false" />
 
     <view class="login-hero">
-      <text class="login-title">登录勋港家具 AI</text>
-      <text class="login-desc">使用 Web 前端一致的账号体系登录，登录后才能访问工作台、历史任务和资源库。</text>
+      <view class="hero-mark"><app-icon name="brush" tone="dark" :size="40" /></view>
+      <text class="login-title">勋港家具 AI</text>
+      <text class="login-desc">登录后使用工作台、资源库和历史任务。</text>
+      <view class="hero-chips">
+        <view class="hero-chip"><app-icon name="brush" :size="22" />AI 工作台</view>
+        <view class="hero-chip"><app-icon name="layers" :size="22" />资源库</view>
+        <view class="hero-chip"><app-icon name="image" :size="22" />历史任务</view>
+      </view>
     </view>
 
     <view v-if="errorText" class="error-card">{{ errorText }}</view>
 
     <view class="login-tabs">
       <view v-for="item in loginModes" :key="item.key" :class="['login-tab', mode === item.key ? 'active' : '']" @click="switchMode(item.key)">
-        {{ item.label }}
+        <app-icon :name="item.icon" :tone="mode === item.key ? 'dark' : 'gold'" :size="24" />{{ item.label }}
       </view>
     </view>
 
@@ -38,11 +44,6 @@
 
       <button class="primary-btn" :disabled="submitting" @click="submitLogin">{{ submitText }}</button>
     </view>
-
-    <view class="hint-card">
-      <text>接口信息</text>
-      <text>{{ apiHint }}</text>
-    </view>
   </view>
 </template>
 
@@ -61,8 +62,8 @@ export default {
       timer: null,
       errorText: '',
       loginModes: [
-        { key: 'password', label: '密码登录' },
-        { key: 'sms', label: '验证码登录' }
+        { key: 'password', label: '密码登录', icon: 'wallet' },
+        { key: 'sms', label: '验证码登录', icon: 'mail' }
       ],
       form: {
         identifier: '',
@@ -74,10 +75,7 @@ export default {
   computed: {
     submitText() {
       if (this.submitting) return '登录中';
-      return this.mode === 'sms' ? '验证码登录 / 注册' : '登录';
-    },
-    apiHint() {
-      return this.mode === 'sms' ? 'POST /api/sms/send-code + POST /api/auth/code-login' : 'POST /api/auth/login';
+      return this.mode === 'sms' ? '验证码登录' : '登录';
     }
   },
   onUnload() {
@@ -155,11 +153,14 @@ export default {
 
 <style>
 .login-page { padding-top: 0; }
-.login-hero { padding: 48rpx 6rpx 26rpx; }
-.login-title { display: block; color: #fff4df; font-size: 46rpx; font-weight: 900; }
-.login-desc { display: block; margin-top: 14rpx; color: rgba(255,244,223,.6); font-size: 25rpx; line-height: 1.6; }
-.login-tabs { display: grid; grid-template-columns: repeat(2,1fr); gap: 14rpx; margin: 22rpx 0; }
-.login-tab { height: 78rpx; display: flex; align-items: center; justify-content: center; border-radius: 18rpx; border: 1rpx solid rgba(242,213,140,.16); color: rgba(255,244,223,.72); background: rgba(255,255,255,.04); font-weight: 800; }
+.login-hero { padding: 42rpx 6rpx 24rpx; }
+.hero-mark { width: 92rpx; height: 92rpx; display: flex; align-items: center; justify-content: center; border-radius: 28rpx; color: #181207; background: linear-gradient(135deg,#f3da94,#c79b3b); box-shadow: 0 18rpx 48rpx rgba(199,155,59,.18); }
+.login-title { display: block; margin-top: 24rpx; color: #fff4df; font-size: 48rpx; font-weight: 900; }
+.login-desc { display: block; margin-top: 12rpx; color: rgba(255,244,223,.6); font-size: 25rpx; line-height: 1.6; }
+.hero-chips { display: flex; flex-wrap: wrap; gap: 12rpx; margin-top: 20rpx; }
+.hero-chip { height: 50rpx; display: inline-flex; align-items: center; gap: 8rpx; padding: 0 16rpx; border-radius: 999rpx; color: rgba(255,244,223,.72); background: rgba(255,255,255,.045); border: 1rpx solid rgba(255,255,255,.08); font-size: 22rpx; font-weight: 800; }
+.login-tabs { display: grid; grid-template-columns: repeat(2,1fr); gap: 14rpx; margin: 18rpx 0; }
+.login-tab { height: 76rpx; display: flex; align-items: center; justify-content: center; gap: 8rpx; border-radius: 18rpx; border: 1rpx solid rgba(242,213,140,.16); color: rgba(255,244,223,.72); background: rgba(255,255,255,.04); font-weight: 800; }
 .login-tab.active { color: #181207; background: linear-gradient(135deg,#f3da94,#c79b3b); border-color: transparent; }
 .login-form { padding: 24rpx; border-radius: 28rpx; background: rgba(255,255,255,.045); border: 1rpx solid rgba(242,213,140,.14); }
 .field { margin-bottom: 20rpx; }
@@ -167,8 +168,5 @@ export default {
 .field input { height: 82rpx; padding: 0 22rpx; border-radius: 18rpx; color: #fff4df; background: #101317; border: 1rpx solid rgba(255,255,255,.1); }
 .code-row { display: grid; grid-template-columns: 1fr 190rpx; gap: 12rpx; align-items: center; }
 .code-btn { height: 82rpx; font-size: 24rpx; }
-.hint-card, .error-card { margin-top: 20rpx; padding: 18rpx 20rpx; border-radius: 18rpx; font-size: 23rpx; line-height: 1.6; }
-.hint-card { border: 1rpx solid rgba(242,213,140,.12); color: rgba(255,244,223,.58); background: rgba(255,255,255,.03); }
-.hint-card text { display: block; }
-.error-card { border: 1rpx solid rgba(255,112,112,.25); background: rgba(255,112,112,.08); color: #ffb4a8; }
+.error-card { margin-top: 20rpx; padding: 18rpx 20rpx; border-radius: 18rpx; font-size: 23rpx; line-height: 1.6; border: 1rpx solid rgba(255,112,112,.25); background: rgba(255,112,112,.08); color: #ffb4a8; }
 </style>

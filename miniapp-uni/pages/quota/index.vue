@@ -3,8 +3,13 @@
     <app-topbar title="" subtitle="" :avatar-text="topbarAvatar" show-back back-url="/pages/mine/index" @profile="goMine" />
 
     <view class="page-head">
-      <b>额度明细</b>
-      <text>算力余额与真实流水</text>
+      <view class="page-head-main">
+        <view class="page-icon"><app-icon name="wallet" tone="dark" :size="34" /></view>
+        <view class="page-title-text">
+          <b>额度明细</b>
+          <text>算力余额与真实流水</text>
+        </view>
+      </view>
     </view>
 
     <view class="summary-grid">
@@ -15,7 +20,7 @@
 
     <view class="filter-card">
       <view class="search-box">
-        <text>⌕</text>
+        <app-icon name="search" :size="28" />
         <input v-model="query.keyword" placeholder="搜索任务、用户或操作人" confirm-type="search" @confirm="reload" />
       </view>
       <picker :range="typeNames" :value="typeIndex" @change="changeType">
@@ -128,9 +133,6 @@ export default {
 </script>
 
 <style>
-.page-head { margin: 24rpx 0 18rpx; }
-.page-head b { display: block; color: #fff6dc; font-size: 38rpx; font-weight: 900; }
-.page-head text { display: block; margin-top: 6rpx; color: rgba(255,246,220,.58); font-size: 24rpx; }
 .summary-grid { display: grid; grid-template-columns: 1fr; gap: 16rpx; margin-bottom: 20rpx; }
 .summary-card { min-height: 116rpx; padding: 22rpx; border-radius: 28rpx; background: #111317; border: 1rpx solid rgba(242,213,140,.12); }
 .summary-card text { color: rgba(255,244,223,.55); font-size: 24rpx; }

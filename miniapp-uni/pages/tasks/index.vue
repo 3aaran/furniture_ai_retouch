@@ -2,15 +2,21 @@
   <view class="page history-page">
     <app-topbar title="" subtitle="" :avatar-text="topbarAvatar" @profile="goMine" />
 
-    <view class="history-head">
-      <b>最近图片</b>
+    <view class="page-head">
+      <view class="page-head-main">
+        <view class="page-icon"><app-icon name="image" tone="dark" :size="34" /></view>
+        <view class="page-title-text">
+          <b>历史任务</b>
+          <text>生成记录与图片结果</text>
+        </view>
+      </view>
       <view class="head-actions">
-        <button @click="reload">↻</button>
+        <button @click="reload"><app-icon name="refresh" :size="28" /></button>
       </view>
     </view>
 
     <view class="search-box">
-      <text>⌕</text>
+      <app-icon name="search" :size="28" />
       <input v-model="keyword" placeholder="搜索任务编号..." confirm-type="search" @confirm="reload" />
     </view>
 
@@ -35,8 +41,8 @@
       </view>
     </view>
 
-    <view v-if="!filteredTasks.length && !loading" class="empty-card">暂无真实任务记录</view>
-    <view v-if="loading" class="empty-card">正在读取真实任务...</view>
+    <view v-if="!filteredTasks.length && !loading" class="empty-card">暂无记录</view>
+    <view v-if="loading" class="empty-card">记录加载中...</view>
     <button v-if="tasks.length" class="secondary-btn more-btn" @click="loadMore">查看更多记录</button>
   </view>
 </template>
@@ -126,8 +132,6 @@ export default {
 
 <style>
 .history-page { padding-bottom: 40rpx; }
-.history-head { display: flex; align-items: center; justify-content: space-between; margin: 24rpx 0 18rpx; }
-.history-head b { color: #fff6dc; font-size: 34rpx; font-weight: 900; }
 .head-actions { display: flex; gap: 14rpx; }
 .head-actions button { width: 72rpx; height: 72rpx; padding: 0; border-radius: 22rpx; color: #efd482; background: rgba(255,255,255,.055); border: 1rpx solid rgba(255,255,255,.13); }
 .search-box { height: 78rpx; display: flex; align-items: center; gap: 16rpx; padding: 0 24rpx; margin-bottom: 22rpx; border-radius: 22rpx; border: 1rpx solid rgba(255,255,255,.1); background: rgba(255,255,255,.035); color: rgba(255,246,220,.7); }

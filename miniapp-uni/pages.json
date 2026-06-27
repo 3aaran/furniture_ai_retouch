@@ -10,14 +10,14 @@
     {
       "path": "pages/workbench/index",
       "style": {
-        "navigationBarTitleText": "工作台",
+        "navigationBarTitleText": "AI 工作台",
         "navigationStyle": "custom"
       }
     },
     {
       "path": "pages/tasks/index",
       "style": {
-        "navigationBarTitleText": "历史",
+        "navigationBarTitleText": "历史任务",
         "navigationStyle": "custom"
       }
     },
@@ -59,7 +59,7 @@
     {
       "path": "pages/promotion/index",
       "style": {
-        "navigationBarTitleText": "推荐收益",
+        "navigationBarTitleText": "推广邀请",
         "navigationStyle": "custom"
       }
     },

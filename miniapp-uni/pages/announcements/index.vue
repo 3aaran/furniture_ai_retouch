@@ -3,15 +3,20 @@
     <app-topbar title="" subtitle="" :avatar-text="topbarAvatar" show-back back-url="/pages/mine/index" @profile="goMine" />
 
     <view class="page-head">
-      <b>公告邮箱</b>
-      <text>{{ unreadCount }} 条未读</text>
+      <view class="page-head-main">
+        <view class="page-icon"><app-icon name="mail" tone="dark" :size="34" /></view>
+        <view class="page-title-text">
+          <b>公告邮箱</b>
+          <text>{{ unreadCount }} 条未读</text>
+        </view>
+      </view>
     </view>
 
     <view v-if="errorText" class="error-card">{{ errorText }}</view>
 
     <view class="notice-list">
       <view v-for="item in items" :key="item.id" :class="['notice-card', item.isRead ? 'is-read' : 'is-unread']" @click="openNotice(item)">
-        <view class="notice-state">{{ item.isRead ? '已读' : '未读' }}</view>
+        <view class="notice-state"><app-icon :name="item.isRead ? 'check' : 'mail'" :tone="item.isRead ? 'muted' : 'dark'" :size="24" /></view>
         <view class="notice-copy">
           <b>{{ item.title }}</b>
           <text>{{ item.content }}</text>
@@ -30,7 +35,7 @@
             <text>{{ selected.isRead ? '已读' : '未读' }}</text>
             <b>{{ selected.title }}</b>
           </view>
-          <button @click="selected = null">×</button>
+          <button @click="selected = null"><app-icon name="x" :size="28" /></button>
         </view>
         <scroll-view scroll-y class="modal-body">
           <text>{{ selected.content }}</text>
@@ -103,9 +108,6 @@ export default {
 </script>
 
 <style>
-.page-head { display: flex; align-items: end; justify-content: space-between; gap: 20rpx; margin: 24rpx 0 18rpx; }
-.page-head b { color: #fff6dc; font-size: 38rpx; font-weight: 900; }
-.page-head text { color: rgba(255,246,220,.58); font-size: 24rpx; }
 .notice-list { display: grid; gap: 18rpx; }
 .notice-card { display: flex; gap: 18rpx; padding: 20rpx; border-radius: 24rpx; background: rgba(255,255,255,.045); border: 1rpx solid rgba(255,255,255,.1); }
 .notice-card.is-unread { border-color: rgba(242,213,140,.42); background: rgba(242,213,140,.08); }

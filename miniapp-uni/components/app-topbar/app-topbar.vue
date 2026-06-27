@@ -1,17 +1,21 @@
 <template>
   <view class="topbar-wrap">
     <view class="topbar">
-      <view v-if="showBack" class="back-button" @click="goBack">
+      <view v-if="showBack" class="topbar-icon-btn" @click="goBack">
         <text class="back-icon">‹</text>
       </view>
-      <view v-else class="menu-button" @click="openMenu">
-        <text class="menu-line menu-line-long"></text>
-        <text class="menu-line"></text>
-        <text class="menu-line menu-line-long"></text>
+      <view v-else class="topbar-icon-btn" @click="openMenu">
+        <app-icon name="menu" :size="34" />
       </view>
+
       <view class="topbar-title-box">
-        <text v-if="title" class="topbar-title">{{ title }}</text>
-        <text v-if="subtitle" class="topbar-subtitle">{{ subtitle }}</text>
+        <text class="topbar-title">{{ displayTitle }}</text>
+        <text v-if="displaySubtitle" class="topbar-subtitle">{{ displaySubtitle }}</text>
+      </view>
+
+      <view v-if="quota" class="quota-chip">
+        <app-icon name="wallet" tone="dark" :size="24" />
+        <text>{{ quota }}</text>
       </view>
       <view v-if="showAvatar" class="topbar-avatar" @click="goProfile">
         <image v-if="avatarUrl" class="avatar-img" :src="avatarUrl" mode="aspectFill" />
@@ -24,25 +28,29 @@
       <view class="brand-row">
         <view class="brand-logo">
           <image v-if="logo" class="brand-logo-img" :src="logo" mode="aspectFill" />
-          <text v-else class="brand-logo-text">勋</text>
+          <text v-else class="brand-logo-text">AI</text>
         </view>
         <view class="brand-copy">
-          <text class="brand-name">勋港</text>
-          <text class="brand-desc">智能家具 AI 修图平台</text>
+          <text class="brand-name">勋港家具 AI</text>
+          <text class="brand-desc">智能修图平台</text>
         </view>
-        <view class="menu-close" @click="closeMenu">×</view>
+        <view class="menu-close" @click="closeMenu"><app-icon name="x" :size="28" /></view>
       </view>
 
       <view class="menu-list">
         <view v-for="item in menuItems" :key="item.key" :class="['menu-item', activeKey === item.key ? 'menu-item-active' : '']" @click="navigateMenu(item)">
-          <text class="menu-icon">{{ item.icon }}</text>
+          <app-icon class="menu-icon" :name="item.icon" :tone="activeKey === item.key ? 'dark' : 'gold'" :size="36" />
           <text class="menu-label">{{ item.label }}</text>
         </view>
       </view>
 
-      <view class="menu-bottom">
-        <view class="menu-round" @click="navigateQuick('/pages/feedback/index')">▢</view>
-        <view class="menu-round" @click="navigateQuick('/pages/announcements/index')">✉</view>
+      <view class="menu-tools">
+        <view class="tool-item" @click="navigateQuick('/pages/feedback/index')">
+          <app-icon name="message" :size="30" /><b>问题反馈</b>
+        </view>
+        <view class="tool-item" @click="navigateQuick('/pages/announcements/index')">
+          <app-icon name="mail" :size="30" /><b>公告邮箱</b>
+        </view>
       </view>
     </view>
   </view>
@@ -67,13 +75,22 @@ export default {
       menuVisible: false,
       activeKey: 'workbench',
       menuItems: [
-        { key: 'workbench', label: '工作台', icon: '⌁', url: '/pages/workbench/index' },
-        { key: 'tasks', label: '历史', icon: '▧', url: '/pages/tasks/index' },
-        { key: 'resources', label: '资源库', icon: '▰', url: '/pages/resources/index' },
-        { key: 'users', label: '用户管理', icon: '♟', url: '/pages/users/index' },
-        { key: 'promotion', label: '推荐收益', icon: '▣', url: '/pages/promotion/index' }
+        { key: 'workbench', label: 'AI 工作台', icon: 'brush', url: '/pages/workbench/index' },
+        { key: 'resources', label: '资源库', icon: 'layers', url: '/pages/resources/index' },
+        { key: 'users', label: '用户管理', icon: 'users', url: '/pages/users/index' },
+        { key: 'tasks', label: '历史任务', icon: 'image', url: '/pages/tasks/index' },
+        { key: 'promotion', label: '推广邀请', icon: 'ticket', url: '/pages/promotion/index' },
+        { key: 'mine', label: '我的', icon: 'wallet', url: '/pages/mine/index' }
       ]
     };
+  },
+  computed: {
+    displayTitle() {
+      return this.title || '勋港家具 AI';
+    },
+    displaySubtitle() {
+      return this.subtitle || (this.title ? '' : '智能修图 · 宣传图');
+    }
   },
   methods: {
     openMenu() {
@@ -98,7 +115,7 @@ export default {
       this.closeMenu();
       const current = getCurrentPages && getCurrentPages().length ? '/' + getCurrentPages()[getCurrentPages().length - 1].route : '';
       if (current === item.url) return;
-uni.reLaunch({ url: item.url });
+      uni.reLaunch({ url: item.url });
     },
     goBack() {
       const pages = getCurrentPages ? getCurrentPages() : [];
@@ -128,59 +145,65 @@ uni.reLaunch({ url: item.url });
   padding-top: var(--status-bar-height);
 }
 .topbar {
-  height: 128rpx;
+  min-height: 108rpx;
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  gap: 18rpx;
-  padding: 18rpx 28rpx;
-  background: rgba(7, 8, 10, 0.96);
-  border-bottom: 1rpx solid rgba(226, 199, 115, 0.14);
+  gap: 16rpx;
+  padding: 14rpx 24rpx;
+  background: rgba(7, 8, 10, 0.97);
+  border-bottom: 1rpx solid rgba(242, 213, 140, 0.16);
+  box-shadow: 0 18rpx 52rpx rgba(0, 0, 0, 0.18);
 }
-.menu-button,
-.back-button {
-  width: 88rpx;
-  height: 88rpx;
-  flex: 0 0 88rpx;
+.topbar-icon-btn {
+  width: 84rpx;
+  height: 84rpx;
+  flex: 0 0 84rpx;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 11rpx;
-  border-radius: 25rpx;
-  border: 1rpx solid rgba(226, 199, 115, 0.24);
+  border-radius: 26rpx;
+  border: 1rpx solid rgba(242, 213, 140, 0.2);
   background: rgba(255, 255, 255, 0.035);
 }
 .back-icon {
-  color: #efd482;
+  color: #f3dc9a;
   font-size: 62rpx;
   line-height: 1;
   font-weight: 500;
 }
-.menu-line {
-  width: 34rpx;
-  height: 5rpx;
-  border-radius: 999rpx;
-  background: #efd482;
-}
-.menu-line-long { width: 46rpx; }
 .topbar-title-box { flex: 1; min-width: 0; }
-.topbar-title { display: block; color: #fff6dc; font-size: 30rpx; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.topbar-subtitle { display: block; margin-top: 4rpx; color: rgba(255, 246, 220, 0.55); font-size: 22rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.topbar-title { display: block; color: #fff4df; font-size: 31rpx; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.topbar-subtitle { display: block; margin-top: 3rpx; color: rgba(255, 244, 223, 0.56); font-size: 21rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.quota-chip {
+  max-width: 150rpx;
+  height: 58rpx;
+  padding: 0 16rpx;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  border-radius: 999rpx;
+  color: #181207;
+  background: linear-gradient(135deg, #f3da94, #c79b3b);
+  font-size: 22rpx;
+  font-weight: 900;
+  overflow: hidden;
+}
+.quota-chip text:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .topbar-avatar {
-  width: 76rpx;
-  height: 76rpx;
-  flex: 0 0 76rpx;
+  width: 72rpx;
+  height: 72rpx;
+  flex: 0 0 72rpx;
   overflow: hidden;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 3rpx solid rgba(226, 199, 115, 0.38);
+  border: 3rpx solid rgba(242, 213, 140, 0.34);
   background: linear-gradient(135deg, #fff1b8, #c99731);
 }
 .avatar-img { width: 100%; height: 100%; }
-.avatar-text { color: #15100a; font-size: 30rpx; font-weight: 900; }
+.avatar-text { color: #15100a; font-size: 29rpx; font-weight: 900; }
 .menu-mask {
   position: fixed;
   left: 0;
@@ -188,7 +211,7 @@ uni.reLaunch({ url: item.url });
   top: 0;
   bottom: 0;
   z-index: 88;
-  background: rgba(0, 0, 0, 0.54);
+  background: rgba(0, 0, 0, 0.58);
   backdrop-filter: blur(6px);
 }
 .side-menu {
@@ -197,77 +220,83 @@ uni.reLaunch({ url: item.url });
   top: 0;
   bottom: 0;
   z-index: 90;
-  width: 74vw;
+  width: 78vw;
   max-width: 620rpx;
   box-sizing: border-box;
-  padding: calc(var(--status-bar-height) + 34rpx) 28rpx 42rpx;
-  background: linear-gradient(180deg, #111214 0%, #0b0d0f 100%);
-  border-right: 1rpx solid rgba(226, 199, 115, 0.22);
+  padding: calc(var(--status-bar-height) + 30rpx) 28rpx 42rpx;
+  background: linear-gradient(180deg, rgba(18, 19, 21, 0.99), rgba(9, 10, 12, 0.99));
+  border-right: 1rpx solid rgba(242, 213, 140, 0.18);
   transform: translateX(-102%);
   transition: transform 0.22s ease;
-  box-shadow: 24rpx 0 70rpx rgba(0, 0, 0, 0.42);
+  box-shadow: 26rpx 0 70rpx rgba(0, 0, 0, 0.56);
 }
 .side-menu-show { transform: translateX(0); }
-.brand-row { display: flex; align-items: center; gap: 18rpx; margin-bottom: 38rpx; }
+.brand-row { display: flex; align-items: center; gap: 18rpx; margin-bottom: 32rpx; }
 .brand-logo {
-  width: 82rpx;
-  height: 82rpx;
-  border-radius: 20rpx;
+  width: 78rpx;
+  height: 78rpx;
+  border-radius: 24rpx;
   overflow: hidden;
-  border: 1rpx solid rgba(226, 199, 115, 0.28);
+  border: 1rpx solid rgba(242, 213, 140, 0.24);
   background: #050607;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .brand-logo-img { width: 100%; height: 100%; }
-.brand-logo-text { color: #efd482; font-size: 32rpx; font-weight: 900; }
+.brand-logo-text { color: #f3dc9a; font-size: 27rpx; font-weight: 900; }
 .brand-copy { flex: 1; min-width: 0; }
-.brand-name { display: block; color: #fff6dc; font-size: 37rpx; font-weight: 900; }
-.brand-desc { display: block; margin-top: 4rpx; color: rgba(255, 246, 220, 0.58); font-size: 25rpx; }
+.brand-name { display: block; color: #fff4df; font-size: 35rpx; font-weight: 900; }
+.brand-desc { display: block; margin-top: 4rpx; color: rgba(255, 244, 223, 0.58); font-size: 24rpx; }
 .menu-close {
-  width: 76rpx;
-  height: 76rpx;
-  border-radius: 28rpx;
+  width: 74rpx;
+  height: 74rpx;
+  border-radius: 26rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ead082;
-  font-size: 34rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.13);
-  background: rgba(255, 255, 255, 0.045);
+  color: #f5ead0;
+  border: 1rpx solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
 }
-.menu-list { display: flex; flex-direction: column; gap: 22rpx; }
+.menu-list { display: grid; gap: 18rpx; }
 .menu-item {
-  min-height: 100rpx;
+  min-height: 96rpx;
   box-sizing: border-box;
-  padding: 0 28rpx;
+  padding: 0 24rpx;
   display: flex;
   align-items: center;
-  gap: 24rpx;
-  border-radius: 30rpx;
-  color: #fff6dc;
-  background: rgba(255, 255, 255, 0.045);
-  border: 1rpx solid rgba(255, 255, 255, 0.12);
+  gap: 22rpx;
+  border-radius: 28rpx;
+  color: #f5f0e6;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1rpx solid rgba(255, 255, 255, 0.1);
 }
 .menu-item-active {
-  color: #141006;
-  background: linear-gradient(135deg, #fff1b8 0%, #e5bc51 54%, #c99731 100%);
+  color: #181207;
+  background: linear-gradient(135deg, #f3da94, #c79b3b);
   border-color: transparent;
 }
-.menu-icon { width: 42rpx; text-align: center; font-size: 40rpx; font-weight: 900; }
-.menu-label { font-size: 32rpx; font-weight: 900; }
-.menu-bottom { position: absolute; left: 0; right: 0; bottom: 42rpx; display: flex; justify-content: center; gap: 28rpx; }
-.menu-round {
-  width: 92rpx;
-  height: 92rpx;
+.menu-icon { width: 48rpx; }
+.menu-label { font-size: 31rpx; font-weight: 900; }
+.menu-tools {
+  margin-top: 28rpx;
+  padding-top: 24rpx;
+  border-top: 1rpx solid rgba(255, 255, 255, 0.08);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14rpx;
+}
+.tool-item {
+  height: 84rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 30rpx;
-  color: #efd482;
-  font-size: 40rpx;
-  border: 1rpx solid rgba(226, 199, 115, 0.38);
+  gap: 10rpx;
+  border-radius: 24rpx;
+  color: #f5f0e6;
   background: rgba(255, 255, 255, 0.035);
+  border: 1rpx solid rgba(255, 255, 255, 0.1);
 }
+.tool-item b { font-size: 25rpx; }
 </style>

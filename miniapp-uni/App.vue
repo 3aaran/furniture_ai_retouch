@@ -17,7 +17,71 @@
 		min-height: 100vh;
 		box-sizing: border-box;
 		padding: 0 24rpx 48rpx;
-		background: radial-gradient(circle at 74% -12%, rgba(239, 206, 124, 0.16), transparent 34%), linear-gradient(180deg, #08090b 0%, #0d0f12 100%);
+		background: radial-gradient(circle at 74% -12%, rgba(239, 206, 124, 0.14), transparent 34%), linear-gradient(180deg, #08090b 0%, #0d0f12 100%);
+	}
+
+	.page-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 18rpx;
+		margin: 24rpx 0 18rpx;
+	}
+
+	.page-head-main {
+		display: flex;
+		align-items: center;
+		gap: 16rpx;
+		min-width: 0;
+	}
+
+	.page-icon {
+		width: 70rpx;
+		height: 70rpx;
+		flex: 0 0 70rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 22rpx;
+		color: #181207;
+		background: linear-gradient(135deg, #f3da94, #c79b3b);
+		font-size: 32rpx;
+		font-weight: 900;
+	}
+
+	.page-icon .app-icon {
+		color: #181207;
+	}
+
+	.page-title-text {
+		min-width: 0;
+	}
+
+	.page-title-text b {
+		display: block;
+		color: #fff4df;
+		font-size: 36rpx;
+		font-weight: 900;
+		line-height: 1.18;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.page-title-text text {
+		display: block;
+		margin-top: 5rpx;
+		color: rgba(255, 244, 223, 0.56);
+		font-size: 23rpx;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.icon-label {
+		display: inline-flex;
+		align-items: center;
+		gap: 8rpx;
 	}
 
 	.section-title {
@@ -53,6 +117,11 @@
 		color: #171208;
 		font-size: 31rpx;
 		box-shadow: 0 20rpx 42rpx rgba(215, 172, 68, 0.18);
+	}
+
+	.primary-btn[disabled],
+	.secondary-btn[disabled] {
+		opacity: 0.55;
 	}
 
 	.secondary-btn {

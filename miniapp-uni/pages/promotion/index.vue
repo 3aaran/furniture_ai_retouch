@@ -3,18 +3,21 @@
     <app-topbar title="" subtitle="" :avatar-text="topbarAvatar" show-back back-url="/pages/mine/index" @profile="goMine" />
 
     <view class="invite-panel">
-      <view class="panel-head">
-        <view>
-          <b>推广邀请</b>
-          <text>邀请门店入驻后的收益记录</text>
+      <view class="page-head invite-head">
+        <view class="page-head-main">
+          <view class="page-icon"><app-icon name="ticket" tone="dark" :size="34" /></view>
+          <view class="page-title-text">
+            <b>推广邀请</b>
+            <text>邀请门店入驻后的收益记录</text>
+          </view>
         </view>
       </view>
 
       <view class="metrics">
         <view class="metric"><text>邀请码</text><b>{{ inviteCode || '-' }}</b></view>
-        <view class="metric"><text>已邀请门店</text><b>{{ summary.invitedCount || 0 }}</b></view>
-        <view class="metric"><text>已通过门店</text><b>{{ summary.approvedCount || 0 }}</b></view>
-        <view class="metric"><text>累计邀请收益</text><b>{{ quotaText(summary.benefitQuota) }}</b></view>
+        <view class="metric"><text>已邀请</text><b>{{ summary.invitedCount || 0 }}</b></view>
+        <view class="metric"><text>已通过</text><b>{{ summary.approvedCount || 0 }}</b></view>
+        <view class="metric"><text>累计收益</text><b>{{ quotaText(summary.benefitQuota) }}</b></view>
       </view>
 
       <view class="link-card">
@@ -30,7 +33,7 @@
 
     <view class="filter-card">
       <view class="search-box">
-        <text>⌕</text>
+        <app-icon name="search" :size="28" />
         <input v-model="query.keyword" placeholder="搜索门店、联系人、手机号、编号" confirm-type="search" @confirm="reload" />
       </view>
       <picker :range="statusNames" :value="statusIndex" @change="changeStatus">
@@ -148,9 +151,7 @@ export default {
 
 <style>
 .invite-panel { margin-top: 24rpx; padding: 24rpx; border-radius: 30rpx; background: linear-gradient(180deg, rgba(242,213,140,.1), rgba(255,255,255,.035)); border: 1rpx solid rgba(242,213,140,.18); }
-.panel-head { margin-bottom: 18rpx; }
-.panel-head b { display: block; color: #fff6dc; font-size: 38rpx; font-weight: 900; }
-.panel-head text { display: block; margin-top: 6rpx; color: rgba(255,246,220,.58); font-size: 24rpx; }
+.invite-head { margin-top: 0; }
 .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 14rpx; }
 .metric, .link-card { padding: 18rpx; border-radius: 22rpx; background: rgba(255,255,255,.045); border: 1rpx solid rgba(255,255,255,.08); }
 .metric text, .link-card text { color: rgba(255,246,220,.55); font-size: 22rpx; }
