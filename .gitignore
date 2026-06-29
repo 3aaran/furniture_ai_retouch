@@ -77,6 +77,7 @@ coverage/
 .playwright/
 test-results/
 .superpowers/
+.worktrees/
 
 # certificates/keys
 *.pem
