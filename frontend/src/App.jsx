@@ -1,5 +1,6 @@
 import React,{useEffect,useState}from'react';
 import{createRoot}from'react-dom/client';
+import{getOrCreateAppRoot}from'./appRoot.js';
 import './styles/index.css';
 import{registerServiceWorker}from'./registerServiceWorker.js';
 import AppShell from'./AppShell.jsx';
@@ -7,6 +8,7 @@ import LandingPage from'./landing/LandingPage.jsx';
 import AppUpdateNotice from'./components/AppUpdateNotice.jsx';
 import{Login}from'./account/AccountPages.jsx';
 import{token,req}from'./appShared.jsx';
+import{AUTH_LOGIN_EVENT,AUTH_UNAUTHORIZED_EVENT}from'./authSession.js';
 import{parseWorkflowHash,redirectLegacyWorkflowPath}from'./admin/workflows/workflowRoute.js';
 
 function hashRoute(){
@@ -25,6 +27,30 @@ function App(){
     :null;
 
   useEffect(()=>{
+    const showWorkbench=event=>{
+      setMe(event.detail);
+      setRoute('workbench');
+      if(hashRoute()!=='workbench')window.location.hash='/workbench';
+    };
+    const showLogin=()=>{
+      setMe(null);
+      setRoute('login');
+      if(hashRoute()!=='login')window.location.hash='/login';
+    };
+    const syncToken=event=>{
+      if(event.key==='token'&&!event.newValue)showLogin();
+    };
+    window.addEventListener(AUTH_LOGIN_EVENT,showWorkbench);
+    window.addEventListener(AUTH_UNAUTHORIZED_EVENT,showLogin);
+    window.addEventListener('storage',syncToken);
+    return()=>{
+      window.removeEventListener(AUTH_LOGIN_EVENT,showWorkbench);
+      window.removeEventListener(AUTH_UNAUTHORIZED_EVENT,showLogin);
+      window.removeEventListener('storage',syncToken);
+    };
+  },[]);
+
+  useEffect(()=>{
     token()
       ? req('/api/me').then(setMe).catch(()=>localStorage.removeItem('token')).finally(()=>setLoading(false))
       : setLoading(false);
@@ -40,5 +66,5 @@ function App(){
   return <>{(me||workflowDemoAdmin)?<AppShell me={me||workflowDemoAdmin} setMe={setMe}/>:<Login/>}<AppUpdateNotice/></>;
 }
 
-createRoot(document.getElementById('root')).render(<App/>);
+getOrCreateAppRoot({container:document.getElementById('root'),createRoot}).render(<App/>);
 registerServiceWorker();

@@ -2,6 +2,7 @@
 import React,{useEffect,useState}from'react';
 import{ArrowLeft,ArrowRight,Building2,LockKeyhole,Phone,UserRound}from'lucide-react';
 import{req}from'../../appShared.jsx';
+import{completeAuthSession}from'../../authSession.js';
 import BrandMark from'../../components/BrandMark.jsx';
 import{APP_NAME,LOGIN_SUBTITLE}from'../../config/appConfig.js';
 
@@ -65,8 +66,12 @@ export default function Login(){
       const d=isSms
         ? await req('/api/auth/code-login',{method:'POST',body:JSON.stringify({phone:f.identifier,code:f.loginCode})})
         : await req('/api/auth/login',{method:'POST',body:JSON.stringify({identifier:f.identifier,password:f.password})});
-      localStorage.setItem('token',d.token);
-      location.reload();
+      completeAuthSession({
+        token:d.token,
+        user:d.user,
+        storage:window.localStorage,
+        eventTarget:window
+      });
     }catch(e){
       setMsg(e.message);
     }finally{

@@ -1,6 +1,6 @@
 import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createPortal}from'react-dom';
-import{AlertCircle,CheckCircle2,LogOut,Mail,Menu,MessageSquare,ShieldCheck,Ticket,WalletCards,X}from'lucide-react';
+import{AlertCircle,Bell,CheckCircle2,History,LogOut,Mail,Menu,MessageSquare,Settings,ShieldCheck,Ticket,WalletCards,X}from'lucide-react';
 import{adminNav,adminNavGroups,Dashboard,Applications,Merchants,AiConfig,SettingsPage,AdminLogs,Feedbacks,Announcements,RedeemCodes}from'./admin/AdminPages.jsx';
 import{storeAdminNav,staffNav,Workbench,StoreResources,StoreUsers,StoreTasks,Promotion,QuotaLogs}from'./store/StorePages.jsx';
 import{UserFeedback,FeedbackModal,RedeemModal,Profile}from'./account/AccountPages.jsx';
@@ -10,6 +10,7 @@ import{avatarViewUrl,roleName,userFriendlyMessage,recordClientFailure,req,fmt}fr
 import{APP_NAME,APP_SUBTITLE}from'./config/appConfig.js';
 import WorkflowAdminApp from'./admin/workflows/WorkflowAdminApp.jsx';
 import{navigateWorkflow,parseWorkflowHash}from'./admin/workflows/workflowRoute.js';
+import{inferToastKind}from'./toastKind.js';
 
 const DEFAULT_AVATAR='/default-avatar.svg';
 function NoticeCenterModal({onClose,onUnreadChange}){
@@ -296,7 +297,7 @@ function Shell({me,setMe}){
   const toastText=userFriendlyMessage(rawToastText,rawToastText||'操作失败请稍后重试');
   const toastKind=typeof msg==='object'
     ? (msg.kind||msg.type||'success')
-    : (/失败|错误|报错|不能|未配置|Payload|Error|failed|too large/i.test(rawToastText)?'error':'success');
+    : inferToastKind(rawToastText);
 
   const map={
     dashboard:Dashboard,
@@ -382,6 +383,7 @@ function Shell({me,setMe}){
   },[page,pageKeys,isAdmin]);
 
   const fallbackTitle={profile:'个人中心',quota:'额度明细',redeem:'兑换码创建',feedbacks:'问题反馈'};
+  const studioNavLabel={workbench:'工作室',resources:'资产库',users:'用户管理',promotion:'邀请共创',images:'历史任务'};
   const shouldShowMobileTabBar=!isAdmin&&isMobile&&mobileTopLevelPages.has(page)&&!mobileModalOpen&&!mobileSaveImage&&!redeemOpen&&!feedbackOpen&&!emailOpen&&!menu;
 
   return <div className="topApp" onClick={()=>{setNavDrop(null);setMenu(false)}}>
@@ -395,16 +397,18 @@ function Shell({me,setMe}){
       <nav className="topNav" onClick={e=>e.stopPropagation()}>
         {isAdmin?adminNavGroups.map(g=>
           <AdminNavGroup key={g.key} group={g} page={page} open={navDrop===g.key} onToggle={()=>setNavDrop(navDrop===g.key?null:g.key)} onGo={go} active={adminGroupActive(g)}/>
-        ):nav.map(([k,t,I])=><button key={k} className={page===k?'active':''} onClick={()=>go(k)}><I size={17}/>{t}</button>)}
+        ):nav.filter(([k])=>k!=='images').map(([k,t,I])=><button key={k} className={page===k?'active':''} onClick={()=>go(k)}><I size={17}/>{studioNavLabel[k]||t}</button>)}
 
         {!isAdmin&&<div className="topNavActions">
+          <button className={`iconNav ${page==='images'?'active':''}`} title="历史任务" onClick={()=>go('images')}><History size={20}/><span>历史任务</span></button>
+          <button className={`iconNav ${page==='profile'?'active':''}`} title="个人设置" onClick={()=>go('profile')}><Settings size={20}/><span>个人设置</span></button>
           <button className="iconNav" title="问题反馈" onClick={()=>setFeedbackOpen(true)}><MessageSquare size={20}/><span>问题反馈</span></button>
-          <button className="iconNav noticeIconNavV2" title="公告邮箱" onClick={()=>setEmailOpen(true)}><Mail size={20}/><span>公告邮箱</span>{noticeUnread>0&&<i>{noticeUnread>99?'99+':noticeUnread}</i>}</button>
+          <button className="iconNav noticeIconNavV2" title="公告邮箱" onClick={()=>setEmailOpen(true)}><Bell size={20}/><span>公告邮箱</span>{noticeUnread>0&&<i>{noticeUnread>99?'99+':noticeUnread}</i>}</button>
         </div>}
       </nav>
 
       <div className="topRight" onClick={e=>e.stopPropagation()} onMouseEnter={openProfileMenu} onMouseLeave={closeProfileMenuSoon}>
-        <button className="quotaPill" onClick={()=>go('quota')}><WalletCards size={17}/>{isAdmin?'额度明细':`${me.quota} 算力`}</button>
+        <button className="quotaPill" onClick={()=>go('quota')}><WalletCards size={17}/>{isAdmin?'额度明细':`算力额度 ${me.quota}`}</button>
         <button className="avatarBtn" type="button" onClick={(e)=>{e.stopPropagation();setMenu(v=>!v)}}><span><img src={avatarUrl||DEFAULT_AVATAR} alt="头像" loading="lazy" decoding="async"/></span><div><b>{me.displayName}</b><small>{roleName[me.role]}</small></div></button>
         {menu&&<div className="profileMenu">
           <button onClick={()=>go('profile')}><ShieldCheck size={18}/>个人中心</button>

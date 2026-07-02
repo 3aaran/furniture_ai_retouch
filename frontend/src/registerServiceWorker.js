@@ -1,10 +1,25 @@
-export function registerServiceWorker() {
-  if (!('serviceWorker' in navigator)) return;
+async function clearDevelopmentServiceWorker(serviceWorker,cachesLike) {
+  const registrations=await serviceWorker.getRegistrations?.()||[];
+  await Promise.all(registrations.map(registration=>registration.unregister()));
+  const cacheKeys=await cachesLike?.keys?.()||[];
+  await Promise.all(cacheKeys.map(key=>cachesLike.delete(key)));
+}
 
-  const hadController = Boolean(navigator.serviceWorker.controller);
+export function registerServiceWorker({
+  isDev=Boolean(import.meta.env?.DEV),
+  navigatorLike=globalThis.navigator,
+  cachesLike=globalThis.caches,
+  windowLike=globalThis.window,
+  documentLike=globalThis.document
+}={}) {
+  const serviceWorker=navigatorLike?.serviceWorker;
+  if (!serviceWorker) return;
+  if (isDev) return clearDevelopmentServiceWorker(serviceWorker,cachesLike);
 
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' })
+  const hadController = Boolean(serviceWorker.controller);
+
+  windowLike.addEventListener('load', () => {
+    serviceWorker.register('/sw.js', { updateViaCache: 'none' })
       .then(registration => {
         const applyWaitingWorker = () => {
           if (registration.waiting && navigator.serviceWorker.controller) {
@@ -26,10 +41,10 @@ export function registerServiceWorker() {
           });
         });
 
-        document.addEventListener('visibilitychange', () => {
-          if (document.visibilityState === 'visible') checkUpdate();
+        documentLike.addEventListener('visibilitychange', () => {
+          if (documentLike.visibilityState === 'visible') checkUpdate();
         });
-        window.addEventListener('online', checkUpdate);
+        windowLike.addEventListener('online', checkUpdate);
       })
       .catch(() => {
         // PWA registration is optional; the app should continue to run normally.
@@ -37,10 +52,10 @@ export function registerServiceWorker() {
   });
 
   let refreshing = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
+  serviceWorker.addEventListener('controllerchange', () => {
     if (!hadController) return;
     if (refreshing) return;
     refreshing = true;
-    window.location.reload();
+    windowLike.location.reload();
   });
 }

@@ -2,6 +2,7 @@ import React,{useEffect,useState}from'react';
 import{ChevronLeft,ChevronRight,Search,Download}from'lucide-react';
 import{roleName,audienceName,resourceTypeName,statusName,messageText,getDisplayStatusName}from'./config/uiText.js';
 import{assetUrlFromBase,imageDownloadUrl as imageDownloadUrlBase,imageFallbackUrl as imageFallbackUrlBase,imageListUrl as imageListUrlBase,imageViewUrlFor}from'./imageUrls.js';
+import{expireAuthSession,getAuthToken}from'./authSession.js';
 
 const apiBase=(import.meta.env.VITE_API_BASE_URL||'/api').replace(/\/$/,'');
 export const API=apiBase==='/api'?'':apiBase;
@@ -10,7 +11,7 @@ export {roleName};
 export const audName=audienceName;
 export const resTypeName=resourceTypeName;
 export const getStatusName=v=>statusName[String(v)]||getDisplayStatusName(v);
-export function token(){return localStorage.getItem('token')}
+export function token(){return getAuthToken({storage:window.localStorage})}
 export function recordClientFailure(source,detail){
   try{
     const key='clientFailureLogs';
@@ -133,6 +134,10 @@ export async function req(url,opt={}){
   try{d=t?JSON.parse(t):{}}catch{d={message:t}}
   if(!r.ok){
     const raw=d.message||messageText.requestFailed;
+    if(r.status===401&&!String(url).startsWith('/api/auth/')){
+      console.warn(`[auth] unauthorized response ${url}: ${raw}`);
+      expireAuthSession();
+    }
     const err=new Error(userFriendlyMessage(raw,messageText.requestFailed));
     err.rawMessage=raw;
     recordClientFailure(url,raw);
@@ -147,6 +152,10 @@ export async function reqForm(url,form){
   try{d=t?JSON.parse(t):{}}catch{d={message:t}}
   if(!r.ok){
     const raw=d.message||messageText.requestFailed;
+    if(r.status===401&&!String(url).startsWith('/api/auth/')){
+      console.warn(`[auth] unauthorized response ${url}: ${raw}`);
+      expireAuthSession();
+    }
     const err=new Error(userFriendlyMessage(raw,messageText.requestFailed));
     err.rawMessage=raw;
     recordClientFailure(url,raw);
