@@ -1,4 +1,5 @@
 ﻿import React,{useEffect,useRef,useState}from'react';
+import{createPortal}from'react-dom';
 import{Brush,Camera,Clapperboard,Download,Droplet,Eye,Image as ImageIcon,Layers,PenLine,Rotate3d,Search,Trash2,WandSparkles,X}from'lucide-react';
 import{API,token,req,reqForm,fmt,resTypeName,imageViewUrl,imageListUrl,assetUrl,fallbackToOriginalImage,openImageDownload}from'../../appShared.jsx';
 import{getFeatureDisplayName}from'../../config/uiText.js';
@@ -13,6 +14,44 @@ import{compressImageForUpload,createLocalPreviewUrl,revokeLocalPreviewUrl}from'.
 
 const BASE_RATIO_OPTIONS=['自适应','1:1','4:3','3:4','16:9'];
 const BASE_RESOLUTION_OPTIONS=['1K','2K','4K'];
+
+function wbWatermarkPlacement(config={}){
+  const x=Number(config.offsetX||0);
+  const y=Number(config.offsetY||0);
+  const position=config.position||'center';
+  const map={
+    'top-left':{left:x,top:y},
+    'top-center':{left:`calc(50% + ${x}px)`,top:y,transform:'translateX(-50%)'},
+    'top-right':{right:x,top:y},
+    'center-left':{left:x,top:'50%',transform:'translateY(-50%)'},
+    center:{left:`calc(50% + ${x}px)`,top:'50%',transform:'translate(-50%,-50%)'},
+    'center-right':{right:x,top:'50%',transform:'translateY(-50%)'},
+    'bottom-left':{left:x,bottom:y},
+    'bottom-center':{left:`calc(50% + ${x}px)`,bottom:y,transform:'translateX(-50%)'},
+    'bottom-right':{right:x,bottom:y}
+  };
+  return map[position]||map.center;
+}
+
+function wbTextWatermarkConfig(config={}){
+  return {...config,mode:'text',text:String(config.text||'').trim(),image:'',imageId:'',imageUrl:''};
+}
+
+function WorkbenchWatermarkOverlay({config}){
+  const textConfig=wbTextWatermarkConfig(config||{});
+  if(!textConfig.text)return null;
+  if(textConfig.style==='tile'){
+    const items=Array.from({length:40});
+    return <div className="taskWatermarkTile wbCanvasWatermark" style={{color:textConfig.color||'#f0d68a',opacity:Number(textConfig.opacity||100)/100,fontSize:`${Math.max(14,Number(textConfig.fontSize||46)*0.34)}px`,transform:`rotate(${Number(textConfig.rotate||0)}deg)`,gap:`${Math.max(12,Number(textConfig.gap||220)*0.12)}px`}}>
+      {items.map((_,i)=><span key={i}>{textConfig.text}{textConfig.subText?<small style={{color:textConfig.accent||'#fff'}}>{textConfig.subText}</small>:null}</span>)}
+    </div>;
+  }
+  const baseStyle={...wbWatermarkPlacement(textConfig),opacity:Number(textConfig.opacity||100)/100};
+  return <div className={`taskWatermarkText wbCanvasWatermark ${textConfig.style||'signature'}`} style={{...baseStyle,color:textConfig.color||'#f0d68a',fontSize:`${Math.max(16,Number(textConfig.fontSize||46)*0.5)}px`,transform:`${baseStyle.transform||''} rotate(${Number(textConfig.rotate||0)}deg)`}}>
+    <b>{textConfig.text}</b>
+    {textConfig.subText&&<small style={{color:textConfig.accent||'#fff'}}>{textConfig.subText}</small>}
+  </div>;
+}
 
 function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   function imgSrc(input){
@@ -82,6 +121,8 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   const [resourceModal,setResourceModal]=useState({open:false,target:'source',keyword:'',scope:'ALL'});
   const [taskDetail,setTaskDetail]=useState(null);
   const [watermarkOpen,setWatermarkOpen]=useState(false);
+  const [workbenchWatermark,setWorkbenchWatermark]=useState({loading:true,enabled:false,configured:false,canConfigure:false,config:null});
+  const [showWorkbenchWatermark,setShowWorkbenchWatermark]=useState(false);
   const [resourceUploadOpen,setResourceUploadOpen]=useState(false);
   const [resourceUpload,setResourceUpload]=useState({name:'',resourceType:'material',objectName:'',colorName:'',description:''});
   const [resourceUploadFile,setResourceUploadFile]=useState(null);
@@ -94,6 +135,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   const [deleteTarget,setDeleteTarget]=useState(null);
   const [leftDrawerOpen,setLeftDrawerOpen]=useState(false);
   const [rightDrawerOpen,setRightDrawerOpen]=useState(false);
+  const [featurePopover,setFeaturePopover]=useState({open:false,group:'base',x:0,y:0});
   const recentPreviewHideTimer=useRef(null);
   const storyboardsRef=useRef([]);
   const uploadSeqRef=useRef({source:0,reference:0});
@@ -101,6 +143,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
 
   useEffect(()=>{req('/api/resources?pageSize=20').then(d=>setResources(d.items||[])).catch(()=>{})},[]);
   useEffect(()=>{req('/api/settings/public').then(setCostSettings).catch(()=>{})},[]);
+  useEffect(()=>{loadWorkbenchWatermark()},[]);
   useEffect(()=>{refreshRecent()},[]);
   useEffect(()=>{
     const raw=localStorage.getItem('pendingWorkbenchImage');
@@ -130,6 +173,38 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
       clearTimeout(recentPreviewHideTimer.current);
       recentPreviewHideTimer.current=null;
     }
+  }
+
+  function loadWorkbenchWatermark(){
+    if(!canConfigureWatermark){
+      setWorkbenchWatermark({loading:false,enabled:false,configured:false,canConfigure:false,config:null});
+      setShowWorkbenchWatermark(false);
+      return;
+    }
+    setWorkbenchWatermark(prev=>({...prev,loading:true}));
+    req('/api/watermark/settings')
+      .then(d=>{
+        const cfg=wbTextWatermarkConfig(d?.config||{});
+        const ready=!!d?.configured&&!!cfg.text;
+        setWorkbenchWatermark({...d,config:cfg,configured:ready,loading:false});
+        setShowWorkbenchWatermark(v=>ready? v:false);
+      })
+      .catch(()=>{
+        setWorkbenchWatermark({loading:false,enabled:false,configured:false,canConfigure:canConfigureWatermark,config:null});
+        setShowWorkbenchWatermark(false);
+      });
+  }
+
+  function toggleWorkbenchWatermark(){
+    if(workbenchWatermark.loading)return setMsg('正在读取水印配置');
+    if(!canConfigureWatermark)return setMsg('当前账号暂无水印权限');
+    const cfg=wbTextWatermarkConfig(workbenchWatermark.config||{});
+    if(!workbenchWatermark.configured||!cfg.text){
+      setMsg('请先配置门店水印');
+      setWatermarkOpen(true);
+      return;
+    }
+    setShowWorkbenchWatermark(v=>!v);
   }
 
   function getRecentSourceId(item,cached){
@@ -423,6 +498,19 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
     return resources.find(r=>String(r.id)===String(selectedResource));
   }
 
+  function openFeaturePopover(group,e){
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
+    const fallbackRect=e?.currentTarget?.getBoundingClientRect?.();
+    const x=Math.min(window.innerWidth-330,Math.max(16,Number(e?.clientX||fallbackRect?.right||260)+12));
+    const y=Math.min(window.innerHeight-280,Math.max(88,Number(e?.clientY||fallbackRect?.top||160)-16));
+    setFeaturePopover({open:true,group,x,y});
+  }
+
+  function closeFeaturePopover(){
+    setFeaturePopover(prev=>({...prev,open:false}));
+  }
+
   function activateFeatureGroup(group){
     if(group==='base'){
       setFeatureGroup('base');
@@ -430,6 +518,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
       if(isPromotionFeatureKey(op)) setOp('material');
       setRatio(v=>BASE_RATIO_OPTIONS.includes(v)?v:'自适应');
       setResolution(v=>BASE_RESOLUTION_OPTIONS.includes(v)?v:'2K');
+      closeFeaturePopover();
       return;
     }
     if(group==='promotion'){
@@ -438,9 +527,12 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
       if(!isPromotionFeatureKey(op)) setOp(DEFAULT_PROMOTION_KEY);
       setRatio(v=>BASE_RATIO_OPTIONS.includes(v)?v:'自适应');
       setResolution(v=>BASE_RESOLUTION_OPTIONS.includes(v)?v:'2K');
+      closeFeaturePopover();
       return;
     }
-    setMsg('宣传短视频开发中');
+    setFeatureGroup('video');
+    setMediaMode('video');
+    closeFeaturePopover();
   }
 
   function selectPromotionFeature(key){
@@ -450,6 +542,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
     setOp(feature.key);
     setRatio(v=>BASE_RATIO_OPTIONS.includes(v)?v:'自适应');
     setResolution(v=>BASE_RESOLUTION_OPTIONS.includes(v)?v:'2K');
+    closeFeaturePopover();
   }
 
   function selectBaseFeature(key){
@@ -458,6 +551,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
     setOp(key);
     setRatio(v=>BASE_RATIO_OPTIONS.includes(v)?v:'自适应');
     setResolution(v=>BASE_RESOLUTION_OPTIONS.includes(v)?v:'2K');
+    closeFeaturePopover();
   }
 
   function filteredResources(){
@@ -818,6 +912,11 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
     if(!kw)return true;
     return String(i.id).toLowerCase().includes(kw)||recentTypeName(i).toLowerCase().includes(kw);
   }).slice(0,12);
+  const latestCompareItem=mediaMode==='image'?recentItems.find(item=>{
+    const status=String(item?.status||'').toLowerCase();
+    return !['queued','pending','running','failed'].includes(status)&&!!(item?.resultImage||item?.imageUrl||item?.url||item?.imageId||item?.id);
+  }):null;
+  const latestCompareImageUrl=origin&&latestCompareItem?imgSrc(latestCompareItem.resultImage||latestCompareItem):'';
 
   function updatePromotionOption(key,value){
     setPromotionOptions(prev=>({
@@ -947,28 +1046,45 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
     </>;
   }
 
+  function renderFeatureDetailPopover(){
+    if(!featurePopover.open)return null;
+    const group=featurePopover.group;
+    const title=group==='base'?'选择基础功能':group==='promotion'?'选择宣传图功能':'选择视频功能';
+    const items=group==='promotion'
+      ? promotionFeatures.map(item=>[item.key,item.name,promotionFeatureIconMap[item.key]||ImageIcon,item.desc])
+      : group==='video'
+        ? [['video_generate','宣传视频生成',Clapperboard,'上传分镜图与描述，生成家具宣传短视频']]
+        : featureList.map(([key,label,Icon])=>[key,label,Icon,ops[key]?.desc||'']);
+    return createPortal(<>
+      <button type="button" className="wbFeaturePopoverBackdrop" aria-label="关闭功能细节弹窗" onClick={closeFeaturePopover}/>
+      <div className="wbFeaturePopover" style={{left:featurePopover.x,top:featurePopover.y}} role="menu" aria-label={title} onClick={e=>e.stopPropagation()}>
+        <div className="wbFeaturePopoverHead"><b>{title}</b><button type="button" onClick={closeFeaturePopover} aria-label="关闭"><X size={16}/></button></div>
+        <div className="wbFeaturePopoverList">
+          {items.map(([key,label,Icon,desc])=>{
+            const active=group==='promotion'?op===key:group==='video'?mediaMode==='video':op===key;
+            const choose=()=>group==='promotion'?selectPromotionFeature(key):group==='video'?activateFeatureGroup('video'):selectBaseFeature(key);
+            return <button key={key} type="button" className={active?'active':''} onClick={choose} role="menuitem">
+              <span><Icon size={18}/></span>
+              <strong>{label}</strong>
+              {desc&&<small>{desc}</small>}
+            </button>;
+          })}
+        </div>
+      </div>
+    </>,document.body);
+  }
+
   function renderFeaturePanel(){
     return <>
       <div className="wbMobileDrawerHead">
         <div><span>{currentFeatureMode}</span><b>{currentFeatureLabel}</b></div>
         <button type="button" className="wbDrawerClose" onClick={()=>setLeftDrawerOpen(false)} aria-label="关闭功能侧栏"><X size={18}/></button>
       </div>
-      <div className="wbSectionTabs" aria-label="功能分组">
-        <button type="button" className={featureGroup==='base'?'active':''} onClick={()=>activateFeatureGroup('base')}>基础</button>
-        <button type="button" className={featureGroup==='promotion'?'active':''} onClick={()=>activateFeatureGroup('promotion')}>宣传图</button>
-        <button type="button" className="isComing" onClick={()=>activateFeatureGroup('video')}>宣传短视频</button>
+      <div className="wbSectionTabs wbMainFeatureBranches" aria-label="功能主分支">
+        <button type="button" className={featureGroup==='base'&&mediaMode==='image'?'active':''} onClick={e=>openFeaturePopover('base',e)}>基础</button>
+        <button type="button" className={featureGroup==='promotion'&&mediaMode==='image'?'active':''} onClick={e=>openFeaturePopover('promotion',e)}>宣传图</button>
+        <button type="button" className={mediaMode==='video'?'active':''} onClick={e=>openFeaturePopover('video',e)}>宣传短视频</button>
       </div>
-      {mediaMode==='image'
-        ? featureGroup==='promotion'
-          ? <div className="wbFeatureGrid wbPromoFeatureGrid">{promotionFeatures.map(item=>{
-              const Icon=promotionFeatureIconMap[item.key]||ImageIcon;
-              return <button key={item.key} className={op===item.key?'wbFeatureBtn active':'wbFeatureBtn'} onClick={()=>selectPromotionFeature(item.key)}>
-                <span className="wbFeatureTag"><Icon size={18}/></span>
-                <span>{item.name}</span>
-              </button>;
-            })}</div>
-          : <div className="wbFeatureGrid">{featureList.map(([k,label,Icon])=><button key={k} className={op===k?'wbFeatureBtn active':'wbFeatureBtn'} onClick={()=>selectBaseFeature(k)}><span className="wbFeatureTag"><Icon size={18}/></span><span>{label}</span></button>)}</div>
-        : <div className="wbFeatureGrid wbVideoFeatureGrid"><button type="button" className="wbFeatureBtn active wbVideoFeatureBtn"><span className="wbFeatureTag"><Clapperboard size={18}/></span><span>宣传视频生成</span></button></div>}
       <div className="wbDivider"/>
       {renderLeftPanel()}
     </>;
@@ -1027,7 +1143,13 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
         <button type="button" title="缩小">－</button>
         <button type="button" title="拖拽画布">☝</button>
       </div>
-      <button className="wbStudioWatermarkToggle" type="button" onClick={()=>canConfigureWatermark?setWatermarkOpen(true):setMsg('当前账号暂无水印配置权限')}>
+      <button
+        className={`wbStudioWatermarkToggle ${showWorkbenchWatermark?'active':''} ${workbenchWatermark.configured?'isReady':'isNotReady'}`}
+        type="button"
+        disabled={workbenchWatermark.loading}
+        title={workbenchWatermark.configured?'控制当前图片是否显示水印':'请先配置水印'}
+        onClick={toggleWorkbenchWatermark}
+      >
         <span>原图</span><i/><b>水印</b>
       </button>
     </div>;
@@ -1107,7 +1229,16 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
         {items.length?items.map(item=>{
           const running=item.status==='queued'||item.status==='running';
           const failed=item.status==='failed';
-          return <button key={item.id} type="button" className={running?'isLoading':failed?'isFailed':''} title={recentTypeName(item)} onClick={()=>openRecentTask(item)}>
+          return <button
+            key={item.id}
+            type="button"
+            className={running?'isLoading':failed?'isFailed':''}
+            title={recentTypeName(item)}
+            onMouseEnter={(e)=>{setRecentHoverId(item.id);showRecentOriginal(item,e);}}
+            onMouseMove={(e)=>moveRecentOriginal(item,e)}
+            onMouseLeave={()=>{setRecentHoverId(prev=>prev===item.id?'':prev);hideRecentOriginal();}}
+            onClick={()=>openRecentTask(item)}
+          >
             <img src={listImgSrc(item)} alt="最近生成" loading="lazy" decoding="async" onError={e=>fallbackToOriginalImage(e,item)}/>
             {running&&<i className="wbSpin"/>}
             {failed&&<em>失败</em>}
@@ -1203,6 +1334,8 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
             clearSourceImage={clearSourceImage}
             clearReferenceImage={clearReferenceImage}
             setMsg={setMsg}
+            watermarkOverlay={showWorkbenchWatermark&&workbenchWatermark.configured?<WorkbenchWatermarkOverlay config={workbenchWatermark.config}/>:null}
+            generatedImageUrl={latestCompareImageUrl}
           />
           {renderStudioRecentStrip()}
         </>
@@ -1213,6 +1346,8 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
       {mediaMode==='image'?renderStudioControlPanel():renderRecentPanel()}
     </div>
   </div>
+
+  {renderFeatureDetailPopover()}
 
   {recentSourcePreview&&<div
     style={{
@@ -1281,7 +1416,7 @@ function Workbench({me,setMe,setMsg,goPage,TaskDetailModal}){
   />}
 
   <ResourcePickerModal resourceModal={resourceModal} setResourceModal={setResourceModal} modalItems={modalItems} chooseResourceImage={chooseResourceImage} imgSrc={listImgSrc}/>
-  <WatermarkConfigModal open={watermarkOpen} onClose={()=>setWatermarkOpen(false)} setMsg={setMsg}/>
+  <WatermarkConfigModal open={watermarkOpen} onClose={()=>{setWatermarkOpen(false);loadWorkbenchWatermark();}} setMsg={setMsg}/>
   <ConfirmDialog
     open={!!deleteTarget}
     title="删除图片"

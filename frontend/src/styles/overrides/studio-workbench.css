@@ -17,255 +17,34 @@
 }
 
 @media (min-width:861px){
+  html:has(.wbScreen),
   body:has(.wbScreen){
+    width:var(--app-zoomed-viewport-width,100vw);
+    min-width:var(--app-zoomed-viewport-width,100vw);
+    height:var(--app-zoomed-viewport-height,100vh);
+    min-height:var(--app-zoomed-viewport-height,100vh);
     background:var(--studio-bg);
     overflow:hidden;
   }
 
   .topApp:has(.wbScreen){
-    min-height:100vh;
+    width:var(--app-zoomed-viewport-width,100vw);
+    min-height:var(--app-zoomed-viewport-height,100vh);
     background:var(--studio-bg);
     color:var(--studio-text);
     overflow:hidden;
   }
 
-  .topApp:has(.wbScreen) .topbar{
-    position:fixed;
-    inset:0 0 auto 0;
-    z-index:100;
-    height:68px;
-    min-height:68px;
-    padding:0 56px;
-    display:flex;
-    align-items:center;
-    gap:28px;
-    background:rgba(19,19,21,.86);
-    border-bottom:1px solid var(--studio-line);
-    backdrop-filter:blur(18px);
-    box-shadow:none;
-  }
-
-  .topApp:has(.wbScreen) .topBrand{
-    flex:0 0 auto;
-    min-width:136px;
-    height:68px;
-    padding:0;
-    gap:12px;
-    color:#fff3da;
-    background:transparent;
-    border:0;
-    border-radius:0;
-    box-shadow:none;
-  }
-
-  .topApp:has(.wbScreen) .topBrand:hover{
-    background:transparent;
-    transform:none;
-  }
-
-  .topApp:has(.wbScreen) .topBrand .topBrandMenuIconV5{
-    display:none;
-  }
-
-  .topApp:has(.wbScreen) .topBrand .brandMark,
-  .topApp:has(.wbScreen) .topBrand svg:first-of-type{
-    width:28px;
-    height:28px;
-    color:#fff3da;
-    filter:none;
-  }
-
-  .topApp:has(.wbScreen) .topBrand b{
-    display:block;
-    color:#fff3da;
-    font-size:24px;
-    line-height:28px;
-    font-weight:900;
-    letter-spacing:-.04em;
-  }
-
-  .topApp:has(.wbScreen) .topBrand small{
-    display:none;
-  }
-
-  .topApp:has(.wbScreen) .topNav{
-    flex:1 1 auto;
-    min-width:0;
-    display:flex;
-    align-items:center;
-    justify-content:flex-start;
-    gap:22px;
-    overflow:visible;
-  }
-
-  .topApp:has(.wbScreen) .topNav>button,
-  .topApp:has(.wbScreen) .topNav>.navGroup>button{
-    position:relative;
-    height:68px;
-    padding:0;
-    border:0;
-    border-radius:0;
-    background:transparent;
-    color:#e5dfd1;
-    font-size:16px;
-    font-weight:800;
-    letter-spacing:.01em;
-    gap:8px;
-  }
-
-  .topApp:has(.wbScreen) .topNav>button svg{
-    display:none;
-  }
-
-  .topApp:has(.wbScreen) .topNav>button:hover,
-  .topApp:has(.wbScreen) .topNav>button.active{
-    background:transparent;
-    color:#fff3da;
-  }
-
-  .topApp:has(.wbScreen) .topNav>button.active:after,
-  .topApp:has(.wbScreen) .topNav>.navGroup>button.active:after{
-    content:"";
-    position:absolute;
-    left:0;
-    right:0;
-    bottom:0;
-    height:2px;
-    border-radius:999px;
-    background:var(--studio-gold);
-    box-shadow:0 0 16px rgba(240,214,138,.42);
-  }
-
-  .topApp:has(.wbScreen) .topNavActions{
-    margin-left:auto;
-    display:flex;
-    align-items:center;
-    gap:14px;
-    padding-left:14px;
-    border-left:1px solid rgba(255,255,255,.08);
-  }
-
-  .topApp:has(.wbScreen) .topNavActions .iconNav{
-    position:relative;
-    width:24px;
-    height:68px;
-    padding:0;
-    display:grid;
-    place-items:center;
-    border:0;
-    background:transparent;
-    color:#d9d2c4;
-    border-radius:0;
-  }
-
-  .topApp:has(.wbScreen) .topNavActions .iconNav svg{
-    display:block;
-    width:22px;
-    height:22px;
-  }
-
-  .topApp:has(.wbScreen) .topNavActions .iconNav span{
-    position:absolute;
-    width:1px;
-    height:1px;
-    overflow:hidden;
-    clip:rect(0 0 0 0);
-    white-space:nowrap;
-  }
-
-  .topApp:has(.wbScreen) .topNavActions .iconNav:hover,
-  .topApp:has(.wbScreen) .topNavActions .iconNav.active{
-    color:#fff3da;
-  }
-
-  .topApp:has(.wbScreen) .noticeIconNavV2 i{
-    position:absolute;
-    top:15px;
-    right:-5px;
-    min-width:16px;
-    height:16px;
-    padding:0 4px;
-    display:grid;
-    place-items:center;
-    border-radius:999px;
-    background:#93000a;
-    color:#ffdad6;
-    font-size:10px;
-    font-style:normal;
-    font-weight:900;
-  }
-
-  .topApp:has(.wbScreen) .topRight{
-    flex:0 0 auto;
-    display:flex;
-    align-items:center;
-    gap:24px;
-  }
-
-  .topApp:has(.wbScreen) .quotaPill{
-    height:30px;
-    min-width:150px;
-    padding:0 16px;
-    border:1px solid rgba(255,255,255,.08);
-    border-radius:999px;
-    background:rgba(255,255,255,.08);
-    color:#fff3da;
-    box-shadow:none;
-    font-size:13px;
-    font-family:"JetBrains Mono","SFMono-Regular",Consolas,monospace;
-    font-weight:900;
-    letter-spacing:.02em;
-  }
-
-  .topApp:has(.wbScreen) .quotaPill svg{
-    display:none;
-  }
-
-  .topApp:has(.wbScreen) .avatarBtn{
-    width:36px;
-    height:36px;
-    padding:0;
-    border:1px solid rgba(255,255,255,.12);
-    border-radius:999px;
-    background:rgba(255,255,255,.08);
-    display:grid;
-    place-items:center;
-    box-shadow:none;
-  }
-
-  .topApp:has(.wbScreen) .avatarBtn span{
-    width:30px;
-    height:30px;
-    border-radius:50%;
-    overflow:hidden;
-    display:block;
-  }
-
-  .topApp:has(.wbScreen) .avatarBtn img{
-    width:100%;
-    height:100%;
-    display:block;
-    object-fit:cover;
-  }
-
-  .topApp:has(.wbScreen) .avatarBtn div{
-    display:none;
-  }
-
-  .topApp:has(.wbScreen) .profileMenu{
-    top:54px;
-    right:0;
-    border-radius:16px;
-    background:#1c1b1d;
-    border:1px solid var(--studio-line);
-    box-shadow:0 28px 80px rgba(0,0,0,.64);
-  }
-
+  /* 顶部导航统一走 AppShell + 全局 topbar 样式；工作台只负责内容区布局。 */
   .topMain:has(.wbScreen){
     position:fixed;
-    inset:68px 0 0 0;
-    height:calc(100vh - 68px);
-    width:100vw;
+    top:78px;
+    left:0;
+    right:auto;
+    bottom:auto;
+    height:calc(var(--app-zoomed-viewport-height,100vh) - 78px);
+    width:var(--app-zoomed-viewport-width,100vw)!important;
+    max-width:none!important;
     padding:0!important;
     margin:0!important;
     overflow:hidden;
@@ -279,10 +58,10 @@
   .topApp .wbScreen{
     --wb-left-width:260px;
     --wb-right-width:330px;
-    width:100vw!important;
-    height:calc(100vh - 68px)!important;
+    width:var(--app-zoomed-viewport-width,100vw)!important;
+    height:calc(var(--app-zoomed-viewport-height,100vh) - 78px)!important;
     max-width:none!important;
-    min-width:1040px;
+    min-width:min(1040px,var(--app-zoomed-viewport-width,100vw));
     display:grid!important;
     grid-template-columns:var(--wb-left-width) minmax(520px,1fr) var(--wb-right-width)!important;
     gap:0!important;
@@ -299,6 +78,7 @@
   .topApp .wbSidePanel,
   .topApp .wbCenterPanel,
   .topApp .wbRightPanel{
+    position:relative;
     min-width:0;
     min-height:0!important;
     width:100%!important;
@@ -307,6 +87,7 @@
     border-radius:0!important;
     box-shadow:none!important;
     color:var(--studio-text);
+    contain:layout paint;
   }
 
   .topApp .wbSidePanel{
@@ -369,42 +150,52 @@
     display:none!important;
   }
 
-  .topApp .wbSectionTabs{
+  .topApp .wbSectionTabs,
+  .topApp .wbMainFeatureBranches{
     display:grid!important;
-    grid-template-columns:1fr;
-    gap:8px;
+    grid-template-columns:1fr!important;
+    grid-auto-flow:row!important;
+    gap:8px!important;
     padding:0 0 14px;
     margin:0;
     border:0;
     background:transparent;
   }
 
-  .topApp .wbSectionTabs button{
-    height:42px;
+  .topApp .wbSectionTabs button,
+  .topApp .wbMainFeatureBranches button{
+    width:100%!important;
+    height:44px;
     padding:0 12px;
     border:0;
-    border-radius:4px;
+    border-radius:6px;
     background:transparent;
     color:var(--studio-muted);
-    display:flex;
+    display:flex!important;
     align-items:center;
     justify-content:flex-start;
     gap:10px;
     font-size:14px;
     font-weight:900;
+    writing-mode:horizontal-tb!important;
+    white-space:nowrap;
   }
 
-  .topApp .wbSectionTabs button:before{
+  .topApp .wbSectionTabs button:before,
+  .topApp .wbMainFeatureBranches button:before{
     content:"○";
     width:28px;
     color:var(--studio-muted);
     font-size:20px;
     text-align:center;
     font-weight:400;
+    flex:0 0 28px;
   }
 
-  .topApp .wbSectionTabs button:nth-child(2):before{content:"✎";}
-  .topApp .wbSectionTabs button:nth-child(3):before{content:"▷";}
+  .topApp .wbSectionTabs button:nth-child(2):before,
+  .topApp .wbMainFeatureBranches button:nth-child(2):before{content:"✎";}
+  .topApp .wbSectionTabs button:nth-child(3):before,
+  .topApp .wbMainFeatureBranches button:nth-child(3):before{content:"▷";}
 
   .topApp .wbSectionTabs button.active{
     background:rgba(240,214,138,.14);
@@ -480,14 +271,17 @@
   }
 
   .topApp .wbResourceGrid{
+    position:relative;
     flex:1 1 auto;
     min-height:0;
+    max-width:100%;
     overflow:auto;
     display:grid!important;
     grid-template-columns:1fr 1fr!important;
     align-content:start;
     gap:8px!important;
     padding:0 2px 14px 0;
+    isolation:isolate;
   }
 
   .topApp .wbResourceGrid::-webkit-scrollbar,
@@ -505,10 +299,13 @@
 
   .topApp .wbUploadCard,
   .topApp .wbResourceCard{
+    position:relative!important;
+    min-width:0!important;
+    max-width:100%!important;
     min-height:116px!important;
     height:116px!important;
     padding:0!important;
-    overflow:hidden;
+    overflow:hidden!important;
     border:1px solid rgba(255,255,255,.12)!important;
     border-radius:8px!important;
     background:#343235!important;
@@ -517,6 +314,7 @@
     flex-direction:column!important;
     justify-content:flex-end!important;
     box-shadow:none!important;
+    isolation:isolate;
   }
 
   .topApp .wbUploadCard{
@@ -532,12 +330,17 @@
   }
 
   .topApp .wbResourceCard img{
-    position:absolute;
-    inset:0 0 26px 0;
-    width:100%;
+    position:absolute!important;
+    inset:0 0 26px 0!important;
+    width:100%!important;
     height:calc(100% - 26px)!important;
-    object-fit:cover;
+    max-width:100%!important;
+    max-height:calc(100% - 26px)!important;
+    object-fit:cover!important;
     opacity:.9;
+    z-index:1;
+    display:block!important;
+    transform:none!important;
   }
 
   .topApp .wbResourceCard b{
@@ -598,11 +401,12 @@
     display:flex!important;
     flex-direction:column!important;
     gap:0!important;
-    padding:34px 18px 14px!important;
+    padding:28px 18px 14px!important;
     overflow:hidden!important;
     background:#000!important;
     border:0!important;
     border-right:1px solid var(--studio-line)!important;
+    z-index:2;
   }
 
   .topApp .wbCenterPanel:before{
@@ -689,11 +493,26 @@
     content:"";
     position:absolute;
     top:1px;
-    right:1px;
+    left:1px;
     width:16px;
     height:16px;
     border-radius:50%;
+    background:#8f8879;
+    transition:.18s ease;
+  }
+
+  .topApp .wbStudioWatermarkToggle.active i:after{
+    left:23px;
     background:var(--studio-gold-2);
+  }
+
+  .topApp .wbStudioWatermarkToggle.isNotReady{
+    opacity:.72;
+  }
+
+  .topApp .wbStudioWatermarkToggle:disabled{
+    opacity:.5;
+    cursor:not-allowed;
   }
 
   .topApp .wbCenterPanel .wbMainBlock{
@@ -748,15 +567,21 @@
   .topApp .wbCenterPanel .wbUploadInner{
     position:relative;
     z-index:3;
-    min-width:260px;
-    padding:34px 28px;
-    display:grid;
-    place-items:center;
+    width:min(880px,92%);
+    max-width:92%;
+    max-height:82%;
+    aspect-ratio:4/3;
+    padding:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
     gap:10px;
     border:1px dashed rgba(240,214,138,.32);
-    border-radius:14px;
-    background:rgba(255,255,255,.03);
+    border-radius:12px;
+    background:rgba(255,255,255,.025);
     color:#fff3da;
+    box-shadow:0 24px 90px rgba(0,0,0,.44), inset 0 0 80px rgba(255,255,255,.025);
   }
 
   .topApp .wbCenterPanel .wbUploadCircle{
@@ -796,47 +621,93 @@
     inset:0;
     display:grid;
     place-items:center;
+    overflow:hidden;
     background:radial-gradient(circle at 50% 42%,rgba(255,255,255,.08),transparent 50%),#030303;
   }
 
-  .topApp .wbPreviewWrap:after{
+  .topApp .wbPreviewWrap.hasCompare:after{
     content:"";
     position:absolute;
     top:0;
     bottom:0;
-    left:50%;
+    left:var(--compare-left,50%);
     width:1px;
     background:var(--studio-gold);
     box-shadow:0 0 24px rgba(240,214,138,.44);
     pointer-events:none;
   }
 
-  .topApp .wbPreviewWrap:before{
-    content:"‹ ›";
+  .topApp .wbPreview,
+  .topApp .wbPreviewWrap img.wbPreview,
+  .topApp .wbPreviewWrap .wbPreview{
+    width:auto!important;
+    height:auto!important;
+    max-width:calc(100% - 44px)!important;
+    max-height:calc(100% - 44px)!important;
+    object-fit:contain!important;
+    object-position:center center!important;
+    background:transparent!important;
+    display:block!important;
+    align-self:center;
+    justify-self:center;
+    border-radius:10px;
+  }
+
+  .topApp .wbCompareImage{
+    position:absolute!important;
+    left:50%!important;
+    top:50%!important;
+    transform:translate(-50%,-50%)!important;
+    margin:0!important;
+  }
+
+  .topApp .wbCompareGeneratedLayer{
     position:absolute;
-    left:50%;
+    inset:0;
+    z-index:3;
+    pointer-events:none;
+  }
+
+  .topApp .wbCompareHandle{
+    position:absolute;
     top:50%;
-    transform:translate(-50%,-50%);
-    z-index:5;
-    width:36px;
-    height:36px;
-    display:grid;
-    place-items:center;
+    z-index:8;
+    width:38px;
+    height:38px;
+    padding:0;
     border-radius:50%;
+    border:2px solid var(--studio-gold);
     background:#121212;
     color:var(--studio-gold);
-    border:2px solid var(--studio-gold);
+    display:grid;
+    place-items:center;
+    transform:translate(-50%,-50%);
+    cursor:ew-resize;
+    touch-action:none;
+    box-shadow:0 0 22px rgba(240,214,138,.28);
+  }
+
+  .topApp .wbCompareHandle:before{
+    content:"";
+    position:absolute;
+    top:-999px;
+    bottom:-999px;
+    left:50%;
+    width:1px;
+    background:var(--studio-gold);
+    box-shadow:0 0 24px rgba(240,214,138,.44);
+    transform:translateX(-50%);
+  }
+
+  .topApp .wbCompareHandle span{
+    position:relative;
+    z-index:2;
     font-weight:900;
   }
 
-  .topApp .wbPreview{
-    max-width:100%!important;
-    max-height:100%!important;
-    width:100%!important;
-    height:100%!important;
-    object-fit:contain!important;
-    background:#050505!important;
-    display:block;
+  .topApp .wbCanvasWatermark{
+    pointer-events:none;
+    z-index:7;
   }
 
   .topApp .wbClearImageBtn{
@@ -1195,12 +1066,122 @@
   }
 }
 
-@media (min-width:861px) and (max-width:1180px){
-  .topApp:has(.wbScreen) .topbar{
-    padding:0 22px;
-    gap:18px;
-  }
+.wbFeaturePopoverBackdrop{
+  position:fixed;
+  inset:0;
+  z-index:2147482500;
+  border:0;
+  background:transparent;
+}
 
+.wbFeaturePopover{
+  position:fixed;
+  z-index:2147482501;
+  width:min(318px,calc(100vw - 32px));
+  max-height:min(520px,calc(100vh - 110px));
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  border:1px solid rgba(240,214,138,.32);
+  border-radius:14px;
+  background:linear-gradient(180deg,#242224,#171719);
+  color:#fff3da;
+  box-shadow:0 28px 90px rgba(0,0,0,.72),0 0 0 1px rgba(255,255,255,.04) inset;
+}
+
+.wbFeaturePopoverHead{
+  flex:0 0 auto;
+  min-height:50px;
+  padding:0 12px 0 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.wbFeaturePopoverHead b{
+  font-size:15px;
+  font-weight:1000;
+  color:#fff3da;
+}
+
+.wbFeaturePopoverHead button{
+  width:30px;
+  height:30px;
+  border:0;
+  border-radius:8px;
+  background:rgba(255,255,255,.06);
+  color:#d8cfbd;
+  display:grid;
+  place-items:center;
+}
+
+.wbFeaturePopoverList{
+  flex:1 1 auto;
+  min-height:0;
+  overflow:auto;
+  padding:8px;
+  display:grid;
+  gap:7px;
+}
+
+.wbFeaturePopoverList button{
+  width:100%;
+  min-height:58px;
+  padding:10px 12px;
+  border:1px solid transparent;
+  border-radius:10px;
+  background:transparent;
+  color:#e8deca;
+  display:grid;
+  grid-template-columns:30px minmax(0,1fr);
+  grid-template-areas:'icon title' 'icon desc';
+  gap:2px 10px;
+  text-align:left;
+}
+
+.wbFeaturePopoverList button span{
+  grid-area:icon;
+  width:30px;
+  height:30px;
+  display:grid;
+  place-items:center;
+  color:#efe0b5;
+}
+
+.wbFeaturePopoverList button strong{
+  grid-area:title;
+  align-self:end;
+  color:#fff3da;
+  font-size:14px;
+  font-weight:1000;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.wbFeaturePopoverList button small{
+  grid-area:desc;
+  color:#9f9687;
+  font-size:12px;
+  line-height:1.35;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.wbFeaturePopoverList button:hover,
+.wbFeaturePopoverList button.active{
+  border-color:rgba(240,214,138,.42);
+  background:rgba(240,214,138,.12);
+}
+
+.wbFeaturePopoverList button.active{
+  box-shadow:inset 2px 0 0 var(--studio-gold,#f0d68a);
+}
+
+@media (min-width:861px) and (max-width:1180px){
   .topApp .wbScreen{
     --wb-left-width:238px;
     --wb-right-width:310px;
