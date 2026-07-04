@@ -21,10 +21,12 @@ describe('workflow shell integration',()=>{
 
   it('uses icons instead of wrapping navigation labels on compact desktop widths',()=>{
     const shell=read('../../AppShell.jsx');
+    const adminNavGroup=read('../../app-shell/AdminNavGroup.jsx');
     const registry=read('../../config/pageRegistry.jsx');
 
     assert.match(registry,/icon:/);
-    assert.match(shell,/navGroupLabel/);
-    assert.match(shell,/GroupIcon/);
+    assert.match(shell,/AdminNavGroup/);
+    assert.match(adminNavGroup,/navGroupLabel/);
+    assert.match(adminNavGroup,/GroupIcon/);
   });
 });

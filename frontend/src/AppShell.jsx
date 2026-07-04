@@ -1,94 +1,23 @@
 import React,{Suspense,lazy,useEffect,useMemo,useRef,useState}from'react';
 import{createPortal}from'react-dom';
-import{AlertCircle,Bell,CheckCircle2,History,LogOut,Mail,Menu,MessageSquare,Settings,ShieldCheck,Ticket,WalletCards,X}from'lucide-react';
+import{AlertCircle,Bell,CheckCircle2,History,LogOut,Menu,MessageSquare,Settings,ShieldCheck,Ticket,WalletCards,X}from'lucide-react';
 import{adminNav,adminNavGroups,Dashboard,Applications,Merchants,AiConfig,SettingsPage,AdminLogs,Feedbacks,Announcements,RedeemCodes}from'./admin/AdminPages.jsx';
 import{storeAdminNav,staffNav,Workbench,StoreResources,StoreUsers,StoreTasks,Promotion,QuotaLogs}from'./store/StorePages.jsx';
 import{UserFeedback,FeedbackModal,RedeemModal,Profile}from'./account/AccountPages.jsx';
 import{BrandMark}from'./shared/ui/index.jsx';
-import{avatarViewUrl,roleName,userFriendlyMessage,recordClientFailure,req,fmt}from'./appShared.jsx';
+import{avatarViewUrl,roleName,userFriendlyMessage,recordClientFailure,req}from'./appShared.jsx';
 import{APP_NAME,APP_SUBTITLE}from'./config/appConfig.js';
+import NoticeCenterModal from'./app-shell/NoticeCenterModal.jsx';
+import MobileAdminNav from'./app-shell/MobileAdminNav.jsx';
+import MobileSideNavDrawer from'./app-shell/MobileSideNavDrawer.jsx';
+import MobileImageSavePreview from'./app-shell/MobileImageSavePreview.jsx';
+import AdminNavGroup from'./app-shell/AdminNavGroup.jsx';
 import{navigateWorkflow,parseWorkflowHash}from'./admin/workflows/workflowRoute.js';
 import{inferToastKind}from'./toastKind.js';
 
 const TaskDetailModal=lazy(()=>import('./components/TaskDetailModal.jsx').then(module=>({default:module.TaskDetailModal||module.default})));
 const WorkflowAdminApp=lazy(()=>import('./admin/workflows/WorkflowAdminApp.jsx'));
 const DEFAULT_AVATAR='/default-avatar.svg';
-function NoticeCenterModal({onClose,onUnreadChange}){
-  const[items,setItems]=useState([]);
-  const[selected,setSelected]=useState(null);
-  const[loading,setLoading]=useState(true);
-  async function markNoticeRead(item,currentUnread){
-    if(!item||item.isRead)return;
-    const readAt=new Date().toISOString();
-    setItems(list=>list.map(x=>x.id===item.id?{...x,isRead:true,readAt}:x));
-    setSelected({...item,isRead:true,readAt});
-    onUnreadChange?.(Math.max(0,Number(currentUnread||0)-1));
-    try{await req(`/api/announcements/${item.id}/read`,{method:'POST',body:JSON.stringify({})})}catch{}
-  }
-  async function load(autoOpen=false){
-    setLoading(true);
-    try{
-      const data=await req('/api/announcements');
-      const list=data.items||[];
-      setItems(list);
-      const unread=Number(data.unreadCount||0);
-      onUnreadChange?.(unread);
-      if(autoOpen){
-        const firstUnread=list.find(x=>!x.isRead);
-        const target=firstUnread||list[0]||null;
-        setSelected(target);
-        if(firstUnread)markNoticeRead(firstUnread,unread);
-      }else{
-        setSelected(prev=>list.find(x=>x.id===prev?.id)||list[0]||null);
-      }
-    }finally{
-      setLoading(false);
-    }
-  }
-  useEffect(()=>{load(true).catch(()=>setLoading(false))},[]);
-  const unreadCount=items.filter(item=>!item.isRead).length;
-  async function openNotice(item){
-    setSelected(item);
-    if(item&&!item.isRead){
-      await markNoticeRead(item,unreadCount);
-      load().catch(()=>{});
-    }
-  }
-  return createPortal(<div className="feedbackModalMaskV2" onClick={onClose}>
-    <div className="feedbackModalCardV2 noticeCenterModalV2" onClick={e=>e.stopPropagation()}>
-      <div className="feedbackModalHeadV2">
-        <div>
-          <h2><Mail size={24}/>公告邮箱</h2>
-          {/* <p>平台公告、配置调整和运营通知会集中显示在这里。</p> */}
-        </div>
-        <button type="button" onClick={onClose}>×</button>
-      </div>
-      <div className="noticeCenterBodyV2">
-        <aside className="noticeListPaneV2">
-          <div className="noticeListV2">
-            {loading?<div className="noticeEmptyV2">公告加载中...</div>:items.length?items.map(item=>
-              <button key={item.id} className={`noticeListItemV2 ${selected?.id===item.id?'active':''} ${item.isRead?'isRead':'isUnread'}`} onClick={()=>openNotice(item)}>
-                <span className="noticeStateIconV2">{item.isRead?<CheckCircle2 size={17}/>:<Mail size={17}/>}</span>
-                <span className="noticeListTextV2"><b>{item.title}</b><small>{fmt(item.createdAt)}</small></span>
-              </button>
-            ):<div className="noticeEmptyV2">暂无公告</div>}
-          </div>
-        </aside>
-        {items.length>0&&<article className="noticeDetailPaneV2">
-          {selected?<>
-            <div className="noticeDetailMetaV2">
-              <span className={selected.isRead?'read':'unread'}>{selected.isRead?'已读':'未读'}</span>
-              <small>{fmt(selected.createdAt)}</small>
-            </div>
-            <h3>{selected.title}</h3>
-            <p>{selected.content}</p>
-          </>:<div className="noticeEmptyV2 large">请选择一条公告</div>}
-        </article>}
-      </div>
-    </div>
-  </div>,document.body);
-}
-
 function roleNav(role){
   if(role==='SYSTEM_ADMIN')return adminNav;
   if(role==='MERCHANT_OWNER'||role==='MERCHANT_ADMIN')return storeAdminNav;
@@ -97,125 +26,9 @@ function roleNav(role){
 
 
 
-function MobileAdminNav({page,go}){
-  const [open,setOpen]=useState(false);
-  const closeAndGo=(key)=>{setOpen(false);go(key)};
-  return <div className="mobileAdminNavV4" onClick={e=>e.stopPropagation()}>
-    <button type="button" className="mobileAdminNavToggleV4" onClick={()=>setOpen(v=>!v)}>
-      <Menu size={19}/><span>管理导航</span><small>{adminNav.find(([k])=>k===page)?.[1]||'请选择页面'}</small>
-    </button>
-    {open&&<div className="mobileAdminNavPanelV4">
-      <div className="mobileAdminNavPanelHeadV4"><b>平台管理员导航</b><button type="button" onClick={()=>setOpen(false)}>×</button></div>
-      <div className="mobileAdminNavGroupsV4">
-        {adminNavGroups.map(group=><section key={group.key}>
-          <h3>{group.title}</h3>
-          <div>
-            {group.items.map(([k,t,I])=><button key={k} type="button" className={page===k?'active':''} onClick={()=>closeAndGo(k)}>{I&&<I size={17}/>}<span>{t}</span></button>)}
-          </div>
-        </section>)}
-      </div>
-    </div>}
-  </div>;
-}
-
-function MobileBottomNav({page,go,nav}){
-  const byKey=Object.fromEntries(nav.map(item=>[item[0],item]));
-  const items=[
-    byKey.workbench||['workbench','工作台',null],
-    byKey.images||['images','历史',null],
-    byKey.resources||['resources','资源库',null],
-    ['profile','我的',ShieldCheck]
-  ];
-  return <nav className="mobileBottomNavV4" aria-label="手机底部导航">
-    {items.map(([key,title,Icon])=>{
-      const label=key==='images'?'历史':key==='workbench'?'工作台':key==='resources'?'资源库':'我的';
-      const ActiveIcon=Icon||ShieldCheck;
-      return <button key={key} type="button" className={page===key?'active':''} onClick={()=>go(key)}>
-        {ActiveIcon&&<ActiveIcon size={22}/>}<span>{label}</span>
-      </button>;
-    })}
-  </nav>;
-}
-
-function MobileSideNavDrawer({open,page,go,nav,onClose,onFeedback,onEmail,noticeUnread}){
-  if(!open)return null;
-  const byKey=Object.fromEntries(nav.map(item=>[item[0],item]));
-  const items=[
-    byKey.workbench||['workbench','工作台',null],
-    byKey.images||['images','历史',null],
-    byKey.resources||['resources','资源库',null],
-    byKey.users&&['users','用户管理',byKey.users[2]||ShieldCheck],
-    byKey.promotion&&['promotion','推荐收益',byKey.promotion[2]||Ticket]
-  ].filter(Boolean);
-  const closeAndGo=(key)=>{onClose();go(key)};
-  return createPortal(<div className="mobileSideNavMaskV5" onClick={onClose}>
-    <aside className="mobileSideNavPanelV5" aria-label="手机侧边导航" onClick={e=>e.stopPropagation()}>
-      <div className="mobileSideNavHeadV5">
-        <div><BrandMark/><span><b>{APP_NAME}</b><small>{APP_SUBTITLE}</small></span></div>
-        <button type="button" onClick={onClose} aria-label="关闭导航"><X size={20}/></button>
-      </div>
-      <nav className="mobileSideNavListV5">
-        {items.map(([key,title,Icon])=>{
-          const label=key==='images'?'历史':key==='workbench'?'工作台':key==='resources'?'资源库':key==='users'?'用户管理':key==='promotion'?'推荐收益':title;
-          const ActiveIcon=Icon||ShieldCheck;
-          return <button key={key} type="button" className={page===key?'active':''} onClick={()=>closeAndGo(key)}>
-            {ActiveIcon&&<ActiveIcon size={21}/>}<span>{label}</span>
-          </button>;
-        })}
-      </nav>
-      <div className="mobileSideNavToolsV5">
-        <button type="button" onClick={()=>{onClose();onFeedback();}}><MessageSquare size={19}/><span>问题反馈</span></button>
-        <button type="button" onClick={()=>{onClose();onEmail();}}><Mail size={19}/><span>公告邮箱</span>{noticeUnread>0&&<i>{noticeUnread>99?'99+':noticeUnread}</i>}</button>
-      </div>
-    </aside>
-  </div>,document.body);
-}
-
-function MobileImageSavePreview({image,onClose,setMsg}){
-  useEffect(()=>()=>{if(image?.revokeOnClose&&image?.url)URL.revokeObjectURL(image.url)},[image?.url,image?.revokeOnClose]);
-  function close(){
-    if(image?.revokeOnClose&&image?.url)URL.revokeObjectURL(image.url);
-    onClose&&onClose();
-  }
-  async function copyLink(){
-    try{
-      if(!navigator.clipboard?.writeText)throw new Error('clipboard unavailable');
-      await navigator.clipboard.writeText(image?.url||'');
-      setMsg&&setMsg('图片链接已复制');
-    }catch{
-      setMsg&&setMsg('复制失败，请手动长按图片保存');
-    }
-  }
-  return createPortal(<div className="mobileImageSaveMask" role="dialog" aria-modal="true" aria-label="保存图片预览">
-    <button className="mobileImageSaveClose" type="button" onClick={close} aria-label="关闭">×</button>
-    <div className="mobileImageSaveStage">
-      {image?.url?<img src={image.url} alt={image.title||'原图'} loading="lazy" decoding="async"/>:<div className="mobileImageSaveEmpty">暂无图片</div>}
-    </div>
-    <div className="mobileImageSaveTip">
-      <b>请长按图片保存到手机</b>
-      <button type="button" onClick={copyLink}>复制图片链接</button>
-    </div>
-  </div>,document.body);
-}
-
-function AdminNavGroup({group,page,open,onToggle,onGo,active}){
-  const GroupIcon=group.icon;
-  return <div className="navGroup">
-    <button className={active?'active':''} onClick={onToggle} aria-label={group.title} title={group.title}>
-      {GroupIcon&&<GroupIcon className="navGroupIcon" size={18}/>}
-      <span className="navGroupLabel">{group.title}</span>
-      <span className="navArrow">▾</span>
-    </button>
-    {open&&<div className="navDropdown">
-      {group.items.map(([k,t,I])=><button key={k} className={page===k?'active itemActive':''} onClick={()=>onGo(k)}><I size={17}/>{t}</button>)}
-    </div>}
-  </div>;
-}
-
 function Shell({me,setMe}){
   const nav=roleNav(me.role);
   const isAdmin=me.role==='SYSTEM_ADMIN';
-  const mobileTopLevelPages=new Set(['workbench','images','resources','profile']);
   const pageKeys=useMemo(()=>{
     const keys=new Set(nav.map(([k])=>k));
     ['profile','quota','redeem','feedbacks'].forEach(k=>keys.add(k));
@@ -238,7 +51,6 @@ function Shell({me,setMe}){
   const[noticeUnread,setNoticeUnread]=useState(0);
   const[navDrop,setNavDrop]=useState(null);
   const[isMobile,setIsMobile]=useState(()=>typeof window!=='undefined'&&!!window.matchMedia?.('(max-width: 860px)').matches);
-  const[mobileModalOpen,setMobileModalOpen]=useState(false);
   const[mobileSaveImage,setMobileSaveImage]=useState(null);
   const[mobileSideNavOpen,setMobileSideNavOpen]=useState(false);
 
@@ -276,7 +88,6 @@ function Shell({me,setMe}){
     ].join(',');
     const update=()=>{
       const open=!!document.body.querySelector(selectors);
-      setMobileModalOpen(open);
       document.body.classList.toggle('mobile-modal-open-v4',open);
     };
     update();
@@ -384,8 +195,6 @@ function Shell({me,setMe}){
 
   const fallbackTitle={profile:'个人中心',quota:'额度明细',redeem:'兑换码创建',feedbacks:'问题反馈'};
   const studioNavLabel={workbench:'工作室',resources:'资产库',users:'用户管理',promotion:'邀请共创',images:'历史任务'};
-  const shouldShowMobileTabBar=!isAdmin&&isMobile&&mobileTopLevelPages.has(page)&&!mobileModalOpen&&!mobileSaveImage&&!redeemOpen&&!feedbackOpen&&!emailOpen&&!menu;
-
   return <div className="topApp" onClick={()=>{setNavDrop(null);setMenu(false)}}>
     <header className="topbar">
       <button className="topBrand topBrandButton" type="button" onClick={handleBrandClick} aria-label={isMobile&&!isAdmin?'打开导航栏':'返回官网首页'}>

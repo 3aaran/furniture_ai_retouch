@@ -6,7 +6,9 @@ import { describe, it } from 'node:test';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '../..');
-const source = readFileSync(join(here, 'LandingPage.jsx'), 'utf8');
+const pageSource = readFileSync(join(here, 'LandingPage.jsx'), 'utf8');
+const contentSource = readFileSync(join(here, 'LandingContent.jsx'), 'utf8');
+const source = `${pageSource}\n${contentSource}`;
 const finalCss = readFileSync(join(root, 'src/styles/overrides/final-fixes.css'), 'utf8');
 
 describe('landing workflow assets', () => {

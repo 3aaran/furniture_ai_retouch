@@ -1,0 +1,18 @@
+import React,{useEffect,useState}from'react';
+import{Bell,Building2,CheckCircle2,Download,Eye,Image as ImageIcon,Phone,Plus,Power,Search,SlidersHorizontal,Ticket,Trash2,UserRound,Video,WalletCards,X,XCircle}from'lucide-react';
+import{API,token,req,reqForm,fmt,Badge,usePaged,Pagination,Table,Toolbar,roleName,audName,resTypeName,getStatusName,imageListUrl,fallbackToOriginalImage,openImageDownload}from'../../appShared.jsx';
+import{featureName,getFeatureDisplayName,getTargetScopeDisplayName}from'../../config/uiText.js';
+
+function AdminLogs({setMsg,TaskDetailModal}){
+  const ops=featureName;
+  const {query,setQuery,data}=usePaged('/api/admin/task-images',{keyword:'',operation:'',startDate:'',endDate:'',pageSize:12});
+  const [selected,setSelected]=useState([]),[detail,setDetail]=useState(null),[loadingDetail,setLoadingDetail]=useState(false);
+  function toggle(id){setSelected(s=>s.includes(id)?s.filter(x=>x!==id):[...s,id])}
+  function batchDownload(){const ids=(selected.length?selected:(data.items||[]).map(x=>x.id)).filter(Boolean);if(!ids.length)return setMsg('暂无可下载的图片');window.open(`${API}/api/admin/task-images/batch-download?ids=${encodeURIComponent(ids.join(','))}&token=${token()}`,'_blank')}
+  async function openDetail(id){try{setLoadingDetail(true);const d=await req('/api/images/'+id+'/detail-rich');setDetail(d)}catch(e){setMsg(e.message)}finally{setLoadingDetail(false)}}
+  const items=data.items||[];
+  return <div className="adminLogPage adminLogV5"><section className="adminLogIntro">{/* <button className="primary" onClick={batchDownload}><Download size={17}/>批量下载压缩包</button> */}</section>
+  <section className="panel aiTaskPanel"><div className="toolbar"><div className="filterGroup"><input placeholder="搜索商家 / 用户 / 任务编号" value={query.keyword} onChange={e=>setQuery({...query,keyword:e.target.value})}/><select value={query.operation} onChange={e=>setQuery({...query,operation:e.target.value,page:1})}><option value="">全部功能</option>{Object.entries(ops).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select><input type="date" value={query.startDate} onChange={e=>setQuery({...query,startDate:e.target.value,page:1})}/><input type="date" value={query.endDate} onChange={e=>setQuery({...query,endDate:e.target.value,page:1})}/><button className="primary" onClick={()=>setQuery(q=>({...q,page:1}))}><Search size={16}/>查询</button></div></div><div className="aiTaskGrid">{items.length?items.map(it=><article key={it.id} className={'taskCard '+(selected.includes(it.id)?'checked':'')}><label className="selectDot"><input type="checkbox" checked={selected.includes(it.id)} onChange={()=>toggle(it.id)}/><span></span></label><div className="taskImg" onClick={()=>openDetail(it.id)}><img src={imageListUrl(it)} onError={e=>fallbackToOriginalImage(e,it)} loading="lazy" decoding="async"/><b>{getFeatureDisplayName(it.featureKey||it.operation||it.kind,'AI任务')}</b></div><div className="taskMeta"><strong>{it.companyName||'未绑定商家'}</strong><span>{it.userName||it.phone||it.username||'-'} · {fmt(it.createdAt)}</span><small>编号：{it.id}</small></div><div className="taskActions"><button onClick={()=>openDetail(it.id)}><Eye size={16}/>查看详情</button><button onClick={()=>openImageDownload(it,setMsg)}><Download size={16}/>下载</button></div></article>):<div className="empty big">暂无AI生成任务</div>}</div><Pagination data={data} setQuery={setQuery}/></section>{loadingDetail&&<div className="modalMask"><div className="empty big">加载中...</div></div>}{detail&&<TaskDetailModal detail={detail} onClose={()=>setDetail(null)} isAdmin={true} ops={ops} setMsg={setMsg} taskList={items} onSwitchTask={(item)=>openDetail(item.id)}/>}</div>;
+}
+
+export default AdminLogs;
