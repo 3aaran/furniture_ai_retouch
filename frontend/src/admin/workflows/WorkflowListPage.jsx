@@ -1,6 +1,6 @@
 import React,{useCallback,useEffect,useState}from'react';
 import{Copy,Edit3,Plus,Power,Search,Send,Trash2,Workflow}from'lucide-react';
-import ConfirmDialog from'../../components/ConfirmDialog.jsx';
+import{ConfirmDialog}from'../../shared/ui/index.jsx';
 import{fmt}from'../../appShared.jsx';
 import{workflowRepository}from'./workflowRepository.js';
 import{navigateWorkflow}from'./workflowRoute.js';

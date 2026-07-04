@@ -1,17 +1,17 @@
-import React,{useEffect,useMemo,useRef,useState}from'react';
+import React,{Suspense,lazy,useEffect,useMemo,useRef,useState}from'react';
 import{createPortal}from'react-dom';
 import{AlertCircle,Bell,CheckCircle2,History,LogOut,Mail,Menu,MessageSquare,Settings,ShieldCheck,Ticket,WalletCards,X}from'lucide-react';
 import{adminNav,adminNavGroups,Dashboard,Applications,Merchants,AiConfig,SettingsPage,AdminLogs,Feedbacks,Announcements,RedeemCodes}from'./admin/AdminPages.jsx';
 import{storeAdminNav,staffNav,Workbench,StoreResources,StoreUsers,StoreTasks,Promotion,QuotaLogs}from'./store/StorePages.jsx';
 import{UserFeedback,FeedbackModal,RedeemModal,Profile}from'./account/AccountPages.jsx';
-import{TaskDetailModal}from'./components/TaskDetailModal.jsx';
-import BrandMark from'./components/BrandMark.jsx';
+import{BrandMark}from'./shared/ui/index.jsx';
 import{avatarViewUrl,roleName,userFriendlyMessage,recordClientFailure,req,fmt}from'./appShared.jsx';
 import{APP_NAME,APP_SUBTITLE}from'./config/appConfig.js';
-import WorkflowAdminApp from'./admin/workflows/WorkflowAdminApp.jsx';
 import{navigateWorkflow,parseWorkflowHash}from'./admin/workflows/workflowRoute.js';
 import{inferToastKind}from'./toastKind.js';
 
+const TaskDetailModal=lazy(()=>import('./components/TaskDetailModal.jsx').then(module=>({default:module.TaskDetailModal||module.default})));
+const WorkflowAdminApp=lazy(()=>import('./admin/workflows/WorkflowAdminApp.jsx'));
 const DEFAULT_AVATAR='/default-avatar.svg';
 function NoticeCenterModal({onClose,onUnreadChange}){
   const[items,setItems]=useState([]);
@@ -425,9 +425,11 @@ function Shell({me,setMe}){
     <main className="topMain">
       {page!=='workflows'&&!(page==='workbench'&&!isAdmin)&&<div className="pageHead"><h1>{nav.find(n=>n[0]===page)?.[1]||(fallbackTitle[page]||'管理页面')}</h1></div>}
       {msg&&createPortal(<div className={`globalToastV2 ${toastKind==='error'?'error':'success'}`}><span>{toastKind==='error'?<AlertCircle size={20}/>:<CheckCircle2 size={20}/>}</span><b>{toastText}</b><button aria-label="关闭提示" onClick={()=>setMsg('')}><X size={18}/></button></div>,document.body)}
-      {page==='workflows'
-        ?<WorkflowAdminApp route={workflowRoute||{name:'list',id:null}} me={me} setMe={setMe}/>
-        :<Comp me={me} setMe={setMe} setMsg={setMsg} goPage={go} TaskDetailModal={TaskDetailModal}/>}
+      <Suspense fallback={<div className="loading">页面加载中...</div>}>
+        {page==='workflows'
+          ?<WorkflowAdminApp route={workflowRoute||{name:'list',id:null}} me={me} setMe={setMe}/>
+          :<Comp me={me} setMe={setMe} setMsg={setMsg} goPage={go} TaskDetailModal={TaskDetailModal}/>}
+      </Suspense>
     </main>
 
     {!isAdmin&&<MobileSideNavDrawer

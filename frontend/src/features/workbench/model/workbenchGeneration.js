@@ -1,4 +1,4 @@
-import {buildPromotionOptions,isPromotionFeatureKey} from '../../../store/workbench/promotionFeatures.js';
+import {buildPromotionOptions,isPromotionFeatureKey} from './promotionFeatures.js';
 
 const COST_KEY_BY_OPERATION={
   material:'cost_material',

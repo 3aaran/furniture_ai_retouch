@@ -1,6 +1,6 @@
 import React from 'react';
 import {createPortal} from 'react-dom';
-import {Clapperboard,Image as ImageIcon,X} from 'lucide-react';
+import {Clapperboard,ImageIcon,X} from '../../../shared/icons/index.jsx';
 
 function WorkbenchFeaturePopover({
   featurePopover,

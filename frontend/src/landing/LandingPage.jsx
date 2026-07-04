@@ -6,8 +6,7 @@ import{ScrollTrigger}from'gsap/ScrollTrigger';
 import{MotionPathPlugin}from'gsap/MotionPathPlugin';
 import{SplitText}from'gsap/SplitText';
 import{CustomEase}from'gsap/CustomEase';
-import BrandMark from'../components/BrandMark.jsx';
-import PwaInstallButton from'../components/PwaInstallButton.jsx';
+import{BrandMark,PwaInstallButton}from'../shared/ui/index.jsx';
 
 gsap.registerPlugin(ScrollTrigger,MotionPathPlugin,SplitText,CustomEase);
 

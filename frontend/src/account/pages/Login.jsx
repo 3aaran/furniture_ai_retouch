@@ -3,7 +3,7 @@ import React,{useEffect,useState}from'react';
 import{ArrowLeft,ArrowRight,Building2,LockKeyhole,Phone,UserRound}from'lucide-react';
 import{req}from'../../appShared.jsx';
 import{completeAuthSession}from'../../authSession.js';
-import BrandMark from'../../components/BrandMark.jsx';
+import{BrandMark}from'../../shared/ui/index.jsx';
 import{APP_NAME,LOGIN_SUBTITLE}from'../../config/appConfig.js';
 
 const PHONE_RE=/^1[3-9]\d{9}$/;

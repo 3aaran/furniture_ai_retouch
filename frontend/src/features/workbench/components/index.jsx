@@ -1,3 +1,5 @@
+export {default as ResourcePickerModal} from './ResourcePickerModal.jsx';
+export {default as WatermarkConfigModal} from './WatermarkConfigModal.jsx';
 export {default as WorkbenchCanvasToolbar} from './WorkbenchCanvasToolbar.jsx';
 export {default as WorkbenchFeaturePanel} from './WorkbenchFeaturePanel.jsx';
 export {default as WorkbenchFeaturePopover} from './WorkbenchFeaturePopover.jsx';
@@ -5,8 +7,10 @@ export {default as WorkbenchLeftPanel} from './WorkbenchLeftPanel.jsx';
 export {default as WorkbenchModals} from './WorkbenchModals.jsx';
 export {default as WorkbenchRecentPanel} from './WorkbenchRecentPanel.jsx';
 export {default as WorkbenchRecentSourcePreview} from './WorkbenchRecentSourcePreview.jsx';
+export {default as WorkbenchResourceUploadModal} from './WorkbenchResourceUploadModal.jsx';
 export {default as WorkbenchSignalBar} from './WorkbenchSignalBar.jsx';
 export {default as WorkbenchStudioControlPanel} from './WorkbenchStudioControlPanel.jsx';
 export {default as WorkbenchStudioRecentStrip} from './WorkbenchStudioRecentStrip.jsx';
+export {default as WorkbenchUploadPanel} from './WorkbenchUploadPanel.jsx';
 export {default as WorkbenchVideoPanel} from './WorkbenchVideoPanel.jsx';
 export {default as WorkbenchWatermarkOverlay} from './WorkbenchWatermarkOverlay.jsx';

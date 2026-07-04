@@ -1,5 +1,5 @@
 import React from 'react';
-import ConfirmDialog from '../../../components/ConfirmDialog.jsx';
+import{ConfirmDialog}from '../../../shared/ui/index.jsx';
 
 function RenameResourceModal({renameTarget,renameValue,setRenameValue,setRenameTarget,submitRename}){
   if(!renameTarget)return null;

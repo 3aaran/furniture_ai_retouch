@@ -1,15 +1,10 @@
-﻿
-
-
 @import './base/variables.css';
 @import './base/reset.css';
 
 @import './components/brand-mark.css';
 @import './components/react-bits-lite.css';
 
-@import './legacy/style.css';
-@import './legacy/workbench-fixes.css';
-
+@import './legacy/index.css';
 
 @import './pages/auth.css';
 @import './pages/landing.css';
@@ -20,14 +15,5 @@
 @import './pages/admin-workflows.css';
 @import './pages/users.css';
 
-
-@import './overrides/final-fixes.css';
-@import './overrides/mobile-app.css';
-@import './mobile/mobile-shell.css';
-@import './mobile/mobile-resource-grid.css';
-@import './mobile/mobile-workbench-tools.css';
-@import './mobile/mobile-comment-fixes.css';
-@import './mobile/mobile-promotion.css';
-@import './mobile/mobile-round2-fixes.css';
-@import './overrides/studio-workbench.css';
-@import './overrides/stitch-premium-layout.css';
+@import './overrides/index.css';
+@import './mobile/index.css';

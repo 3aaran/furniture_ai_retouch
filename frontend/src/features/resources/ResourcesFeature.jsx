@@ -1,1 +1,1 @@
-export {default} from '../../store/resources/StoreResources.jsx';
+export {default} from './ResourcesPage.jsx';

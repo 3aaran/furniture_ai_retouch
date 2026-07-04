@@ -1,8 +1,9 @@
 import React from 'react';
 import {imageListUrl} from '../../../appShared.jsx';
 import {WheelNumberPager} from '../../../shared/effects/index.jsx';
-import ResourceCard from '../../../store/resources/ResourceCard.jsx';
-import {normalizeResourceMain,normalizeResourceSub} from '../../../store/resources/resourceModel.js';
+import {EmptyState} from '../../../shared/ui/index.jsx';
+import ResourceCard from './ResourceCard.jsx';
+import {normalizeResourceMain,normalizeResourceSub} from '../model/resourceModel.js';
 
 function resourceImageUrl(resource){
   if(resource.localPreviewUrl)return resource.localPreviewUrl;
@@ -37,7 +38,7 @@ function ResourceGridSection({
         onRename={openRename}
         normalizeResourceMain={normalizeResourceMain}
         normalizeResourceSub={normalizeResourceSub}
-      />):<div className="empty big resourceEmptyV3">当前空间暂无资源或生成图片</div>}
+      />):<EmptyState className="empty big resourceEmptyV3">当前空间暂无资源或生成图片</EmptyState>}
     </div>
 
     <div className="resourcePagerV3">

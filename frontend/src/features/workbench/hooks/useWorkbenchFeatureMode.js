@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import {DEFAULT_PROMOTION_KEY,getPromotionFeature,isPromotionFeatureKey} from '../../../store/workbench/promotionFeatures.js';
+import {DEFAULT_PROMOTION_KEY,getPromotionFeature,isPromotionFeatureKey} from '../model/promotionFeatures.js';
 import {BASE_RATIO_OPTIONS,BASE_RESOLUTION_OPTIONS} from '../model/workbenchOptions.js';
 
 export function useWorkbenchFeatureMode(){

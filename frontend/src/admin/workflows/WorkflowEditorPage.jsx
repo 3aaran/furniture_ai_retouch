@@ -1,7 +1,7 @@
 import React,{useEffect,useMemo,useState}from'react';
 import{ArrowLeft,Play,Save}from'lucide-react';
 import{addEdge,applyEdgeChanges,applyNodeChanges}from'@xyflow/react';
-import ConfirmDialog from'../../components/ConfirmDialog.jsx';
+import{ConfirmDialog}from'../../shared/ui/index.jsx';
 import{createBlankWorkflow,createNode}from'./workflowDefinitions.js';
 import{workflowRepository}from'./workflowRepository.js';
 import{navigateWorkflow}from'./workflowRoute.js';

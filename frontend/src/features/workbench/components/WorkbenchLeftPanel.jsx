@@ -1,7 +1,7 @@
 import React from 'react';
-import {Search} from 'lucide-react';
+import {Search} from '../../../shared/icons/index.jsx';
 import {fallbackToOriginalImage} from '../../../appShared.jsx';
-import {isPromotionFeatureKey,promotionOptionChoices,promotionOptionDefaults} from '../../../store/workbench/promotionFeatures.js';
+import {isPromotionFeatureKey,promotionOptionChoices,promotionOptionDefaults} from '../model/promotionFeatures.js';
 
 function WorkbenchLeftPanel({
   mediaMode,

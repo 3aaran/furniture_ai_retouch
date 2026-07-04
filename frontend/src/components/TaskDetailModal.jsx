@@ -5,7 +5,10 @@ import{req,fmt,imageViewUrl,assetUrl,openImageDownload}from'../appShared.jsx';
 import{createWatermarkedImageBlob,downloadBlob,watermarkedFilename}from'../utils/watermarkImage.js';
 import{getDisplayStatusName,getFeatureDisplayName}from'../config/uiText.js';
 import WatermarkConfigModal from'../store/workbench/WatermarkConfigModal.jsx';
-import ConfirmDialog from'./ConfirmDialog.jsx';
+import ConfirmDialog from'../shared/ui/ConfirmDialog.jsx';
+import ExternalMobileTaskPreviewView from'./task-detail/MobileTaskPreviewView.jsx';
+import ExternalMobileProcessModal from'./task-detail/MobileProcessModal.jsx';
+import TaskWatermarkOverlay from'./task-detail/TaskWatermarkOverlay.jsx';
 
 const statusMap={
   SUCCESS:'\u5df2\u5b8c\u6210',
@@ -30,24 +33,6 @@ function joinParts(parts){
   return parts.map(x=>String(x||'').trim()).filter(Boolean).join(' / ')||'-';
 }
 
-function watermarkPlacement(config={}){
-  const x=Number(config.offsetX||0);
-  const y=Number(config.offsetY||0);
-  const position=config.position||'center';
-  const map={
-    'top-left':{left:x,top:y},
-    'top-center':{left:`calc(50% + ${x}px)`,top:y,transform:'translateX(-50%)'},
-    'top-right':{right:x,top:y},
-    'center-left':{left:x,top:'50%',transform:'translateY(-50%)'},
-    center:{left:`calc(50% + ${x}px)`,top:'50%',transform:'translate(-50%,-50%)'},
-    'center-right':{right:x,top:'50%',transform:'translateY(-50%)'},
-    'bottom-left':{left:x,bottom:y},
-    'bottom-center':{left:`calc(50% + ${x}px)`,bottom:y,transform:'translateX(-50%)'},
-    'bottom-right':{right:x,bottom:y}
-  };
-  return map[position]||map.center;
-}
-
 function textWatermarkConfig(config={}){
   return {
     ...config,
@@ -57,34 +42,6 @@ function textWatermarkConfig(config={}){
     imageId:'',
     imageUrl:''
   };
-}
-
-function WatermarkOverlay({config}){
-  const textConfig=textWatermarkConfig(config||{});
-  if(!textConfig.text)return null;
-  if(textConfig.style==='tile'){
-    const items=Array.from({length:40});
-    return <div
-      className="taskWatermarkTile"
-      style={{
-        color:textConfig.color||'#f0d68a',
-        opacity:Number(textConfig.opacity||100)/100,
-        fontSize:`${Math.max(14,Number(textConfig.fontSize||46)*0.34)}px`,
-        transform:`rotate(${Number(textConfig.rotate||0)}deg)`,
-        gap:`${Math.max(12,Number(textConfig.gap||220)*0.12)}px`
-      }}
-    >
-      {items.map((_,i)=><span key={i}>{textConfig.text}{textConfig.subText?<small style={{color:textConfig.accent||'#fff'}}>{textConfig.subText}</small>:null}</span>)}
-    </div>;
-  }
-  const baseStyle={
-    ...watermarkPlacement(textConfig),
-    opacity:Number(textConfig.opacity||100)/100
-  };
-  return <div className={`taskWatermarkText ${textConfig.style||'signature'}`} style={{...baseStyle,color:textConfig.color||'#f0d68a',fontSize:`${Math.max(16,Number(textConfig.fontSize||46)*0.5)}px`,transform:`${baseStyle.transform||''} rotate(${Number(textConfig.rotate||0)}deg)`}}>
-    <b>{textConfig.text}</b>
-    {textConfig.subText&&<small style={{color:textConfig.accent||'#fff'}}>{textConfig.subText}</small>}
-  </div>;
 }
 
 let cachedWatermarkSettings=null;
@@ -389,7 +346,7 @@ function TaskDetailModal({
   </>;
 
   if(isMobile){
-    return createPortal(<MobileTaskPreviewView
+    return createPortal(<ExternalMobileTaskPreviewView
       detail={detail}
       opLabel={opLabel}
       status={status}
@@ -427,7 +384,7 @@ function TaskDetailModal({
       onPreviewError={()=>setPreviewFailed(true)}
     >
       {taskOverlays}
-    </MobileTaskPreviewView>,document.body);
+    </ExternalMobileTaskPreviewView>,document.body);
   }
 
   return createPortal(<div className="taskPreviewOverlay taskPreviewWindowMode">
@@ -447,7 +404,7 @@ function TaskDetailModal({
         </div>
         <div className="compareCol">
           <div className="compareHead"><h3>生成结果</h3>{!isAdmin&&<button onClick={()=>continueWith({id:imageId,url:resultUrl,originalName:detail.originalName})}>以此图继续创作</button>}</div>
-          <div className="taskImageFrame">{resultUrl?<><img src={resultPreviewSrc} onError={()=>setPreviewFailed(true)} loading="lazy" decoding="async"/>{watermarkActive&&<WatermarkOverlay config={watermarkConfig}/>}</>:<span>无生成图</span>}</div>
+          <div className="taskImageFrame">{resultUrl?<><img src={resultPreviewSrc} onError={()=>setPreviewFailed(true)} loading="lazy" decoding="async"/>{watermarkActive&&<TaskWatermarkOverlay config={watermarkConfig}/>}</>:<span>无生成图</span>}</div>
         </div>
       </div>
       <div className="taskMobileActionBar" aria-label="任务操作">
@@ -832,7 +789,7 @@ function ImageProcessModal({detail,onClose,setMsg}){
     }
   }
   if(isMobile){
-    return <MobileProcessModal
+    return <ExternalMobileProcessModal
       detail={detail}
       previewUrl={previewUrl}
       hasResult={hasResult}

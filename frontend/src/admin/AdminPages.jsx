@@ -1,12 +1,10 @@
 ﻿import React,{useEffect,useState}from'react';
 import{Bell,BrainCircuit,Building2,CheckCircle2,Download,Eye,Image as ImageIcon,Phone,Plus,Power,Search,SlidersHorizontal,Ticket,Trash2,UserRound,Video,WalletCards,X,XCircle}from'lucide-react';
 import{API,token,req,reqForm,fmt,Badge,usePaged,Pagination,Table,Toolbar,roleName,audName,resTypeName,getStatusName,imageViewUrl,imageListUrl,fallbackToOriginalImage,openImageDownload}from'../appShared.jsx';
-import{adminPages,adminNavGroups as configuredAdminNavGroups}from'../config/pageRegistry.jsx';
+import ExternalAiConfig from'./pages/AiConfig.jsx';
 import{featureName,getFeatureDisplayName,getTargetScopeDisplayName}from'../config/uiText.js';
-import{TaskDetailModal}from'../components/TaskDetailModal.jsx';
 
-export const adminNav=adminPages;
-export const adminNavGroups=configuredAdminNavGroups;
+export{adminNav,adminNavGroups}from'./adminNavigation.js';
 
 const AI_MODEL_OPTIONS=[
   {label:'本地模拟',provider:'mock',modelName:'local-mock-model',baseUrl:'',apiPath:''},
@@ -177,7 +175,7 @@ function SettingsPage({setMsg}){
   return <section className="adminModernPage settingsPageV9"><div className="adminHeroV9 settingsHeroV9"><div><span>平台规则</span><h1>系统配置</h1></div><div className="settingsHeroNoteV9"><b>{groups.reduce((n,g)=>n+g.items.length,0)}</b><small>项业务参数</small></div></div><div className="settingsLayoutV9">{groups.map(group=><section className={`settingsGroupV9 ${group.tone}`} key={group.key}><header><div className="settingsGroupIconV9">{group.icon}</div><div><h2>{group.title}</h2></div></header><div className="settingsFieldsV9">{group.items.map(([k,label])=><label className="settingsFieldV9" key={k}><span>{label}</span><input value={s[k]||''} placeholder={k==='user_storage_limit_bytes'?'例如 5GB':''} onChange={e=>update(k,e.target.value)}/>{k==='user_storage_limit_bytes'&&<small>支持 5GB、500MB 这类写法，保存后同步到所有非平台管理员账号。</small>}</label>)}</div></section>)}</div><div className="settingsSaveBarV9"><button className="submit" onClick={save}>保存配置</button></div></section>;
 }
 
-function AdminLogs({setMsg}){
+function AdminLogs({setMsg,TaskDetailModal}){
   const ops=featureName;
   const {query,setQuery,data}=usePaged('/api/admin/task-images',{keyword:'',operation:'',startDate:'',endDate:'',pageSize:12});
   const [selected,setSelected]=useState([]),[detail,setDetail]=useState(null),[loadingDetail,setLoadingDetail]=useState(false);
@@ -243,4 +241,4 @@ function Announcements({setMsg}){
   </div>;
 }
 function RedeemCodes({setMsg}){const{query,setQuery,data,load}=usePaged('/api/admin/redeem-codes',{status:'',keyword:''});const[f,setF]=useState({count:10,quota:50,maxUses:1,targetScope:'ALL',validDays:30});const[codes,setCodes]=useState([]);async function create(){try{const d=await req('/api/admin/redeem-codes/batch',{method:'POST',body:JSON.stringify(f)});setMsg(d.message);setCodes(d.codes||[]);load()}catch(e){setMsg(e.message)}}return <div className="stack"><section className="panel"><h2><Ticket/>批量创建兑换码</h2><div className="grid2"><label>数量<input type="number" value={f.count} onChange={e=>setF({...f,count:e.target.value})}/></label><label>每个额度<input type="number" value={f.quota} onChange={e=>setF({...f,quota:e.target.value})}/></label><label>可兑换次数<input type="number" value={f.maxUses} onChange={e=>setF({...f,maxUses:e.target.value})}/></label><label>有效天数<input type="number" value={f.validDays} onChange={e=>setF({...f,validDays:e.target.value})}/></label><label>使用对象<select value={f.targetScope} onChange={e=>setF({...f,targetScope:e.target.value})}><option value="ALL">全部</option><option value="MERCHANT_OWNER">门店管理员</option><option value="MERCHANT_USER">门店人员</option><option value="TRIAL">体验账户</option></select></label></div><button className="primary" onClick={create}>创建兑换码</button>{codes.length>0&&<textarea readOnly value={codes.join('\n')}/>}</section><section className="panel"><Toolbar onSearch={()=>setQuery(q=>({...q,page:1}))} onExport={()=>window.open(API+'/api/export/admin/redeem-codes?token='+token())}><input placeholder="兑换码" value={query.keyword} onChange={e=>setQuery({...query,keyword:e.target.value})}/><select value={query.status} onChange={e=>setQuery({...query,status:e.target.value})}><option value="">全部状态</option><option value="ACTIVE">启用</option><option value="DISABLED">禁用</option><option value="EXPIRED">过期</option></select></Toolbar><Table cols={['兑换码','额度','次数','对象','状态','有效期','创建时间']}>{(data.items||[]).map(c=><tr key={c.id}><td>{c.code}</td><td>{c.quota}</td><td>{c.used_count}/{c.max_uses}</td><td>{getTargetScopeDisplayName(c.target_scope)}</td><td><Badge v={c.status}/></td><td>{fmt(c.valid_until)}</td><td>{fmt(c.created_at)}</td></tr>)}</Table><Pagination data={data} setQuery={setQuery}/></section></div>}
-export{Dashboard,Applications,Merchants,AiConfig,Resources,SettingsPage,AdminLogs,Feedbacks,Announcements,RedeemCodes};
+export{Dashboard,Applications,Merchants,ExternalAiConfig as AiConfig,Resources,SettingsPage,AdminLogs,Feedbacks,Announcements,RedeemCodes};

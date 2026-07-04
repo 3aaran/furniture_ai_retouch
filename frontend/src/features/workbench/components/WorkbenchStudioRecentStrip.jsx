@@ -1,5 +1,5 @@
 import React from 'react';
-import {Image as ImageIcon} from 'lucide-react';
+import {ImageIcon} from '../../../shared/icons/index.jsx';
 import {fallbackToOriginalImage} from '../../../appShared.jsx';
 
 function WorkbenchStudioRecentStrip({

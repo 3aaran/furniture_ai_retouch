@@ -1,5 +1,5 @@
 import React from 'react';
-import {Download,Search,Trash2,X} from 'lucide-react';
+import {Download,Search,Trash2,X} from '../../../shared/icons/index.jsx';
 import {fmt,fallbackToOriginalImage,openImageDownload} from '../../../appShared.jsx';
 
 function RecentActionButton({icon,onClick,title,danger=false,disabled=false}){

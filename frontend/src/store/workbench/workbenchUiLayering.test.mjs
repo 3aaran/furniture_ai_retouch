@@ -6,9 +6,10 @@ import { describe, it } from 'node:test';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const srcRoot = join(here, '../..');
-const pickerSource = readFileSync(join(here, 'ResourcePickerModal.jsx'), 'utf8');
-const uploadSource = readFileSync(join(here, 'WorkbenchUploadPanel.jsx'), 'utf8');
-const workbenchSource = readFileSync(join(here, 'Workbench.jsx'), 'utf8');
+const workbenchFeatureRoot = join(srcRoot, 'features/workbench');
+const pickerSource = readFileSync(join(workbenchFeatureRoot, 'components/ResourcePickerModal.jsx'), 'utf8');
+const uploadSource = readFileSync(join(workbenchFeatureRoot, 'components/WorkbenchUploadPanel.jsx'), 'utf8');
+const workbenchSource = readFileSync(join(workbenchFeatureRoot, 'hooks/useWorkbenchRecent.js'), 'utf8');
 const appSharedSource = readFileSync(join(srcRoot, 'appShared.jsx'), 'utf8');
 const finalCss = readFileSync(join(srcRoot, 'styles/overrides/final-fixes.css'), 'utf8');
 
@@ -24,7 +25,7 @@ describe('workbench resource picker layering', () => {
     assert.match(finalCss, /height:clamp\(260px,32vh,340px\)\s*!important/);
     assert.match(finalCss, /\.topApp \.wbUploadInner[\s\S]*display:flex\s*!important/);
     assert.match(finalCss, /\.topApp \.wbUploadInner[\s\S]*flex-direction:column\s*!important/);
-    assert.match(uploadSource, /e\.stopPropagation\(\);\s*openResourceModal\('source'\)/);
+    assert.match(uploadSource, /stopPropagation\(\);\s*openResourceModal\('source'\)/);
   });
 
   it('does not stop task polling on the first transient status read failure', () => {

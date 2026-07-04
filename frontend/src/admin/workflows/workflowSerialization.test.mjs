@@ -7,7 +7,7 @@ import{buildExecutionJson}from'./workflowSerialization.js';
 describe('workflow serialization',()=>{
   it('builds execution JSON',()=>{
     const json=buildExecutionJson(createDefaultWorkflow({id:'wf-1'}));
-    assert.equal(json.template.id,'wf-1');assert.equal(json.execution.mode,'SEQUENTIAL');assert.equal('versions'in json,false);
+    assert.equal(json.template.id,'wf-1');assert.equal(json.execution.mode,'GRAPH');assert.equal('versions'in json,false);
   });
   it('does not create frontend version snapshots',()=>{
     const source=readFileSync(new URL('./workflowSerialization.js',import.meta.url),'utf8');

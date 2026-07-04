@@ -1,5 +1,5 @@
 import React from 'react';
-import {Plus,RotateCcw,Pencil,Trash2,X} from 'lucide-react';
+import {Plus,RotateCcw,Pencil,Trash2,X} from '../../../shared/icons/index.jsx';
 import {fmt} from '../../../appShared.jsx';
 import {getDisplayStatusName,getFeatureDisplayName} from '../../../config/uiText.js';
 import {detailResolutionText} from '../hooks/useResourceDetail.js';

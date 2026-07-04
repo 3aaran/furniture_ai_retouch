@@ -1,15 +1,20 @@
-import React,{useEffect,useState}from'react';
+import React,{Suspense,lazy,useEffect,useState}from'react';
 import{createRoot}from'react-dom/client';
 import{getOrCreateAppRoot}from'./appRoot.js';
 import './styles/index.css';
 import{registerServiceWorker}from'./registerServiceWorker.js';
-import AppShell from'./AppShell.jsx';
-import LandingPage from'./landing/LandingPage.jsx';
-import AppUpdateNotice from'./components/AppUpdateNotice.jsx';
-import{Login}from'./account/AccountPages.jsx';
+import{AppUpdateNotice}from'./shared/ui/index.jsx';
 import{token,req}from'./appShared.jsx';
 import{AUTH_LOGIN_EVENT,AUTH_UNAUTHORIZED_EVENT}from'./authSession.js';
 import{parseWorkflowHash,redirectLegacyWorkflowPath}from'./admin/workflows/workflowRoute.js';
+
+const AppShell=lazy(()=>import('./AppShell.jsx'));
+const LandingPage=lazy(()=>import('./landing/LandingPage.jsx'));
+const Login=lazy(()=>import('./account/pages/Login.jsx'));
+
+function AppFallback(){
+  return <div className="loading">加载中...</div>;
+}
 
 function hashRoute(){
   const raw=String(window.location.hash||'').replace(/^#\/?/,'').split('?')[0].trim();
@@ -61,9 +66,9 @@ function App(){
     window.addEventListener('hashchange',onHashChange);
     return()=>window.removeEventListener('hashchange',onHashChange);
   },[]);
-  if(loading)return <><div className="loading">加载中...</div><AppUpdateNotice/></>;
-  if(route==='home')return <><LandingPage me={me}/><AppUpdateNotice/></>;
-  return <>{(me||workflowDemoAdmin)?<AppShell me={me||workflowDemoAdmin} setMe={setMe}/>:<Login/>}<AppUpdateNotice/></>;
+  if(loading)return <><AppFallback/><AppUpdateNotice/></>;
+  if(route==='home')return <><Suspense fallback={<AppFallback/>}><LandingPage me={me}/></Suspense><AppUpdateNotice/></>;
+  return <><Suspense fallback={<AppFallback/>}>{(me||workflowDemoAdmin)?<AppShell me={me||workflowDemoAdmin} setMe={setMe}/>:<Login/>}</Suspense><AppUpdateNotice/></>;
 }
 
 getOrCreateAppRoot({container:document.getElementById('root'),createRoot}).render(<App/>);

@@ -1,5 +1,5 @@
 import React from 'react';
-import {Image as ImageIcon,WandSparkles} from 'lucide-react';
+import {ImageIcon,WandSparkles} from '../../../shared/icons/index.jsx';
 import {BASE_RATIO_OPTIONS,BASE_RESOLUTION_OPTIONS} from '../model/workbenchOptions.js';
 
 function StudioReferenceUpload({reference,draggingRef,dragOver,dragLeave,dropUpload,chooseReference,imgSrc,setMsg,clearReferenceImage,openResourceModal}){

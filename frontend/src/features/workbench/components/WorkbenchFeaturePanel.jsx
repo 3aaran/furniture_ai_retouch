@@ -1,5 +1,5 @@
 import React from 'react';
-import {X} from 'lucide-react';
+import {X} from '../../../shared/icons/index.jsx';
 
 function WorkbenchFeaturePanel({
   currentFeatureMode,

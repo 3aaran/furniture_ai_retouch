@@ -1,1 +1,1 @@
-export {default} from '../../store/workbench/Workbench.jsx';
+export {default} from './WorkbenchPage.jsx';

@@ -1,8 +1,8 @@
 import React from 'react';
-import ConfirmDialog from '../../../components/ConfirmDialog.jsx';
-import ResourcePickerModal from '../../../store/workbench/ResourcePickerModal.jsx';
-import WorkbenchResourceUploadModal from '../../../store/workbench/WorkbenchResourceUploadModal.jsx';
-import WatermarkConfigModal from '../../../store/workbench/WatermarkConfigModal.jsx';
+import{ConfirmDialog}from '../../../shared/ui/index.jsx';
+import ResourcePickerModal from './ResourcePickerModal.jsx';
+import WorkbenchResourceUploadModal from './WorkbenchResourceUploadModal.jsx';
+import WatermarkConfigModal from './WatermarkConfigModal.jsx';
 
 function WorkbenchModals({
   TaskDetailModal,

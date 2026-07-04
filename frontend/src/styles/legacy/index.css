@@ -1,0 +1,3 @@
+/* Legacy styles kept as a quarantined layer while feature CSS is migrated page-by-page. */
+@import './style.css';
+@import './workbench-fixes.css';

@@ -1,5 +1,5 @@
 import {featureConfig} from '../../../config/featureConfig.jsx';
-import {promotionFeatures} from '../../../store/workbench/promotionFeatures.js';
+import {promotionFeatures} from './promotionFeatures.js';
 
 export const BASE_RATIO_OPTIONS=['自适应','1:1','4:3','3:4','16:9'];
 export const BASE_RESOLUTION_OPTIONS=['1K','2K','4K'];

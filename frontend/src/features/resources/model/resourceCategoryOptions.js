@@ -4,7 +4,7 @@ import {
   normalizeResourceMain,
   normalizeResourceSub,
   resourceUseLabel
-} from '../../../store/resources/resourceModel.js';
+} from './resourceModel.js';
 
 export function buildResourceCategoryGroups({categoryTree=[],systemItems=[],dataItems=[]}){
   const mergeDefaultGroups=(groups=[])=>{

@@ -1,5 +1,5 @@
 import React from 'react';
-import {Clapperboard} from 'lucide-react';
+import {Clapperboard} from '../../../shared/icons/index.jsx';
 
 const VIDEO_PARAM_CHOICES={
   duration:['5秒','10秒','15秒','30秒'],

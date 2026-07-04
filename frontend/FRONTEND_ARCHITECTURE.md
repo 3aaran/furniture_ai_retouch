@@ -50,6 +50,16 @@ features/<feature>/
 - 新样式优先放到当前 feature 的 `styles` 目录，通用样式放到 `shared` 或 `styles/components`。
 - 避免大量使用 `!important`。如果必须使用，说明当前样式层级需要整理。
 - 动效只作为氛围和反馈，不要干扰后台核心操作。
+- 后续整理 CSS 时，优先减少 `overrides`、`legacy`、`mobile-fixes` 的层级覆盖。
+
+## 统一组件和图标规则
+
+- 已建立统一组件出口 `shared/ui`。
+- 通用按钮、输入框、搜索框、弹窗、确认框、空状态、分页、上传框，不应在各页面重复写。
+- 已建立统一图标出口 `shared/icons`。
+- 新模块不要到处直接从 `lucide-react` 导入一堆图标；统一图标应由 `shared/icons` 或当前 feature 的图标出口管理。
+- 同一类业务图标、按钮尺寸、状态色、卡片风格必须统一，避免工作台、资源库、后台各写一套视觉语言。
+- 当前允许旧代码继续直接使用 `lucide-react`，但新增模块应优先走统一图标出口。
 
 ## 迁移策略
 
@@ -89,6 +99,11 @@ App / StorePages
 
 - `shared/api/http.js` 已建立。
 - `shared/effects` 已建立，承接 React Bits 风格轻量动效组件。
-- `features/resources` 已建立入口层和 API 层。
-- `features/workbench` 已建立入口层和 API 层。
-- 旧的 `store/resources/StoreResources.jsx` 与 `store/workbench/Workbench.jsx` 后续应继续拆分。
+- `shared/icons` 已建立，`features` 新架构文件已统一从该出口导入图标。
+- `shared/ui` 已建立，已包含 `IconButton`、`EmptyState`。
+- `features/resources` 已建立入口层、components/hooks/model/api 聚合层。
+- `features/workbench` 已建立入口层、components/hooks/model/api 聚合层。
+- `App.jsx` 已做入口路由懒加载。
+- `TaskDetailModal` 已改为动态 import。
+- `WorkflowAdminApp` 已改为动态 import。
+- `store/resources/StoreResources.jsx` 与 `store/workbench/Workbench.jsx` 已迁移到 `features/*Page.jsx`，旧文件只保留兼容转发。

@@ -1,5 +1,1 @@
-import React from'react';
-
-export default function ResourceToolbar(){
-  return null;
-}
+export {default} from '../../features/resources/components/ResourceToolbar.jsx';
