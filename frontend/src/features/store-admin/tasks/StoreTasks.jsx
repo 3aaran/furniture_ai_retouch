@@ -1,7 +1,7 @@
 ﻿import React,{useEffect,useState}from'react';
 import{Download,Eye}from'lucide-react';
-import{req,fmt,usePaged,Pagination,imageListUrl,fallbackToOriginalImage,openImageDownload}from'../../appShared.jsx';
-import{featureName,getFeatureDisplayName}from'../../config/uiText.js';
+import{req,fmt,usePaged,Pagination,imageListUrl,fallbackToOriginalImage,openImageDownload}from'../../../appShared.jsx';
+import{featureName,getFeatureDisplayName}from'../../../config/uiText.js';
 
 export default function StoreTasks({me,setMsg,TaskDetailModal,goPage}){
   const ops=featureName;

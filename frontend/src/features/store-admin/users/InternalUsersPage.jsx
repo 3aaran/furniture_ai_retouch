@@ -1,6 +1,6 @@
 import React,{useState}from'react';
 import{Search,WalletCards,Plus,Trash2,Power,Pencil}from'lucide-react';
-import{req,fmt,roleName,usePaged,Pagination}from'../../appShared.jsx';
+import{req,fmt,roleName,usePaged,Pagination}from'../../../appShared.jsx';
 import{TrialAccountTicket}from'./TrialAccountTicket.jsx';
 
 function StoreUsers({me,setMe,setMsg}){

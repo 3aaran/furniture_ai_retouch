@@ -1,7 +1,7 @@
 import React,{useMemo,useState}from'react';
 import{Building2,ChevronRight,Clock3,CreditCard,Eye,ListChecks,Search,Sparkles,WalletCards,X}from'lucide-react';
-import{req,fmt,usePaged,Pagination}from'../../appShared.jsx';
-import{featureName,getFeatureDisplayName}from'../../config/uiText.js';
+import{req,fmt,usePaged,Pagination}from'../../../appShared.jsx';
+import{featureName,getFeatureDisplayName}from'../../../config/uiText.js';
 
 export default function QuotaLogs({me,setMsg,TaskDetailModal}){
   const isAdmin=me?.role==='SYSTEM_ADMIN';

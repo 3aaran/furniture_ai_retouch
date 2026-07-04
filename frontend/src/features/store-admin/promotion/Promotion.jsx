@@ -1,6 +1,6 @@
 import React,{useEffect,useState}from'react';
 import{Copy,Link as LinkIcon,Ticket}from'lucide-react';
-import{req,fmt,usePaged,Pagination,Table,Toolbar}from'../../appShared.jsx';
+import{req,fmt,usePaged,Pagination,Table,Toolbar}from'../../../appShared.jsx';
 
 function quotaText(v){
   return `${Number(v||0)} 算力`;

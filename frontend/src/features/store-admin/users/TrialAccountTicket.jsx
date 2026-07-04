@@ -1,5 +1,5 @@
 import React from'react';
-import{fmt}from'../../appShared.jsx';
+import{fmt}from'../../../appShared.jsx';
 
 export function TrialAccountTicket({trialTicket,onClose,onCopyAll}){
   if(!trialTicket)return null;
