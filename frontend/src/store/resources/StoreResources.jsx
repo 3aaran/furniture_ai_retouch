@@ -13,7 +13,11 @@ import{compressImageForUpload,createLocalPreviewUrl,revokeLocalPreviewUrl}from'.
 function StoreResources({me,setMsg}){
   const isSystemAdmin=me?.role==='SYSTEM_ADMIN';
   const isStoreAdmin=me?.role==='MERCHANT_OWNER'||me?.role==='MERCHANT_ADMIN';
-  const {query,setQuery,data,setData,load}=usePaged('/api/merchant/resources',{keyword:'',resourceType:'',mainCategory:'',subCategory:'',status:'',scope:'MERCHANT',page:1,pageSize:20});
+  const [gridCols,setGridCols]=useState(3);
+  const [gridRows,setGridRows]=useState(3);
+  const [sidebarCollapsed,setSidebarCollapsed]=useState(false);
+  const pageSize=gridCols*gridRows;
+  const {query,setQuery,data,setData,load}=usePaged('/api/merchant/resources',{keyword:'',resourceType:'',mainCategory:'',subCategory:'',status:'',scope:'MERCHANT',page:1,pageSize});
   const [sys,setSys]=useState([]);
   const [space,setSpace]=useState(isSystemAdmin?'SYSTEM':isStoreAdmin?'STORE':'PERSONAL');
   const [sysPage,setSysPage]=useState(1);
@@ -39,7 +43,6 @@ function StoreResources({me,setMsg}){
   const [uploadStatus,setUploadStatus]=useState('');
   const previewUrlRef=React.useRef('');
 
-  const pageSize=20;
   const canUpload=(isSystemAdmin&&space==='SYSTEM')||(isStoreAdmin&&space==='STORE')||(!isSystemAdmin&&space==='PERSONAL');
   const canManageCurrentSpace=(isSystemAdmin&&space==='SYSTEM')||(isStoreAdmin&&space==='STORE')||(!isSystemAdmin&&space==='PERSONAL');
   const categoryScope=space==='SYSTEM'?'SYSTEM':space==='STORE'?'MERCHANT':'USER';
@@ -77,6 +80,11 @@ function StoreResources({me,setMsg}){
     setSysPage(1);
     setSelectedResourceIds(new Set());
   },[query.keyword,query.resourceType,query.mainCategory,query.subCategory,query.status,space]);
+
+  useEffect(()=>{
+    setSysPage(1);
+    setQuery(q=>Number(q.pageSize)===pageSize?q:{...q,page:1,pageSize});
+  },[pageSize]);
 
   useEffect(()=>{
     if(space==='STORE')setQuery(q=>({...q,scope:'MERCHANT',page:1}));
@@ -308,6 +316,21 @@ function StoreResources({me,setMsg}){
     else setQuery(q=>({...q,page}));
   }
 
+  function wheelPage(e){
+    e.preventDefault();
+    if(totalPages<=1)return;
+    changePage(currentPage+(e.deltaY>0?1:-1));
+  }
+
+  const pagerNumbers=(()=>{
+    const size=Math.min(4,totalPages);
+    let start=Math.max(1,currentPage-1);
+    if(currentPage<=2)start=1;
+    if(currentPage>=totalPages-1)start=Math.max(1,totalPages-size+1);
+    if(start+size-1>totalPages)start=Math.max(1,totalPages-size+1);
+    return Array.from({length:size},(_,i)=>start+i);
+  })();
+
   function imgUrl(r){
     if(r.localPreviewUrl)return r.localPreviewUrl;
     if(!r.imageUrl)return '';
@@ -498,17 +521,16 @@ function StoreResources({me,setMsg}){
     return `${(n/1024/1024).toFixed(2)} MB`;
   }
 
-  return <div className="resourcePageV3">
+  return <div className={`resourcePageV3 ${sidebarCollapsed?'resourcePageCollapsedV10':''}`} style={{'--resource-cols':gridCols}}>
     <ResourceToolbar
       query={query}
       setQuery={setQuery}
       triggerSearch={triggerSearch}
-      categoryGroups={categoryGroups}
-      subOptions={subOptions}
-      canManageCurrentSpace={canManageCurrentSpace}
-      openCategoryPanel={openCategoryPanel}
-      canUpload={canUpload}
-      openUpload={()=>setUploadOpen(true)}
+      gridCols={gridCols}
+      gridRows={gridRows}
+      setGridCols={setGridCols}
+      setGridRows={setGridRows}
+      pageSize={pageSize}
     />
 
     <ResourceSpaceTabs
@@ -519,6 +541,21 @@ function StoreResources({me,setMsg}){
       openBatchCategoryModal={openBatchCategoryModal}
       batchDeleteResources={batchDeleteResources}
       clearResourceSelection={clearResourceSelection}
+      categorySections={categorySections}
+      query={query}
+      setQuery={setQuery}
+      canManageCurrentSpace={canManageCurrentSpace}
+      openCategoryPanel={openCategoryPanel}
+      sidebarCollapsed={sidebarCollapsed}
+      setSidebarCollapsed={setSidebarCollapsed}
+      canUpload={canUpload}
+      openUpload={()=>setUploadOpen(true)}
+      triggerSearch={triggerSearch}
+      gridCols={gridCols}
+      gridRows={gridRows}
+      setGridCols={setGridCols}
+      setGridRows={setGridRows}
+      pageSize={pageSize}
     />
 
     {activeResourcePanel&&<section className={activeResourcePanel==='category'?'resourceActionPanelV7 categoryDrawerV7':activeResourcePanel==='detail'?'resourceActionPanelV7 detailDrawerV7':'resourceActionPanelV7'}>
@@ -668,25 +705,15 @@ function StoreResources({me,setMsg}){
 
       <div className="resourcePagerV3">
         <div className="resourceTotalV3">共 {total} 条</div>
-        <div className="resourcePageSizeV3">20 条/页</div>
-        <div className="resourcePageButtonsV3">
+        <div className="resourcePageButtonsV3" onWheel={wheelPage} title="鼠标滚轮可切换页码">
           <button disabled={currentPage<=1} onClick={()=>changePage(1)}>«</button>
           <button disabled={currentPage<=1} onClick={()=>changePage(currentPage-1)}>‹</button>
-          {Array.from({length:Math.min(7,totalPages)},(_,i)=>{
-            let p=i+1;
-            if(totalPages>7){
-              if(currentPage<=4)p=i+1;
-              else if(currentPage>=totalPages-3)p=totalPages-6+i;
-              else p=currentPage-3+i;
-            }
-            return <button key={p} className={p===currentPage?'active':''} onClick={()=>changePage(p)}>{p}</button>
-          })}
-          {totalPages>7&&currentPage<totalPages-3&&<span>...</span>}
-          {totalPages>7&&currentPage<totalPages-3&&<button onClick={()=>changePage(totalPages)}>{totalPages}</button>}
+          {pagerNumbers[0]>1&&<span className="resourcePagerDotsV10">…</span>}
+          {pagerNumbers.map(p=><button key={p} className={p===currentPage?'active':''} onClick={()=>changePage(p)}>{p}</button>)}
+          {pagerNumbers[pagerNumbers.length-1]<totalPages&&<span className="resourcePagerDotsV10">…</span>}
           <button disabled={currentPage>=totalPages} onClick={()=>changePage(currentPage+1)}>›</button>
           <button disabled={currentPage>=totalPages} onClick={()=>changePage(totalPages)}>»</button>
         </div>
-        <div className="resourceJumpV3">跳至 <input type="number" min="1" max={totalPages} onKeyDown={e=>{if(e.key==='Enter')changePage(Number(e.currentTarget.value)||1)}}/> 页</div>
       </div>
     </section>
 

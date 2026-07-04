@@ -14,6 +14,9 @@ function StoreUsers({me,setMe,setMsg}){
   const [rechargeAmount,setRechargeAmount]=useState(10);
   const roleOptions=me.role==='MERCHANT_OWNER'?[['MERCHANT_ADMIN','门店管理员'],['STAFF','普通用户']]:[['STAFF','普通用户']];
   const users=data.items||[];
+  const activeUsers=users.filter(u=>u.status==='ACTIVE').length;
+  const trialUsers=users.filter(u=>u.role==='TRIAL').length;
+  const staffUsers=users.filter(u=>u.role==='STAFF').length;
   const merchantCode=data.merchantCode||me?.merchantCode||String(me?.merchantId||'000000').replace(/-/g,'').slice(0,6)||'000000';
 
   function storeQuota(){return Number(data.merchantQuota ?? me?.merchantQuota ?? me?.quota ?? 0)}
@@ -90,10 +93,16 @@ function StoreUsers({me,setMe,setMsg}){
     setMsg('体验账号凭据已复制');
   }
 
-  return <div className="storeUsersV2">
-    <section className="storeUsersHeroV2">
-      <div><h1>用户管理</h1></div>
+  return <div className="storeUsersV2 stitchUsersPage">
+    <section className="storeUsersHeroV2 stitchUsersHero">
+      <div className="stitchUsersHeroText"><span>TEAM ACCESS</span><h1>用户管理</h1><p>管理门店成员、体验账号、账号状态和算力分配。</p></div>
       <div className="storeUserQuotaCardV2"><span>门店编号：{merchantCode}</span><b>剩余算力：<em>{storeQuota()}</em></b></div>
+      <div className="stitchUsersHeroStats">
+        <article><span>当前页用户</span><b>{users.length}</b></article>
+        <article><span>启用账号</span><b>{activeUsers}</b></article>
+        <article><span>普通用户</span><b>{staffUsers}</b></article>
+        <article><span>体验账号</span><b>{trialUsers}</b></article>
+      </div>
     </section>
     <section className="storeUserToolbarV2">
       <div className="storeUserSearchV2"><Search size={22}/><input placeholder="搜索用户名、手机号" value={query.keyword} onChange={e=>setQuery({...query,keyword:e.target.value,page:1})}/></div>

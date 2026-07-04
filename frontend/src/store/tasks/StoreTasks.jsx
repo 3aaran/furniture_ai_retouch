@@ -10,6 +10,9 @@ export default function StoreTasks({me,setMsg,TaskDetailModal,goPage}){
   async function open(id){try{setDetail(await req('/api/images/'+id+'/detail-rich'))}catch(e){setMsg(e.message)}}
   useEffect(()=>{const id=localStorage.getItem('openTaskDetailId');if(id){open(id);localStorage.removeItem('openTaskDetailId')}},[]);
   const taskItems=data.items||[];
+  const finishedCount=taskItems.filter(i=>String(i.status||'succeeded').toLowerCase()==='succeeded').length;
+  const runningCount=taskItems.filter(i=>['queued','pending','running'].includes(String(i.status||'').toLowerCase())).length;
+  const failedCount=taskItems.filter(i=>String(i.status||'').toLowerCase()==='failed').length;
   function batch(){taskItems.slice(0,20).forEach((i,n)=>setTimeout(()=>openImageDownload(i,setMsg),n*180))}
   function updateTimeRange(value){
     const today=new Date();
@@ -20,8 +23,21 @@ export default function StoreTasks({me,setMsg,TaskDetailModal,goPage}){
     start.setDate(today.getDate()-days+1);
     setQuery({...query,timeRange:value,startDate:fmtDate(start),endDate:fmtDate(today),page:1});
   }
-  return <div className="adminLogPage">
-    <section className="panel">
+  return <div className="adminLogPage stitchHistoryPage">
+    <section className="stitchHistoryHero">
+      <div>
+        <span>HISTORY CENTER</span>
+        <h2>生成历史</h2>
+        <p>按任务、状态、时间和用户筛选图片生成记录，快速回看结果、下载图片或继续处理。</p>
+      </div>
+      <div className="stitchHistoryStats">
+        <article><span>当前页任务</span><b>{taskItems.length}</b></article>
+        <article><span>已完成</span><b>{finishedCount}</b></article>
+        <article><span>生成中</span><b>{runningCount}</b></article>
+        <article><span>失败</span><b>{failedCount}</b></article>
+      </div>
+    </section>
+    <section className="panel stitchHistoryPanel">
       <div className="filterGroup historyTaskFilters">
         <input placeholder="任务编号 / 功能 / 用户" value={query.keyword} onChange={e=>setQuery({...query,keyword:e.target.value,page:1})}/>
         <select value={query.kind} onChange={e=>setQuery({...query,kind:e.target.value,page:1})}><option value="">全部功能</option>{Object.entries(ops).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select>

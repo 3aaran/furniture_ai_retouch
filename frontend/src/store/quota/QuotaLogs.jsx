@@ -40,7 +40,11 @@ export default function QuotaLogs({me,setMsg,TaskDetailModal}){
     const view=query.view||'usage';
     const period=query.period||'week';
     const periodOptions=[['week','每周'],['month','每月'],['quarter','每季度']];
-    return <div className="quotaPageV2 adminQuotaPageV4">
+    return <div className="quotaPageV2 adminQuotaPageV4 stitchQuotaPage">
+      <section className="stitchTopUpHero">
+        <div><span>QUOTA LEDGER</span><h2>额度明细</h2><p>按周期查看门店大模型调用、算力消耗和充值情况。</p></div>
+        <strong>{view==='usage'?'门店消耗':'门店充值'} · {periodOptions.find(([k])=>k===period)?.[1]||'每周'}</strong>
+      </section>
       <section className="quotaSummaryV2 adminQuotaSummaryV4">
         <div className="quotaMetricV2 income"><span><Sparkles size={22}/>成功调用大模型</span><b>{summary.successCalls??0}</b><small>只统计成功完成的 AI 任务</small></div>
         <div className="quotaMetricV2 expense"><span><WalletCards size={22}/>门店消耗额度</span><b>{summary.usageQuota??0}</b><small>成功任务实际消耗算力</small></div>
@@ -95,7 +99,11 @@ export default function QuotaLogs({me,setMsg,TaskDetailModal}){
     ['MANUAL_RECHARGE','人工充值']
   ];
 
-  return <div className="quotaPageV2">
+  return <div className="quotaPageV2 stitchQuotaPage">
+    <section className="stitchTopUpHero">
+      <div><span>TOP UP CENTER</span><h2>算力中心</h2><p>查看当前余额、收入支出和每一次 AI 任务扣费记录。</p></div>
+      <strong>{summary.currentBalance??0} 算力</strong>
+    </section>
     <section className="quotaSummaryV2">
       <div className="quotaMetricV2 current"><span><WalletCards size={22}/>当前余额</span><b>{summary.currentBalance??0}</b></div>
       <div className="quotaMetricV2 income"><span>总收入</span><b>+{summary.totalIncome??0}</b></div>

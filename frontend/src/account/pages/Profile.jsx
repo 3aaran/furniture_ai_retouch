@@ -74,8 +74,8 @@ export default function Profile({me,setMe,setMsg}){
     }catch(e){setMsg(e.message)}
   }
 
-  return <div className="profilePageV3">
-    <section className="profileHeroV3">
+  return <div className="profilePageV3 stitchProfilePage">
+    <section className="profileHeroV3 stitchProfileHero">
       <div className="profileAvatarV3">
         {avatarUrl?<img src={avatarUrl} alt="头像" loading="lazy" decoding="async"/>:<span>{initials}</span>}
         <button type="button" disabled={avatarBusy} onClick={()=>fileRef.current?.click()} title="更换头像"><Camera size={18}/></button>
@@ -85,6 +85,7 @@ export default function Profile({me,setMe,setMsg}){
         <span><ShieldCheck size={16}/>{roleName[me.role]}</span>
         <h2>{me.displayName||me.username||me.phone}</h2>
         <p>{me.companyName||'个人中心'}</p>
+        <small className="stitchProfileTagline">账户资料、安全设置与存储空间集中管理</small>
       </div>
       <div className="profileHeroMetaV3">
         <div><small>账号</small><b>{me.phone||me.username}</b></div>

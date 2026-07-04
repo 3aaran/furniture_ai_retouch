@@ -52,10 +52,10 @@ export default function Promotion({setMsg}){
     setQuery(q=>({page:1,pageSize:q.pageSize||10,keyword:'',status:'',startDate:'',endDate:''}));
   }
 
-  return <div className="stack">
-    <section className="panel promotionInvitePanelV2">
+  return <div className="stack stitchInvitePage">
+    <section className="panel promotionInvitePanelV2 stitchInviteHero">
       <div className="panelTitle promotionInviteHeadV2">
-        <h2><Ticket/>推广邀请</h2>
+        <h2><Ticket/>邀请共创</h2>
         <div className="seg">
           <button type="button" onClick={()=>copyText(inviteCode,'邀请码')}><Copy size={16}/>复制邀请码</button>
           <button type="button" className="primary" onClick={()=>copyText(link,'邀请链接')}><LinkIcon size={16}/>复制邀请链接</button>
