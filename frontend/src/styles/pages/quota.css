@@ -1,0 +1,592 @@
+/* Quota center and administrator quota ledger styles.
+   Moved out of overrides/final-fixes.css so quota pages own their layout. */
+
+.quotaPageV2{
+  width:min(1480px,calc(100vw - 96px));
+  margin:0 auto;
+  display:grid;
+  gap:30px;
+  color:#f6f6f6;
+}
+
+.quotaSummaryV2{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(220px,1fr));
+  gap:20px;
+}
+
+.quotaMetricV2{
+  min-height:128px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.12);
+  background:#191919;
+  padding:24px;
+  display:grid;
+  align-content:center;
+  gap:18px;
+}
+
+.quotaMetricV2 span{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:#d6d0c3;
+  font-size:16px;
+  font-weight:800;
+}
+
+.quotaMetricV2 b{
+  font-size:34px;
+  line-height:1;
+  color:#f0d68a;
+}
+
+.quotaMetricV2.current{
+  background:rgba(240,214,138,.08);
+  border-color:rgba(240,214,138,.34);
+}
+
+.quotaMetricV2.income{
+  background:rgba(56,190,89,.10);
+  border-color:rgba(56,190,89,.34);
+}
+
+.quotaMetricV2.income b{
+  color:#54d368;
+}
+
+.quotaMetricV2.expense{
+  background:rgba(207,55,50,.13);
+  border-color:rgba(207,55,50,.42);
+}
+
+.quotaMetricV2.expense b{
+  color:#ff514d;
+}
+
+.quotaPanelV2{
+  border-top:1px solid rgba(255,255,255,.08);
+}
+
+.quotaToolbarV2{
+  padding:18px 0;
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+.quotaSearchV2,
+.quotaToolbarV2 select{
+  height:48px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.12);
+  background:#111214;
+  color:#f2eee5;
+}
+
+.quotaSearchV2{
+  width:min(420px,100%);
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:0 16px;
+}
+
+.quotaSearchV2 input{
+  flex:1;
+  min-width:0;
+  border:0;
+  outline:0;
+  background:transparent;
+  color:#fff;
+}
+
+.quotaToolbarV2 select{
+  min-width:180px;
+  padding:0 14px;
+}
+
+.quotaTableWrapV2{
+  overflow:auto;
+  background:#151515;
+  border:1px solid rgba(255,255,255,.08);
+}
+
+.quotaTableV2{
+  width:100%;
+  min-width:920px;
+  border-collapse:collapse;
+}
+
+.quotaTableV2 th,
+.quotaTableV2 td{
+  height:70px;
+  padding:0 22px;
+  text-align:left;
+  border-bottom:1px solid rgba(255,255,255,.14);
+}
+
+.quotaTableV2 th{
+  color:#f8f5ed;
+  font-weight:1000;
+  background:#101010;
+}
+
+.quotaTableV2 tr:nth-child(even) td{
+  background:rgba(255,255,255,.025);
+}
+
+.quotaTypeBadgeV2{
+  display:inline-flex;
+  align-items:center;
+  height:30px;
+  padding:0 12px;
+  border-radius:8px;
+  font-size:13px;
+  font-weight:900;
+}
+
+.quotaTypeBadgeV2.plus{
+  background:rgba(75,205,103,.16);
+  color:#61df77;
+}
+
+.quotaTypeBadgeV2.minus{
+  background:#f2a10c;
+  color:#151515;
+}
+
+.quotaNumPlusV2,
+.quotaNumMinusV2{
+  font-size:20px;
+  font-weight:1000;
+}
+
+.quotaNumPlusV2{
+  color:#54d368;
+}
+
+.quotaNumMinusV2{
+  color:#ff514d;
+}
+
+.quotaTableV2 code{
+  display:inline-flex;
+  min-height:30px;
+  align-items:center;
+  padding:0 12px;
+  border-radius:9px;
+  background:rgba(240,214,138,.10);
+  color:#ddd2ad;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+
+.quotaTaskLinkV2{
+  display:inline-flex;
+  min-height:30px;
+  align-items:center;
+  padding:0 12px;
+  border:0;
+  border-radius:9px;
+  background:rgba(240,214,138,.10);
+  color:#f0d68a;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  cursor:pointer;
+}
+
+.quotaTaskLinkV2:hover{
+  background:rgba(240,214,138,.18);
+}
+
+.adminQuotaSummaryV3{
+  grid-template-columns:repeat(3,minmax(240px,1fr));
+}
+.adminQuotaSummaryV3 .quotaMetricV2 small{
+  color:#aaa294;
+  font-weight:800;
+}
+.adminQuotaToolbarV3{
+  display:grid;
+  grid-template-columns:minmax(260px,1fr) 180px 180px 180px;
+  gap:12px;
+}
+.adminQuotaToolbarV3 label{
+  height:48px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:0 12px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:12px;
+  background:#111214;
+  color:#f0d68a;
+}
+.adminQuotaToolbarV3 input[type="date"]{
+  width:100%;
+  border:0;
+  background:transparent;
+  color:#f6f2e9;
+  padding:0;
+}
+.adminQuotaListV3{
+  display:grid;
+  gap:12px;
+}
+.adminQuotaItemV3{
+  min-height:86px;
+  display:grid;
+  grid-template-columns:minmax(250px,1.1fr) minmax(180px,.9fr) 150px minmax(220px,1fr);
+  gap:16px;
+  align-items:center;
+  padding:16px 18px;
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:16px;
+  background:#171717;
+}
+.adminQuotaItemV3.usage{border-left:4px solid #f0a84a}
+.adminQuotaItemV3.recharge{border-left:4px solid #55d170}
+.adminQuotaItemV3.other{border-left:4px solid #7e8aa5}
+.adminQuotaMerchantV3{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+.adminQuotaMerchantV3 i{
+  width:42px;
+  height:42px;
+  border-radius:12px;
+  display:grid;
+  place-items:center;
+  background:rgba(240,214,138,.10);
+  color:#f0d68a;
+}
+.adminQuotaMerchantV3 b{
+  display:block;
+  color:#fff;
+  font-size:17px;
+}
+.adminQuotaMerchantV3 span,
+.adminQuotaTypeV3 small,
+.adminQuotaPeopleV3 span{
+  display:block;
+  color:#9f9687;
+  font-size:13px;
+  line-height:1.6;
+}
+.adminQuotaTypeV3 span{
+  display:inline-flex;
+  height:30px;
+  align-items:center;
+  padding:0 11px;
+  border-radius:8px;
+  background:rgba(255,255,255,.07);
+  color:#f6f2e9;
+  font-weight:900;
+}
+.adminQuotaAmountV3{
+  text-align:right;
+  font-size:26px;
+  font-weight:1000;
+}
+.adminQuotaAmountV3.plus{color:#55d170}
+.adminQuotaAmountV3.minus{color:#f0a84a}
+.adminQuotaAmountV3 small{
+  display:block;
+  color:#9f9687;
+  font-size:12px;
+}
+.adminQuotaPageV4{
+  gap:24px;
+}
+.adminQuotaSummaryV4{
+  grid-template-columns:repeat(3,minmax(240px,1fr));
+}
+.adminQuotaSummaryV4 .quotaMetricV2{
+  min-height:138px;
+}
+.adminQuotaSummaryV4 .quotaMetricV2 small{
+  color:#aaa294;
+  font-size:13px;
+  font-weight:800;
+}
+.adminQuotaPanelV4{
+  display:grid;
+  gap:16px;
+}
+.adminQuotaTabsV4{
+  width:max-content;
+  max-width:100%;
+  display:flex;
+  gap:6px;
+  padding:6px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:14px;
+  background:#151515;
+}
+.adminQuotaTabsV4 button{
+  height:42px;
+  min-width:128px;
+  border:0;
+  border-radius:10px;
+  background:transparent;
+  color:#bfb7a8;
+  font-weight:900;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+}
+.adminQuotaTabsV4 button.active{
+  background:rgba(240,214,138,.15);
+  color:#f0d68a;
+}
+.adminQuotaPeriodTabsV4{
+  width:max-content;
+  max-width:100%;
+  display:flex;
+  gap:6px;
+  padding:4px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:12px;
+  background:#111214;
+}
+.adminQuotaPeriodTabsV4 button{
+  height:34px;
+  min-width:76px;
+  border:0;
+  border-radius:9px;
+  background:transparent;
+  color:#aaa294;
+  font-size:13px;
+  font-weight:900;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.adminQuotaPeriodTabsV4 button.active{
+  background:linear-gradient(135deg,#f0d68a,#d3a947);
+  color:#16120a;
+  box-shadow:0 8px 24px rgba(211,169,71,.16);
+}
+.adminQuotaToolbarV4{
+  display:grid;
+  grid-template-columns:minmax(320px,560px);
+  gap:12px;
+  padding-top:4px;
+}
+.adminQuotaToolbarV4 .quotaSearchV2{
+  width:100%;
+}
+.adminQuotaToolbarV4 label{
+  height:48px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:0 12px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:12px;
+  background:#111214;
+  color:#f0d68a;
+}
+.adminQuotaToolbarV4 input[type="date"]{
+  width:100%;
+  border:0;
+  background:transparent;
+  color:#f6f2e9;
+  padding:0;
+}
+.adminQuotaListV4{
+  display:grid;
+  gap:12px;
+}
+.adminQuotaItemV4{
+  min-height:88px;
+  display:grid;
+  grid-template-columns:minmax(280px,1fr) 150px 150px auto;
+  gap:16px;
+  align-items:center;
+  padding:16px 18px;
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:16px;
+  background:#171717;
+}
+.adminQuotaItemV4.usage{
+  border-left:4px solid #f0a84a;
+}
+.adminQuotaItemV4.recharge{
+  border-left:4px solid #55d170;
+}
+.adminQuotaMerchantV4{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.adminQuotaMerchantV4 i{
+  width:44px;
+  height:44px;
+  border-radius:13px;
+  display:grid;
+  place-items:center;
+  background:rgba(240,214,138,.10);
+  color:#f0d68a;
+  flex:0 0 auto;
+}
+.adminQuotaMerchantV4 b{
+  display:block;
+  color:#fff;
+  font-size:18px;
+}
+.adminQuotaMerchantV4 span,
+.adminQuotaStatV4 span{
+  display:block;
+  color:#9f9687;
+  font-size:13px;
+}
+.adminQuotaStatV4 b{
+  color:#fff;
+  font-size:24px;
+}
+.adminQuotaAmountV4{
+  text-align:right;
+  font-size:26px;
+  font-weight:1000;
+}
+.adminQuotaAmountV4.plus{color:#55d170}
+.adminQuotaAmountV4.minus{color:#f0a84a}
+.adminQuotaAmountV4 small{
+  display:block;
+  color:#9f9687;
+  font-size:12px;
+}
+.adminQuotaDetailBtnV4{
+  height:40px;
+  border:1px solid rgba(240,214,138,.36);
+  border-radius:999px;
+  background:rgba(240,214,138,.08);
+  color:#f0d68a;
+  font-weight:900;
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  padding:0 14px;
+}
+.adminQuotaDetailMaskV4{
+  position:fixed;
+  inset:0;
+  z-index:2147483600;
+  display:grid;
+  place-items:center;
+  padding:28px;
+  background:rgba(0,0,0,.72);
+  backdrop-filter:blur(8px);
+}
+.adminQuotaDetailModalV4{
+  width:min(1080px,calc(100vw - 56px));
+  max-height:min(760px,calc(100vh - 56px));
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:20px;
+  background:#191919;
+  color:#f6f2e9;
+  box-shadow:0 44px 140px rgba(0,0,0,.76);
+}
+.adminQuotaDetailModalV4 header{
+  min-height:112px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:18px;
+  padding:24px 26px 18px;
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+.adminQuotaDetailModalV4 header span{
+  display:inline-flex;
+  height:28px;
+  align-items:center;
+  padding:0 10px;
+  border-radius:999px;
+  background:rgba(240,214,138,.12);
+  color:#f0d68a;
+  font-size:13px;
+  font-weight:900;
+}
+.adminQuotaDetailModalV4 h2{
+  margin:10px 0 8px;
+  font-size:28px;
+}
+.adminQuotaDetailModalV4 p{
+  margin:0;
+  color:#aaa294;
+}
+.adminQuotaDetailModalV4 header button{
+  width:40px;
+  height:40px;
+  border:0;
+  border-radius:12px;
+  background:rgba(255,255,255,.07);
+  color:#fff;
+  display:grid;
+  place-items:center;
+  padding:0;
+}
+.adminQuotaDetailModalV4 main{
+  min-height:0;
+  overflow:auto;
+  display:grid;
+  gap:10px;
+  padding:18px 22px 24px;
+}
+.adminQuotaDetailRowV4{
+  min-height:74px;
+  display:grid;
+  grid-template-columns:minmax(260px,1fr) minmax(150px,.7fr) minmax(170px,.8fr) 130px;
+  gap:14px;
+  align-items:center;
+  padding:14px 16px;
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:14px;
+  background:#151515;
+}
+.adminQuotaDetailRowV4.recharge{
+  border-left:3px solid #55d170;
+}
+.adminQuotaDetailRowV4 b{
+  color:#fff;
+}
+.adminQuotaDetailRowV4 span,
+.adminQuotaDetailRowV4 small{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  color:#9f9687;
+  font-size:13px;
+  margin-top:5px;
+}
+.adminQuotaDetailRowV4 strong{
+  justify-self:end;
+  color:#f0a84a;
+  font-size:20px;
+}
+.adminQuotaDetailRowV4.recharge strong{
+  color:#55d170;
+}
+
+@media(max-width:900px){
+  .quotaPageV2{width:calc(100vw - 36px)}
+  .quotaSummaryV2{grid-template-columns:1fr}
+}
+
+@media(max-width:980px){
+  .adminQuotaToolbarV3,
+  .adminQuotaItemV3,
+  .adminQuotaToolbarV4,
+  .adminQuotaItemV4,
+  .adminQuotaDetailRowV4{grid-template-columns:1fr}
+  .adminQuotaAmountV3,
+  .adminQuotaAmountV4{text-align:left}
+  .adminQuotaDetailRowV4 strong{justify-self:start}
+}

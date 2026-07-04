@@ -11,9 +11,13 @@
 @import './pages/workbench.css';
 @import './pages/resources.css';
 @import './pages/task-detail.css';
+@import './pages/task-process.css';
 @import './pages/admin-merchants.css';
 @import './pages/admin-workflows.css';
+@import './pages/admin-logs.css';
 @import './pages/users.css';
+@import './pages/quota.css';
+@import './pages/profile.css';
 
 @import './overrides/index.css';
 @import './mobile/index.css';

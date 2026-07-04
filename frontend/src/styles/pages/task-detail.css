@@ -175,3 +175,41 @@
   }
 }
 
+/* Base desktop task detail preview layout. Moved from legacy/workbench-fixes.css. */
+.taskPreviewOverlay{position:fixed;inset:0;z-index:120;background:#0a0a0a;color:#f6f6f6;display:flex;flex-direction:column}
+.taskPreviewTop{height:78px;border-bottom:1px solid rgba(255,255,255,.12);background:#111;display:flex;align-items:center;justify-content:space-between;padding:0 28px}
+.taskPreviewTop b{font-size:26px;margin-right:18px}
+.taskPreviewTop span{color:#a7a7a7;font-size:18px}
+.taskPreviewTopBtns{display:flex;align-items:center;gap:10px}
+.taskPreviewTopBtns button{width:44px;height:44px;border:0;background:transparent;color:#fff;font-size:34px;border-radius:10px;padding:0}
+.taskPreviewTopBtns button:hover{background:rgba(255,255,255,.08)}
+.taskPreviewTopBtns button:disabled{opacity:.25}
+.taskPreviewBody{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 580px;gap:18px;padding:20px;overflow:auto}
+.taskComparePanel{border:1px solid rgba(255,255,255,.12);background:#171717;border-radius:24px;padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:22px;min-height:650px}
+.compareCol{display:flex;flex-direction:column;min-width:0}
+.compareHead{height:46px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.compareHead h3{margin:0;font-size:19px}
+.compareHead button{height:32px;border-radius:999px;border:1px solid rgba(242,213,140,.48);background:transparent;color:#f2d58c;padding:0 18px}
+.taskImageFrame{flex:1;min-height:520px;border-radius:18px;border:14px solid #050505;background:#f7f5ef;display:grid;place-items:center;overflow:hidden}
+.taskImageFrame img{width:100%;height:100%;object-fit:contain;display:block}
+.taskImageFrame span{color:#333}
+.taskInfoPanel{border:1px solid rgba(255,255,255,.12);background:#181818;border-radius:24px;padding:26px 22px;display:flex;flex-direction:column;min-height:650px}
+.taskInfoPanel h3{font-size:25px;margin:0 0 18px}
+.infoRows{display:grid;gap:14px}
+.infoRows>div{display:grid;grid-template-columns:40px 1fr;gap:12px;align-items:start}
+.infoRows i{width:36px;height:36px;border-radius:10px;background:rgba(242,213,140,.15);color:#f2d58c;display:grid;place-items:center;font-style:normal;font-size:18px}
+.infoRows p{margin:0}
+.infoRows span{display:block;color:#8d8d8d;font-size:14px;margin-bottom:3px}
+.infoRows b{display:inline-flex;align-items:center;gap:8px;color:#fff;font-size:16px;word-break:break-all}
+.infoRows em{font-style:normal;background:#46bd58;color:#102715;border-radius:6px;padding:4px 10px}
+.goldTag{border:1px solid rgba(242,213,140,.45);color:#f2d58c!important;border-radius:6px;padding:3px 8px}
+.promptBox{border-top:1px solid rgba(255,255,255,.12);border-bottom:1px solid rgba(255,255,255,.12);margin:18px 0;padding:18px 0}
+.promptBox>div{display:flex;justify-content:space-between;align-items:center;color:#a8a8a8;margin-bottom:10px}
+.promptBox button{border:0;background:transparent;color:#a8a8a8;padding:4px}
+.promptBox p{min-height:42px;max-height:110px;overflow:auto;background:#766743;border-radius:12px;margin:0;padding:12px;color:#ded3ae;line-height:1.6;word-break:break-all}
+.taskDetailActions{display:flex;align-items:center;gap:12px;margin-top:auto}
+.taskDetailActions button{height:54px;border-radius:999px;padding:0 22px;font-weight:900}
+.taskDetailActions .primary{flex:1;background:linear-gradient(135deg,#e1c479,#f3d99a);color:#111}
+.outlineGold{border:1px solid rgba(242,213,140,.5);background:transparent;color:#f2d58c}
+@media(max-width:1200px){.taskPreviewBody{grid-template-columns:1fr}.taskComparePanel{grid-template-columns:1fr}.taskInfoPanel{min-height:auto}.taskImageFrame{min-height:360px}}
+

@@ -1,0 +1,142 @@
+/* Task image processing modal styles. Moved from legacy/workbench-fixes.css. */
+.cropShotMask{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  background:rgba(0,0,0,.72);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:28px;
+}
+
+.cropShotPanel{
+  width:calc(100vw - 76px);
+  height:calc(100vh - 76px);
+  max-width:1760px;
+  max-height:900px;
+  min-height:720px;
+  background:#1b1b1b;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:28px;
+  overflow:hidden;
+  display:grid;
+  grid-template-rows:112px minmax(0,1fr) 88px;
+  box-shadow:0 40px 120px rgba(0,0,0,.68);
+  color:#fff;
+}
+
+.cropShotHeader{
+  padding:26px 34px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+}
+.cropShotHeader h2{margin:0;font-size:30px;line-height:1.1;font-weight:900;color:#fff}
+.cropShotHeader p{margin:10px 0 0;color:#b8b8b8;font-size:16px}
+.cropShotHeader button{border:0;background:transparent;color:#fff;font-size:17px;font-weight:900;cursor:pointer}
+
+.cropShotBody{
+  min-height:0;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 460px;
+  gap:22px;
+  padding:22px 28px;
+  overflow:hidden;
+}
+.cropShotCanvasBox{min-width:0;min-height:0}
+.cropShotCanvas{
+  width:100%;
+  height:100%;
+  border-radius:24px;
+  border:1px solid rgba(255,255,255,.1);
+  background:#0b1733;
+  background-image:linear-gradient(45deg,rgba(255,255,255,.045) 25%,transparent 25%),linear-gradient(-45deg,rgba(255,255,255,.045) 25%,transparent 25%),linear-gradient(45deg,transparent 75%,rgba(255,255,255,.045) 75%),linear-gradient(-45deg,transparent 75%,rgba(255,255,255,.045) 75%);
+  background-size:32px 32px;
+  background-position:0 0,0 16px,16px -16px,-16px 0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  overflow:hidden;
+}
+.cropShotBadge{
+  position:absolute;
+  left:22px;
+  top:22px;
+  z-index:20;
+  background:#1f65b2;
+  color:#ffe18d;
+  padding:12px 18px;
+  border-radius:12px;
+  font-size:16px;
+  font-weight:900;
+  box-shadow:0 10px 28px rgba(0,0,0,.25);
+}
+.cropShotStage{
+  width:88%;
+  height:78%;
+  max-width:980px;
+  max-height:620px;
+  background:#fff;
+  border-radius:4px;
+  position:relative;
+  overflow:hidden;
+  box-shadow:0 18px 50px rgba(0,0,0,.28);
+}
+.cropShotStage img{width:100%;height:100%;object-fit:contain;display:block}
+.cropShotEmpty{width:100%;height:100%;display:grid;place-items:center;color:#666}
+.cropShotLayer{position:absolute;z-index:10;pointer-events:none}
+.cropShotSelection{
+  position:absolute;
+  border:2px solid #efd487;
+  background:rgba(255,255,255,.06);
+  box-shadow:0 0 0 9999px rgba(0,0,0,.34);
+  cursor:move;
+  pointer-events:auto;
+}
+.cropShotSelection::before,.cropShotSelection::after{content:'';position:absolute;top:0;bottom:0;border-left:1px dashed rgba(255,255,255,.55)}
+.cropShotSelection::before{left:33.333%}
+.cropShotSelection::after{left:66.666%}
+.cropShotSelection span{position:absolute;left:12px;top:12px;background:rgba(0,0,0,.62);color:#fff;font-size:14px;font-weight:900;border-radius:9px;padding:8px 12px}
+.cropShotSelection i{position:absolute;right:-10px;bottom:-10px;width:22px;height:22px;border-radius:50%;background:#efd487;border:2px solid #2f2715;cursor:nwse-resize}
+.cropShotSide{min-width:0;min-height:0;overflow:auto;padding-right:4px}
+.cropShotMask .cropShotSide{display:block!important;visibility:visible!important;opacity:1!important}
+.cropShotCard{background:#202020;border:1px solid rgba(255,255,255,.1);border-radius:22px;padding:22px;margin-bottom:16px}
+.cropShotCard h3{margin:0 0 18px;font-size:24px;font-weight:900;color:#fff}
+.cropShotOption{width:100%;border-radius:16px;min-height:68px;padding:14px 16px;border:1px solid rgba(255,255,255,.1);background:#151515;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;color:#fff;cursor:pointer;text-align:left}
+.cropShotOption.active{border-color:#efd487;background:#18202b;box-shadow:0 0 0 1px rgba(239,212,135,.15) inset}
+.cropShotOption div{display:flex;flex-direction:column;gap:6px}
+.cropShotOption b{color:#fff;font-size:16px}
+.cropShotOption small{color:#aaa;font-size:13px}
+.cropShotOption span{font-size:16px;color:#e8d189}
+.cropShotFields{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0 16px}
+.cropShotFields label,.cropShotSingle{display:grid;gap:8px}
+.cropShotFields span,.cropShotSingle span{color:#d4d4d4;font-size:15px}
+.cropShotFields input,.cropShotSingle select{height:48px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#111;color:#fff;padding:0 14px;font-size:16px;outline:none}
+.cropShotFields input[readonly]{color:#9f9f9f}
+.cropShotSingle{margin-bottom:16px}
+.cropShotSingle input[type=range]{accent-color:#efd487}
+.cropShotRatio{display:grid;gap:10px;margin:4px 0 16px}
+.cropShotRatio>span{color:#d4d4d4;font-size:15px}
+.cropShotRatio div{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.cropShotRatio button{height:38px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:#151515;color:#eee;cursor:pointer}
+.cropShotRatio button:hover{border-color:#efd487;color:#efd487}
+.cropShotTip{padding:14px 16px;border-radius:14px;background:rgba(239,212,135,.08);border:1px solid rgba(239,212,135,.15)}
+.cropShotTip p{margin:6px 0;color:#d8cfb8;font-size:14px;line-height:1.6}
+.cropShotResult p{color:#d6d6d6;line-height:1.7;margin:0 0 12px}
+.cropShotResult button{width:100%;height:48px}
+.cropShotFooter{border-top:1px solid rgba(255,255,255,.08);background:#181818;padding:0 30px;display:flex;align-items:center;justify-content:space-between}
+.cropShotFooter p{margin:0;color:#d0d0d0;font-size:15px}
+.cropShotFooter div{display:flex;gap:14px;align-items:center}
+.cropShotGhost,.cropShotPrimary{min-width:150px;height:52px;border-radius:15px;font-size:17px;font-weight:900;cursor:pointer}
+.cropShotGhost{border:1px solid rgba(239,212,135,.42);background:transparent;color:#efd487}
+.cropShotPrimary{border:0;background:linear-gradient(135deg,#ddc076,#f2d99b);color:#18130b}
+.cropShotPrimary:disabled{opacity:.55;cursor:not-allowed}
+
+@media(max-width:1360px){
+  .cropShotPanel{width:calc(100vw - 40px);height:calc(100vh - 40px)}
+  .cropShotBody{grid-template-columns:minmax(0,1fr) 400px}
+  .cropShotStage{width:88%;height:76%}
+}

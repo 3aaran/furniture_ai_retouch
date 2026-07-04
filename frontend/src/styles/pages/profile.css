@@ -1,0 +1,304 @@
+/* Profile account page styles.
+   Moved out of overrides/final-fixes.css so Profile.jsx owns its layout. */
+
+.profilePageV3{
+  width:min(1320px,calc(100vw - 96px));
+  margin:0 auto;
+  display:grid;
+  gap:22px;
+  color:#f6f2e9;
+}
+.profileHeroV3{
+  min-height:190px;
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  gap:24px;
+  align-items:center;
+  padding:28px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:18px;
+  background:linear-gradient(135deg,rgba(240,214,138,.12),rgba(255,255,255,.025) 42%,rgba(35,37,42,.86));
+  box-shadow:0 24px 80px rgba(0,0,0,.32);
+}
+.profileAvatarV3{
+  position:relative;
+  width:116px;
+  height:116px;
+  border-radius:32px;
+  overflow:hidden;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(135deg,#f0d68a,#8d6a2a);
+  color:#14100a;
+  font-size:44px;
+  font-weight:1000;
+  box-shadow:0 18px 42px rgba(0,0,0,.28);
+}
+.profileAvatarV3 img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+.profileAvatarV3 button{
+  position:absolute;
+  right:8px;
+  bottom:8px;
+  width:36px;
+  height:36px;
+  border:0;
+  border-radius:12px;
+  background:rgba(12,12,12,.76);
+  color:#f0d68a;
+  display:grid;
+  place-items:center;
+  padding:0;
+}
+.profileAvatarV3 input{display:none}
+.profileHeroTextV3 span{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  height:30px;
+  padding:0 11px;
+  border-radius:999px;
+  background:rgba(240,214,138,.12);
+  color:#f0d68a;
+  font-size:13px;
+  font-weight:900;
+}
+.profileHeroTextV3 h2{
+  margin:12px 0 8px;
+  font-size:34px;
+  line-height:1;
+}
+.profileHeroTextV3 p{
+  margin:0;
+  color:#bfb7a8;
+}
+.profileHeroMetaV3{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.profileHeroMetaV3 div{
+  min-width:150px;
+  min-height:70px;
+  padding:14px;
+  border-radius:14px;
+  background:rgba(0,0,0,.20);
+  border:1px solid rgba(255,255,255,.08);
+}
+.profileHeroMetaV3 small{
+  display:block;
+  color:#9f9687;
+  margin-bottom:8px;
+}
+.profileHeroMetaV3 b{
+  color:#fff;
+  font-size:15px;
+  word-break:break-all;
+}
+.profileGridV3{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:22px;
+}
+.profileCardV3,
+.profileStoragePanelV3{
+  padding:24px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:18px;
+  background:#191919;
+}
+.profileCardV3 h3,
+.profileStoragePanelV3 h3{
+  margin:0 0 20px;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  color:#fff;
+  font-size:21px;
+}
+.profileCardTitleRowV3{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:20px;
+}
+.profileCardTitleRowV3 h3{
+  margin:0;
+}
+.profileCardV3 .profileForgotBtnV3{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  min-width:0;
+  width:auto;
+  height:34px;
+  margin:0;
+  padding:0 12px;
+  border-radius:10px;
+  border:1px solid rgba(242,213,140,.36);
+  background:rgba(242,213,140,.08);
+  color:#f0d68a;
+  font-size:14px;
+  font-weight:900;
+}
+.profileCardV3 .profileForgotBtnV3:hover{
+  background:rgba(242,213,140,.16);
+}
+.profileCardV3 label{
+  display:grid;
+  gap:8px;
+  margin-bottom:14px;
+}
+.profileCardV3 label span{
+  color:#d7cdbb;
+  font-weight:900;
+}
+.profileCardV3 input{
+  width:100%;
+  height:48px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:12px;
+  background:#111214;
+  color:#fff;
+  padding:0 14px;
+}
+.profileCardV3 button{
+  margin-top:6px;
+  min-width:128px;
+  height:46px;
+  border-radius:12px;
+  font-weight:900;
+}
+.profileResetModalV3{
+  display:grid;
+  gap:16px;
+}
+.profileResetHeadV3{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.profileResetHeadV3 h3{
+  margin:0;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:#fff;
+}
+.profileResetHeadV3 button{
+  width:40px;
+  height:40px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.06);
+  color:#fff;
+}
+.profileResetModalV3 p{
+  margin:0;
+  color:#b9c1cc;
+}
+.profileResetModalV3 p b{
+  color:#f0d68a;
+}
+.profileResetModalV3 label{
+  display:grid;
+  gap:8px;
+  color:#d7cdbb;
+  font-weight:900;
+}
+.profileResetModalV3 input{
+  width:100%;
+  height:48px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:12px;
+  background:#111214;
+  color:#fff;
+  padding:0 14px;
+}
+.profileCodeRowV3{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.profileCodeRowV3 input{
+  min-width:0;
+  flex:1;
+  border-radius:12px;
+}
+.profileCodeRowV3 button{
+  flex:0 0 118px;
+  height:48px;
+  border-radius:12px;
+  border:1px solid rgba(242,213,140,.36);
+  background:rgba(242,213,140,.10);
+  color:#f0d68a;
+  line-height:1.1;
+  font-weight:900;
+}
+.profileCodeRowV3 button:disabled{
+  opacity:.7;
+  cursor:not-allowed;
+}
+.profileResetActionsV3{
+  display:flex;
+  justify-content:flex-end;
+  gap:12px;
+}
+.profileResetActionsV3 button{
+  min-width:104px;
+  height:42px;
+  border-radius:12px;
+  font-weight:900;
+}
+.storageSummaryV3{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+}
+.storageSummaryV3 div{
+  padding:18px;
+  border-radius:14px;
+  background:rgba(255,255,255,.035);
+  border:1px solid rgba(255,255,255,.08);
+}
+.storageSummaryV3 span{
+  display:block;
+  color:#aaa294;
+  margin-bottom:8px;
+}
+.storageSummaryV3 b{
+  color:#f0d68a;
+  font-size:24px;
+}
+.storageBarV3{
+  height:12px;
+  border-radius:999px;
+  background:#2a2a2a;
+  overflow:hidden;
+  margin:20px 0 12px;
+}
+.storageBarV3 i{
+  display:block;
+  height:100%;
+  border-radius:999px;
+  background:linear-gradient(90deg,#f0d68a,#55d170);
+}
+.profileStoragePanelV3 p{
+  margin:0;
+  color:#aaa294;
+}
+
+@media(max-width:980px){
+  .profilePageV3{width:calc(100vw - 36px)}
+  .profileHeroV3,
+  .profileGridV3,
+  .storageSummaryV3,
+  .profileHeroMetaV3{grid-template-columns:1fr}
+}

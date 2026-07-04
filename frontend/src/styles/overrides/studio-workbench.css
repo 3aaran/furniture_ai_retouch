@@ -207,46 +207,6 @@
     color:#fff3da;
   }
 
-  .topApp .wbFeatureGrid{
-    display:grid!important;
-    grid-template-columns:1fr!important;
-    gap:8px!important;
-    margin:0 0 16px!important;
-  }
-
-  .topApp .wbFeatureBtn{
-    min-height:42px!important;
-    padding:0 12px!important;
-    border:0!important;
-    border-radius:4px!important;
-    background:transparent!important;
-    color:var(--studio-muted)!important;
-    display:flex!important;
-    align-items:center!important;
-    justify-content:flex-start!important;
-    gap:10px!important;
-    font-size:14px!important;
-    font-weight:900!important;
-    box-shadow:none!important;
-  }
-
-  .topApp .wbFeatureBtn .wbFeatureTag{
-    width:28px;
-    height:28px;
-    display:grid;
-    place-items:center;
-    color:var(--studio-muted);
-  }
-
-  .topApp .wbFeatureBtn.active{
-    background:rgba(240,214,138,.14)!important;
-    color:#fff3da!important;
-    box-shadow:inset -2px 0 0 var(--studio-gold)!important;
-  }
-
-  .topApp .wbFeatureBtn.active .wbFeatureTag{
-    color:#fff3da;
-  }
 
   .topApp .wbDivider{
     height:1px;
