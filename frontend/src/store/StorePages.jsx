@@ -1,6 +1,6 @@
-﻿import Workbench from'./workbench/Workbench.jsx';
+﻿import Workbench from'../features/workbench/WorkbenchFeature.jsx';
 import StoreUsers from'./users/InternalUsersPage.jsx';
-import StoreResources from'./resources/StoreResources.jsx';
+import StoreResources from'../features/resources/ResourcesFeature.jsx';
 import StoreTasks from'./tasks/StoreTasks.jsx';
 import Promotion from'./promotion/Promotion.jsx';
 import QuotaLogs from'./quota/QuotaLogs.jsx';

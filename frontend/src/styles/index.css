@@ -5,6 +5,7 @@
 @import './base/reset.css';
 
 @import './components/brand-mark.css';
+@import './components/react-bits-lite.css';
 
 @import './legacy/style.css';
 @import './legacy/workbench-fixes.css';
