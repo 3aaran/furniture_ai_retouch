@@ -1,0 +1,107 @@
+/* Studio workbench override controls styles. Prefix split. */
+.wbFeaturePopover{
+  position:fixed;
+  z-index:2147482501;
+  width:min(318px,calc(100vw - 32px));
+  max-height:min(520px,calc(100vh - 110px));
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  border:1px solid rgba(240,214,138,.32);
+  border-radius:14px;
+  background:linear-gradient(180deg,#242224,#171719);
+  color:#fff3da;
+  box-shadow:0 28px 90px rgba(0,0,0,.72),0 0 0 1px rgba(255,255,255,.04) inset;
+}
+
+.wbFeaturePopoverHead{
+  flex:0 0 auto;
+  min-height:50px;
+  padding:0 12px 0 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.wbFeaturePopoverHead b{
+  font-size:15px;
+  font-weight:1000;
+  color:#fff3da;
+}
+
+.wbFeaturePopoverHead button{
+  width:30px;
+  height:30px;
+  border:0;
+  border-radius:8px;
+  background:rgba(255,255,255,.06);
+  color:#d8cfbd;
+  display:grid;
+  place-items:center;
+}
+
+.wbFeaturePopoverList{
+  flex:1 1 auto;
+  min-height:0;
+  overflow:auto;
+  padding:8px;
+  display:grid;
+  gap:7px;
+}
+
+.wbFeaturePopoverList button{
+  width:100%;
+  min-height:58px;
+  padding:10px 12px;
+  border:1px solid transparent;
+  border-radius:10px;
+  background:transparent;
+  color:#e8deca;
+  display:grid;
+  grid-template-columns:30px minmax(0,1fr);
+  grid-template-areas:'icon title' 'icon desc';
+  gap:2px 10px;
+  text-align:left;
+}
+
+.wbFeaturePopoverList button span{
+  grid-area:icon;
+  width:30px;
+  height:30px;
+  display:grid;
+  place-items:center;
+  color:#efe0b5;
+}
+
+.wbFeaturePopoverList button strong{
+  grid-area:title;
+  align-self:end;
+  color:#fff3da;
+  font-size:14px;
+  font-weight:1000;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.wbFeaturePopoverList button small{
+  grid-area:desc;
+  color:#9f9687;
+  font-size:12px;
+  line-height:1.35;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.wbFeaturePopoverList button:hover,
+.wbFeaturePopoverList button.active{
+  border-color:rgba(240,214,138,.42);
+  background:rgba(240,214,138,.12);
+}
+
+.wbFeaturePopoverList button.active{
+  box-shadow:inset 2px 0 0 var(--studio-gold,#f0d68a);
+}

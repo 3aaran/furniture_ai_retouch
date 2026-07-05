@@ -1,0 +1,74 @@
+/* Stitch premium layout misc override styles. Prefix split. */
+/*
+  Stitch premium layout override.
+  仅调整业务内容区布局与卡片质感，不覆盖 AppShell 顶部/底部导航组件。
+  参考上传包：Obsidian Studio / stitch_premium_ai_furniture_workbench。
+*/
+
+:root{
+  --stitch-base:#050506;
+  --stitch-surface:#131315;
+  --stitch-lowest:#0e0e0f;
+  --stitch-low:#1c1b1d;
+  --stitch-mid:#201f21;
+  --stitch-high:#2a2a2b;
+  --stitch-highest:#353436;
+  --stitch-text:#e5e1e3;
+  --stitch-muted:#cec6b4;
+  --stitch-dim:#8f8678;
+  --stitch-line:rgba(255,255,255,.09);
+  --stitch-line-soft:rgba(255,255,255,.055);
+  --stitch-gold:#f0d68a;
+  --stitch-gold-2:#f8e3a5;
+  --stitch-gold-deep:#d1a33c;
+  --stitch-blue:#96ccff;
+  --stitch-radius-sm:10px;
+  --stitch-radius:16px;
+  --stitch-radius-lg:24px;
+  --stitch-shadow:0 26px 80px rgba(0,0,0,.42);
+  --stitch-shadow-soft:0 18px 46px rgba(0,0,0,.26);
+}
+
+@media (min-width:861px){
+/* 工作台：保留原三栏逻辑，只加强上传文件中的 Stitch 暗房质感。 */
+
+/* 资源库：改为类似参考稿的左空间栏 + 右侧资产 Bento 网格。 */
+
+/* 历史任务：参考 history.html 的深色资产卡片矩阵。 */
+
+/* 个人中心：参考 personal_center 的账户卡 + 安全卡布局。 */
+
+/* 充值/额度：参考 top_up_center 的指标卡与深色表格。 */
+
+/* 用户管理：参考 _1 用户管理页的统计胶囊 + 表格布局。 */
+
+/* 邀请奖励：参考 invitation_rewards 的 Bento 卡片。 */
+}
+
+/* 二次加强：逐页使用参考包中的明显布局结构，而不是只改颜色。 */
+
+/* 紧凑版收敛：压缩页面尺度，保留高级感，避免所有页面过大和拥挤。 */
+
+/* 资产库 V11 修复：顶部避让、左右独立滚动、真实分类筛选、可选几列几行。 */
+
+/* 资产库 V12：修复卡片重叠、移除顶部分类按钮、左侧可收起。 */
+
+/* 资产库 V13：顶部按钮弹层、上传移入侧栏、分页精简和动效。 */
+
+@keyframes resourceCardInV10{
+  from{opacity:.72;transform:translateY(6px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* 资产库 V14：弹窗层级、黑金风格、收起态关键内容。 */
+
+@keyframes resourceDrawerPremiumInV14{
+  from{opacity:0;transform:translateX(26px) scale(.985)}
+  to{opacity:1;transform:translateX(0) scale(1)}
+}
+
+/* 资产库 V14.1：收起态只保留关键入口。 */
+
+/* 资产库 V15：搜索和显示布局移动到左侧，右侧取消顶部工具栏占位。 */
+
+/* 资产库 V16：修复几列/几行显示不全，分页只显示少量页码并支持滚轮切换。 */

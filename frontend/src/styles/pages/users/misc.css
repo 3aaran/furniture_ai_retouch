@@ -1,0 +1,214 @@
+/* Users page misc styles. Prefix split. */
+.storeTrialBtnV2{
+  background:#2b2b2b;
+  color:#fff;
+}
+
+.storeRoleBadgeV2,
+.storeTypeBadgeV2{
+  display:inline-flex;
+  align-items:center;
+  height:30px;
+  padding:0 10px;
+  border-radius:7px;
+  border:1px solid rgba(255,255,255,.12);
+  background:#222;
+  color:#f6f6f6;
+  font-weight:900;
+  font-size:13px;
+  white-space:nowrap;
+}
+
+.storeRoleBadgeV2.gold{
+  background:#dfc170;
+  color:#1a1304;
+  border-color:#dfc170;
+}
+
+.storeRoleBadgeV2.blue{
+  background:#26354f;
+  color:#dbe8ff;
+}
+
+.storeTypeBadgeV2{
+  background:#111;
+  color:#f2eee5;
+}
+
+.storeQuotaTextV2{
+  color:#f0d68a;
+  font-size:17px;
+}
+
+.storeUsersHintV2{
+  margin:0;
+  color:#aaa;
+  font-size:14px;
+}
+
+.trialToastV2{
+  position:absolute;
+  top:-36px;
+  left:50%;
+  transform:translateX(-50%);
+  min-width:250px;
+  height:58px;
+  border-radius:14px;
+  background:#3da64f;
+  color:#051b08;
+  display:grid;
+  place-items:center;
+  font-weight:1000;
+  box-shadow:0 18px 50px rgba(0,0,0,.35);
+}
+
+.trialCredBoxV2{
+  border:1px dashed rgba(255,255,255,.18);
+  border-radius:22px;
+  padding:20px;
+  background:#141414;
+  text-align:left;
+  display:grid;
+  gap:10px;
+}
+
+.trialCredBoxV2 label{
+  color:#a8a8a8;
+  font-weight:800;
+}
+
+.trialCredBoxV2>div{
+  min-height:58px;
+  border-radius:16px;
+  background:#222;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 16px;
+}
+
+.trialCredBoxV2 b{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:20px;
+}
+
+.trialCredBoxV2 button{
+  border:0;
+  background:transparent;
+  color:#eee;
+  cursor:pointer;
+}
+
+.trialCredBoxV2 footer{
+  margin-top:12px;
+  padding-top:16px;
+  border-top:1px solid rgba(255,255,255,.10);
+  display:flex;
+  justify-content:space-between;
+  color:#eaeaea;
+}
+
+.trialCredBoxV2 em{
+  color:#43e56b;
+  font-style:normal;
+  font-weight:1000;
+}
+
+.trialCopyAllV2{
+  margin-top:24px;
+  width:100%;
+  height:58px;
+  border:0;
+  border-radius:16px;
+  background:#333;
+  color:#fff;
+  font-weight:1000;
+  cursor:pointer;
+}
+
+.trialLaterV2{
+  margin-top:18px;
+  border:0;
+  background:transparent;
+  color:#aaa;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.globalToastV2{
+  position:fixed;
+  top:18px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:2147483647;
+  width:max-content;
+  max-width:min(760px,calc(100vw - 36px));
+  min-height:58px;
+  padding:10px 12px 10px 14px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(22,24,27,.94);
+  color:#f7f4ec;
+  box-shadow:0 18px 52px rgba(0,0,0,.46), inset 0 1px 0 rgba(255,255,255,.06);
+  backdrop-filter:blur(12px);
+  display:flex;
+  align-items:center;
+  gap:12px;
+  pointer-events:auto;
+  animation:globalToastEnter .22s ease-out both;
+}
+
+.globalToastV2 span{
+  flex:0 0 auto;
+  width:36px;
+  height:36px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:rgba(255,255,255,.08);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
+}
+
+.globalToastV2 b{
+  min-width:0;
+  max-width:620px;
+  color:#f9f4e8;
+  font-size:16px;
+  font-weight:900;
+  line-height:1.45;
+  word-break:break-word;
+  letter-spacing:0;
+}
+
+.globalToastV2 button{
+  margin-left:8px;
+  flex:0 0 auto;
+  width:34px;
+  height:34px;
+  border:0;
+  padding:0;
+  border-radius:10px;
+  background:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.82);
+  cursor:pointer;
+  display:grid;
+  place-items:center;
+  transition:background .16s ease,color .16s ease,transform .16s ease;
+}
+
+.globalToastV2 button:hover{
+  background:rgba(255,255,255,.14);
+  color:#fff;
+  transform:translateY(-1px);
+}
+
+@keyframes globalToastEnter{
+  from{
+    opacity:0;
+    transform:translate(-50%,-10px) scale(.98);
+  }
+  to{
+    opacity:1;
+    transform:translate(-50%,0) scale(1);
+  }
+}

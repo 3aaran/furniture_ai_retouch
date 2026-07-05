@@ -1,0 +1,82 @@
+/* Resource library layout styles. Prefix split. */
+.resourcePageV3{
+  display:grid;
+  gap:18px;
+  color:#f6f6f6;
+}
+
+.resourcePagerV3{
+  min-height:76px;
+  border-top:1px solid rgba(255,255,255,.08);
+  display:grid;
+  grid-template-columns:auto auto 1fr auto;
+  gap:18px;
+  align-items:center;
+  padding:0 22px;
+  color:#d0c7b6;
+}
+
+@media (max-width:1200px){
+.resourcePagerV3{
+    grid-template-columns:1fr;
+    justify-items:center;
+    padding:18px;
+  }
+}
+
+.resourceInlineLayoutV6{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:16px;
+  align-items:stretch;
+}
+
+.resourceInlineLayoutV6.open{
+  grid-template-columns:minmax(0,1fr) minmax(360px,430px);
+}
+
+@media (max-width:1200px){
+.resourceInlineLayoutV6.open{
+    grid-template-columns:1fr;
+  }
+}
+
+@media (min-width:861px){
+.topMain:has(> .resourcePageV3){
+    height:calc(var(--app-zoomed-viewport-height,100vh) - 0px)!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    padding:96px clamp(28px,3.6vw,52px) 28px!important;
+    box-sizing:border-box!important;
+  }
+
+.topMain:has(> .resourcePageV3) > .resourcePageV3{
+    width:min(1280px,100%)!important;
+    height:100%!important;
+    margin:0 auto!important;
+  }
+
+.topApp .resourcePageV3{
+    display:grid!important;
+    grid-template-columns:260px minmax(0,1fr)!important;
+    grid-template-rows:minmax(0,1fr)!important;
+    grid-template-areas:"side content"!important;
+    gap:18px 42px!important;
+    min-height:0!important;
+    align-items:stretch!important;
+  }
+
+.topApp .resourcePageV3.resourcePageCollapsedV10{
+    grid-template-columns:64px minmax(0,1fr)!important;
+    gap:18px 28px!important;
+  }
+
+.topApp .resourceInlineLayoutV6,
+  .topApp .resourceGridPanelV3{
+    grid-area:content!important;
+    min-width:0!important;
+    min-height:0!important;
+    height:100%!important;
+    overflow:hidden!important;
+  }
+}

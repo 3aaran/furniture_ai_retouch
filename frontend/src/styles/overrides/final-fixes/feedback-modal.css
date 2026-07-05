@@ -1,0 +1,123 @@
+/* Final fixes feedback modal styles. */
+.feedbackModalMaskV2{
+  position:fixed;
+  inset:0;
+  z-index:2147483500;
+  display:grid;
+  place-items:center;
+  padding:32px;
+  background:rgba(0,0,0,.72);
+}
+
+.feedbackModalCardV2{
+  width:min(760px,92vw);
+  border-radius:22px;
+  background:#1b1b1b;
+  border:1px solid rgba(255,255,255,.12);
+  color:#fff;
+  box-shadow:0 40px 130px rgba(0,0,0,.72);
+  overflow:hidden;
+}
+
+.feedbackModalHeadV2{
+  min-height:96px;
+  padding:24px 28px 18px;
+  border-bottom:1px solid rgba(255,255,255,.10);
+  display:flex;
+  justify-content:space-between;
+  gap:20px;
+}
+
+.feedbackModalHeadV2 h2{
+  margin:0 0 8px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:26px;
+}
+
+.feedbackModalHeadV2 p{
+  margin:0;
+  color:#aaa;
+  line-height:1.55;
+}
+
+.feedbackModalHeadV2 button{
+  width:42px;
+  height:42px;
+  border:0;
+  border-radius:12px;
+  background:rgba(255,255,255,.06);
+  color:#fff;
+  font-size:28px;
+  cursor:pointer;
+}
+
+.feedbackModalBodyV2{
+  padding:24px 28px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+
+.feedbackModalBodyV2 label{
+  display:grid;
+  gap:8px;
+}
+
+.feedbackModalBodyV2 label.full{
+  grid-column:1/-1;
+}
+
+.feedbackModalBodyV2 span{
+  color:#d9cfb9;
+  font-weight:800;
+}
+
+.feedbackModalBodyV2 input,
+.feedbackModalBodyV2 textarea{
+  width:100%;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:13px;
+  background:#111214;
+  color:#fff;
+  outline:0;
+  padding:0 14px;
+}
+
+.feedbackModalBodyV2 input{
+  height:48px;
+}
+
+.feedbackModalBodyV2 textarea{
+  min-height:150px;
+  padding-top:14px;
+  resize:vertical;
+}
+
+.feedbackModalFootV2{
+  height:76px;
+  padding:0 28px;
+  border-top:1px solid rgba(255,255,255,.10);
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:14px;
+}
+
+.feedbackModalFootV2 button{
+  min-width:116px;
+  height:46px;
+  border-radius:12px;
+  font-weight:900;
+}
+
+.feedbackModalFootV2 button:first-child{
+  background:transparent;
+  color:#e9dfc8;
+  border:1px solid rgba(255,255,255,.14);
+}
+
+@media (max-width:900px){
+.feedbackModalBodyV2{grid-template-columns:1fr}
+}

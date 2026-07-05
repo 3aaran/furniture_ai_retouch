@@ -1,0 +1,6 @@
+/*
+ * Web desktop-only style layer.
+ * Keep this small: PC is the default shared layout, so this file should contain only rules that must never run on mobile.
+ */
+@import '../../pages/resources/desktop-layout.css';
+@import '../../pages/resources/sidebar-current.css';

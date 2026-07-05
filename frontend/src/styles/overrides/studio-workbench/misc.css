@@ -1,0 +1,22 @@
+/* Studio workbench override misc styles. Prefix split. */
+/* Studio workbench layout styles
+   Source reference: uploaded Obsidian Studio design. This file is intentionally loaded last. */
+
+:root{
+  --studio-bg:#050506;
+  --studio-surface:#131315;
+  --studio-panel:#1c1b1d;
+  --studio-panel-2:#201f21;
+  --studio-panel-3:#2a2a2b;
+  --studio-line:rgba(255,255,255,.09);
+  --studio-line-soft:rgba(255,255,255,.06);
+  --studio-gold:#f0d68a;
+  --studio-gold-2:#ffe39b;
+  --studio-text:#e5e1e3;
+  --studio-muted:#cec6b4;
+  --studio-dim:#8d867a;
+}
+
+@media (min-width:861px){
+/* 顶部导航统一走 AppShell + 全局 topbar 样式；工作台只负责内容区布局。 */
+}

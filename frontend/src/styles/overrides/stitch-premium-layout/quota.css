@@ -1,0 +1,81 @@
+/* Stitch premium layout quota override styles. Prefix split. */
+@media (min-width:861px){
+.topApp .quotaPageV2{
+    display:grid!important;
+    gap:18px!important;
+  }
+
+.topApp .quotaSummaryV2,
+  .topApp .adminQuotaSummaryV4{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:18px!important;
+  }
+
+.topApp .quotaMetricV2{
+    position:relative;
+    overflow:hidden;
+    min-height:150px!important;
+    padding:22px!important;
+    border:1px solid var(--stitch-line)!important;
+    border-radius:var(--stitch-radius-lg)!important;
+    background:
+      radial-gradient(circle at 85% 10%,rgba(240,214,138,.12),transparent 13rem),
+      linear-gradient(180deg,rgba(28,27,29,.94),rgba(14,14,15,.98))!important;
+    box-shadow:var(--stitch-shadow-soft)!important;
+  }
+
+.topApp .quotaMetricV2:before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:0;
+    width:4px;
+    height:100%;
+    background:linear-gradient(180deg,var(--stitch-gold-2),var(--stitch-gold-deep));
+  }
+
+.topApp .quotaMetricV2 span{color:var(--stitch-muted)!important;font-size:13px!important;letter-spacing:.04em!important;}
+
+.topApp .quotaMetricV2 b{color:#fff3da!important;font-size:clamp(30px,4vw,52px)!important;letter-spacing:-.045em!important;}
+
+.topApp .quotaMetricV2 small{color:rgba(206,198,180,.58)!important;}
+}
+
+@media (min-width:861px) and (max-width:1160px){
+.topApp .promotionMetricsV2,
+  .topApp .quotaSummaryV2,
+  .topApp .adminQuotaSummaryV4{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+
+@media (min-width:861px){
+.topApp .stitchQuotaPage .quotaSummaryV2{
+    grid-template-columns:1.18fr .91fr .91fr!important;
+  }
+
+.topApp .stitchQuotaPage .quotaMetricV2.current{
+    min-height:210px!important;
+  }
+
+.topApp .stitchQuotaPage .quotaMetricV2.current b{
+    font-size:64px!important;
+  }
+
+.topApp .stitchQuotaPage .quotaPanelV2{
+    display:grid;
+    gap:16px;
+    padding:18px!important;
+  }
+}
+
+@media (min-width:861px){
+.topApp .quotaMetricV2{
+    min-height:118px!important;
+  }
+
+.topApp .stitchQuotaPage .quotaMetricV2.current{
+    min-height:132px!important;
+  }
+}

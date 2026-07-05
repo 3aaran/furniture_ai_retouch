@@ -1,0 +1,24 @@
+/* Final fixes quota override styles. Prefix split. */
+@media (max-width:760px){
+.topApp .quotaPill{
+    display:none !important;
+  }
+
+.topApp .metrics,
+  .topApp .quotaSummaryV2,
+  .topApp .adminHeroStatsV9,
+  .topApp .merchantGridV9,
+  .topApp .settingsLayoutV9,
+  .topApp .adminQuotaSummaryV4,
+  .topApp .adminQuotaToolbarV4,
+  .topApp .adminQuotaItemV4{
+    grid-template-columns:1fr !important;
+  }
+}
+
+@media (min-width:861px) and (max-width:1180px){
+.topApp .quotaPill{
+    height:42px !important;
+    padding:0 12px !important;
+  }
+}

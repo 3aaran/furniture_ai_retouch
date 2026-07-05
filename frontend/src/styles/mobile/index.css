@@ -1,5 +1,5 @@
 /* Mobile-specific compatibility layer. Prefer moving durable rules into page or component CSS. */
-@import './mobile-shell.css';
+@import './mobile-shell/index.css';
 @import './mobile-resource-grid.css';
 @import './mobile-workbench-tools.css';
 @import './mobile-comment-fixes.css';

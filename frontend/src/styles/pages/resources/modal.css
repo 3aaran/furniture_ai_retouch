@@ -1,0 +1,168 @@
+/* Resource library modal styles. Prefix split. */
+.resourceUploadMaskV3{
+  position:fixed;
+  inset:0;
+  z-index:2147483600;
+  background:rgba(0,0,0,.72);
+  display:grid;
+  place-items:center;
+  padding:32px;
+}
+
+.resourceUploadModalV3{
+  width:min(1080px,92vw);
+  max-height:88vh;
+  background:#1b1b1b;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:16px;
+  overflow:hidden;
+  box-shadow:0 40px 120px rgba(0,0,0,.68);
+  color:#fff;
+  display:grid;
+  grid-template-rows:86px minmax(0,1fr) 76px;
+}
+
+.resourceUploadHeadV3{
+  padding:0 30px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+
+.resourceUploadHeadV3 h2{
+  margin:0;
+  font-size:24px;
+}
+
+.resourceUploadHeadV3 button{
+  width:42px;
+  height:42px;
+  border:0;
+  background:transparent;
+  color:#fff;
+  font-size:30px;
+  cursor:pointer;
+}
+
+.resourceUploadBodyV3{
+  min-height:0;
+  overflow:auto;
+  padding:22px 28px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 420px;
+  gap:28px;
+}
+
+.resourceUploadStatusV3{
+  position:absolute;
+  left:18px;
+  top:18px;
+  padding:6px 11px;
+  border-radius:999px;
+  background:rgba(10,10,10,.72);
+  border:1px solid rgba(240,214,138,.36);
+  color:#f0d68a;
+  font-size:13px;
+  font-weight:900;
+}
+
+.resourceUploadStatusV3.success{
+  color:#9df0b5;
+  border-color:rgba(90,220,130,.38);
+}
+
+.resourceUploadStatusV3.failed{
+  color:#ffadad;
+  border-color:rgba(255,120,120,.4);
+}
+
+.resourceUploadSettingsV3{
+  display:grid;
+  gap:12px;
+  align-content:start;
+}
+
+.resourceUploadSettingsV3 h3{
+  margin:0 0 6px;
+  font-size:20px;
+}
+
+.resourceUploadSettingsV3 p{
+  margin:0;
+  padding:14px;
+  border-radius:12px;
+  background:rgba(240,214,138,.08);
+  border:1px solid rgba(240,214,138,.18);
+  color:#aaa;
+}
+
+.resourceUploadSettingsV3 p span,
+.resourceUploadSettingsV3 p b{
+  color:#f0d68a;
+}
+
+.resourceUploadSettingsV3 input,
+.resourceUploadSettingsV3 select,
+.resourceUploadSettingsV3 textarea{
+  width:100%;
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:12px;
+  background:#111214;
+  color:#f2eee5;
+  padding:0 14px;
+  outline:0;
+  box-sizing:border-box;
+}
+
+.resourceUploadSettingsV3 input,
+.resourceUploadSettingsV3 select{
+  height:48px;
+}
+
+.resourceUploadSettingsV3 textarea{
+  min-height:110px;
+  padding-top:12px;
+  resize:vertical;
+}
+
+.resourceUploadFootV3{
+  border-top:1px solid rgba(255,255,255,.10);
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:14px;
+  padding:0 28px;
+}
+
+.resourceUploadFootV3 button{
+  min-width:124px;
+  height:48px;
+  border-radius:12px;
+  font-weight:900;
+}
+
+.resourceUploadFootV3 button:first-child{
+  background:transparent;
+  color:#e9dfc8;
+  border:1px solid rgba(255,255,255,.14);
+}
+
+.resourceUploadFootV3 button:disabled{
+  opacity:.52;
+  cursor:not-allowed;
+}
+
+@media (max-width:1200px){
+.resourceUploadBodyV3{
+    grid-template-columns:1fr;
+  }
+}
+
+.resourceRenameModalV8{
+  width:min(560px,calc(100vw - 48px));
+}
+
+.resourceBatchCategoryModalV8{
+  width:min(610px,calc(100vw - 48px));
+}

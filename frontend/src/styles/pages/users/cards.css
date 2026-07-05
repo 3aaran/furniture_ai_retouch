@@ -1,0 +1,29 @@
+/* Users page cards styles. Prefix split. */
+.storeUserQuotaCardV2{
+  min-width:238px;
+  height:72px;
+  padding:12px 20px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.14);
+  background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));
+  display:grid;
+  align-content:center;
+  justify-items:start;
+  box-shadow:0 16px 50px rgba(0,0,0,.24);
+}
+
+.storeUserQuotaCardV2 span{
+  color:#c8c0b2;
+  font-size:14px;
+}
+
+.storeUserQuotaCardV2 b{
+  color:#f8f2df;
+  font-size:18px;
+}
+
+.storeUserQuotaCardV2 em{
+  color:#f0d68a;
+  font-style:normal;
+  font-size:28px;
+}

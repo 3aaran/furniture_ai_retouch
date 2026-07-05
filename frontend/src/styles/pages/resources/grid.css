@@ -1,0 +1,48 @@
+/* Resource library grid styles. Prefix split. */
+.resourceGridPanelV3{
+  background:#111214;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:20px;
+  overflow:hidden;
+  min-height:560px;
+}
+
+.resourceGridV3{
+  height:520px;
+  overflow:auto;
+  padding:28px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:20px;
+  align-content:start;
+}
+
+.resourceGridV3::-webkit-scrollbar,
+.resourceUploadBodyV3::-webkit-scrollbar{
+  width:7px;
+}
+
+.resourceGridV3::-webkit-scrollbar-thumb,
+.resourceUploadBodyV3::-webkit-scrollbar-thumb{
+  background:rgba(240,214,138,.32);
+  border-radius:999px;
+}
+
+.resourceEmptyV3{
+  grid-column:1/-1;
+}
+
+@media (min-width:861px){
+.topApp .resourceGridV3{
+    height:100%!important;
+    min-height:0!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    padding:0 8px 18px 0!important;
+    display:grid!important;
+    grid-template-columns:repeat(var(--resource-cols,3),minmax(0,1fr))!important;
+    grid-auto-rows:max-content!important;
+    gap:18px!important;
+    align-content:start!important;
+  }
+}

@@ -1,0 +1,220 @@
+/* Stitch premium layout tasks override styles. Prefix split. */
+@media (min-width:861px){
+.topApp .aiTaskGrid{
+    display:grid!important;
+    grid-template-columns:repeat(auto-fill,minmax(250px,1fr))!important;
+    gap:18px!important;
+    margin-top:18px!important;
+  }
+
+.topApp .taskCard{
+    overflow:hidden!important;
+    border:1px solid rgba(255,255,255,.08)!important;
+    border-radius:var(--stitch-radius-lg)!important;
+    background:linear-gradient(180deg,rgba(28,27,29,.94),rgba(14,14,15,.98))!important;
+    box-shadow:0 18px 48px rgba(0,0,0,.28)!important;
+  }
+
+.topApp .taskCard:hover{
+    border-color:rgba(240,214,138,.34)!important;
+    transform:translateY(-3px)!important;
+  }
+
+.topApp .taskImg{
+    height:210px!important;
+    background:#09090a!important;
+  }
+
+.topApp .taskImg img{width:100%!important;height:100%!important;object-fit:cover!important;}
+
+.topApp .taskImg b{
+    background:rgba(0,0,0,.64)!important;
+    color:#fff3da!important;
+    border:1px solid rgba(255,255,255,.12)!important;
+    backdrop-filter:blur(10px);
+  }
+
+.topApp .taskMeta,
+  .topApp .taskActions{
+    background:transparent!important;
+    border-color:var(--stitch-line-soft)!important;
+  }
+
+.topApp .taskActions button{
+    border:1px solid rgba(255,255,255,.1)!important;
+    background:rgba(255,255,255,.04)!important;
+    color:var(--stitch-muted)!important;
+    border-radius:12px!important;
+  }
+
+.topApp .taskActions button:hover{
+    border-color:rgba(240,214,138,.36)!important;
+    color:#fff3da!important;
+  }
+}
+
+@media (min-width:861px){
+.topApp .stitchHistoryHero,
+  .topApp .stitchTopUpHero{
+    min-height:220px;
+    padding:28px;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(360px,480px);
+    gap:24px;
+    align-items:end;
+    margin-bottom:18px;
+    border:1px solid rgba(240,214,138,.18);
+    border-radius:28px;
+    background:
+      radial-gradient(circle at 12% 18%,rgba(150,204,255,.08),transparent 26rem),
+      linear-gradient(180deg,rgba(32,31,33,.94),rgba(12,12,13,.98));
+    box-shadow:0 30px 90px rgba(0,0,0,.42);
+  }
+
+.topApp .stitchHistoryHero > div,
+  .topApp .stitchTopUpHero > div{
+    position:relative;
+    z-index:1;
+  }
+
+.topApp .stitchHistoryHero h2,
+  .topApp .stitchTopUpHero h2{
+    margin:0;
+    color:#fff3da;
+    font-size:clamp(40px,5vw,70px);
+    line-height:.95;
+    letter-spacing:-.07em;
+    font-weight:1000;
+  }
+
+.topApp .stitchHistoryStats{
+    position:relative;
+    z-index:1;
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+  }
+
+.topApp .stitchHistoryPanel{
+    padding:18px!important;
+  }
+
+.topApp .stitchHistoryPage .aiTaskGrid{
+    grid-template-columns:repeat(12,minmax(0,1fr))!important;
+  }
+
+.topApp .stitchHistoryPage .taskCard{
+    grid-column:span 4;
+    min-height:390px!important;
+    display:flex!important;
+    flex-direction:column!important;
+  }
+
+.topApp .stitchHistoryPage .taskCard:nth-child(5n+1){
+    grid-column:span 6;
+  }
+
+.topApp .stitchHistoryPage .taskCard:nth-child(5n+1) .taskImg{
+    height:270px!important;
+  }
+
+.topApp .stitchHistoryPage .taskImg{
+    height:230px!important;
+  }
+
+.topApp .stitchHistoryPage .taskMeta{
+    flex:1 1 auto;
+  }
+}
+
+@media (min-width:861px) and (max-width:1280px){
+.topApp .stitchHistoryPage .taskCard,
+  .topApp .stitchHistoryPage .taskCard:nth-child(5n+1){
+    grid-column:span 6;
+  }
+}
+
+@media (max-width:860px){
+.topApp :is(.stitchHistoryHero,.stitchTopUpHero){
+    display:grid;
+    gap:14px;
+    padding:18px;
+    border:1px solid var(--stitch-line);
+    border-radius:20px;
+    background:linear-gradient(180deg,rgba(28,27,29,.92),rgba(14,14,15,.96));
+  }
+
+.topApp :is(.stitchHistoryHero,.stitchTopUpHero) h2{
+    margin:0;
+    color:#fff3da;
+    font-size:32px;
+  }
+}
+
+@media (min-width:861px){
+.topApp :is(.stitchHistoryHero,.stitchTopUpHero){
+    min-height:146px!important;
+    padding:18px!important;
+    grid-template-columns:minmax(0,1fr) minmax(300px,380px)!important;
+    gap:16px!important;
+    margin-bottom:14px!important;
+  }
+
+.topApp .stitchHistoryPage .aiTaskGrid{
+    gap:12px!important;
+  }
+
+.topApp .stitchHistoryPage .taskCard,
+  .topApp .taskCard{
+    min-height:300px!important;
+    border-radius:18px!important;
+  }
+
+.topApp .stitchHistoryPage .taskCard:nth-child(5n+1) .taskImg,
+  .topApp .stitchHistoryPage .taskImg,
+  .topApp .taskImg{
+    height:172px!important;
+  }
+
+.topApp .taskMeta{
+    padding:10px 12px 5px!important;
+    gap:4px!important;
+  }
+
+.topApp .taskMeta strong{
+    font-size:14px!important;
+  }
+
+.topApp .taskMeta span,
+  .topApp .taskMeta small{
+    font-size:11px!important;
+  }
+
+.topApp .taskActions{
+    gap:8px!important;
+    padding:9px 12px 12px!important;
+  }
+
+.topApp .taskActions button{
+    min-height:34px!important;
+    font-size:12px!important;
+  }
+}
+
+@media (min-width:861px) and (max-width:1280px){
+.topApp .stitchHistoryPage .taskCard,
+  .topApp .stitchHistoryPage .taskCard:nth-child(5n+1){
+    grid-column:span 4!important;
+  }
+}
+
+@media (max-width:860px){
+.topApp :is(.stitchHistoryHero,.stitchTopUpHero){
+    padding:14px!important;
+    border-radius:16px!important;
+  }
+
+.topApp :is(.stitchHistoryHero,.stitchTopUpHero) h2{
+    font-size:26px!important;
+  }
+}

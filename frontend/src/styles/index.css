@@ -1,23 +1,4 @@
-@import './base/variables.css';
-@import './base/reset.css';
-
-@import './components/brand-mark.css';
-@import './components/react-bits-lite.css';
-
-@import './legacy/index.css';
-
-@import './pages/auth.css';
-@import './pages/landing.css';
-@import './pages/workbench.css';
-@import './pages/resources.css';
-@import './pages/task-detail.css';
-@import './pages/task-process.css';
-@import './pages/admin-merchants.css';
-@import './pages/admin-workflows.css';
-@import './pages/admin-logs.css';
-@import './pages/users.css';
-@import './pages/quota.css';
-@import './pages/profile.css';
-
-@import './overrides/index.css';
-@import './mobile/index.css';
+/* Main web CSS entry used by src/App.jsx. */
+/* Web platform imports live in platforms/web/index.css. */
+/* Compatibility: admin-workflows.css is imported through platforms/web/base.css. */
+@import './platforms/web/index.css';

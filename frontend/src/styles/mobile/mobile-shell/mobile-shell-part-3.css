@@ -1,0 +1,742 @@
+/* mobile-shell.css part 3. AST split; preserve order. */
+@media (max-width: 860px){
+.mobileProcessFieldList input[type="range"] {
+    padding: 0 !important;
+    accent-color: #f2d58c !important;
+  }
+.mobileProcessFieldList input[readonly] {
+    color: #bfb6a4 !important;
+    background: rgba(255, 255, 255, .045) !important;
+  }
+.mobileProcessOptions button {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 58px !important;
+    border-radius: 14px !important;
+    border: 1px solid rgba(255, 255, 255, .11) !important;
+    background: rgba(255, 255, 255, .045) !important;
+    color: #fff !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 10px 12px !important;
+    text-align: left !important;
+    box-sizing: border-box !important;
+  }
+.mobileProcessOptions button.active {
+    border-color: rgba(242, 213, 140, .62) !important;
+    background: rgba(242, 213, 140, .11) !important;
+  }
+.mobileProcessOptions button div {
+    min-width: 0 !important;
+    display: grid !important;
+    gap: 4px !important;
+  }
+.mobileProcessOptions button b {
+    color: #fff !important;
+    font-size: 14px !important;
+    line-height: 1.25 !important;
+  }
+.mobileProcessOptions button small {
+    color: rgba(255, 255, 255, .56) !important;
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+  }
+.mobileProcessOptions button > span {
+    color: #f2d58c !important;
+    font-size: 14px !important;
+  }
+.mobileProcessResult p {
+    margin: 0 !important;
+    color: #e9ddbd !important;
+    font-size: 13px !important;
+    line-height: 1.45 !important;
+  }
+.mobileProcessFooter {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 5 !important;
+    min-height: 76px !important;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+    border-top: 1px solid rgba(255, 255, 255, .1) !important;
+    background: #090a0c !important;
+    box-sizing: border-box !important;
+  }
+.mobileProcessFooter button {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 48px !important;
+    border-radius: 16px !important;
+    font-size: 14px !important;
+    font-weight: 900 !important;
+  }
+.mobileProcessFooter .ghost {
+    border: 1px solid rgba(242, 213, 140, .3) !important;
+    background: rgba(25, 26, 29, .96) !important;
+    color: #f4dfaa !important;
+  }
+.mobileProcessFooter .primary {
+    border: 0 !important;
+    background: linear-gradient(135deg, #f3da94, #c79b3b) !important;
+    color: #171207 !important;
+  }
+.mobileProcessFooter .primary:disabled {
+    opacity: .46 !important;
+  }
+.taskPreviewWindowMode {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100dvh !important;
+    overflow: hidden !important;
+  }
+.taskPreviewWindowMode .taskPreviewTop {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 8 !important;
+    height: 72px !important;
+    min-height: 72px !important;
+    padding: 8px 12px !important;
+    gap: 10px !important;
+    align-items: center !important;
+    background: rgba(8, 9, 12, .98) !important;
+    backdrop-filter: blur(16px) !important;
+  }
+.taskPreviewWindowMode .taskPreviewTop > div:first-child {
+    min-width: 0 !important;
+    display: flex !important;
+    align-items: baseline !important;
+    gap: 10px !important;
+    flex-wrap: wrap !important;
+  }
+.taskPreviewWindowMode .taskPreviewTop b {
+    font-size: 24px !important;
+    line-height: 1.08 !important;
+    margin: 0 !important;
+  }
+.taskPreviewWindowMode .taskDesktopTitle {
+    display: none !important;
+  }
+.taskPreviewWindowMode .taskMobileTitle {
+    display: inline !important;
+  }
+.taskPreviewWindowMode .taskPreviewTop span {
+    font-size: 16px !important;
+  }
+.taskPreviewWindowMode .taskPreviewTopBtns {
+    flex: 0 0 auto !important;
+    gap: 6px !important;
+  }
+.taskPreviewWindowMode .taskPreviewTopBtns button {
+    width: 42px !important;
+    min-width: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    border-radius: 14px !important;
+  }
+.taskPreviewWindowMode .taskPreviewBody {
+    height: calc(100dvh - 72px) !important;
+    max-height: calc(100dvh - 72px) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    padding: 12px 10px calc(18px + env(safe-area-inset-bottom, 0px)) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+.taskPreviewWindowMode .taskComparePanel {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: transparent !important;
+    border: 0 !important;
+  }
+.taskPreviewWindowMode .taskComparePanel .compareCol:first-child {
+    display: none !important;
+  }
+.taskPreviewWindowMode .taskComparePanel .compareCol:last-child {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-rows: auto minmax(0, 1fr) !important;
+    gap: 10px !important;
+    padding: 14px !important;
+    border: 1px solid rgba(242, 213, 140, .16) !important;
+    border-radius: 22px !important;
+    background: rgba(18, 19, 20, .94) !important;
+  }
+.taskPreviewWindowMode .taskComparePanel .compareCol:last-child .compareHead {
+    min-height: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+  }
+.taskPreviewWindowMode .taskComparePanel .compareCol:last-child .compareHead h3 {
+    font-size: 18px !important;
+    margin: 0 !important;
+  }
+.taskPreviewWindowMode .taskComparePanel .compareCol:last-child .compareHead button {
+    display: none !important;
+  }
+.taskPreviewWindowMode .taskImageFrame {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: min(45dvh, 430px) !important;
+    min-height: 220px !important;
+    border-width: 8px !important;
+    border-radius: 18px !important;
+    background: #f7f4ee !important;
+    display: grid !important;
+    place-items: center !important;
+    overflow: hidden !important;
+  }
+.taskPreviewWindowMode .taskImageFrame img {
+    position: static !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important;
+    object-position: center center !important;
+    display: block !important;
+  }
+.taskPreviewWindowMode .taskInfoPanel {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    padding: 20px 16px calc(20px + env(safe-area-inset-bottom, 0px)) !important;
+    border-radius: 22px !important;
+    overflow: visible !important;
+  }
+.taskPreviewWindowMode .taskInfoPanel > h3 {
+    margin: 0 0 14px !important;
+    font-size: 24px !important;
+  }
+.taskPreviewWindowMode .taskInfoScroll {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding-right: 0 !important;
+  }
+.taskPreviewWindowMode .taskInfoScroll .infoRows {
+    display: grid !important;
+    gap: 12px !important;
+  }
+.taskPreviewWindowMode .taskInfoScroll .infoRows > div {
+    min-height: 54px !important;
+  }
+.taskPreviewWindowMode .taskInfoScroll .infoRows > div:nth-child(1),
+  .taskPreviewWindowMode .taskInfoScroll .infoRows > div:nth-child(5) {
+    display: none !important;
+  }
+.taskPreviewWindowMode .taskInfoScroll .infoRows > div:nth-child(3) { order: 1 !important; }
+.taskPreviewWindowMode .taskInfoScroll .infoRows > div:nth-child(4) { order: 2 !important; }
+.taskPreviewWindowMode .taskInfoScroll .infoRows > div:nth-child(6) { order: 3 !important; }
+.taskPreviewWindowMode .taskInfoScroll .infoRows > div:nth-child(7) { order: 4 !important; }
+.taskPreviewWindowMode .taskInfoScroll .infoRows > div:nth-child(2) { order: 5 !important; }
+.taskPreviewWindowMode .promptBox {
+    order: 2 !important;
+    margin: 0 !important;
+  }
+.taskPreviewWindowMode .taskWatermarkControl {
+    order: 3 !important;
+    margin: 0 !important;
+  }
+.taskPreviewWindowMode .taskDetailActions {
+    display: none !important;
+  }
+.taskPreviewWindowMode .taskMobileActionBar {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 20px !important;
+    margin: 4px 0 8px !important;
+    padding: 0 !important;
+    position: static !important;
+    transform: none !important;
+    z-index: auto !important;
+  }
+.taskPreviewWindowMode .taskMobileActionBar button {
+    width: 64px !important;
+    min-width: 64px !important;
+    height: 58px !important;
+    min-height: 58px !important;
+    border-radius: 20px !important;
+    display: inline-flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    padding: 0 !important;
+    border: 1px solid rgba(242, 213, 140, .34) !important;
+    background: rgba(21, 22, 25, .92) !important;
+    color: #f4dfaa !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, .28) !important;
+  }
+.taskPreviewWindowMode .taskMobileActionBar button.primary {
+    border-color: transparent !important;
+    background: linear-gradient(135deg, #f3da94, #c79b3b) !important;
+    color: #171207 !important;
+  }
+.taskPreviewWindowMode .taskMobileActionBar button.danger {
+    border-color: rgba(255, 111, 134, .38) !important;
+    color: #ff9dad !important;
+    background: rgba(30, 30, 42, .92) !important;
+  }
+.taskPreviewWindowMode .taskMobileActionBar button svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+.taskPreviewWindowMode .taskMobileActionBar button span {
+    font-size: 12px !important;
+    font-weight: 900 !important;
+    line-height: 1 !important;
+  }
+.mobileImageSaveMask {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 2147483605 !important;
+    display: grid !important;
+    grid-template-rows: minmax(0, 1fr) auto !important;
+    background: #000 !important;
+    color: #fff !important;
+    padding: calc(16px + env(safe-area-inset-top, 0px)) 12px calc(18px + env(safe-area-inset-bottom, 0px)) !important;
+    overflow: hidden !important;
+  }
+.mobileImageSaveClose {
+    position: fixed !important;
+    top: calc(12px + env(safe-area-inset-top, 0px)) !important;
+    right: 12px !important;
+    z-index: 2 !important;
+    width: 46px !important;
+    min-width: 46px !important;
+    height: 46px !important;
+    min-height: 46px !important;
+    border-radius: 16px !important;
+    border: 1px solid rgba(242, 213, 140, .42) !important;
+    background: rgba(18, 18, 18, .76) !important;
+    color: #fff4d8 !important;
+    font-size: 30px !important;
+    line-height: 1 !important;
+    display: grid !important;
+    place-items: center !important;
+    box-shadow: 0 10px 28px rgba(0,0,0,.42) !important;
+  }
+.mobileImageSaveStage {
+    min-height: 0 !important;
+    display: grid !important;
+    place-items: center !important;
+    overflow: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+.mobileImageSaveStage img {
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: 78dvh !important;
+    object-fit: contain !important;
+    display: block !important;
+    user-select: auto !important;
+    -webkit-user-select: auto !important;
+    -webkit-touch-callout: default !important;
+    touch-action: auto !important;
+  }
+.mobileImageSaveEmpty {
+    color: #bbb !important;
+  }
+.mobileImageSaveTip {
+    display: grid !important;
+    justify-items: center !important;
+    gap: 12px !important;
+    padding-top: 14px !important;
+    text-align: center !important;
+  }
+.mobileImageSaveTip b {
+    color: #fff4d8 !important;
+    font-size: 15px !important;
+    line-height: 1.4 !important;
+  }
+.mobileImageSaveTip button {
+    min-height: 44px !important;
+    padding: 0 18px !important;
+    border-radius: 999px !important;
+    border: 1px solid rgba(242, 213, 140, .42) !important;
+    background: rgba(242, 213, 140, .1) !important;
+    color: #f5d98d !important;
+    font-weight: 900 !important;
+  }
+.topApp .resourceActionPanelV7.detailDrawerV7,
+  .topApp .resourceActionPanelV7.categoryDrawerV7 {
+    top: 74px !important;
+    left: 10px !important;
+    right: 10px !important;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+    width: auto !important;
+    max-width: calc(100vw - 20px) !important;
+    z-index: 2147482500 !important;
+    border-radius: 22px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    box-shadow: 0 24px 80px rgba(0,0,0,.68), inset 0 3px 0 rgba(226,203,138,.7) !important;
+  }
+.topApp .detailDrawerV7 .resourceActionContentV7 {
+    position: relative !important;
+    padding: 58px 14px 18px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+  }
+.topApp .detailDrawerV7 .resourceDetailImageV6 {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 1 / 1 !important;
+    background: #f7f4ee !important;
+  }
+.topApp .detailDrawerV7 .resourceDetailImageV6 img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+  }
+.topApp .detailDrawerV7 .resourceDetailTitleV6 {
+    margin-top: 14px !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    padding-right: 0 !important;
+  }
+.topApp .detailDrawerV7 .resourceDetailTitleV6 button {
+    position: absolute !important;
+    top: 12px !important;
+    z-index: 6 !important;
+    width: 44px !important;
+    min-width: 44px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    border-radius: 14px !important;
+    display: grid !important;
+    place-items: center !important;
+    border: 1px solid rgba(242, 213, 140, .52) !important;
+    background: rgba(10, 10, 10, .74) !important;
+    color: #f5d98d !important;
+    box-shadow: 0 10px 28px rgba(0,0,0,.42) !important;
+    backdrop-filter: blur(12px) !important;
+  }
+.topApp .detailDrawerV7 .resourceDetailTitleV6 button:first-of-type {
+    right: 64px !important;
+  }
+.topApp .detailDrawerV7 .resourceDetailTitleV6 button:last-of-type {
+    right: 12px !important;
+    color: #fff7df !important;
+  }
+.resourceDetailMaskV3,
+  .resourceRenameMaskV3 {
+    padding: 10px !important;
+    align-items: stretch !important;
+    place-items: stretch !important;
+  }
+.resourceDetailPanelV3 {
+    position: relative !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: calc(100dvh - 20px) !important;
+    border-radius: 22px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+.resourceDetailHeadV3 {
+    min-height: 58px !important;
+    padding: 10px 64px 10px 16px !important;
+  }
+.resourceDetailHeadV3 button {
+    position: fixed !important;
+    top: 18px !important;
+    right: 18px !important;
+    z-index: 2147483602 !important;
+    width: 44px !important;
+    min-width: 44px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    border-radius: 14px !important;
+    border: 1px solid rgba(242, 213, 140, .52) !important;
+    background: rgba(10, 10, 10, .78) !important;
+    color: #fff7df !important;
+    box-shadow: 0 10px 28px rgba(0,0,0,.42) !important;
+  }
+.resourceDetailBodyV3 {
+    grid-template-columns: 1fr !important;
+    padding: 14px !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+.resourceDetailPreviewV3 {
+    min-height: 0 !important;
+    width: 100% !important;
+    aspect-ratio: 1 / 1 !important;
+  }
+.resourceDetailInfoV3 {
+    padding: 16px !important;
+  }
+.resourceDetailActionsV3 {
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+.resourceDetailActionsV3 button,
+  .resourceRenameModalV3 button,
+  .resourceCategoryModalV8 button {
+    min-height: 44px !important;
+  }
+.resourceDetailActionsV3 button:not(.primary),
+  .resourceRenameModalV3 button:not(.primary) {
+    border-color: rgba(242, 213, 140, .42) !important;
+    background: rgba(12, 12, 12, .72) !important;
+    color: #f5d98d !important;
+  }
+/* Workbench: keep PC component, but convert to single-page mobile layout. */
+.topApp .wbScreen {
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    gap: 14px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+  }
+.topApp .wbScreen > *,
+  .topApp .wbSidePanel,
+  .topApp .wbCenterPanel,
+  .topApp .wbRightPanel {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    border-radius: 20px !important;
+    box-sizing: border-box !important;
+  }
+.topApp .wbSidePanel {
+    order: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+    padding: 16px !important;
+    border: 1px solid rgba(242, 213, 140, .12) !important;
+    background: rgba(17, 19, 22, .88) !important;
+  }
+.topApp .wbCenterPanel {
+    order: 2 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+.topApp .wbRightPanel {
+    order: 3 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    padding: 16px !important;
+    border: 1px solid rgba(242, 213, 140, .12) !important;
+    background: rgba(17, 19, 22, .88) !important;
+  }
+.topApp .wbSectionTabs,
+  .topApp .wbFeatureGrid,
+  .topApp .wbPromoFeatureGrid {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+.topApp .wbSectionTabs {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin: 0 !important;
+  }
+.topApp .wbSectionTabs button {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 40px !important;
+    padding: 0 8px !important;
+    border-radius: 14px !important;
+    font-size: 13px !important;
+  }
+.topApp .wbFeatureGrid,
+  .topApp .wbPromoFeatureGrid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    margin: 0 !important;
+  }
+.topApp .wbFeatureBtn {
+    min-height: 58px !important;
+    height: auto !important;
+    padding: 9px 10px !important;
+    border-radius: 16px !important;
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+  }
+.topApp .wbFeatureTag {
+    width: 26px !important;
+    height: 26px !important;
+    min-width: 26px !important;
+  }
+.topApp .wbDivider { display: none !important; }
+.topApp .wbDescRow,
+  .topApp .wbOptionCard,
+  .topApp .wbPromoFormCard,
+  .topApp .wbRadioList {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+  }
+.topApp .wbSearchRow {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
+.topApp .wbSearchRow .wbSearchInput,
+  .topApp .wbSearchRow .wbSelect,
+  .topApp .wbSelect,
+  .topApp .wbSearchInput {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+.topApp .wbResourceGrid {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    padding: 0 !important;
+  }
+.topApp .wbResourceCard,
+  .topApp .wbUploadCard,
+  .topApp .wbUploadResource {
+    min-width: 0 !important;
+    width: 100% !important;
+    min-height: 132px !important;
+    height: auto !important;
+    border-radius: 16px !important;
+  }
+.topApp .wbResourceCard img {
+    width: 100% !important;
+    height: 82px !important;
+    object-fit: cover !important;
+  }
+.topApp .wbMainBlock,
+  .topApp .wbRefCard,
+  .topApp .wbPromptInput,
+  .topApp .wbBottomBar,
+  .topApp .wbVideoPromptCard,
+  .topApp .wbVideoStoryboardBlock {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    border-radius: 20px !important;
+  }
+.topApp .wbMainBlock,
+  .topApp .wbRefCard,
+  .topApp .wbVideoPromptCard,
+  .topApp .wbVideoStoryboardBlock {
+    padding: 16px !important;
+    border: 1px solid rgba(242, 213, 140, .12) !important;
+    background: rgba(17, 19, 22, .88) !important;
+  }
+.topApp .wbSourceHead {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin-bottom: 12px !important;
+  }
+.topApp .wbBlockTitle,
+  .topApp .wbRightHeader b {
+    font-size: 18px !important;
+    line-height: 1.2 !important;
+  }
+.topApp .wbWatermarkBtn {
+    min-height: 36px !important;
+    padding: 0 10px !important;
+    font-size: 12px !important;
+  }
+.topApp .wbUploadBox,
+  .topApp .wbMainBlock > .wbUploadBox {
+    width: 100% !important;
+    min-height: 220px !important;
+    height: auto !important;
+    border-radius: 20px !important;
+    overflow: hidden !important;
+  }
+.topApp .wbUploadInner {
+    min-height: 220px !important;
+    padding: 18px !important;
+  }
+.topApp .wbUploadInner b { font-size: 22px !important; }
+.topApp .wbUploadInner em { font-size: 16px !important; }
+.topApp .wbPreviewWrap,
+  .topApp .wbPreviewWrap img,
+  .topApp img.wbPreview {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: 320px !important;
+    object-fit: contain !important;
+  }
+.topApp .wbRefHeader,
+  .topApp .wbRefBody,
+  .topApp .wbBottomBar,
+  .topApp .wbActionGroup,
+  .topApp .wbControlGroup,
+  .topApp .wbVideoParamGrid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+    gap: 12px !important;
+    align-items: stretch !important;
+    margin-left: 0 !important;
+  }
+.topApp .wbPills {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+}

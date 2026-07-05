@@ -1,0 +1,6 @@
+/* Workbench modal styles. Prefix split. */
+.wbPreview{width:100%;height:100%;object-fit:contain;background:#141414}
+
+.wbModalBar{display:flex;gap:12px;padding:18px 20px 0}
+
+.wbModalGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:16px;padding:20px}

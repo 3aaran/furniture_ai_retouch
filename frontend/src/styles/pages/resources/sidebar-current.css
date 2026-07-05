@@ -1,0 +1,186 @@
+/* Resource page left navigation and controls.
+   Extracted as an owned page-level stylesheet; no legacy rules are removed in this step. */
+
+@media (min-width:861px){
+  .topApp .resourceSideCollapseV10{
+    width:100% !important;
+    height:44px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    gap:10px !important;
+    margin:0 0 16px !important;
+    padding:0 14px !important;
+    border:1px solid rgba(255,255,255,.08) !important;
+    border-radius:12px !important;
+    background:#151517 !important;
+    color:#e5e1e3 !important;
+    font-weight:900 !important;
+  }
+
+  .topApp .resourceSideBlockV10{
+    margin-bottom:24px !important;
+  }
+
+  .topApp .resourceSideBlockV10 h3{
+    display:flex !important;
+    align-items:center !important;
+    gap:8px !important;
+    margin:0 0 12px !important;
+    padding:0 8px !important;
+    color:rgba(255,243,218,.58) !important;
+    font-size:12px !important;
+    line-height:16px !important;
+    font-weight:1000 !important;
+    letter-spacing:.04em !important;
+  }
+
+  .topApp .resourceSideSpaceButtonsV10,
+  .topApp .resourceSideTreeV10,
+  .topApp .resourceSideSubTreeV10{
+    display:grid !important;
+    gap:4px !important;
+  }
+
+  .topApp .resourceSideBlockV10 button,
+  .topApp .resourceSidePrimaryV10{
+    width:100% !important;
+    min-height:38px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+    gap:10px !important;
+    padding:8px 12px !important;
+    border:0 !important;
+    border-radius:9px !important;
+    background:transparent !important;
+    color:rgba(229,225,227,.78) !important;
+    font-size:14px !important;
+    font-weight:900 !important;
+    text-align:left !important;
+    box-shadow:none !important;
+  }
+
+  .topApp .resourceSideBlockV10 button span,
+  .topApp .resourceSidePrimaryV10 span{
+    display:inline-flex !important;
+    align-items:center !important;
+    gap:8px !important;
+    min-width:0 !important;
+  }
+
+  .topApp .resourceSideBlockV10 button:hover,
+  .topApp .resourceSideBlockV10 button.active,
+  .topApp .resourceSidePrimaryV10.active{
+    background:rgba(240,214,138,.1) !important;
+    color:#fff3da !important;
+  }
+
+  .topApp .resourceSidePurposeTitleV10{
+    margin:14px 0 7px !important;
+    padding:0 10px !important;
+    color:rgba(255,243,218,.45) !important;
+    font-size:12px !important;
+    font-weight:1000 !important;
+  }
+
+  .topApp .resourceSideSubTreeV10{
+    margin:2px 0 6px 22px !important;
+  }
+
+  .topApp .resourceSideSubTreeV10 button{
+    min-height:32px !important;
+    padding:6px 10px !important;
+    font-size:13px !important;
+    color:rgba(229,225,227,.72) !important;
+  }
+
+  .topApp .resourceSideSearchV10{
+    height:42px !important;
+    display:flex !important;
+    align-items:center !important;
+    gap:8px !important;
+    padding:0 11px !important;
+    border:1px solid rgba(240,214,138,.16) !important;
+    border-radius:12px !important;
+    background:#151517 !important;
+    color:#f0d68a !important;
+  }
+
+  .topApp .resourceSideSearchV10 input{
+    width:100% !important;
+    min-width:0 !important;
+    height:100% !important;
+    min-height:0 !important;
+    padding:0 !important;
+    border:0 !important;
+    background:transparent !important;
+    color:#e5e1e3 !important;
+    font-size:13px !important;
+    font-weight:800 !important;
+    outline:0 !important;
+  }
+
+  .topApp .resourceSideGridControlV10{
+    margin-top:10px !important;
+    padding:12px !important;
+    border:1px solid rgba(255,255,255,.08) !important;
+    border-radius:12px !important;
+    background:#151517 !important;
+  }
+
+  .topApp .resourceSideGridControlV10 > div:first-child{
+    display:flex !important;
+    align-items:center !important;
+    gap:8px !important;
+    margin-bottom:9px !important;
+    color:#fff3da !important;
+    font-size:12px !important;
+    font-weight:900 !important;
+  }
+
+  .topApp .resourceSideGridSelectsV10{
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(88px,1fr)) !important;
+    gap:10px !important;
+  }
+
+  .topApp .resourceSideGridSelectsV10 select{
+    width:100% !important;
+    height:42px !important;
+    min-height:42px !important;
+    padding:0 30px 0 12px !important;
+    border:1px solid rgba(255,255,255,.08) !important;
+    border-radius:12px !important;
+    background:#252426 !important;
+    color:#fff3da !important;
+    font-size:14px !important;
+    font-weight:900 !important;
+  }
+
+  .topApp .resourceSideCategoryActionsV10{
+    display:grid !important;
+    gap:8px !important;
+  }
+
+  .topApp .resourceSideUploadV10,
+  .topApp .resourceSideCreateV10,
+  .topApp .resourceSideManageV10{
+    width:100% !important;
+    min-height:42px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:8px !important;
+    border:1px solid rgba(240,214,138,.16) !important;
+    border-radius:12px !important;
+    background:#151517 !important;
+    color:#fff3da !important;
+    font-weight:900 !important;
+  }
+
+  .topApp .resourceSideUploadV10{
+    background:linear-gradient(135deg,#f8e3a5,#d1a33c) !important;
+    color:#211900 !important;
+  }
+}

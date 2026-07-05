@@ -1,0 +1,12 @@
+/* Stitch premium layout admin override styles. Prefix split. */
+@media (min-width:861px){
+.topApp .adminLogPage{
+    display:block!important;
+  }
+
+.topApp .stack:has(.promotionInvitePanelV2){
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr);
+    gap:18px!important;
+  }
+}

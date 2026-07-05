@@ -1,0 +1,32 @@
+/*
+ * Web shared style layer.
+ * PC and mobile H5 share this full base so mobile does not lose the current visual system.
+ * Put only truly mobile-only corrections in platforms/web/mobile.css.
+ */
+@import '../../base/variables.css';
+@import '../../base/reset.css';
+
+@import '../../components/brand-mark.css';
+@import '../../components/react-bits-lite.css';
+
+/* Legacy remains shared until each rule is migrated into page-scoped CSS. */
+@import '../../legacy/index.css';
+
+/* Page-owned styles. These are shared by PC and mobile, with responsive rules inside page files where possible. */
+@import '../../pages/auth.css';
+@import '../../pages/landing.css';
+@import '../../pages/workbench/index.css';
+@import '../../pages/resources/index.css';
+@import '../../pages/task-detail.css';
+@import '../../pages/task-process.css';
+@import '../../pages/admin-merchants.css';
+@import '../../pages/admin-workflows.css';
+@import '../../pages/admin-logs.css';
+@import '../../pages/users.css';
+@import '../../pages/quota.css';
+@import '../../pages/profile.css';
+
+/* Current visual correction layers are shared by PC and mobile. Mobile-specific files loaded later can override them. */
+@import '../../overrides/final-fixes.css';
+@import '../../overrides/studio-workbench.css';
+@import '../../overrides/stitch-premium-layout.css';

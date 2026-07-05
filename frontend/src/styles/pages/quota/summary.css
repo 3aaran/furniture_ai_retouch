@@ -1,0 +1,74 @@
+/* Quota page summary styles. Prefix split. */
+.quotaSummaryV2{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(220px,1fr));
+  gap:20px;
+}
+
+.quotaMetricV2{
+  min-height:128px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.12);
+  background:#191919;
+  padding:24px;
+  display:grid;
+  align-content:center;
+  gap:18px;
+}
+
+.quotaMetricV2 span{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:#d6d0c3;
+  font-size:16px;
+  font-weight:800;
+}
+
+.quotaMetricV2 b{
+  font-size:34px;
+  line-height:1;
+  color:#f0d68a;
+}
+
+.quotaMetricV2.current{
+  background:rgba(240,214,138,.08);
+  border-color:rgba(240,214,138,.34);
+}
+
+.quotaMetricV2.income{
+  background:rgba(56,190,89,.10);
+  border-color:rgba(56,190,89,.34);
+}
+
+.quotaMetricV2.income b{
+  color:#54d368;
+}
+
+.quotaMetricV2.expense{
+  background:rgba(207,55,50,.13);
+  border-color:rgba(207,55,50,.42);
+}
+
+.quotaMetricV2.expense b{
+  color:#ff514d;
+}
+
+.adminQuotaSummaryV3 .quotaMetricV2 small{
+  color:#aaa294;
+  font-weight:800;
+}
+
+.adminQuotaSummaryV4 .quotaMetricV2{
+  min-height:138px;
+}
+
+.adminQuotaSummaryV4 .quotaMetricV2 small{
+  color:#aaa294;
+  font-size:13px;
+  font-weight:800;
+}
+
+@media (max-width:900px){
+.quotaSummaryV2{grid-template-columns:1fr}
+}

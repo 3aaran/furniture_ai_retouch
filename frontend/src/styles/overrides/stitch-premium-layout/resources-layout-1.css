@@ -1,0 +1,526 @@
+/* Stitch premium resource layout override part 1. */
+.topApp :is(.resourcePageV3,.adminLogPage,.profilePageV3,.quotaPageV2,.storeUsersV2,.stack){
+  color:var(--stitch-text);
+}
+
+.topApp :is(.resourcePageV3,.adminLogPage,.profilePageV3,.quotaPageV2,.storeUsersV2,.stack) :is(input,select,textarea){
+  background:rgba(14,14,15,.78)!important;
+  border:1px solid rgba(255,255,255,.1)!important;
+  color:var(--stitch-text)!important;
+  border-radius:12px!important;
+  box-shadow:none!important;
+  outline:none!important;
+}
+
+.topApp :is(.resourcePageV3,.adminLogPage,.profilePageV3,.quotaPageV2,.storeUsersV2,.stack) :is(input,textarea)::placeholder{
+  color:rgba(206,198,180,.48)!important;
+}
+
+.topApp :is(.resourcePageV3,.adminLogPage,.profilePageV3,.quotaPageV2,.storeUsersV2,.stack) :is(input,select,textarea):focus{
+  border-color:rgba(240,214,138,.5)!important;
+  box-shadow:0 0 0 3px rgba(240,214,138,.08)!important;
+}
+
+.topApp :is(.resourcePageV3,.adminLogPage,.profilePageV3,.quotaPageV2,.storeUsersV2,.stack) button{
+  transition:border-color .22s ease,background .22s ease,color .22s ease,transform .22s ease,box-shadow .22s ease;
+}
+
+.topApp :is(.resourcePageV3,.adminLogPage,.profilePageV3,.quotaPageV2,.storeUsersV2,.stack) button:hover:not(:disabled){
+  transform:translateY(-1px);
+}
+
+@media (min-width:861px){
+.topMain:has(> :is(.resourcePageV3,.adminLogPage,.profilePageV3,.quotaPageV2,.storeUsersV2,.stack)){
+    position:relative;
+    isolation:isolate;
+    width:100%!important;
+    max-width:none!important;
+    min-height:calc(var(--app-zoomed-viewport-height,100vh) - 78px);
+    padding:34px clamp(24px,4vw,56px) 56px!important;
+    margin:0!important;
+    overflow-x:hidden;
+    background:
+      radial-gradient(circle at 82% 6%,rgba(240,214,138,.12),transparent 32rem),
+      radial-gradient(circle at 10% 22%,rgba(150,204,255,.06),transparent 28rem),
+      linear-gradient(180deg,#070708 0%,var(--stitch-base) 46%,#060607 100%);
+  }
+
+.topMain:has(> :is(.resourcePageV3,.adminLogPage,.profilePageV3,.quotaPageV2,.storeUsersV2,.stack))::before{
+    content:"";
+    position:fixed;
+    inset:78px 0 0;
+    z-index:-1;
+    pointer-events:none;
+    background:
+      linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
+    background-size:56px 56px;
+    mask-image:linear-gradient(180deg,rgba(0,0,0,.5),transparent 72%);
+  }
+
+.topMain:has(> :is(.resourcePageV3,.adminLogPage,.profilePageV3,.quotaPageV2,.storeUsersV2,.stack)) > .pageHead{
+    width:min(1360px,100%);
+    margin:0 auto 24px!important;
+    padding:0!important;
+  }
+
+.topMain:has(> :is(.resourcePageV3,.adminLogPage,.profilePageV3,.quotaPageV2,.storeUsersV2,.stack)) > .pageHead h1{
+    margin:0!important;
+    color:#fff3da!important;
+    font-size:clamp(26px,3vw,38px)!important;
+    line-height:1.08!important;
+    letter-spacing:-.04em!important;
+    font-weight:1000!important;
+  }
+
+.topMain:has(> :is(.resourcePageV3,.adminLogPage,.profilePageV3,.quotaPageV2,.storeUsersV2,.stack)) > :is(.resourcePageV3,.adminLogPage,.profilePageV3,.quotaPageV2,.storeUsersV2,.stack){
+    width:min(1360px,100%);
+    margin:0 auto!important;
+  }
+
+.topApp .resourcePageV3{
+    display:grid!important;
+    grid-template-columns:minmax(220px,250px) minmax(0,1fr);
+    grid-template-areas:
+      "toolbar toolbar"
+      "spaces content";
+    gap:18px!important;
+    align-items:start!important;
+  }
+
+.topApp .resourceSpaceTabsV3{
+    grid-area:spaces;
+    position:sticky;
+    top:18px;
+    min-height:520px;
+    padding:18px!important;
+    border:1px solid var(--stitch-line)!important;
+    border-radius:var(--stitch-radius-lg)!important;
+    background:linear-gradient(180deg,rgba(28,27,29,.92),rgba(14,14,15,.96))!important;
+    box-shadow:var(--stitch-shadow-soft)!important;
+  }
+
+.topApp .resourceBatchBarV8{
+    margin-top:16px!important;
+    padding-top:16px!important;
+    border-top:1px solid var(--stitch-line-soft)!important;
+    display:grid!important;
+    gap:10px!important;
+  }
+
+.topApp .resourceActionPanelV7{
+    grid-column:1/-1!important;
+    border:1px solid rgba(240,214,138,.16)!important;
+    border-radius:var(--stitch-radius-lg)!important;
+    background:linear-gradient(180deg,rgba(32,31,33,.95),rgba(19,19,21,.96))!important;
+    box-shadow:var(--stitch-shadow-soft)!important;
+  }
+
+.topApp .resourceInlineLayoutV6{
+    grid-area:content;
+    min-width:0!important;
+  }
+
+.topApp .resourceGridPanelV3{
+    padding:0!important;
+    background:transparent!important;
+    border:0!important;
+    box-shadow:none!important;
+  }
+
+.topApp .resourceGridV3{
+    display:grid!important;
+    grid-template-columns:repeat(auto-fill,minmax(230px,1fr))!important;
+    gap:18px!important;
+  }
+
+.topApp .resourceCardV3{
+    position:relative!important;
+    overflow:hidden!important;
+    min-height:310px!important;
+    border:1px solid rgba(255,255,255,.08)!important;
+    border-radius:var(--stitch-radius-lg)!important;
+    background:linear-gradient(180deg,rgba(28,27,29,.94),rgba(14,14,15,.98))!important;
+    box-shadow:0 18px 48px rgba(0,0,0,.28)!important;
+  }
+
+.topApp .resourceCardV3:hover{
+    border-color:rgba(240,214,138,.34)!important;
+    transform:translateY(-3px)!important;
+    box-shadow:0 26px 72px rgba(0,0,0,.4)!important;
+  }
+
+.topApp .resourceImageV3{
+    height:220px!important;
+    border-radius:0!important;
+    background:#09090a!important;
+  }
+
+.topApp .resourceImageV3:after{
+    content:"";
+    position:absolute;
+    inset:auto 0 0;
+    height:44%;
+    pointer-events:none;
+    background:linear-gradient(180deg,transparent,rgba(0,0,0,.7));
+  }
+
+.topApp .resourceImageV3 img{
+    width:100%!important;
+    height:100%!important;
+    object-fit:cover!important;
+    transition:transform .55s ease,filter .55s ease;
+  }
+
+.topApp .resourceCardV3:hover .resourceImageV3 img{
+    transform:scale(1.045);
+    filter:saturate(1.08) contrast(1.04);
+  }
+
+.topApp .resourceInfoV3{
+    padding:14px 16px 16px!important;
+    background:transparent!important;
+  }
+
+.topApp .resourceInfoV3 b{color:#fff3da!important;font-size:15px!important;}
+
+.topApp .resourceInfoV3 span{color:rgba(206,198,180,.68)!important;font-size:12px!important;}
+
+.topApp .resourcePagerV3{
+    margin-top:20px!important;
+    padding:14px 16px!important;
+    border:1px solid var(--stitch-line)!important;
+    border-radius:var(--stitch-radius)!important;
+    background:rgba(19,19,21,.86)!important;
+  }
+}
+
+@media (min-width:861px) and (max-width:1160px){
+.topApp .resourcePageV3{
+    grid-template-columns:1fr!important;
+    grid-template-areas:"toolbar" "spaces" "content"!important;
+  }
+
+.topApp .resourceSpaceTabsV3{
+    position:relative!important;
+    top:auto!important;
+    min-height:auto!important;
+  }
+}
+
+@media (max-width:860px){
+.topMain:has(> :is(.resourcePageV3,.adminLogPage,.profilePageV3,.quotaPageV2,.storeUsersV2,.stack)){
+    background:
+      radial-gradient(circle at 78% 0,rgba(240,214,138,.1),transparent 18rem),
+      var(--stitch-base)!important;
+  }
+
+.topApp :is(.resourcePageV3,.adminLogPage,.profilePageV3,.quotaPageV2,.storeUsersV2,.stack){
+    width:100%!important;
+  }
+
+.topApp .resourcePageV3,
+  .topApp .profilePageV3,
+  .topApp .quotaPageV2,
+  .topApp .storeUsersV2,
+  .topApp .stack:has(.promotionInvitePanelV2){
+    display:grid!important;
+    gap:14px!important;
+  }
+
+.topApp .resourceSpaceTabsV3,
+  .topApp .resourceGridPanelV3,
+  .topApp .adminLogPage > .panel,
+  .topApp .profileHeroV3,
+  .topApp .profileCardV3,
+  .topApp .profileStoragePanelV3,
+  .topApp .quotaMetricV2,
+  .topApp .quotaPanelV2,
+  .topApp .storeUsersHeroV2,
+  .topApp .storeUserToolbarV2,
+  .topApp .storeUsersTablePanelV2,
+  .topApp .stack > .panel{
+    border:1px solid var(--stitch-line)!important;
+    border-radius:18px!important;
+    background:linear-gradient(180deg,rgba(24,24,24,.9),rgba(17,17,17,.94))!important;
+    box-shadow:0 14px 38px rgba(0,0,0,.24)!important;
+  }
+
+.topApp .resourceGridV3,
+  .topApp .aiTaskGrid,
+  .topApp .profileGridV3,
+  .topApp .quotaSummaryV2,
+  .topApp .adminQuotaSummaryV4,
+  .topApp .promotionMetricsV2{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:14px!important;
+  }
+
+.topApp .resourceImageV3,
+  .topApp .taskImg{
+    height:220px!important;
+  }
+}
+
+@media (min-width:861px){
+.topMain:has(> :is(.resourcePageV3,.adminLogPage,.profilePageV3,.quotaPageV2,.storeUsersV2,.stack)){
+    padding:22px clamp(18px,3vw,36px) 36px!important;
+  }
+
+.topMain:has(> :is(.resourcePageV3,.adminLogPage,.profilePageV3,.quotaPageV2,.storeUsersV2,.stack)) > .pageHead{
+    margin-bottom:14px!important;
+  }
+
+.topMain:has(> :is(.resourcePageV3,.adminLogPage,.profilePageV3,.quotaPageV2,.storeUsersV2,.stack)) > .pageHead h1{
+    font-size:clamp(22px,2.2vw,30px)!important;
+    letter-spacing:-.025em!important;
+  }
+
+.topMain:has(> :is(.resourcePageV3,.adminLogPage,.profilePageV3,.quotaPageV2,.storeUsersV2,.stack)) > :is(.resourcePageV3,.adminLogPage,.profilePageV3,.quotaPageV2,.storeUsersV2,.stack){
+    width:min(1240px,100%)!important;
+  }
+
+.topApp :is(.resourcePageV3,.adminLogPage,.profilePageV3,.quotaPageV2,.storeUsersV2,.stack){
+    gap:14px!important;
+  }
+
+.topApp .resourceSpaceTabsV3,
+  .topApp .resourceActionPanelV7,
+  .topApp .adminLogPage > .panel,
+  .topApp .quotaPanelV2,
+  .topApp .storeUsersTablePanelV2,
+  .topApp .storeUserToolbarV2,
+  .topApp .profileCardV3,
+  .topApp .profileStoragePanelV3,
+  .topApp .stack > .panel{
+    border-radius:18px!important;
+    box-shadow:0 14px 42px rgba(0,0,0,.22)!important;
+  }
+
+.topApp :is(.resourcePageV3,.adminLogPage,.profilePageV3,.quotaPageV2,.storeUsersV2,.stack) :is(input,select,textarea){
+    min-height:38px!important;
+    font-size:13px!important;
+    border-radius:10px!important;
+  }
+
+.topApp .resourceSpaceTabsV3{
+    min-height:360px!important;
+    padding:12px!important;
+    border-radius:18px!important;
+  }
+
+.topApp .resourceGridV3{
+    grid-template-columns:repeat(auto-fill,minmax(185px,1fr))!important;
+    gap:12px!important;
+  }
+
+.topApp .resourceCardV3{
+    min-height:238px!important;
+    border-radius:18px!important;
+  }
+
+.topApp .resourceImageV3{
+    height:166px!important;
+  }
+
+.topApp .resourceInfoV3{
+    padding:10px 12px 12px!important;
+  }
+
+.topApp .resourceInfoV3 b{
+    font-size:13px!important;
+  }
+
+.topApp .resourceInfoV3 span{
+    font-size:11px!important;
+  }
+
+.topApp .resourcePagerV3{
+    margin-top:12px!important;
+    padding:10px 12px!important;
+  }
+}
+
+@media (max-width:860px){
+.topMain:has(> :is(.resourcePageV3,.adminLogPage,.profilePageV3,.quotaPageV2,.storeUsersV2,.stack)){
+    padding:12px!important;
+  }
+
+.topApp :is(.resourceSpaceTabsV3,.resourceGridPanelV3,.adminLogPage > .panel,.profileHeroV3,.profileCardV3,.profileStoragePanelV3,.quotaMetricV2,.quotaPanelV2,.storeUsersHeroV2,.storeUserToolbarV2,.storeUsersTablePanelV2,.stack > .panel){
+    border-radius:14px!important;
+    box-shadow:0 10px 28px rgba(0,0,0,.18)!important;
+  }
+
+.topApp .resourceImageV3,
+  .topApp .taskImg{
+    height:170px!important;
+  }
+}
+
+@media (min-width:861px){
+.topMain:has(> .resourcePageV3){
+    height:100vh!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+    padding:96px clamp(32px,4vw,56px) 32px!important;
+    max-width:none!important;
+    background:#050506!important;
+  }
+
+.topMain:has(> .resourcePageV3) > .pageHead{display:none!important;}
+
+.topMain:has(> .resourcePageV3) > .resourcePageV3{
+    width:min(1280px,100%)!important;
+    height:100%!important;
+    margin:0 auto!important;
+  }
+
+.topApp .resourcePageV3{
+    display:grid!important;
+    grid-template-columns:256px minmax(0,1fr)!important;
+    grid-template-rows:48px auto minmax(0,1fr)!important;
+    grid-template-areas:"side toolbar" "side action" "side content"!important;
+    gap:18px 48px!important;
+    min-height:0!important;
+    align-items:stretch!important;
+  }
+
+.topApp .resourceSpaceTabsV3{
+    grid-area:side!important;
+    position:static!important;
+    height:100%!important;
+    max-height:100%!important;
+    min-height:0!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    padding:0 8px 24px 0!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+  }
+
+.topApp .resourceSpaceTabsV3::-webkit-scrollbar,
+  .topApp .resourceGridV3::-webkit-scrollbar{width:5px!important;}
+
+.topApp .resourceSpaceTabsV3::-webkit-scrollbar-thumb,
+  .topApp .resourceGridV3::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12)!important;border-radius:999px!important;}
+
+.topApp .resourceActionPanelV7{grid-area:action!important;grid-column:auto!important;max-height:220px!important;overflow:auto!important;}
+
+.topApp .resourceInlineLayoutV6{
+    grid-area:content!important;
+    min-width:0!important;
+    min-height:0!important;
+    height:100%!important;
+    overflow:hidden!important;
+  }
+
+.topApp .resourceGridPanelV3{
+    height:100%!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    padding:0!important;
+    border:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+  }
+
+.topApp .resourceGridV3{
+    height:100%!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    padding:0 6px 26px 0!important;
+    display:grid!important;
+    grid-template-columns:repeat(var(--resource-cols,3),minmax(0,1fr))!important;
+    gap:18px!important;
+    align-content:start!important;
+  }
+
+.topApp .resourcePagerV3{
+    position:sticky!important;
+    bottom:0!important;
+    margin:12px 0 0!important;
+    padding:10px 0 0!important;
+    background:linear-gradient(180deg,transparent,#050506 22%)!important;
+  }
+
+.topApp .resourceSideBlockV10{margin-bottom:24px!important;}
+
+.topApp .resourceSideBlockV10 h3{
+    display:flex!important;
+    align-items:center!important;
+    gap:6px!important;
+    margin:0 0 12px!important;
+    padding:0 8px!important;
+    color:rgba(255,243,218,.48)!important;
+    font-size:12px!important;
+    line-height:16px!important;
+    font-weight:1000!important;
+    letter-spacing:.04em!important;
+  }
+
+.topApp .resourceSideSpaceButtonsV10,
+  .topApp .resourceSideTreeV10{display:grid!important;gap:4px!important;}
+
+.topApp .resourceSideBlockV10 button{
+    width:100%!important;
+    min-height:34px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:8px!important;
+    padding:7px 12px!important;
+    border:0!important;
+    border-radius:8px!important;
+    background:transparent!important;
+    color:rgba(229,225,227,.72)!important;
+    font-size:14px!important;
+    font-weight:800!important;
+    text-align:left!important;
+    box-shadow:none!important;
+  }
+
+.topApp .resourceSideBlockV10 button span{display:inline-flex!important;align-items:center!important;gap:8px!important;min-width:0!important;}
+
+.topApp .resourceSideBlockV10 button:hover,
+  .topApp .resourceSideBlockV10 button.active{background:rgba(240,214,138,.09)!important;color:#fff3da!important;}
+
+.topApp .resourceSidePrimaryV10{min-height:40px!important;background:rgba(240,214,138,.1)!important;color:#fff3da!important;}
+
+.topApp .resourceSidePurposeTitleV10{
+    margin:12px 0 4px!important;
+    padding:0 12px!important;
+    color:rgba(206,198,180,.5)!important;
+    font-size:11px!important;
+    font-weight:1000!important;
+    letter-spacing:.06em!important;
+  }
+
+.topApp .resourceSideSubTreeV10{display:grid!important;gap:2px!important;margin:2px 0 2px 28px!important;}
+
+.topApp .resourceSideSubTreeV10 button{min-height:28px!important;padding:4px 10px!important;font-size:13px!important;}
+
+.topApp .resourceSideEmptyV10{padding:8px 12px!important;color:rgba(206,198,180,.42)!important;font-size:12px!important;}
+
+.topApp .resourceSideCreateV10{
+    margin-top:10px!important;
+    padding:16px 12px 0!important;
+    border:0!important;
+    border-top:1px solid rgba(255,255,255,.06)!important;
+    border-radius:0!important;
+    background:transparent!important;
+    color:rgba(255,243,218,.7)!important;
+    font-size:12px!important;
+    font-weight:1000!important;
+    letter-spacing:.04em!important;
+    justify-content:flex-start!important;
+  }
+}
+
+@media (min-width:861px) and (max-width:1180px){
+.topApp .resourcePageV3{grid-template-columns:220px minmax(0,1fr)!important;gap:16px 24px!important;}
+
+.topApp .resourceGridV3{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+}

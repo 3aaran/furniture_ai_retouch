@@ -1,0 +1,8 @@
+/* Workbench styles. */
+@import './layout.css';
+@import './upload.css';
+@import './resource-picker.css';
+@import './controls.css';
+@import './watermark.css';
+@import './modal.css';
+@import './misc.css';

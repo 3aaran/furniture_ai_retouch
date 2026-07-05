@@ -1,0 +1,18 @@
+/* Final fixes base viewport scaling. */
+:root{
+  --app-browser-zoom:.9;
+  --app-zoomed-viewport-width:calc(100vw / var(--app-browser-zoom));
+  --app-zoomed-viewport-height:calc(100vh / var(--app-browser-zoom));
+}
+
+html{
+  zoom:var(--app-browser-zoom);
+  overflow-x:hidden;
+}
+
+body{
+  width:calc(100% / var(--app-browser-zoom));
+  min-width:var(--app-zoomed-viewport-width);
+  min-height:var(--app-zoomed-viewport-height);
+  overflow-x:hidden;
+}

@@ -1,0 +1,65 @@
+/* Quota page modal styles. Prefix split. */
+.adminQuotaDetailModalV4{
+  width:min(1080px,calc(100vw - 56px));
+  max-height:min(760px,calc(100vh - 56px));
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:20px;
+  background:#191919;
+  color:#f6f2e9;
+  box-shadow:0 44px 140px rgba(0,0,0,.76);
+}
+
+.adminQuotaDetailModalV4 header{
+  min-height:112px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:18px;
+  padding:24px 26px 18px;
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+
+.adminQuotaDetailModalV4 header span{
+  display:inline-flex;
+  height:28px;
+  align-items:center;
+  padding:0 10px;
+  border-radius:999px;
+  background:rgba(240,214,138,.12);
+  color:#f0d68a;
+  font-size:13px;
+  font-weight:900;
+}
+
+.adminQuotaDetailModalV4 h2{
+  margin:10px 0 8px;
+  font-size:28px;
+}
+
+.adminQuotaDetailModalV4 p{
+  margin:0;
+  color:#aaa294;
+}
+
+.adminQuotaDetailModalV4 header button{
+  width:40px;
+  height:40px;
+  border:0;
+  border-radius:12px;
+  background:rgba(255,255,255,.07);
+  color:#fff;
+  display:grid;
+  place-items:center;
+  padding:0;
+}
+
+.adminQuotaDetailModalV4 main{
+  min-height:0;
+  overflow:auto;
+  display:grid;
+  gap:10px;
+  padding:18px 22px 24px;
+}

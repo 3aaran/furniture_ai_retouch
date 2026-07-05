@@ -1,0 +1,298 @@
+/* Final fixes workbench override styles. Prefix split. */
+.topMain:has(.wbScreen),
+.topApp .wbScreen{
+  width:var(--app-zoomed-viewport-width) !important;
+  max-width:var(--app-zoomed-viewport-width) !important;
+}
+
+.topApp .wbSidePanel{
+  overflow:hidden !important;
+}
+
+.wbRecentItem.isLoading .wbRecentThumb,
+.wbRecentItem.isFailed .wbRecentThumb{
+  position:relative;
+}
+
+.wbSpin{
+  position:absolute;
+  inset:auto 8px 8px auto;
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  border:3px solid rgba(255,255,255,.35);
+  border-top-color:#f0d68a;
+  animation:wbSpin 1s linear infinite;
+}
+
+.wbRecentThumb em{
+  position:absolute;
+  inset:auto 8px 8px auto;
+  min-width:42px;
+  height:24px;
+  border-radius:999px;
+  display:grid;
+  place-items:center;
+  background:#b63838;
+  color:#fff;
+  font-style:normal;
+  font-size:12px;
+  font-weight:900;
+}
+
+.wbRecentItem.isLoading{border-color:rgba(240,214,138,.28)}
+
+.wbRecentItem.isFailed{border-color:rgba(255,90,90,.34)}
+
+.topApp .wbCenterPanel{
+  padding-left:16px !important;
+  padding-right:6px !important;
+}
+
+.topApp .wbCenterPanel > *{
+  width:100% !important;
+  max-width:none !important;
+  margin-left:0 !important;
+  margin-right:0 !important;
+}
+
+.topApp .wbCenterPanel .wbMainBlock{
+  width:100% !important;
+}
+
+.topApp .wbCenterPanel .wbMainBlock > .wbUploadBox{
+  width:100% !important;
+  min-width:0 !important;
+  height:clamp(260px,32vh,340px) !important;
+  min-height:260px !important;
+  max-height:none !important;
+  aspect-ratio:auto !important;
+  margin:0 !important;
+}
+
+.topApp .wbUploadInner{
+  box-sizing:border-box !important;
+  height:100% !important;
+  min-height:0 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:10px !important;
+  padding:28px 20px 30px !important;
+  text-align:center !important;
+}
+
+.topApp .wbUploadInner b,
+.topApp .wbUploadInner em,
+.topApp .wbUploadInner button{
+  margin:0 !important;
+}
+
+.topApp .wbUploadInner button{
+  flex:0 0 auto !important;
+  white-space:nowrap !important;
+}
+
+.topApp .wbUploadCircle{
+  flex:0 0 auto !important;
+}
+
+.wbResourcePickerMask{
+  position:fixed!important;
+  inset:0!important;
+  z-index:2147483647!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:24px!important;
+  background:rgba(0,0,0,.72)!important;
+  backdrop-filter:blur(6px)!important;
+}
+
+.wbResourcePickerMask .wbResourceModal{
+  width:min(1200px,calc(100vw - 48px))!important;
+  max-height:calc(100dvh - 48px)!important;
+  overflow:auto!important;
+}
+
+@media (max-width:720px){
+.wbResourcePickerMask{
+    padding:12px!important;
+  }
+
+.wbResourcePickerMask .wbResourceModal{
+    width:calc(100vw - 24px)!important;
+    max-height:calc(100dvh - 24px)!important;
+  }
+}
+
+.topApp .wbSectionTabs{
+  flex:0 0 auto !important;
+  display:grid !important;
+  grid-template-columns:1fr 1fr 1.28fr !important;
+  gap:8px !important;
+  margin:0 0 14px !important;
+}
+
+.topApp .wbSectionTabs button{
+  min-width:0 !important;
+  height:38px !important;
+  padding:0 10px !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  border-radius:10px !important;
+  background:#151617 !important;
+  color:#cfc7ba !important;
+  font-size:14px !important;
+  font-weight:900 !important;
+  line-height:1.1 !important;
+  white-space:normal !important;
+  cursor:pointer !important;
+}
+
+.topApp .wbSectionTabs button.active{
+  border-color:rgba(231,207,136,.72) !important;
+  background:linear-gradient(135deg,#e7cf88,#f5e1b2) !important;
+  color:#17120a !important;
+  box-shadow:0 10px 28px rgba(229,200,117,.14) !important;
+}
+
+.topApp .wbSectionTabs button.isComing{
+  border-color:rgba(126,176,150,.22) !important;
+  background:rgba(126,176,150,.08) !important;
+  color:#a9c8b7 !important;
+}
+
+.topApp .wbPromoFormCard{
+  display:grid !important;
+  gap:12px !important;
+  padding:14px !important;
+  max-height:clamp(190px,32vh,330px) !important;
+  min-height:0 !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  align-content:start !important;
+  overscroll-behavior:contain !important;
+  padding-right:10px !important;
+}
+
+.topApp .wbPromoFormCard::-webkit-scrollbar{
+  width:6px !important;
+}
+
+.topApp .wbPromoFormCard::-webkit-scrollbar-thumb{
+  background:rgba(242,213,140,.36) !important;
+  border-radius:999px !important;
+}
+
+.topApp .wbPromoFormCard::-webkit-scrollbar-track{
+  background:transparent !important;
+}
+
+.topApp .wbPromoField{
+  display:grid !important;
+  gap:8px !important;
+  min-width:0 !important;
+}
+
+.topApp .wbPromoField span{
+  color:#f2ead8 !important;
+  font-size:13px !important;
+  font-weight:900 !important;
+}
+
+.topApp .wbPromoField .wbSelect,
+.topApp .wbPromoTextarea{
+  width:100% !important;
+}
+
+.topApp .wbPromoTextarea{
+  min-height:92px !important;
+  padding:12px 13px !important;
+  border:1px solid rgba(255,255,255,.14) !important;
+  border-radius:12px !important;
+  background:#101112 !important;
+  color:#f8f1df !important;
+  resize:vertical !important;
+  outline:none !important;
+}
+
+.topApp .wbPromoTextarea:focus{
+  border-color:rgba(231,207,136,.62) !important;
+  box-shadow:0 0 0 3px rgba(231,207,136,.12) !important;
+}
+
+@media (max-width:1280px){
+.topApp .wbSectionTabs{
+    grid-template-columns:1fr 1fr !important;
+  }
+
+.topApp .wbSectionTabs button.isComing{
+    grid-column:1/-1 !important;
+  }
+}
+
+@media (max-width:720px){
+.topApp .wbSectionTabs{
+    grid-template-columns:1fr !important;
+  }
+
+.topApp .wbSectionTabs button.isComing{
+    grid-column:auto !important;
+  }
+}
+
+@media (max-width:760px){
+.topMain:has(.wbScreen),
+  .topApp .wbScreen{
+    display:grid !important;
+    grid-template-columns:1fr !important;
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    gap:12px !important;
+    overflow-x:hidden !important;
+  }
+
+.topApp .wbScreen > *,
+  .topApp .wbSidePanel,
+  .topApp .wbCenterPanel,
+  .topApp .wbRightPanel{
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+  }
+
+.topApp .wbSidePanel{
+    order:1 !important;
+    overflow:visible !important;
+  }
+
+.topApp .wbCenterPanel{
+    order:2 !important;
+    overflow:hidden !important;
+  }
+
+.topApp .wbRightPanel{
+    order:3 !important;
+    max-height:420px !important;
+    overflow-y:auto !important;
+  }
+
+.topApp .wbUploadBox,
+  .topApp .wbMainBlock > .wbUploadBox{
+    min-height:220px !important;
+  }
+
+.topApp .wbUploadInner{
+    min-height:200px !important;
+    padding:18px !important;
+  }
+
+.topApp .wbGenerateBtn{
+    width:100% !important;
+  }
+
+.topApp .wbPromoFormCard{
+    max-height:300px !important;
+  }
+}

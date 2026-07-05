@@ -1,0 +1,490 @@
+/* Workbench misc styles. Prefix split. */
+/* Workbench legacy layout migrated from legacy/workbench-fixes.css. Keep before current page styles to preserve previous cascade order. */
+
+﻿
+.topBrand b{letter-spacing:.5px}
+
+.topRight .quotaPill{min-width:128px}
+
+.topMain{padding-top:18px}
+
+.wbDivider{height:1px;background:rgba(255,255,255,.08);margin:18px -24px 18px}
+
+.wbDescRow{display:flex;align-items:flex-start;gap:12px;color:#bdb7ab;font-size:15px;line-height:1.7}
+
+.wbDescRow p{margin:0}
+
+.wbMiniIcon{display:inline-grid;place-items:center;min-width:22px;height:22px;color:#f0d68a;font-weight:900}
+
+.wbSearchRow{display:flex;gap:12px;margin:18px 0 14px}
+
+.wbSelect{min-width:114px;height:46px;border-radius:14px;border:1px solid rgba(255,255,255,.10);background:#141517;color:#f2eee5;padding:0 14px;outline:none}
+
+.wbSelect.dark{background:#101113}
+
+.wbLibraryEmpty{grid-column:1/-1;color:#7f7f7f;text-align:center;padding:10px 0}
+
+.wbConfigTitle{font-size:28px;font-weight:900;color:#fff;margin:18px 0 14px}
+
+.wbSwitch{position:relative;display:inline-flex;align-items:center}
+
+.wbSwitch input{display:none}
+
+.wbSwitch i{width:38px;height:22px;border-radius:22px;background:#5d5d5d;display:block;position:relative;transition:.2s ease}
+
+.wbSwitch i:after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s ease}
+
+.wbSwitch input:checked+i{background:#d6bc71}
+
+.wbSwitch input:checked+i:after{left:19px;background:#141414}
+
+.wbAngleGroup{display:grid;gap:10px}
+
+.wbPills{display:flex;gap:8px;flex-wrap:wrap}
+
+.wbPills button{height:34px;padding:0 14px;border-radius:10px;border:1px solid rgba(255,255,255,.10);background:#16171a;color:#e9e1d0}
+
+.wbPills button.active{background:linear-gradient(135deg,#e2cb8a,#f3ddb0);color:#17120a;border-color:#f3ddb0}
+
+.wbOnlyDesc{padding-top:2px}
+
+.wbRadioList{padding-bottom:14px}
+
+.wbRadioRow{display:flex;align-items:center;justify-content:space-between;gap:16px}
+
+.wbRadioRow input{width:22px;height:22px;accent-color:#d8be72}
+
+.wbBlockTitle{color:#f0d68a;font-size:17px;font-weight:800;margin-bottom:12px}
+
+.wbClearImageBtn{position:absolute;right:14px;top:14px;z-index:4;height:34px;min-width:58px;padding:0 12px;border-radius:999px;border:1px solid rgba(255,255,255,.22);background:rgba(10,10,10,.72);color:#fff;font-size:13px;font-weight:800;backdrop-filter:blur(8px)}
+
+.wbClearImageBtn:hover{border-color:#f0d68a;color:#17120a;background:#f0d68a}
+
+.wbClearImageBtn.small{right:8px;top:8px;height:28px;min-width:48px;padding:0 9px;font-size:12px}
+
+.wbSelectedTip{padding:10px 14px;border-radius:12px;background:rgba(240,214,138,.10);border:1px solid rgba(240,214,138,.18);color:#e9dfc8}
+
+.wbRecentSearch{height:46px;display:flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.10);background:#121315;border-radius:14px;padding:0 14px;color:#bdb6a4;margin-bottom:16px}
+
+.wbRecentSearch input{flex:1;border:0;background:transparent;color:#f7f2e6;outline:none}
+
+.wbRecentList{display:grid;gap:12px;flex:1;align-content:start;overflow:auto;padding-right:2px}
+
+.wbRecentItem{display:grid;grid-template-columns:72px 1fr 38px;gap:10px;align-items:center;border-radius:16px;border:1px solid rgba(255,255,255,.08);background:#121315;padding:10px;cursor:pointer;transition:.18s ease}
+
+.wbRecentItem:hover{border-color:rgba(240,214,138,.32);transform:translateY(-1px)}
+
+.wbRecentThumb{width:72px;height:72px;border-radius:12px;overflow:hidden;background:#fff}
+
+.wbRecentThumb img{width:100%;height:100%;object-fit:cover}
+
+.wbRecentInfo b{display:block;color:#fff;font-size:14px;margin-bottom:4px}
+
+.wbRecentInfo span,.wbRecentInfo small{display:block;color:#938d82;font-size:12px;line-height:1.5}
+
+.wbRecentItem>button{width:34px;height:34px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:#18191b;color:#f1e7cf}
+
+.wbRecentEmpty{color:#7f7f7f;text-align:center;padding:120px 0}
+
+.wbMoreBtn{margin-top:16px;height:48px;border-radius:16px;border:1px solid rgba(255,255,255,.10);background:#151618;color:#f6f1e7}
+
+@media (max-width:640px){
+.wbSearchRow{flex-direction:column}
+}
+
+.topApp .wbVideoConfigSlot{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  border:0!important;
+  background:transparent!important;
+}
+
+.topApp .wbStoryboardGrid{
+  display:grid!important;
+  grid-template-columns:repeat(auto-fill,minmax(116px,1fr))!important;
+  gap:12px!important;
+  margin-top:14px!important;
+}
+
+.topApp .wbStoryboardItem{
+  position:relative!important;
+  height:104px!important;
+  overflow:hidden!important;
+  border:1px solid rgba(255,255,255,.12)!important;
+  border-radius:14px!important;
+  background:#101112!important;
+}
+
+.topApp .wbStoryboardItem img{
+  width:100%!important;
+  height:100%!important;
+  display:block!important;
+  object-fit:cover!important;
+}
+
+.topApp .wbStoryboardItem span{
+  position:absolute!important;
+  left:8px!important;
+  top:8px!important;
+  width:24px!important;
+  height:24px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:50%!important;
+  background:rgba(0,0,0,.64)!important;
+  color:#f6df95!important;
+  font-weight:900!important;
+  font-size:12px!important;
+}
+
+.topApp .wbStoryboardItem button{
+  position:absolute!important;
+  right:8px!important;
+  top:8px!important;
+  height:24px!important;
+  padding:0 8px!important;
+  border:1px solid rgba(255,255,255,.18)!important;
+  border-radius:999px!important;
+  background:rgba(0,0,0,.64)!important;
+  color:#fff!important;
+  font-size:12px!important;
+  font-weight:900!important;
+  cursor:pointer!important;
+}
+
+:root{
+  --wb-left-ratio:33.6fr;
+  --wb-center-ratio:46.9fr;
+  --wb-right-ratio:19.5fr;
+}
+
+.topApp .wbRecentThumb{
+  aspect-ratio:16/7 !important;
+  height:auto !important;
+}
+
+.wbGhostBtn{height:42px;border-radius:12px;background:#17181a;border:1px solid rgba(255,255,255,.10);color:#efe7d7}
+
+.wbRecentItem{position:relative;overflow:visible}
+
+.topApp .wbRecentList{overflow:visible!important;max-height:none!important}
+
+.topApp .wbRecentItem{position:relative!important;overflow:visible!important;z-index:2}
+
+.topApp .wbRecentItem:hover{z-index:30}
+
+.topApp .wbDivider{
+  flex:0 0 auto !important;
+  margin:16px -28px 14px !important;
+}
+
+.topApp .wbDescRow{
+  flex:0 0 auto !important;
+  gap:10px !important;
+  margin-bottom:14px !important;
+  font-size:15px !important;
+  line-height:1.55 !important;
+}
+
+.topApp .wbDescRow svg{
+  width:18px !important;
+  height:18px !important;
+}
+
+.topApp .wbSearchRow{
+  flex:0 0 auto !important;
+  width:100% !important;
+  min-width:0 !important;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) 108px !important;
+  gap:8px !important;
+  margin:0 0 14px !important;
+  overflow:visible !important;
+  box-sizing:border-box !important;
+}
+
+.topApp .wbSearchRow .wbSelect{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:108px !important;
+  height:44px !important;
+  border-radius:13px !important;
+  padding:0 10px !important;
+  box-sizing:border-box !important;
+}
+
+.topApp .wbRecentSearch{
+  flex:0 0 auto !important;
+  margin:16px 18px 12px !important;
+  height:42px !important;
+  min-height:42px !important;
+}
+
+.topApp .wbRecentList{
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  max-height:none !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  padding:0 18px 16px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  gap:12px !important;
+  align-content:flex-start !important;
+  overscroll-behavior:contain !important;
+}
+
+.topApp .wbMoreBtn{
+  flex:0 0 auto !important;
+  margin:12px 18px 18px !important;
+  height:46px !important;
+}
+
+.topApp .wbRecentItem{
+  display:block !important;
+  position:relative !important;
+  min-height:auto !important;
+  padding:0 !important;
+  border:0 !important;
+  background:transparent !important;
+  border-radius:13px !important;
+  overflow:visible !important;
+  cursor:pointer !important;
+}
+
+.topApp .wbRecentThumb{
+  width:100% !important;
+  height:92px !important;
+  border-radius:13px !important;
+  overflow:hidden !important;
+  background:#f5f5f5 !important;
+  border:0 !important;
+}
+
+.topApp .wbRecentThumb img{
+  width:100% !important;
+  height:100% !important;
+  object-fit:cover !important;
+  display:block !important;
+}
+
+.topApp .wbRecentInfo{
+  margin-top:6px !important;
+  padding:0 2px !important;
+}
+
+.topApp .wbRecentInfo b{
+  display:inline-flex !important;
+  max-width:100% !important;
+  background:#4fc567 !important;
+  color:#fff !important;
+  font-size:12px !important;
+  line-height:1 !important;
+  border-radius:999px !important;
+  padding:5px 8px !important;
+}
+
+.topApp .wbRecentInfo span,
+.topApp .wbRecentInfo small{
+  display:none !important;
+}
+
+.topApp .wbRecentItem > button{
+  position:absolute !important;
+  right:8px !important;
+  top:8px !important;
+  width:30px !important;
+  height:30px !important;
+  border-radius:50% !important;
+  background:rgba(0,0,0,.42) !important;
+  color:#fff !important;
+  border:1px solid rgba(255,255,255,.18) !important;
+  display:grid !important;
+  place-items:center !important;
+  opacity:0 !important;
+  transition:.18s ease !important;
+}
+
+.topApp .wbRecentItem:hover > button{
+  opacity:1 !important;
+}
+
+@media (max-width:1400px){
+.topApp .wbRecentThumb{
+    height:86px !important;
+  }
+}
+
+:root{
+  --wb-nav-height:92px;
+  --wb-left-width:420px;
+  --wb-right-width:248px;
+}
+
+.topApp .wbDivider{
+  flex:0 0 auto !important;
+  margin:14px -24px 12px !important;
+}
+
+.topApp .wbDescRow{
+  flex:0 0 auto !important;
+  gap:9px !important;
+  margin-bottom:12px !important;
+  font-size:14px !important;
+  line-height:1.5 !important;
+}
+
+.topApp .wbDescRow svg{
+  width:17px !important;
+  height:17px !important;
+}
+
+.topApp .wbSearchRow{
+  flex:0 0 auto !important;
+  width:100% !important;
+  min-width:0 !important;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) 108px !important;
+  gap:8px !important;
+  margin:0 0 12px !important;
+  overflow:visible !important;
+  box-sizing:border-box !important;
+}
+
+.topApp .wbSearchRow .wbSelect{
+  width:108px !important;
+  min-width:108px !important;
+  max-width:108px !important;
+  height:42px !important;
+  border-radius:13px !important;
+  padding:0 10px !important;
+  box-sizing:border-box !important;
+}
+
+.topApp .wbRecentSearch{
+  flex:0 0 auto !important;
+  margin:14px 16px 10px !important;
+  height:40px !important;
+  min-height:40px !important;
+}
+
+.topApp .wbRecentList{
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  max-height:none !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  overscroll-behavior:contain !important;
+  padding:0 16px 14px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  gap:11px !important;
+  align-content:flex-start !important;
+}
+
+.topApp .wbMoreBtn{
+  flex:0 0 auto !important;
+  margin:10px 16px 16px !important;
+  height:44px !important;
+}
+
+.topApp .wbRecentItem{
+  display:block !important;
+  position:relative !important;
+  min-height:auto !important;
+  padding:0 !important;
+  border:0 !important;
+  background:transparent !important;
+  border-radius:13px !important;
+  overflow:visible !important;
+  cursor:pointer !important;
+}
+
+.topApp .wbRecentThumb{
+  width:100% !important;
+  height:86px !important;
+  border-radius:13px !important;
+  overflow:hidden !important;
+  background:#f5f5f5 !important;
+  border:0 !important;
+}
+
+.topApp .wbRecentThumb img{
+  width:100% !important;
+  height:100% !important;
+  object-fit:cover !important;
+  display:block !important;
+}
+
+.topApp .wbRecentInfo{
+  margin-top:5px !important;
+  padding:0 2px !important;
+}
+
+.topApp .wbRecentInfo b{
+  display:inline-flex !important;
+  max-width:100% !important;
+  background:#4fc567 !important;
+  color:#fff !important;
+  font-size:12px !important;
+  line-height:1 !important;
+  border-radius:999px !important;
+  padding:5px 8px !important;
+}
+
+.topApp .wbRecentInfo span,
+.topApp .wbRecentInfo small{
+  display:none !important;
+}
+
+.topApp .wbRecentItem > button{
+  position:absolute !important;
+  right:8px !important;
+  top:8px !important;
+  width:30px !important;
+  height:30px !important;
+  border-radius:50% !important;
+  background:rgba(0,0,0,.42) !important;
+  color:#fff !important;
+  border:1px solid rgba(255,255,255,.18) !important;
+  display:grid !important;
+  place-items:center !important;
+  opacity:0 !important;
+  transition:.18s ease !important;
+}
+
+.topApp .wbRecentItem:hover > button{
+  opacity:1 !important;
+}
+
+@media (max-width:1400px){
+:root{
+    --wb-left-width:400px;
+    --wb-right-width:236px;
+  }
+
+.topApp .wbRecentThumb{
+    height:82px !important;
+  }
+}
+
+@media (max-width:1100px){
+:root{
+    --wb-left-width:360px;
+    --wb-right-width:220px;
+  }
+}
+
+/* Current workbench page styles. */
+
+.wbSourceHead{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:12px;
+}
+
+.wbSourceHead .wbBlockTitle{
+  margin-bottom:0;
+}

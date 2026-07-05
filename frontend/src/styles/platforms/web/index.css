@@ -1,0 +1,13 @@
+/*
+ * Web platform style entry.
+ *
+ * Direction:
+ * - PC and mobile H5 share the same React pages and the same base visual system.
+ * - desktop.css is only for a few desktop-only layout rules.
+ * - mobile.css is only for a few mobile-only corrections loaded after the shared base.
+ *
+ * Mini program styles stay in ../../../../miniapp-uni and do not share Web CSS files.
+ */
+@import './base.css';
+@import './desktop.css' screen and (min-width:861px);
+@import './mobile.css' screen and (max-width:860px);

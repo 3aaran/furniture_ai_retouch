@@ -1,0 +1,87 @@
+/* Mobile app admin override styles. Prefix split. */
+@media (max-width: 860px){
+.topApp .pageHead h1,
+  .topApp .pageHero h1,
+  .topApp .adminHeroV9 h1 {
+    font-size: 24px !important;
+    line-height: 1.18 !important;
+    letter-spacing: 0 !important;
+  }
+
+.topApp .pageHero,
+  .topApp .adminHeroV9 {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    align-items: start !important;
+    min-height: 0 !important;
+    gap: 14px !important;
+    padding: 18px !important;
+    border-radius: 20px !important;
+  }
+
+.topApp .toolbar input,
+  .topApp .toolbar select,
+  .topApp .filterGroup input,
+  .topApp .filterGroup select,
+  .topApp .filterGroup button,
+  .topApp .adminSearchV9,
+  .topApp .settingsSaveBarV9 button,
+  .topApp .modalActionsV9 button,
+  .topApp .modalActions button {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+.topApp .tableWrap,
+  .topApp .merchantDetailTabPanelV9 .tableWrap {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+.topApp .modalMask,
+  .topApp .adminModalMaskV9,
+  .feedbackModalMaskV2 {
+    padding: 10px !important;
+    align-items: end !important;
+    place-items: end stretch !important;
+  }
+
+.topApp .modalCard,
+  .topApp .adminReviewModalV9,
+  .topApp .wmModal,
+  .feedbackModalCardV2 {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: calc(100svh - 20px) !important;
+    border-radius: 22px 22px 0 0 !important;
+    overflow: auto !important;
+  }
+}
+
+@media (max-width: 860px){
+.topApp .adminLogPage,
+  .topApp .adminLogPage .panel {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+.topApp .adminLogPage .pageHero {
+    min-height: auto !important;
+    padding: 18px 2px 12px !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+.topApp .adminLogPage .pageHero h1,
+  .topApp .pageHead h1 {
+    font-size: 26px !important;
+    line-height: 1.2 !important;
+  }
+}

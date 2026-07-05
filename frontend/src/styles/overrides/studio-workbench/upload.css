@@ -1,0 +1,8 @@
+/* Studio workbench override upload styles. Prefix split. */
+.wbFeaturePopoverBackdrop{
+  position:fixed;
+  inset:0;
+  z-index:2147482500;
+  border:0;
+  background:transparent;
+}

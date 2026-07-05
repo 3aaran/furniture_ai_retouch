@@ -1,0 +1,51 @@
+/* Quota page misc styles. Prefix split. */
+.quotaSearchV2{
+  width:min(420px,100%);
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:0 16px;
+}
+
+.quotaSearchV2 input{
+  flex:1;
+  min-width:0;
+  border:0;
+  outline:0;
+  background:transparent;
+  color:#fff;
+}
+
+.quotaTypeBadgeV2{
+  display:inline-flex;
+  align-items:center;
+  height:30px;
+  padding:0 12px;
+  border-radius:8px;
+  font-size:13px;
+  font-weight:900;
+}
+
+.quotaTypeBadgeV2.plus{
+  background:rgba(75,205,103,.16);
+  color:#61df77;
+}
+
+.quotaTypeBadgeV2.minus{
+  background:#f2a10c;
+  color:#151515;
+}
+
+.quotaNumPlusV2,
+.quotaNumMinusV2{
+  font-size:20px;
+  font-weight:1000;
+}
+
+.quotaNumPlusV2{
+  color:#54d368;
+}
+
+.quotaNumMinusV2{
+  color:#ff514d;
+}

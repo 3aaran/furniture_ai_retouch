@@ -1,0 +1,74 @@
+/* Final fixes app update notice. */
+.appUpdateNotice{
+  position:fixed;
+  right:24px;
+  bottom:24px;
+  z-index:2147483000;
+  width:min(360px,calc(100vw - 32px));
+  padding:18px;
+  border:1px solid rgba(231,207,136,.38);
+  border-radius:16px;
+  background:rgba(14,15,16,.96);
+  color:#f8f1df;
+  box-shadow:0 22px 70px rgba(0,0,0,.42);
+  backdrop-filter:blur(18px);
+  font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif;
+}
+
+.appUpdateNotice strong{
+  display:block;
+  margin:0 34px 8px 0;
+  color:#f7d782;
+  font-size:18px;
+  font-weight:950;
+}
+
+.appUpdateNotice span{
+  display:block;
+  color:#fff;
+  font-size:14px;
+  font-weight:800;
+}
+
+.appUpdateNotice p{
+  margin:10px 0 14px;
+  color:rgba(248,241,223,.72);
+  font-size:13px;
+  line-height:1.65;
+}
+
+.appUpdateNotice a{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:42px;
+  padding:0 16px;
+  border-radius:12px;
+  background:linear-gradient(135deg,#f3d98d,#d4a94a);
+  color:#15110a;
+  text-decoration:none;
+  font-weight:950;
+}
+
+.appUpdateClose{
+  position:absolute;
+  top:12px;
+  right:12px;
+  display:grid;
+  place-items:center;
+  width:30px;
+  height:30px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:10px;
+  background:rgba(255,255,255,.05);
+  color:#f8f1df;
+  cursor:pointer;
+}
+
+@media (max-width:720px){
+.appUpdateNotice{
+    right:12px;
+    bottom:12px;
+  }
+}

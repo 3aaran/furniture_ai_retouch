@@ -1,5 +1,8 @@
-/* Temporary override layer. Keep imports explicit so each file can be retired independently. */
-@import './final-fixes.css';
-@import './mobile-app.css';
-@import './studio-workbench.css';
-@import './stitch-premium-layout.css';
+/*
+ * Legacy override compatibility entry.
+ * Prefer importing platform-specific override groups from styles/platforms/web/*.css.
+ * This file intentionally excludes mobile-app.css so mobile-only fixes do not leak into PC styles.
+ */
+@import './final-fixes/index.css';
+@import './studio-workbench/index.css';
+@import './stitch-premium-layout/index.css';

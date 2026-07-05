@@ -1,0 +1,138 @@
+/* Users page toolbar styles. Prefix split. */
+.storeUserToolbarV2{
+  min-height:98px;
+  padding:20px;
+  border-radius:16px;
+  background:#1b1b1b;
+  border:1px solid rgba(255,255,255,.06);
+  display:grid;
+  grid-template-columns:310px 170px 170px 1fr 190px 160px;
+  gap:12px;
+  align-items:center;
+}
+
+.storeUserSearchV2,
+.storeUserToolbarV2 select{
+  height:50px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.14);
+  background:#171819;
+  color:#f2eee5;
+  outline:none;
+}
+
+.storeUserSearchV2{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:0 16px;
+}
+
+.storeUserSearchV2 svg{
+  color:#aaa;
+}
+
+.storeUserSearchV2 input{
+  flex:1;
+  min-width:0;
+  border:0;
+  outline:0;
+  background:transparent;
+  color:#fff;
+  font-size:15px;
+}
+
+.storeUserToolbarV2 select{
+  padding:0 14px;
+}
+
+.storeTrialBtnV2,
+.storeCreateBtnV2{
+  height:50px;
+  border-radius:10px;
+  border:0;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.storeCreateBtnV2{
+  background:linear-gradient(135deg,#e2c576,#f6dfaa);
+  color:#141414;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+}
+
+.storeUserCreatedV2{
+  padding:14px 18px;
+  border-radius:14px;
+  background:rgba(60,205,95,.10);
+  border:1px solid rgba(60,205,95,.24);
+  color:#dfffe5;
+  display:flex;
+  flex-wrap:wrap;
+  gap:16px;
+}
+
+.storeUserActionsV2{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:12px;
+}
+
+.storeUserActionsV2 button{
+  width:34px;
+  height:34px;
+  border:0;
+  border-radius:9px;
+  background:transparent;
+  color:#f0d68a;
+  cursor:pointer;
+  display:grid;
+  place-items:center;
+  font-weight:900;
+  font-size:17px;
+}
+
+.storeUserActionsV2 button:nth-child(2){
+  color:#25b7ff;
+}
+
+.storeUserActionsV2 button.danger{
+  color:#ff5e57;
+}
+
+@media (max-width:1180px){
+.storeUserToolbarV2{
+    grid-template-columns:1fr 1fr;
+  }
+
+.storeUserToolbarSpacerV2{
+    display:none;
+  }
+}
+
+.storeUserActionsV2{gap:8px}
+
+.storeUserActionsV2 button svg{width:17px;height:17px}
+
+.storeUserActionsV2{
+  min-width:170px;
+  white-space:nowrap;
+  flex-wrap:nowrap;
+}
+
+.storeNoActionV2{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  height:30px;
+  padding:0 10px;
+  border-radius:9px;
+  background:rgba(255,255,255,.07);
+  color:#aaa;
+  font-size:13px;
+  font-weight:800;
+}

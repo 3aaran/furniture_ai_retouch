@@ -1,0 +1,149 @@
+/* Resource library misc styles. Prefix split. */
+.resourceDropV3{
+  position:relative;
+  min-height:310px;
+  border:1px dashed rgba(255,255,255,.18);
+  border-radius:14px;
+  background:#18191a;
+  display:grid;
+  place-items:center;
+  text-align:center;
+  padding:26px;
+  color:#e9dfc8;
+  cursor:pointer;
+}
+
+.resourceDropV3.dragging{
+  border-color:#f0d68a;
+  background:rgba(240,214,138,.08);
+}
+
+.resourceDropV3 input{
+  display:none;
+}
+
+.resourceDropV3 img{
+  width:100%;
+  max-height:360px;
+  object-fit:contain;
+  border-radius:12px;
+  background:#fff;
+}
+
+.resourceDropV3 b{
+  font-size:22px;
+  margin-top:12px;
+}
+
+.resourceDropV3 span{
+  color:#aaa;
+  margin-top:8px;
+}
+
+.resourceDropV3 em{
+  margin-top:18px;
+  min-width:120px;
+  height:48px;
+  border-radius:12px;
+  display:inline-grid;
+  place-items:center;
+  background:linear-gradient(135deg,#e2cb8a,#f3ddb0);
+  color:#111;
+  font-style:normal;
+  font-weight:900;
+}
+
+.resourceBatchBarV8{
+  min-height:40px;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:10px;
+  margin-left:auto;
+}
+
+.resourceBatchBarV8 b{
+  color:#fff2cf;
+  font-size:14px;
+  white-space:nowrap;
+}
+
+.resourceBatchBarV8 button{
+  height:36px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:8px;
+  background:#252629;
+  color:#f4ead2;
+  font-weight:900;
+  padding:0 15px;
+  cursor:pointer;
+}
+
+.resourceBatchBarV8 button:first-of-type{
+  border-color:#e2cb8a;
+  background:#e2cb8a;
+  color:#111;
+}
+
+.resourceBatchBarV8 button.danger{
+  border-color:rgba(255,91,91,.65);
+  background:#332020;
+  color:#ff8b8b;
+}
+
+.resourceBatchBarV8 button.ghost{
+  background:transparent;
+}
+
+@keyframes resourceDrawerSlideV7{
+  from{
+    opacity:0;
+    transform:translateX(28px);
+  }
+  to{
+    opacity:1;
+    transform:translateX(0);
+  }
+}
+
+/* Resource page shell repair: keep the left navigation visible after removing obsolete toolbar overrides. */
+
+@media (min-width:861px){
+.topApp .resourceSpaceTabsV3{
+    grid-area:side!important;
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    width:auto!important;
+    min-width:0!important;
+    height:100%!important;
+    min-height:0!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    padding:0 8px 24px 0!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    color:#e5e1e3!important;
+  }
+
+.topApp .resourceSideCollapseV10,
+  .topApp .resourceSideBlockV10 button,
+  .topApp .resourceSideUploadV10,
+  .topApp .resourceSideCreateV10,
+  .topApp .resourceSideManageV10{
+    color:#e5e1e3!important;
+  }
+
+.topApp .resourceSideBlockV10 h3,
+  .topApp .resourceSidePurposeTitleV10{
+    color:rgba(255,243,218,.58)!important;
+  }
+
+.topApp .resourceSideBlockV10 button:hover,
+  .topApp .resourceSideBlockV10 button.active{
+    background:rgba(240,214,138,.1)!important;
+    color:#fff3da!important;
+  }
+}

@@ -1,0 +1,37 @@
+/* Quota page layout styles. Prefix split. */
+.quotaPageV2{
+  width:min(1480px,calc(100vw - 96px));
+  margin:0 auto;
+  display:grid;
+  gap:30px;
+  color:#f6f6f6;
+}
+
+.quotaPanelV2{
+  border-top:1px solid rgba(255,255,255,.08);
+}
+
+.quotaToolbarV2{
+  padding:18px 0;
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+.quotaSearchV2,
+.quotaToolbarV2 select{
+  height:48px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.12);
+  background:#111214;
+  color:#f2eee5;
+}
+
+.quotaToolbarV2 select{
+  min-width:180px;
+  padding:0 14px;
+}
+
+@media (max-width:900px){
+.quotaPageV2{width:calc(100vw - 36px)}
+}

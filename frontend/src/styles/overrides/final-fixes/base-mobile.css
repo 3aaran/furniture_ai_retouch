@@ -1,0 +1,22 @@
+/* Final fixes mobile viewport reset. */
+@media (max-width:760px){
+:root{
+    --app-browser-zoom:1;
+    --app-zoomed-viewport-width:100vw;
+    --app-zoomed-viewport-height:100svh;
+  }
+
+html{
+    zoom:1;
+    overflow-x:hidden;
+  }
+
+body{
+    width:100%;
+    min-width:0;
+    min-height:100svh;
+    overflow-x:hidden;
+  }
+}
+
+/* Keep desktop navigation in one row until the real mobile breakpoint. */

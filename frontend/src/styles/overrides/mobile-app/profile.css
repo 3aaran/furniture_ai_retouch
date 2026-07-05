@@ -1,0 +1,111 @@
+/* Mobile app profile override styles. Prefix split. */
+@media (max-width: 860px){
+.topApp .profileMenu {
+    position: fixed !important;
+    top: 60px !important;
+    right: 10px !important;
+    width: min(270px, calc(100vw - 20px)) !important;
+    padding: 10px !important;
+    border-radius: 18px !important;
+    z-index: 120 !important;
+  }
+
+.topApp .profileMenu button {
+    min-height: 46px !important;
+    padding: 0 12px !important;
+    font-size: 15px !important;
+  }
+}
+
+@media (max-width: 860px){
+.topApp .profileMenu {
+    position: fixed !important;
+    top: 62px !important;
+    right: 10px !important;
+    left: auto !important;
+    z-index: 220 !important;
+  }
+}
+
+@media (max-width: 860px){
+.topApp .profilePageV3 {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    gap: 14px !important;
+    overflow: visible !important;
+  }
+
+.topApp .profileHeroV3 {
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: minmax(0,1fr) !important;
+    gap: 18px !important;
+    padding: 18px !important;
+    border-radius: 20px !important;
+  }
+
+.topApp .profileAvatarV3 {
+    width: 94px !important;
+    height: 94px !important;
+    border-radius: 26px !important;
+    font-size: 36px !important;
+  }
+
+.topApp .profileHeroTextV3 h2 {
+    font-size: 28px !important;
+    line-height: 1.15 !important;
+    word-break: break-all !important;
+  }
+
+.topApp .profileHeroMetaV3,
+  .topApp .profileGridV3,
+  .topApp .storageSummaryV3 {
+    display: grid !important;
+    grid-template-columns: minmax(0,1fr) !important;
+    gap: 12px !important;
+  }
+
+.topApp .profileHeroMetaV3 div {
+    min-width: 0 !important;
+  }
+
+.topApp .profileCardV3,
+  .topApp .profileStoragePanelV3 {
+    padding: 18px !important;
+    border-radius: 20px !important;
+    overflow: visible !important;
+  }
+
+.topApp .profileCardV3 input,
+  .topApp .profileCardV3 button {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+.topApp .profileCardV3 .profileForgotBtnV3 {
+    width: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: 34px !important;
+    padding: 0 10px !important;
+    margin: 0 !important;
+    flex: 0 0 auto !important;
+    font-size: 14px !important;
+    border-radius: 10px !important;
+  }
+
+.profileResetModalV3 .profileCodeRowV3 {
+    gap: 8px !important;
+  }
+
+.profileResetModalV3 .profileCodeRowV3 button {
+    flex: 0 0 112px !important;
+    width: 112px !important;
+    min-width: 112px !important;
+    height: 48px !important;
+    padding: 0 10px !important;
+    border-radius: 12px !important;
+    font-size: 16px !important;
+  }
+}

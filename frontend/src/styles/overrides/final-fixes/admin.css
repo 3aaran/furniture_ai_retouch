@@ -1,0 +1,169 @@
+/* Final fixes admin override styles. Prefix split. */
+.announcementToolbarV9{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:18px;
+  flex-wrap:nowrap;
+  overflow-x:auto;
+}
+
+.announcementToolbarV9 .filterGroup{
+  flex:1 1 auto;
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  min-width:0;
+}
+
+.announcementToolbarV9 .filterGroup input,
+.announcementToolbarV9 .filterGroup select{
+  min-width:0!important;
+  width:180px;
+  flex:0 1 180px;
+}
+
+.announcementToolbarV9 .filterGroup button{
+  flex:0 0 auto;
+}
+
+.announcementToolbarV9>button{
+  flex:0 0 auto;
+  height:42px;
+}
+
+.announcementCreateModalV9{
+  width:min(680px,92vw);
+  max-height:86vh;
+  overflow:auto;
+  background:#1b1b1b;
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:22px;
+  padding:26px;
+  color:#fff;
+  position:relative;
+}
+
+.announcementFormV9{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  margin-top:18px;
+}
+
+.announcementFormV9 label{
+  display:grid;
+  gap:8px;
+  color:#d9cfb9;
+  font-weight:900;
+}
+
+.announcementFormV9 label.full{
+  grid-column:1/-1;
+}
+
+.announcementFormV9 input,
+.announcementFormV9 select,
+.announcementFormV9 textarea{
+  width:100%;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:12px;
+  background:#111214;
+  color:#fff;
+  padding:0 13px;
+}
+
+.announcementFormV9 input,
+.announcementFormV9 select{
+  height:44px;
+}
+
+.announcementFormV9 textarea{
+  min-height:180px;
+  padding-top:12px;
+  resize:vertical;
+}
+
+.landingHeroStage,
+.landingFlowStage,
+.landingWorkflowPreview,
+.landingDemoPanel{
+  contain:layout paint;
+}
+
+.landingWorkflowImage{
+  height:calc(var(--workflow-frame-count,4) * 100%)!important;
+  transform:translate3d(0,0,0);
+}
+
+.workflowFrame{
+  position:relative;
+  height:calc(100% / var(--workflow-frame-count,4))!important;
+  overflow:hidden;
+  background:linear-gradient(135deg,#151719,#0b0c0d);
+}
+
+.workflowFrame img{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  opacity:.82;
+}
+
+.workflowFrame:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,rgba(4,5,6,.12),rgba(4,5,6,.58));
+  pointer-events:none;
+}
+
+.workflowFrameText{
+  position:relative;
+  z-index:2;
+  display:grid;
+  justify-items:center;
+  gap:10px;
+  padding:26px;
+  text-shadow:0 4px 18px rgba(0,0,0,.48);
+}
+
+.landingHeroStage,
+.landingStageSvg,
+.landingFloatCard,
+.landingWorkflowImage,
+.landingFlowDot,
+.landingButtonShine,
+.landingPanelShine{
+  will-change:transform,opacity;
+}
+
+@media (max-width:900px),(pointer:coarse){
+.landingFlowStage,
+  .landingWorkflowPreview,
+  .landingFeatureCard,
+  .landingScenePanel,
+  .landingMiniScene,
+  .landingPlanCard{
+    box-shadow:0 14px 36px rgba(0,0,0,.22);
+  }
+}
+
+@media (max-width:760px){
+.topApp .tableWrap,
+  .topApp .merchantDetailTabPanelV9 .tableWrap{
+    overflow-x:auto !important;
+  }
+}
+
+@media (min-width:861px){
+.topApp .topMain:has(.workflowAdminSurface){
+    width:100% !important;
+    max-width:none !important;
+    margin:0 !important;
+    padding:78px 0 0 !important;
+  }
+}

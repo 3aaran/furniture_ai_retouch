@@ -1,0 +1,121 @@
+/* Resource page desktop layout shell.
+   This file owns the current V10 resource library structure:
+   left navigation + right content with signal bar above the grid. */
+
+@media (min-width:861px){
+  .topMain:has(> .resourcePageV3){
+    height:calc(var(--app-zoomed-viewport-height,100vh) - 0px) !important;
+    min-height:0 !important;
+    max-width:none !important;
+    overflow:hidden !important;
+    padding:96px clamp(28px,3.6vw,52px) 28px !important;
+    box-sizing:border-box !important;
+  }
+
+  .topMain:has(> .resourcePageV3) > .pageHead{
+    display:none !important;
+  }
+
+  .topMain:has(> .resourcePageV3) > .resourcePageV3{
+    width:min(1280px,100%) !important;
+    height:100% !important;
+    margin:0 auto !important;
+  }
+
+  .topApp .resourcePageV3{
+    display:grid !important;
+    grid-template-columns:260px minmax(0,1fr) !important;
+    grid-template-rows:minmax(0,1fr) !important;
+    grid-template-areas:"side main" !important;
+    gap:18px 42px !important;
+    min-width:0 !important;
+    min-height:0 !important;
+    align-items:stretch !important;
+  }
+
+  .topApp .resourcePageV3.resourcePageCollapsedV10{
+    grid-template-columns:64px minmax(0,1fr) !important;
+    gap:18px 28px !important;
+  }
+
+  .topApp .resourceSpaceTabsV3{
+    grid-area:side !important;
+    display:block !important;
+    visibility:visible !important;
+    opacity:1 !important;
+    width:auto !important;
+    min-width:0 !important;
+    max-width:none !important;
+    height:100% !important;
+    min-height:0 !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    padding:0 8px 24px 0 !important;
+    border:0 !important;
+    border-radius:0 !important;
+    background:transparent !important;
+    box-shadow:none !important;
+    color:#e5e1e3 !important;
+  }
+
+  .topApp .resourceInlineLayoutV6{
+    grid-area:main !important;
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) !important;
+    grid-template-rows:auto minmax(0,1fr) !important;
+    gap:16px !important;
+    width:100% !important;
+    min-width:0 !important;
+    max-width:none !important;
+    height:100% !important;
+    min-height:0 !important;
+    overflow:hidden !important;
+    align-self:stretch !important;
+    justify-self:stretch !important;
+  }
+
+  .topApp .resourceInlineLayoutV6 > .furnitureAssetSignal{
+    grid-row:1 !important;
+    grid-column:1 !important;
+    display:flex !important;
+    flex-direction:row !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+    width:100% !important;
+    min-width:0 !important;
+    max-width:none !important;
+    margin:0 !important;
+    writing-mode:horizontal-tb !important;
+    white-space:normal !important;
+  }
+
+  .topApp .resourceInlineLayoutV6 > .furnitureAssetSignal .furnitureSignalMain,
+  .topApp .resourceInlineLayoutV6 > .furnitureAssetSignal .rbRevealText,
+  .topApp .resourceInlineLayoutV6 > .furnitureAssetSignal .rbDataPulseStrip{
+    writing-mode:horizontal-tb !important;
+    white-space:nowrap !important;
+  }
+
+  .topApp .resourceInlineLayoutV6 > .resourceGridPanelV3{
+    grid-row:2 !important;
+    grid-column:1 !important;
+    width:100% !important;
+    min-width:0 !important;
+    height:100% !important;
+    min-height:0 !important;
+    overflow:hidden !important;
+  }
+
+  .topApp .resourceGridV3{
+    height:100% !important;
+    min-height:0 !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    padding:0 8px 18px 0 !important;
+    display:grid !important;
+    grid-template-columns:repeat(var(--resource-cols,3),minmax(0,1fr)) !important;
+    grid-auto-rows:max-content !important;
+    gap:18px !important;
+    align-content:start !important;
+  }
+}

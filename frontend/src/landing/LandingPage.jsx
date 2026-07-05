@@ -2,7 +2,7 @@
 import React,{useCallback,useEffect,useRef,useState}from'react';
 import{ArrowRight}from'lucide-react';
 import{BrandMark,PwaInstallButton}from'../shared/ui/index.jsx';
-import{DemoPanel,featureCards,heroImages,sceneCards,workflowImages,workflowLoopImages,workflowSteps}from'./LandingContent.jsx';
+import{DemoPanel,featureCards,heroImages,heroSignals,heroStats,sceneCards,stageTasks,workflowLoopImages,workflowSteps}from'./LandingContent.jsx';
 import{useLandingAnimations}from'./useLandingAnimations.js';
 
 export default function LandingPage({me}){
@@ -41,6 +41,7 @@ export default function LandingPage({me}){
   },[workflowIndex]);
 
   return <div className="landingPage" ref={rootRef}>
+    <div className="rbAuroraLayer landingAurora" aria-hidden="true"><span className="orb one"/><span className="orb two"/><span className="orb three"/></div>
     <header className="landingNav">
       <a className="landingBrand" href="#/home" aria-label="返回勋港首页">
         <BrandMark className="landingBrandMark"/>
@@ -63,16 +64,17 @@ export default function LandingPage({me}){
       <section className="landingHero landingHeroArea">
         <div className="landingHeroContent">
           <div className="landingEyebrow landingReveal">为家具门店打造的 AI 修图工作台</div>
-          <h1 className="landingHeroTitle">家具商品图        交给 AI 精修</h1>
-          <p className="landingHeroCopy landingReveal">上传原图，选择功能，快速得到干净、清晰、适合展示的家具商品图。让勋港帮您把门店每天重复的修图工作，变成稳定、可管理、可复用的视觉生产流程。</p>
+          <h1 className="landingHeroTitle"><span>家具商品图</span><span>交给 AI 精修</span></h1>
+          <p className="landingHeroCopy landingReveal">上传原图，选择功能，快速得到干净、清晰、适合展示的家具商品图。让勋港把门店每天重复的修图工作，变成稳定、可管理、可复用的视觉生产流程。</p>
           <div className="landingHeroActions landingReveal">
             <a className="landingGoldBtn" href={enterHref}><span className="landingButtonShine"/>立即使用<ArrowRight size={18}/></a>
             <button className="landingGhostBtn" type="button" onClick={()=>scrollToSection('landingAbility')}>查看能力</button>
           </div>
+          <div className="landingSignalStrip rbDataPulseStrip landingReveal" aria-label="首页核心能力标签">
+            {heroSignals.map((item,index)=><span key={item} style={{'--rb-i':index}}>{item}</span>)}
+          </div>
           <div className="landingMetaGrid">
-            <div className="landingMetaCard landingReveal"><b>AI生图</b><span>核心修图能力</span></div>
-            <div className="landingMetaCard landingReveal"><b>4K</b><span>高清成图规格</span></div>
-            <div className="landingMetaCard landingReveal"><b>门店</b><span>多人协作管理</span></div>
+            {heroStats.map(([value,label])=><div className="landingMetaCard rbSpotlightCard landingReveal" key={label}><b>{value}</b><span>{label}</span></div>)}
           </div>
         </div>
 
@@ -96,10 +98,16 @@ export default function LandingPage({me}){
               {[['136','142'],['270','84'],['602','118'],['706','300'],['456','420'],['214','364'],['520','214'],['358','288']].map(([cx,cy],i)=><circle key={i} cx={cx} cy={cy} r={i%2?1.8:2.2}/>)}
             </g>
           </svg>
-          <div className="landingStageTop"><span className="landingStageBadge">AI 工作流</span><span className="landingStageBadge success">实时生成演示</span></div>
-          <div className="landingFloatCard a"><small>上传原图</small><b>识别家具主体</b></div>
-          <div className="landingFloatCard b"><small>智能处理</small><b>风格与材质重构</b></div>
-          <div className="landingFloatCard c"><small>资产沉淀</small><b>门店图库复用</b></div>
+          <div className="landingStageTop"><span className="landingStageBadge">AI 工作流</span><span className="landingStageBadge success">轻量动态演示</span></div>
+          <div className="landingStageConsole rbSpotlightCard" aria-label="AI 修图任务状态">
+            <div className="landingConsoleHead"><span>Visual Pipeline</span><b>RUNNING</b></div>
+            <div className="landingConsoleRows">
+              {stageTasks.map(([title,text],index)=><div className="landingConsoleRow" key={title} style={{'--row-index':index}}><i/><div><b>{title}</b><small>{text}</small></div></div>)}
+            </div>
+          </div>
+          <div className="landingFloatCard a rbSpotlightCard"><small>上传原图</small><b>识别家具主体</b></div>
+          <div className="landingFloatCard b rbSpotlightCard"><small>智能处理</small><b>风格与材质重构</b></div>
+          <div className="landingFloatCard c rbSpotlightCard"><small>资产沉淀</small><b>门店图库复用</b></div>
           <div className="landingStageGallery">
             <DemoPanel kind="source" label="产品原图" imgSrc={heroImages.source}/>
             <DemoPanel kind="result" label="生成结果" imgSrc={heroImages.result}/>
@@ -113,7 +121,7 @@ export default function LandingPage({me}){
           {/* <p className="landingReveal">首页展示给客户看的不是技术参数，而是门店能直接感知的结果：图更干净、主体更清晰、SKU 展示更快、团队管理更有序。</p> */}
         </div>
         <div className="landingFeatureGrid">
-          {featureCards.map(([num,title,text,Icon])=><article className="landingFeatureCard" key={title}>
+          {featureCards.map(([num,title,text,Icon])=><article className="landingFeatureCard rbSpotlightCard" key={title}>
             <span>{num}</span><i><Icon size={24}/></i><h3>{title}</h3><p>{text}</p>
           </article>)}
         </div>

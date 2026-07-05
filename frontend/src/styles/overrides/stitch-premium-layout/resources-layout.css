@@ -1,0 +1,3 @@
+/* Compatibility entry. Use resources-layout-1.css and resources-layout-2.css for new edits. */
+@import './resources-layout-1.css';
+@import './resources-layout-2.css';

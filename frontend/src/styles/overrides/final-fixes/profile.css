@@ -1,0 +1,10 @@
+/* Final fixes profile override styles. Prefix split. */
+@media (max-width:760px){
+.topApp .profileMenu{
+    position:fixed !important;
+    top:64px !important;
+    right:12px !important;
+    width:min(260px,calc(100vw - 24px)) !important;
+    z-index:2147483000 !important;
+  }
+}

@@ -1,0 +1,39 @@
+/* Mobile app misc override styles. Prefix split. */
+@media (max-width: 860px){
+:root {
+    --app-browser-zoom: 1;
+    --app-zoomed-viewport-width: 100vw;
+    --app-zoomed-viewport-height: 100svh;
+  }
+
+.noticeCenterBodyV2,
+  .wmBody {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* 2026-06 mobile stabilization patch: keep PC layout unchanged, fix phone layout only. */
+
+@media (max-width: 860px){
+/* Desktop navigation is not suitable for phone. Use the dedicated 4-item bottom nav. */
+
+/* Workbench: transform the PC three-column layout into one vertical phone flow. */
+}
+
+/* 2026-06-06 mobile repair v2
+   Scope: phone only. Overrides the PC fixed workbench shell and turns all four mobile tabs
+   into normal vertical document flows so the browser can scroll the whole page. */
+
+@media (max-width: 860px){
+/* Shared mobile width reset. */
+
+/* Workbench: undo desktop fixed full-screen grid with higher specificity. */
+
+/* History: make task cards a true phone list and let the page scroll. */
+
+/* Resources: no horizontal filters, no internal fixed-height clipping. */
+
+/* Profile: card stack, no 100vw overflow inside padded topMain. */
+
+/* Prevent any page from hiding content behind the 4-item mobile nav. */
+}

@@ -1,0 +1,158 @@
+/* Users page modal styles. Prefix split. */
+.storeUserModalMaskV2{
+  position:fixed;
+  inset:0;
+  z-index:2147483000;
+  background:rgba(0,0,0,.72);
+  display:grid;
+  place-items:center;
+  padding:32px;
+}
+
+.storeUserModalV2{
+  width:min(680px,92vw);
+  background:#1b1b1b;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:0 40px 120px rgba(0,0,0,.68);
+}
+
+.storeUserModalHeadV2{
+  height:74px;
+  padding:0 26px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+
+.storeUserModalHeadV2 h2{
+  margin:0;
+  font-size:24px;
+}
+
+.storeUserModalHeadV2 button{
+  width:42px;
+  height:42px;
+  border:0;
+  background:transparent;
+  color:#fff;
+  font-size:28px;
+  cursor:pointer;
+}
+
+.storeUserModalBodyV2{
+  padding:24px 26px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+
+.storeUserModalBodyV2 label{
+  display:grid;
+  gap:8px;
+  color:#cfc7b8;
+}
+
+.storeUserModalBodyV2 label:nth-child(5),
+.storeUserModalTipV2{
+  grid-column:1/-1;
+}
+
+.storeUserModalBodyV2 input,
+.storeUserModalBodyV2 select{
+  height:46px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.14);
+  background:#111214;
+  color:#fff;
+  padding:0 14px;
+  outline:0;
+}
+
+.storeUserModalTipV2{
+  padding:14px;
+  border-radius:12px;
+  background:rgba(240,214,138,.08);
+  border:1px solid rgba(240,214,138,.18);
+  color:#e8dcb7;
+}
+
+.storeUserModalFootV2{
+  height:74px;
+  padding:0 26px;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:14px;
+  border-top:1px solid rgba(255,255,255,.10);
+}
+
+.storeUserModalFootV2 button{
+  min-width:116px;
+  height:46px;
+  border-radius:12px;
+  font-weight:900;
+}
+
+.storeUserModalFootV2 button:first-child{
+  background:transparent;
+  color:#e9dfc8;
+  border:1px solid rgba(255,255,255,.14);
+}
+
+@media (max-width:760px){
+.storeUserModalBodyV2{
+    grid-template-columns:1fr;
+  }
+}
+
+.storeUserModalV2.small{width:min(520px,92vw)}
+
+.storeUserModalBodyV2.single{grid-template-columns:1fr}
+
+.storeUserModalBodyV2.single .storeUserModalTipV2{grid-column:1/-1}
+
+.trialTicketMaskV2{
+  position:fixed;
+  inset:0;
+  z-index:2147483600;
+  background:rgba(0,0,0,.78);
+  display:grid;
+  place-items:center;
+  padding:32px;
+}
+
+.trialTicketCardV2{
+  position:relative;
+  width:min(720px,92vw);
+  border-radius:28px;
+  background:#1d1d1d;
+  color:#fff;
+  padding:34px 30px 30px;
+  box-shadow:0 40px 130px rgba(0,0,0,.72);
+  text-align:center;
+}
+
+.trialTicketCloseV2{
+  position:absolute;
+  right:22px;
+  top:18px;
+  border:0;
+  background:transparent;
+  color:#fff;
+  font-size:30px;
+  cursor:pointer;
+}
+
+.trialTicketCardV2 h2{
+  margin:0 0 12px;
+  font-size:28px;
+}
+
+.trialTicketCardV2 p{
+  margin:0 auto 24px;
+  color:#c8c8c8;
+  line-height:1.7;
+}

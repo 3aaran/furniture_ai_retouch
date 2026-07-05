@@ -23,6 +23,20 @@ export const sceneCards=[
   ['门店推广','为活动、套餐和邀请转化准备视觉内容。']
 ];
 
+export const heroSignals=['背景净化','材质替换','场景融合','摄影增强'];
+
+export const heroStats=[
+  ['4K','高清成图规格'],
+  ['门店','多人协作管理'],
+  ['资源库','素材沉淀复用']
+];
+
+export const stageTasks=[
+  ['原图检测','主体、边缘、背景噪点'],
+  ['AI 精修','光影、材质、空间一致性'],
+  ['结果归档','任务、资源、额度记录']
+];
+
 export const heroImages={
   source:'/landing/hero/original.webp',
   result:'/landing/hero/result.webp'

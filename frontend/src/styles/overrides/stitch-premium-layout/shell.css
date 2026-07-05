@@ -1,0 +1,137 @@
+/* Stitch premium layout shell override styles. Prefix split. */
+@media (min-width:861px){
+.topApp .storageSummaryV3{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:10px!important;
+  }
+
+.topApp .storageSummaryV3 > div{
+    border:1px solid var(--stitch-line-soft)!important;
+    border-radius:14px!important;
+    background:rgba(255,255,255,.035)!important;
+  }
+
+.topApp .storageBarV3{
+    background:rgba(255,255,255,.08)!important;
+  }
+
+.topApp .storageBarV3 i{
+    background:linear-gradient(90deg,var(--stitch-gold-deep),var(--stitch-gold-2))!important;
+  }
+
+.topApp .promotionInvitePanelV2{
+    overflow:hidden!important;
+    padding:24px!important;
+    border-color:rgba(240,214,138,.16)!important;
+    background:
+      radial-gradient(circle at 88% 12%,rgba(240,214,138,.16),transparent 25rem),
+      linear-gradient(180deg,rgba(32,31,33,.92),rgba(17,17,17,.96))!important;
+  }
+
+.topApp .promotionInviteHeadV2 h2{
+    color:#fff3da!important;
+    font-size:clamp(24px,3vw,34px)!important;
+    letter-spacing:-.035em!important;
+  }
+
+.topApp .promotionMetricsV2{
+    display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:14px!important;
+  }
+
+.topApp .promotionInvitePanelV2 .metric,
+  .topApp .promotionLinkMetricV2{
+    border:1px solid var(--stitch-line)!important;
+    border-radius:var(--stitch-radius)!important;
+    background:rgba(14,14,15,.58)!important;
+  }
+
+.topApp .promotionInvitePanelV2 .metric span{color:rgba(206,198,180,.68)!important;}
+
+.topApp .promotionInvitePanelV2 .metric b{color:#fff3da!important;}
+}
+
+@media (min-width:861px){
+.topApp .stitchTopUpHero > strong{
+    position:relative;
+    z-index:1;
+    justify-self:end;
+    align-self:center;
+    min-width:300px;
+    padding:24px;
+    border:1px solid rgba(240,214,138,.22);
+    border-radius:22px;
+    background:rgba(14,14,15,.72);
+    color:#fff3da;
+    font-size:32px;
+    font-weight:1000;
+    text-align:center;
+    letter-spacing:-.04em;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.03),0 24px 70px rgba(0,0,0,.32);
+  }
+
+.topApp .stitchInvitePage{
+    display:grid!important;
+    grid-template-columns:minmax(0,1.2fr) minmax(330px,.8fr);
+    gap:18px!important;
+  }
+
+.topApp .stitchInvitePage .promotionInvitePanelV2{
+    grid-column:1/-1;
+  }
+
+.topApp .stitchInviteHero{
+    min-height:260px;
+  }
+
+.topApp .stitchInvitePage .promotionInviteHeadV2,
+  .topApp .stitchInvitePage .promotionMetricsV2,
+  .topApp .stitchInvitePage .promotionLinkMetricV2{
+    position:relative;
+    z-index:1;
+  }
+
+.topApp .stitchInvitePage .promotionMetricsV2{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    margin-top:22px;
+  }
+
+.topApp .stitchInvitePage > .panel:not(.promotionInvitePanelV2){
+    grid-column:1/-1;
+    padding:18px!important;
+  }
+}
+
+@media (min-width:861px){
+.topApp .stitchTopUpHero > strong{
+    min-width:220px!important;
+    padding:16px 18px!important;
+    border-radius:16px!important;
+    font-size:24px!important;
+  }
+
+.topApp .stitchInviteHero{
+    min-height:170px!important;
+    padding:18px!important;
+  }
+
+.topApp .stitchInvitePage .promotionMetricsV2{
+    margin-top:14px!important;
+  }
+
+.topApp .promotionInviteHeadV2{
+    gap:12px!important;
+  }
+
+.topApp .promotionInviteHeadV2 .seg button{
+    min-height:36px!important;
+    padding:0 12px!important;
+    font-size:12px!important;
+  }
+
+.topApp .promotionLinkMetricV2 b.smallText{
+    font-size:12px!important;
+  }
+}

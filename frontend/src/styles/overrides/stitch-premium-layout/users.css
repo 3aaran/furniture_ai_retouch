@@ -1,0 +1,388 @@
+/* Stitch premium layout users override styles. Prefix split. */
+@media (min-width:861px){
+.topApp .adminLogPage > .panel,
+  .topApp .quotaPanelV2,
+  .topApp .storeUsersTablePanelV2,
+  .topApp .stack > .panel{
+    border:1px solid var(--stitch-line)!important;
+    border-radius:var(--stitch-radius-lg)!important;
+    background:linear-gradient(180deg,rgba(24,24,24,.88),rgba(17,17,17,.9))!important;
+    box-shadow:var(--stitch-shadow-soft)!important;
+  }
+
+.topApp .historyTaskFilters,
+  .topApp .quotaToolbarV2,
+  .topApp .storeUserToolbarV2,
+  .topApp .toolbar{
+    display:flex!important;
+    flex-wrap:wrap!important;
+    gap:12px!important;
+    padding:14px!important;
+    border:1px solid var(--stitch-line-soft)!important;
+    border-radius:var(--stitch-radius)!important;
+    background:rgba(14,14,15,.62)!important;
+  }
+
+.topApp .quotaTableWrapV2,
+  .topApp .tableWrap,
+  .topApp .storeUsersTableWrapV2{
+    border:1px solid var(--stitch-line-soft)!important;
+    border-radius:var(--stitch-radius)!important;
+    background:rgba(14,14,15,.5)!important;
+    overflow:hidden!important;
+  }
+
+.topApp :is(.quotaTableV2,.storeUsersTableV2,.table){
+    color:var(--stitch-text)!important;
+  }
+
+.topApp :is(.quotaTableV2,.storeUsersTableV2,.table) thead th{
+    background:rgba(255,255,255,.035)!important;
+    color:rgba(206,198,180,.76)!important;
+    border-color:var(--stitch-line-soft)!important;
+    font-size:12px!important;
+    letter-spacing:.05em!important;
+  }
+
+.topApp :is(.quotaTableV2,.storeUsersTableV2,.table) td{
+    border-color:rgba(255,255,255,.055)!important;
+  }
+
+.topApp .storeUsersV2{
+    display:grid!important;
+    gap:18px!important;
+  }
+
+.topApp .storeUsersHeroV2{
+    min-height:150px!important;
+    padding:24px!important;
+    border:1px solid rgba(240,214,138,.16)!important;
+    border-radius:var(--stitch-radius-lg)!important;
+    background:
+      radial-gradient(circle at 80% 0,rgba(240,214,138,.13),transparent 22rem),
+      linear-gradient(180deg,rgba(32,31,33,.92),rgba(17,17,17,.96))!important;
+    box-shadow:var(--stitch-shadow-soft)!important;
+  }
+
+.topApp .storeUsersHeroV2 h1{
+    color:#fff3da!important;
+    font-size:clamp(30px,4vw,48px)!important;
+    letter-spacing:-.045em!important;
+  }
+
+.topApp .storeUserQuotaCardV2{
+    border:1px solid rgba(240,214,138,.22)!important;
+    border-radius:999px!important;
+    background:rgba(255,255,255,.045)!important;
+    color:var(--stitch-muted)!important;
+  }
+
+.topApp .storeUserQuotaCardV2 em{color:var(--stitch-gold)!important;}
+
+.topApp .storeUserSearchV2{
+    min-height:48px!important;
+    display:flex!important;
+    align-items:center!important;
+    gap:10px!important;
+    padding:0 14px!important;
+    border:1px solid rgba(255,255,255,.1)!important;
+    border-radius:14px!important;
+    background:rgba(14,14,15,.78)!important;
+  }
+
+.topApp .storeUserSearchV2 input{border:0!important;background:transparent!important;padding:0!important;box-shadow:none!important;}
+}
+
+@media (max-width:860px){
+.topApp .storeUserToolbarV2,
+  .topApp .historyTaskFilters,
+  .topApp .quotaToolbarV2{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:10px!important;
+    padding:12px!important;
+  }
+}
+
+@media (min-width:861px){
+.topApp .stitchHistoryPage,
+  .topApp .stitchQuotaPage,
+  .topApp .stitchUsersPage,
+  .topApp .stitchInvitePage,
+  .topApp .stitchProfilePage{
+    position:relative;
+  }
+
+.topApp :is(.stitchHistoryHero,.stitchTopUpHero,.stitchUsersHero,.stitchInviteHero,.stitchProfileHero){
+    position:relative;
+    overflow:hidden;
+  }
+
+.topApp :is(.stitchHistoryHero,.stitchTopUpHero,.stitchUsersHero,.stitchInviteHero,.stitchProfileHero)::after{
+    content:"";
+    position:absolute;
+    right:-120px;
+    top:-150px;
+    width:360px;
+    height:360px;
+    border-radius:50%;
+    pointer-events:none;
+    background:
+      repeating-radial-gradient(circle,rgba(240,214,138,.24) 0 3px,transparent 4px 18px),
+      radial-gradient(circle,rgba(240,214,138,.12),transparent 68%);
+    opacity:.9;
+    filter:blur(.2px);
+  }
+
+.topApp :is(.stitchHistoryHero,.stitchTopUpHero,.stitchUsersHero,.stitchInviteHero,.stitchProfileHero)::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background:linear-gradient(110deg,rgba(255,255,255,.06),transparent 38%,rgba(240,214,138,.06));
+    opacity:.55;
+  }
+
+.topApp .stitchHistoryHero span,
+  .topApp .stitchTopUpHero span,
+  .topApp .stitchUsersHeroText span{
+    display:inline-flex;
+    align-items:center;
+    min-height:26px;
+    padding:0 10px;
+    margin-bottom:12px;
+    border:1px solid rgba(240,214,138,.25);
+    border-radius:999px;
+    background:rgba(240,214,138,.08);
+    color:var(--stitch-gold);
+    font-family:"JetBrains Mono",Consolas,monospace;
+    font-size:11px;
+    font-weight:900;
+    letter-spacing:.12em;
+  }
+
+.topApp .stitchHistoryHero p,
+  .topApp .stitchTopUpHero p,
+  .topApp .stitchUsersHeroText p{
+    max-width:650px;
+    margin:14px 0 0;
+    color:rgba(206,198,180,.74);
+    font-size:15px;
+    line-height:1.75;
+  }
+
+.topApp .stitchHistoryStats article,
+  .topApp .stitchUsersHeroStats article{
+    min-height:104px;
+    padding:16px;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:18px;
+    background:rgba(14,14,15,.68);
+    backdrop-filter:blur(12px);
+  }
+
+.topApp .stitchHistoryStats article span,
+  .topApp .stitchUsersHeroStats article span{
+    color:rgba(206,198,180,.62);
+    font-size:12px;
+    font-weight:800;
+  }
+
+.topApp .stitchHistoryStats article b,
+  .topApp .stitchUsersHeroStats article b{
+    display:block;
+    margin-top:10px;
+    color:#fff3da;
+    font-size:34px;
+    line-height:1;
+    letter-spacing:-.05em;
+  }
+
+.topApp .stitchQuotaPage .quotaTableV2 tbody tr:hover td,
+  .topApp .stitchUsersPage .storeUsersTableV2 tbody tr:hover td,
+  .topApp .stitchInvitePage .table tbody tr:hover td{
+    background:rgba(240,214,138,.045)!important;
+  }
+
+.topApp .stitchUsersHero{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto;
+    grid-template-areas:"text quota" "stats stats";
+    gap:22px!important;
+    align-items:start!important;
+  }
+
+.topApp .stitchUsersHeroText{
+    grid-area:text;
+    position:relative;
+    z-index:1;
+  }
+
+.topApp .stitchUsersHero .storeUserQuotaCardV2{
+    grid-area:quota;
+    position:relative;
+    z-index:1;
+  }
+
+.topApp .stitchUsersHeroStats{
+    grid-area:stats;
+    position:relative;
+    z-index:1;
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:14px;
+  }
+
+.topApp .stitchUsersPage .storeUserToolbarV2{
+    padding:16px!important;
+    border-radius:22px!important;
+  }
+
+.topApp .stitchUsersPage .storeUsersTablePanelV2{
+    padding:18px!important;
+  }
+
+.topApp .stitchUsersPage .storeUsersTableV2 th,
+  .topApp .stitchUsersPage .storeUsersTableV2 td{
+    padding-top:16px!important;
+    padding-bottom:16px!important;
+  }
+}
+
+@media (min-width:861px) and (max-width:1280px){
+.topApp .stitchUsersHeroStats,
+  .topApp .stitchInvitePage .promotionMetricsV2{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+
+@media (max-width:860px){
+.topApp .stitchHistoryStats,
+  .topApp .stitchUsersHeroStats{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+  }
+
+.topApp .stitchHistoryStats article,
+  .topApp .stitchUsersHeroStats article{
+    padding:12px;
+    border:1px solid var(--stitch-line-soft);
+    border-radius:14px;
+    background:rgba(14,14,15,.66);
+  }
+}
+
+@media (min-width:861px){
+.topApp :is(.stitchHistoryHero,.stitchTopUpHero,.stitchUsersHero,.stitchInviteHero,.stitchProfileHero){
+    border-radius:20px!important;
+  }
+
+.topApp :is(.stitchHistoryHero,.stitchTopUpHero)::after,
+  .topApp :is(.stitchUsersHero,.stitchInviteHero,.stitchProfileHero)::after{
+    width:240px!important;
+    height:240px!important;
+    right:-88px!important;
+    top:-110px!important;
+    opacity:.58!important;
+  }
+
+.topApp :is(.stitchHistoryHero,.stitchTopUpHero) span,
+  .topApp .stitchUsersHeroText span{
+    min-height:22px!important;
+    padding:0 8px!important;
+    margin-bottom:8px!important;
+    font-size:10px!important;
+  }
+
+.topApp :is(.stitchHistoryHero,.stitchTopUpHero) h2,
+  .topApp .storeUsersHeroV2 h1,
+  .topApp .profileHeroTextV3 h2,
+  .topApp .promotionInviteHeadV2 h2{
+    font-size:clamp(26px,3vw,42px)!important;
+    line-height:1.02!important;
+    letter-spacing:-.045em!important;
+  }
+
+.topApp :is(.stitchHistoryHero,.stitchTopUpHero) p,
+  .topApp .stitchUsersHeroText p{
+    margin-top:8px!important;
+    font-size:13px!important;
+    line-height:1.55!important;
+  }
+
+.topApp .stitchHistoryStats,
+  .topApp .stitchUsersHeroStats,
+  .topApp .promotionMetricsV2,
+  .topApp .quotaSummaryV2,
+  .topApp .adminQuotaSummaryV4{
+    gap:10px!important;
+  }
+
+.topApp .stitchHistoryStats article,
+  .topApp .stitchUsersHeroStats article,
+  .topApp .promotionInvitePanelV2 .metric,
+  .topApp .promotionLinkMetricV2,
+  .topApp .quotaMetricV2,
+  .topApp .storageSummaryV3 > div{
+    min-height:auto!important;
+    padding:12px 14px!important;
+    border-radius:14px!important;
+  }
+
+.topApp .stitchHistoryStats article b,
+  .topApp .stitchUsersHeroStats article b,
+  .topApp .quotaMetricV2 b,
+  .topApp .quotaMetricV2.current b{
+    margin-top:6px!important;
+    font-size:clamp(24px,2.8vw,36px)!important;
+    letter-spacing:-.04em!important;
+  }
+
+.topApp .stitchHistoryPanel,
+  .topApp .stitchQuotaPage .quotaPanelV2,
+  .topApp .stitchUsersPage .storeUsersTablePanelV2,
+  .topApp .stitchInvitePage > .panel:not(.promotionInvitePanelV2){
+    padding:12px!important;
+  }
+
+.topApp .storeUserSearchV2{
+    min-height:40px!important;
+    border-radius:12px!important;
+    padding:0 11px!important;
+  }
+
+.topApp .stitchUsersHero{
+    min-height:126px!important;
+    padding:18px!important;
+    gap:14px!important;
+  }
+
+.topApp .storeUserQuotaCardV2{
+    min-height:42px!important;
+    padding:0 14px!important;
+    font-size:12px!important;
+  }
+
+.topApp .stitchUsersPage .storeUserToolbarV2{
+    padding:12px!important;
+    border-radius:18px!important;
+  }
+
+.topApp .storeUsersTableV2 th,
+  .topApp .storeUsersTableV2 td,
+  .topApp .stitchUsersPage .storeUsersTableV2 th,
+  .topApp .stitchUsersPage .storeUsersTableV2 td,
+  .topApp .quotaTableV2 th,
+  .topApp .quotaTableV2 td,
+  .topApp .table th,
+  .topApp .table td{
+    padding:10px 12px!important;
+    font-size:12px!important;
+  }
+
+.topApp .storeUserActionsV2 button{
+    width:30px!important;
+    height:30px!important;
+  }
+}

@@ -1,0 +1,63 @@
+/* Users page layout styles. Prefix split. */
+.storeUsersV2{
+  color:#f6f6f6;
+  display:grid;
+  gap:26px;
+}
+
+.storeUsersHeroV2{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:24px;
+}
+
+.storeUsersHeroV2 h1{
+  margin:0;
+  font-size:44px;
+  line-height:1;
+  font-weight:1000;
+  letter-spacing:-1px;
+}
+
+.storeUsersPagerV2{
+  min-height:64px;
+  border-top:1px solid rgba(255,255,255,.12);
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:14px;
+  padding:0 22px;
+  color:#f6f6f6;
+}
+
+.storeUsersPagerV2 select{
+  height:36px;
+  border:0;
+  background:#111;
+  color:#f6f6f6;
+  border-radius:8px;
+  padding:0 10px;
+}
+
+.storeUsersPagerV2 button{
+  width:34px;
+  height:34px;
+  border:0;
+  border-radius:50%;
+  background:transparent;
+  color:#f6f6f6;
+  cursor:pointer;
+  font-size:24px;
+}
+
+.storeUsersPagerV2 button:disabled{
+  opacity:.35;
+  cursor:not-allowed;
+}
+
+@media (max-width:760px){
+.storeUsersHeroV2{
+    display:grid;
+  }
+}

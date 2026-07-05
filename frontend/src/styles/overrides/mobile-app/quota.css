@@ -1,0 +1,21 @@
+/* Mobile app quota override styles. Prefix split. */
+@media (max-width: 860px){
+.topApp .topBrand small,
+  .topApp .quotaPill,
+  .topApp .avatarBtn > div {
+    display: none !important;
+  }
+
+.topApp .toolbar,
+  .topApp .filterGroup,
+  .topApp .adminQuotaToolbarV4,
+  .topApp .quotaAdjustV9,
+  .topApp .settingsSaveBarV9,
+  .topApp .modalActionsV9,
+  .topApp .modalActions {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+}

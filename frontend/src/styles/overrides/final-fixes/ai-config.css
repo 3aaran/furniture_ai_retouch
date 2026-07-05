@@ -1,0 +1,78 @@
+/* Final fixes AI configuration table styles. */
+.aiConfigBoxV2{
+  display:grid;
+  gap:18px;
+  padding:18px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:18px;
+  background:rgba(255,255,255,.025);
+}
+
+.aiFeatureTableV2{
+  display:grid;
+  gap:10px;
+  margin-top:8px;
+}
+
+.aiFeatureHeadV2,
+.aiFeatureRowV2{
+  display:grid;
+  grid-template-columns:120px 54px 120px 180px 1fr;
+  gap:10px;
+  align-items:center;
+}
+
+.aiFeatureHeadV2{
+  color:#f0d68a;
+  font-weight:900;
+  padding:0 6px;
+}
+
+.aiFeatureRowV2{
+  padding:12px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;
+  background:#111214;
+}
+
+.aiFeatureRowV2 span{font-weight:900;color:#fff;}
+
+.aiFeatureRowV2 input[type="text"],
+.aiFeatureRowV2 input:not([type]),
+.aiFeatureRowV2 select,
+.aiFeatureRowV2 textarea{
+  width:100%;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:10px;
+  background:#0b0c0d;
+  color:#fff;
+  padding:10px;
+}
+
+.aiFeatureRowV2 textarea{
+  grid-column:1/-1;
+  min-height:72px;
+  resize:vertical;
+}
+
+@keyframes wbSpin{to{transform:rotate(360deg)}}
+
+@media (max-width:1100px){
+.aiFeatureHeadV2,.aiFeatureRowV2{grid-template-columns:1fr 54px;}
+
+.aiFeatureHeadV2 b:nth-child(n+3){display:none}
+}
+
+.aiConfigPageV2{display:grid;gap:18px;}
+
+.aiConfigBoxV2 h3{margin:0 0 10px;color:#f0d68a;font-size:20px;}
+
+.aiFeatureRowV2 span{display:grid;gap:3px;}
+
+.aiFeatureRowV2 span small{font-size:12px;color:#9d9585;font-weight:700;}
+
+.aiFeatureRowV2 input[type="checkbox"]{width:20px;height:20px;justify-self:center;}
+
+@media (max-width:900px){
+.aiConfigPageV2 .grid2{grid-template-columns:1fr!important;}
+}

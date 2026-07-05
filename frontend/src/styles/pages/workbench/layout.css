@@ -1,0 +1,476 @@
+/* Workbench layout styles. Prefix split. */
+.wbScreen{display:grid;grid-template-columns:340px minmax(0,1fr) 300px;gap:18px;align-items:start}
+
+.wbSidePanel,.wbCenterPanel,.wbRightPanel{background:linear-gradient(180deg,rgba(24,24,24,.96),rgba(17,17,17,.98));border:1px solid rgba(255,255,255,.08);border-radius:24px;box-shadow:0 18px 50px rgba(0,0,0,.3)}
+
+.wbSidePanel{padding:22px 24px;min-height:760px}
+
+.wbCenterPanel{padding:22px;min-height:760px}
+
+.wbRightPanel{padding:18px 18px 16px;min-height:760px;display:flex;flex-direction:column}
+
+.wbSectionLabel{font-size:15px;color:#e9e0cf;margin-bottom:12px}
+
+.wbMainBlock{margin-bottom:18px}
+
+.wbRightHeader{display:flex;align-items:center;justify-content:space-between;color:#f4efe6;margin-bottom:16px}
+
+.wbRightHeader b{font-size:18px}
+
+.wbRightHeader button{width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:#151618;color:#fff}
+
+@media (max-width:1380px){
+.wbScreen{grid-template-columns:320px minmax(0,1fr)}
+
+.wbRightPanel{grid-column:1/-1;min-height:auto}
+}
+
+@media (max-width:980px){
+.wbScreen{grid-template-columns:1fr}
+
+.wbSidePanel,.wbCenterPanel,.wbRightPanel{min-height:auto}
+}
+
+.topApp .wbCenterPanel{
+  padding-left:16px !important;
+  padding-right:6px !important;
+}
+
+.topApp .wbCenterPanel > *{
+  width:100% !important;
+  max-width:none !important;
+  margin-left:0 !important;
+  margin-right:0 !important;
+}
+
+.topApp .wbMainBlock{
+  width:100% !important;
+}
+
+.topApp .wbCenterPanel .wbMainBlock > .wbUploadBox{
+  width:100% !important;
+  min-width:0 !important;
+  height:clamp(200px,28vh,280px) !important;
+  min-height:0 !important;
+  max-height:none !important;
+  aspect-ratio:auto !important;
+  margin:0 !important;
+}
+
+.topApp .wbCenterPanel{
+  padding-left:16px !important;
+  padding-right:16px !important;
+}
+
+.topApp .wbCenterPanel > *{
+  max-width:none !important;
+}
+
+.topApp .wbScreen{
+  grid-template-columns:
+    minmax(360px,var(--wb-left-ratio))
+    minmax(520px,var(--wb-center-ratio))
+    minmax(220px,var(--wb-right-ratio)) !important;
+}
+
+.topApp .wbCenterPanel .wbMainBlock > .wbUploadBox{
+  aspect-ratio:21/9 !important;
+  min-height:220px !important;
+  max-height:340px !important;
+}
+
+.topApp .wbCenterPanel{
+  padding-left:16px !important;
+  padding-right:16px !important;
+}
+
+.topApp .wbCenterPanel > *{
+  max-width:none !important;
+}
+
+@media (max-width:1180px){
+.topApp .wbScreen{
+    grid-template-columns:
+      minmax(340px,var(--wb-left-ratio))
+      minmax(500px,var(--wb-center-ratio))
+      minmax(210px,var(--wb-right-ratio)) !important;
+    overflow-x:auto !important;
+  }
+}
+
+.topApp .wbCenterPanel .wbMainBlock > .wbUploadBox{
+  aspect-ratio:21/9 !important;
+  min-height:220px !important;
+  max-height:340px !important;
+}
+
+.wbScreen{width:100%;max-width:none;grid-template-columns:minmax(300px,340px) minmax(640px,1fr) minmax(260px,300px);align-items:start}
+
+.wbScreen>*{min-width:0}
+
+.wbSidePanel,.wbCenterPanel,.wbRightPanel{width:100%}
+
+.wbCenterPanel{display:flex;flex-direction:column;gap:16px}
+
+.wbMainBlock,.wbRefCard,.wbPromptInput{width:100%}
+
+@media (max-width:1500px){
+.wbScreen{grid-template-columns:300px minmax(560px,1fr) 280px}
+}
+
+@media (max-width:1280px){
+.wbScreen{grid-template-columns:1fr}
+
+.wbRightPanel{order:3}
+
+.wbSidePanel{order:1}
+
+.wbCenterPanel{order:2}
+}
+
+.topApp .wbScreen,.topApp .wbSidePanel,.topApp .wbRightPanel,.topApp .wbCenterPanel{display:block!important}
+
+.wbScreen{display:grid!important;grid-template-columns:320px minmax(0,1fr) 290px!important;gap:18px!important;align-items:start;width:100%;max-width:none}
+
+@media (max-width:1500px){
+.wbScreen{grid-template-columns:300px minmax(0,1fr) 270px!important}
+}
+
+@media (max-width:1280px){
+.wbScreen{grid-template-columns:1fr!important}
+
+.wbRightPanel{order:3}
+
+.wbSidePanel{order:1}
+
+.wbCenterPanel{order:2}
+}
+
+.topApp .wbScreen{display:grid!important;grid-template-columns:330px minmax(620px,1fr) 300px!important;gap:18px!important;align-items:start!important;width:100%!important;max-width:none!important}
+
+.topApp .wbSidePanel{display:block!important;grid-column:auto!important;order:0!important}
+
+.topApp .wbCenterPanel{display:flex!important;grid-column:auto!important;order:0!important;flex-direction:column!important;gap:16px!important}
+
+.topApp .wbRightPanel{display:flex!important;grid-column:auto!important;order:0!important;flex-direction:column!important;overflow:visible!important}
+
+@media (max-width:1180px){
+.topApp .wbScreen{grid-template-columns:300px minmax(560px,1fr) 280px!important;overflow-x:auto!important}
+}
+
+.topApp .wbScreen{
+  width:100% !important;
+  max-width:none !important;
+  height:calc(100vh - 78px) !important;
+  min-height:0 !important;
+  display:grid !important;
+  grid-template-columns:420px minmax(0,1fr) 248px !important;
+  gap:0 !important;
+  align-items:stretch !important;
+  overflow:hidden !important;
+}
+
+.topApp .wbScreen > *{
+  min-width:0 !important;
+  min-height:0 !important;
+  box-sizing:border-box !important;
+}
+
+.topApp .wbSidePanel{
+  height:100% !important;
+  min-height:0 !important;
+  overflow:hidden !important;
+  border-radius:0 !important;
+  border-left:0 !important;
+  border-top:0 !important;
+  border-bottom:0 !important;
+  border-right:1px solid rgba(255,255,255,.13) !important;
+  padding:22px 28px 16px !important;
+  display:flex !important;
+  flex-direction:column !important;
+}
+
+.topApp .wbSectionLabel{
+  flex:0 0 auto !important;
+  margin:0 0 10px !important;
+  font-size:15px !important;
+}
+
+.topApp .wbCenterPanel{
+  height:100% !important;
+  min-height:0 !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  border-radius:0 !important;
+  border:0 !important;
+  padding:64px 28px 40px !important;
+  box-shadow:none !important;
+  box-sizing:border-box !important;
+}
+
+.topApp .wbCenterPanel > *{
+  max-width:960px !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+}
+
+.topApp .wbMainBlock,
+.topApp .wbRefCard,
+.topApp .wbPromptInput{
+  width:100% !important;
+}
+
+.topApp .wbRightPanel{
+  height:100% !important;
+  min-height:0 !important;
+  overflow:hidden !important;
+  border-radius:0 !important;
+  border-top:0 !important;
+  border-bottom:0 !important;
+  border-right:0 !important;
+  border-left:1px solid rgba(255,255,255,.13) !important;
+  padding:0 !important;
+  display:flex !important;
+  flex-direction:column !important;
+}
+
+.topApp .wbRightHeader{
+  flex:0 0 auto !important;
+  padding:22px 18px 12px !important;
+  margin:0 !important;
+  border-bottom:1px solid rgba(255,255,255,.08) !important;
+}
+
+.topApp .wbRightHeader b{
+  font-size:17px !important;
+}
+
+.topApp .wbRightHeader button{
+  width:34px !important;
+  height:34px !important;
+}
+
+.topApp .wbResourceGrid::-webkit-scrollbar,
+.topApp .wbRecentList::-webkit-scrollbar,
+.topApp .wbCenterPanel::-webkit-scrollbar{
+  width:6px !important;
+}
+
+.topApp .wbResourceGrid::-webkit-scrollbar-thumb,
+.topApp .wbRecentList::-webkit-scrollbar-thumb,
+.topApp .wbCenterPanel::-webkit-scrollbar-thumb{
+  background:rgba(242,213,140,.36) !important;
+  border-radius:999px !important;
+}
+
+.topApp .wbResourceGrid::-webkit-scrollbar-track,
+.topApp .wbRecentList::-webkit-scrollbar-track,
+.topApp .wbCenterPanel::-webkit-scrollbar-track{
+  background:transparent !important;
+}
+
+@media (max-width:1400px){
+.topApp .wbScreen{
+    grid-template-columns:408px minmax(0,1fr) 238px !important;
+  }
+
+.topApp .wbSidePanel{
+    padding-left:26px !important;
+    padding-right:26px !important;
+  }
+}
+
+@media (max-width:1100px){
+.topApp .wbScreen{
+    height:auto !important;
+    grid-template-columns:1fr !important;
+    overflow:visible !important;
+  }
+
+.topApp .wbSidePanel,
+  .topApp .wbCenterPanel,
+  .topApp .wbRightPanel{
+    height:auto !important;
+    min-height:auto !important;
+    overflow:visible !important;
+  }
+}
+
+html:has(.wbScreen),
+body:has(.wbScreen){
+  height:100% !important;
+  max-height:100% !important;
+  overflow:hidden !important;
+}
+
+.topApp:has(.wbScreen){
+  height:100vh !important;
+  max-height:100vh !important;
+  overflow:hidden !important;
+  background:#0b0c0d !important;
+}
+
+.topMain:has(.wbScreen){
+  position:fixed !important;
+  left:0 !important;
+  right:0 !important;
+  top:var(--wb-nav-height) !important;
+  bottom:0 !important;
+  width:100vw !important;
+  max-width:100vw !important;
+  height:auto !important;
+  min-height:0 !important;
+  max-height:none !important;
+  overflow:hidden !important;
+  padding:0 !important;
+  margin:0 !important;
+  box-sizing:border-box !important;
+}
+
+.topApp .wbScreen{
+  width:100vw !important;
+  max-width:100vw !important;
+  height:100% !important;
+  min-height:0 !important;
+  max-height:100% !important;
+  display:grid !important;
+  grid-template-columns:var(--wb-left-width) minmax(0,1fr) var(--wb-right-width) !important;
+  gap:0 !important;
+  align-items:stretch !important;
+  overflow:hidden !important;
+  margin:0 !important;
+  padding:0 !important;
+  box-sizing:border-box !important;
+  background:#0b0c0d !important;
+}
+
+.topApp .wbScreen > *{
+  min-width:0 !important;
+  min-height:0 !important;
+  max-height:100% !important;
+  box-sizing:border-box !important;
+}
+
+.topApp .wbSidePanel{
+  height:100% !important;
+  min-height:0 !important;
+  max-height:100% !important;
+  overflow:hidden !important;
+  border-radius:0 !important;
+  border-left:0 !important;
+  border-top:0 !important;
+  border-bottom:0 !important;
+  border-right:1px solid rgba(255,255,255,.13) !important;
+  padding:20px 24px 14px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  background:linear-gradient(180deg,rgba(24,24,24,.96),rgba(17,17,17,.98)) !important;
+}
+
+.topApp .wbSectionLabel{
+  flex:0 0 auto !important;
+  margin:0 0 9px !important;
+  font-size:14px !important;
+}
+
+.topApp .wbCenterPanel{
+  height:100% !important;
+  min-height:0 !important;
+  max-height:100% !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  overscroll-behavior:contain !important;
+  border-radius:0 !important;
+  border:0 !important;
+  padding:24px 28px 36px !important;
+  box-shadow:none !important;
+  box-sizing:border-box !important;
+  background:#050607 !important;
+}
+
+.topApp .wbCenterPanel > *{
+  width:100% !important;
+  max-width:960px !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+}
+
+.topApp .wbMainBlock,
+.topApp .wbRefCard,
+.topApp .wbPromptInput{
+  width:100% !important;
+}
+
+.topApp .wbRightPanel{
+  height:100% !important;
+  min-height:0 !important;
+  max-height:100% !important;
+  overflow:hidden !important;
+  border-radius:0 !important;
+  border-top:0 !important;
+  border-bottom:0 !important;
+  border-right:0 !important;
+  border-left:1px solid rgba(255,255,255,.13) !important;
+  padding:0 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  background:linear-gradient(180deg,rgba(24,24,24,.96),rgba(17,17,17,.98)) !important;
+}
+
+.topApp .wbRightHeader{
+  flex:0 0 auto !important;
+  padding:18px 16px 12px !important;
+  margin:0 !important;
+  border-bottom:1px solid rgba(255,255,255,.08) !important;
+}
+
+.topApp .wbRightHeader b{
+  font-size:16px !important;
+}
+
+.topApp .wbRightHeader button{
+  width:32px !important;
+  height:32px !important;
+}
+
+.topApp .wbResourceGrid::-webkit-scrollbar,
+.topApp .wbRecentList::-webkit-scrollbar,
+.topApp .wbCenterPanel::-webkit-scrollbar{
+  width:6px !important;
+}
+
+.topApp .wbResourceGrid::-webkit-scrollbar-thumb,
+.topApp .wbRecentList::-webkit-scrollbar-thumb,
+.topApp .wbCenterPanel::-webkit-scrollbar-thumb{
+  background:rgba(242,213,140,.36) !important;
+  border-radius:999px !important;
+}
+
+.topApp .wbResourceGrid::-webkit-scrollbar-track,
+.topApp .wbRecentList::-webkit-scrollbar-track,
+.topApp .wbCenterPanel::-webkit-scrollbar-track{
+  background:transparent !important;
+}
+
+@media (max-width:1400px){
+.topApp .wbSidePanel{
+    padding-left:22px !important;
+    padding-right:22px !important;
+  }
+}
+
+@media (max-width:1100px){
+.topApp .wbScreen{
+    grid-template-columns:var(--wb-left-width) minmax(560px,1fr) var(--wb-right-width) !important;
+    overflow:hidden !important;
+  }
+}
+
+.topApp .wbCenterPanel{
+  padding-left:16px !important;
+  padding-right:16px !important;
+}
+
+.topApp .wbCenterPanel > *{
+  max-width:none !important;
+}
