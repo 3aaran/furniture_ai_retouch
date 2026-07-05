@@ -13,6 +13,11 @@ function WorkbenchLeftPanel({
   setResourceKeyword,
   resourceScope,
   setResourceScope,
+  resourceMainCategory,
+  setResourceMainCategory,
+  resourceSubCategory,
+  setResourceSubCategory,
+  resourceCategoryOptions,
   resourceItems,
   openWorkbenchResourceUpload,
   selectedResource,
@@ -85,18 +90,32 @@ function WorkbenchLeftPanel({
   }
 
   if(op==='material'||op==='replace_bg'){
+    const categoryOptions=resourceCategoryOptions||[];
+    const currentMain=categoryOptions.find(item=>item.name===resourceMainCategory);
+    const subOptions=currentMain?.subs||[];
+    const resourceTitle=op==='material'?'材质替换':'场景融合资源';
     return <>
       <div className="wbDescRow"><span className="wbMiniIcon">✓</span><p>{ops[op].desc}</p></div>
       <div className="wbSearchRow">
         <div className="wbSearchInput"><Search size={16}/><input placeholder="搜索资源..." value={resourceKeyword} onChange={e=>setResourceKeyword(e.target.value)}/></div>
-        <select className="wbSelect" value={resourceScope} onChange={e=>setResourceScope(e.target.value)}>
-          <option value="SYSTEM">系统空间</option>
-          <option value="MERCHANT">门店空间</option>
-          <option value="USER">个人空间</option>
-          <option value="ALL">全部空间</option>
+      </div>
+      <div className="wbResourceFilterBar" aria-label={`${resourceTitle}分类筛选`}>
+        <select className="wbSelect" aria-label="资源归属" value={resourceScope} onChange={e=>setResourceScope(e.target.value)}>
+          <option value="SYSTEM">系统资源</option>
+          <option value="MERCHANT">用户资源</option>
+          <option value="USER">个人资源</option>
+          <option value="ALL">全部资源</option>
+        </select>
+        <select className="wbSelect" aria-label="主分类" value={resourceMainCategory} onChange={e=>setResourceMainCategory(e.target.value)}>
+          <option value="">全部主分类</option>
+          {categoryOptions.map(item=><option key={item.name} value={item.name}>{item.name}</option>)}
+        </select>
+        <select className="wbSelect" aria-label="子分类" value={resourceSubCategory} disabled={!resourceMainCategory||!subOptions.length} onChange={e=>setResourceSubCategory(e.target.value)}>
+          <option value="">全部子分类</option>
+          {subOptions.map(item=><option key={item} value={item}>{item}</option>)}
         </select>
       </div>
-      <div className="wbSectionLabel">{op==='material'?'材质替换':'场景融合资源'}</div>
+      <div className="wbSectionLabel">{resourceTitle}</div>
       <div className="wbResourceGrid">
         <button className="wbUploadCard" onClick={openWorkbenchResourceUpload}>
           <span>+</span>
@@ -105,9 +124,9 @@ function WorkbenchLeftPanel({
         {resourceItems.map(resource=><button key={resource.scope+resource.id} className={selectedResource===String(resource.id)?'wbResourceCard active':'wbResourceCard'} onClick={()=>setSelectedResource(String(resource.id))}>
           {resource.imageUrl?<img src={listImgSrc(resource)} alt={resource.name} onError={e=>fallbackToOriginalImage(e,resource)} loading="lazy" decoding="async"/>:<div className="wbResourcePlaceholder">{resTypeName[resource.resourceType]}</div>}
           <b>{resource.name}</b>
-          <span>{resource.scope==='SYSTEM'?'系统':'门店'} / {resource.mainCategoryName||resource.objectName||resTypeName[resource.resourceType]}{(resource.subCategoryName||resource.colorName)?` / ${resource.subCategoryName||resource.colorName}`:''}</span>
+          <span>{resource.scope==='SYSTEM'?'系统资源':resource.scope==='USER'?'个人资源':'用户资源'} / {resource.mainCategoryName||resource.objectName||resTypeName[resource.resourceType]}{(resource.subCategoryName||resource.colorName)?` / ${resource.subCategoryName||resource.colorName}`:''}</span>
         </button>)}
-        {!resourceItems.length&&<div className="wbLibraryEmpty">暂无资源，点击加号上传</div>}
+        {!resourceItems.length&&<div className="wbLibraryEmpty">暂无匹配资源，可切换分类或点击加号上传</div>}
       </div>
     </>;
   }

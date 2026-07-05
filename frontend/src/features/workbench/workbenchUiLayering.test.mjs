@@ -9,9 +9,14 @@ const srcRoot = join(here, '../..');
 const workbenchFeatureRoot = join(srcRoot, 'features/workbench');
 const pickerSource = readFileSync(join(workbenchFeatureRoot, 'components/ResourcePickerModal.jsx'), 'utf8');
 const uploadSource = readFileSync(join(workbenchFeatureRoot, 'components/WorkbenchUploadPanel.jsx'), 'utf8');
+const featurePanelSource = readFileSync(join(workbenchFeatureRoot, 'components/WorkbenchFeaturePanel.jsx'), 'utf8');
+const leftPanelSource = readFileSync(join(workbenchFeatureRoot, 'components/WorkbenchLeftPanel.jsx'), 'utf8');
+const signalBarSource = readFileSync(join(workbenchFeatureRoot, 'components/WorkbenchSignalBar.jsx'), 'utf8');
+const pageViewHookSource = readFileSync(join(workbenchFeatureRoot, 'hooks/useWorkbenchPageView.jsx'), 'utf8');
 const workbenchSource = readFileSync(join(workbenchFeatureRoot, 'hooks/useWorkbenchRecent.js'), 'utf8');
 const appSharedSource = readFileSync(join(srcRoot, 'appShared.jsx'), 'utf8');
 const finalCss = readFileSync(join(srcRoot, 'styles/overrides/final-fixes.css'), 'utf8');
+const studioCanvasCss = readFileSync(join(srcRoot, 'styles/overrides/studio-workbench/layout-panels-1.css'), 'utf8');
 const studioLayoutCss = readFileSync(join(srcRoot, 'styles/overrides/studio-workbench/layout-panels-2.css'), 'utf8');
 
 describe('workbench resource picker layering', () => {
@@ -29,16 +34,52 @@ describe('workbench resource picker layering', () => {
     assert.match(uploadSource, /stopPropagation\(\);\s*openResourceModal\('source'\)/);
   });
 
-  it('keeps the desktop product preview fully contained like the mobile preview', () => {
+  it('shows the desktop product preview directly without debug coordinates or dark overlay padding', () => {
+    const previewWrapRule=studioLayoutCss.match(/\.topApp \.wbPreviewWrap\{[\s\S]*?\n\s*\}/)?.[0]||'';
     const previewRule=studioLayoutCss.match(/\.topApp \.wbPreview,[\s\S]*?\n\s*\}/)?.[0]||'';
-    assert.match(previewRule, /width:calc\(100% - 44px\)!important;/);
-    assert.match(previewRule, /height:calc\(100% - 44px\)!important;/);
+    assert.doesNotMatch(studioCanvasCss, /wbUploadBox:before/);
+    assert.doesNotMatch(studioCanvasCss, /X:\s*1024\s*Y:\s*768/);
+    assert.doesNotMatch(previewWrapRule, /radial-gradient/);
+    assert.match(previewRule, /width:100%!important;/);
+    assert.match(previewRule, /height:100%!important;/);
     assert.match(previewRule, /position:absolute!important;/);
-    assert.match(previewRule, /inset:22px!important;/);
-    assert.match(previewRule, /max-width:none!important;/);
-    assert.match(previewRule, /max-height:none!important;/);
+    assert.match(previewRule, /inset:0!important;/);
+    assert.match(previewRule, /max-width:100%!important;/);
+    assert.match(previewRule, /max-height:100%!important;/);
     assert.match(previewRule, /object-fit:contain!important;/);
-    assert.doesNotMatch(previewRule, /^\s*height:100%!important;/m);
+  });
+
+  it('keeps the desktop feature navigation inside a fixed boundary', () => {
+    assert.match(featurePanelSource, /className="wbFeatureNavBlock"/);
+    assert.match(studioCanvasCss, /\.wbFeatureNavBlock\{[\s\S]*?flex:0 0 252px;[\s\S]*?min-height:252px;/);
+  });
+
+  it('shows resource ownership before main and sub category filters', () => {
+    const filterMarkup=leftPanelSource.match(/<div className="wbResourceFilterBar"[\s\S]*?<\/div>/)?.[0]||'';
+    assert.match(filterMarkup, /aria-label="资源归属"/);
+    assert.match(filterMarkup, /系统资源/);
+    assert.match(filterMarkup, /用户资源/);
+    assert.match(filterMarkup, /个人资源/);
+    assert.match(filterMarkup, /aria-label="主分类"/);
+    assert.match(filterMarkup, /aria-label="子分类"/);
+  });
+
+  it('hides the watermark toggle while preserving its toolbar space', () => {
+    const toggleRule=studioCanvasCss.match(/\.topApp \.wbStudioWatermarkToggle\{[\s\S]*?\n\s*\}/)?.[0]||'';
+    const toolbarRule=studioCanvasCss.match(/\.topApp \.wbStudioCanvasToolbar\{[\s\S]*?\n\s*\}/)?.[0]||'';
+    assert.match(toggleRule, /visibility:hidden;/);
+    assert.match(toggleRule, /pointer-events:none;/);
+    assert.doesNotMatch(toolbarRule, /display:none/);
+  });
+
+  it('makes workbench status chips open their matching controls', () => {
+    assert.match(signalBarSource, /wbSignalAction/);
+    assert.match(signalBarSource, /action\.options/);
+    assert.match(signalBarSource, /action\.onSelect/);
+    assert.match(pageViewHookSource, /workbenchSignalActions/);
+    assert.match(pageViewHookSource, /openFeaturePopover\(featureGroup,event\)/);
+    assert.match(pageViewHookSource, /setResolution/);
+    assert.match(pageViewHookSource, /setRatio/);
   });
 
   it('does not stop task polling on the first transient status read failure', () => {

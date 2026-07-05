@@ -38,6 +38,11 @@ export function buildWorkbenchPageSlots({
   setResourceKeyword,
   resourceScope,
   setResourceScope,
+  resourceMainCategory,
+  setResourceMainCategory,
+  resourceSubCategory,
+  setResourceSubCategory,
+  resourceCategoryOptions,
   resourceItems,
   openWorkbenchResourceUpload,
   selectedResource,
@@ -121,6 +126,11 @@ export function buildWorkbenchPageSlots({
     setResourceKeyword={setResourceKeyword}
     resourceScope={resourceScope}
     setResourceScope={setResourceScope}
+    resourceMainCategory={resourceMainCategory}
+    setResourceMainCategory={setResourceMainCategory}
+    resourceSubCategory={resourceSubCategory}
+    setResourceSubCategory={setResourceSubCategory}
+    resourceCategoryOptions={resourceCategoryOptions}
     resourceItems={resourceItems}
     openWorkbenchResourceUpload={openWorkbenchResourceUpload}
     selectedResource={selectedResource}

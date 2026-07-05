@@ -117,6 +117,69 @@
   animation:rbChipSweep 3.6s ease-in-out infinite;
   animation-delay:calc(var(--rb-i,0) * 200ms);
 }
+
+.wbSignalActions{
+  max-width:100%;
+}
+.wbSignalActionWrap{
+  position:relative;
+  min-width:0;
+}
+.wbSignalAction{
+  position:relative;
+  min-height:28px;
+  max-width:100%;
+  padding:0 10px;
+  overflow:hidden;
+  border:1px solid rgba(240,214,138,.20);
+  border-radius:999px;
+  background:rgba(255,255,255,.055);
+  color:#f8ecd0;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.02em;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  cursor:pointer;
+}
+.wbSignalAction:hover,
+.wbSignalAction[aria-expanded="true"]{
+  border-color:rgba(240,214,138,.58);
+  background:rgba(240,214,138,.12);
+}
+.wbSignalOptionMenu{
+  position:absolute;
+  z-index:80;
+  top:calc(100% + 8px);
+  left:0;
+  min-width:132px;
+  max-width:min(240px,calc(100vw - 32px));
+  display:grid;
+  gap:6px;
+  padding:8px;
+  border:1px solid rgba(240,214,138,.28);
+  border-radius:12px;
+  background:#18191c;
+  box-shadow:0 18px 48px rgba(0,0,0,.42);
+}
+.wbSignalOptionMenu button{
+  width:100%;
+  min-height:34px;
+  padding:0 10px;
+  border:0;
+  border-radius:8px;
+  background:transparent;
+  color:#eee6d8;
+  font-size:12px;
+  font-weight:900;
+  text-align:left;
+  white-space:nowrap;
+}
+.wbSignalOptionMenu button:hover,
+.wbSignalOptionMenu button.active{
+  background:rgba(240,214,138,.16);
+  color:#ffe9a8;
+}
 @keyframes rbPulseRise{
   from{opacity:0;transform:translateY(8px)}
   to{opacity:1;transform:translateY(0)}

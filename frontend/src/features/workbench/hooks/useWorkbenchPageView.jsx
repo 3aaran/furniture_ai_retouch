@@ -4,6 +4,7 @@ import{promotionOptionDefaults}from'../model/promotionFeatures.js';
 import WorkbenchPageView from'../WorkbenchPageView.jsx';
 import{buildWorkbenchPageSlots}from'../WorkbenchPageSlots.jsx';
 import{buildWorkbenchOps,workbenchImageSrc,workbenchListImageSrc}from'../model/index.js';
+import{BASE_RATIO_OPTIONS,BASE_RESOLUTION_OPTIONS}from'../model/workbenchOptions.js';
 import{useVideoStoryboard,useWorkbenchFeatureMode,useWorkbenchGeneration,useWorkbenchImageUpload,useWorkbenchRecent,useWorkbenchResourceLibrary,useWorkbenchResourceUpload,useWorkbenchWatermark}from'./index.js';
 import{fetchPublicSettings}from'../api/index.js';
 
@@ -15,7 +16,7 @@ function useWorkbenchPageView({me,setMe,setMsg,goPage,TaskDetailModal}){
   const {storyboards,storyboardDragging,setStoryboardDragging,videoPrompt,setVideoPrompt,videoParams,chooseStoryboard,dropStoryboard,removeStoryboard,updateVideoParam}=useVideoStoryboard();
   const [studioLight,setStudioLight]=useState({strength:85,colorTemp:4500});
   const [custom,setCustom]=useState('');
-  const {resources,setResources,resourceKeyword,setResourceKeyword,resourceScope,setResourceScope,selectedResource,setSelectedResource,currentTemplate,getResourceItems,getModalItems}=useWorkbenchResourceLibrary({op,mediaMode,resTypeName});
+  const {resources,setResources,resourceKeyword,setResourceKeyword,resourceScope,setResourceScope,resourceMainCategory,setResourceMainCategory,resourceSubCategory,setResourceSubCategory,selectedResource,setSelectedResource,currentTemplate,getResourceCategoryOptions,getResourceItems,getModalItems}=useWorkbenchResourceLibrary({op,mediaMode,resTypeName});
   const {resourceUploadOpen,resourceUpload,setResourceUpload,resourceUploadFile,resourceUploadPreview,workbenchUploadMainOptions,workbenchUploadSubOptions,openWorkbenchResourceUpload,chooseWorkbenchResourceFile,closeWorkbenchResourceUpload,changeWorkbenchUploadType,changeWorkbenchUploadMain,createWorkbenchResource}=useWorkbenchResourceUpload({op,me,resources,setResources,setResourceScope,setMsg});
   const [recentKeyword,setRecentKeyword]=useState('');
   const [removeOpts,setRemoveOpts]=useState({whiteBg:false,mirror:false});
@@ -64,12 +65,22 @@ function useWorkbenchPageView({me,setMe,setMsg,goPage,TaskDetailModal}){
     pollAiTask
   });
 
+  const resourceCategoryOptions=getResourceCategoryOptions();
   const resourceItems=getResourceItems();
   const modalItems=getModalItems(resourceModal);
   const selectedTpl=currentTemplate();
   const currentFeatureLabel=mediaMode==='video'?'宣传视频生成':ops[op]?.label||'生图功能';
   const currentFeatureMode=mediaMode==='video'?'视频功能':isPromotionSelected?'宣传图':'生图功能';
-  const workbenchSignalItems=[currentFeatureMode,currentFeatureLabel,mediaMode==='video'?videoParams.duration:resolution,mediaMode==='video'?videoParams.ratio:ratio];
+  const workbenchSignalActions=[
+    {label:currentFeatureMode,onClick:event=>openFeaturePopover(featureGroup,event)},
+    {label:currentFeatureLabel,onClick:event=>openFeaturePopover(featureGroup,event)},
+    mediaMode==='video'
+      ?{label:videoParams.duration,value:videoParams.duration,options:['5秒','10秒','15秒','30秒'],onSelect:value=>updateVideoParam('duration',value)}
+      :{label:resolution,value:resolution,options:BASE_RESOLUTION_OPTIONS,onSelect:setResolution},
+    mediaMode==='video'
+      ?{label:videoParams.ratio,value:videoParams.ratio,options:['16:9','9:16','1:1','4:3','3:4'],onSelect:value=>updateVideoParam('ratio',value)}
+      :{label:ratio,value:ratio,options:BASE_RATIO_OPTIONS,onSelect:setRatio}
+  ];
   const filteredRecent=recent.filter(item=>{
     const isVideo=item?.featureKey==='video_generate'||item?.operation==='video_generate'||item?.mediaType==='video'||item?.kind==='video';
     return mediaMode==='video'?isVideo:!isVideo;
@@ -103,6 +114,11 @@ function useWorkbenchPageView({me,setMe,setMsg,goPage,TaskDetailModal}){
     setResourceKeyword,
     resourceScope,
     setResourceScope,
+    resourceMainCategory,
+    setResourceMainCategory,
+    resourceSubCategory,
+    setResourceSubCategory,
+    resourceCategoryOptions,
     resourceItems,
     openWorkbenchResourceUpload,
     selectedResource,
@@ -177,7 +193,7 @@ function useWorkbenchPageView({me,setMe,setMsg,goPage,TaskDetailModal}){
     recentItems={recentItems}
     canConfigureWatermark={canConfigureWatermark}
     setWatermarkOpen={setWatermarkOpen}
-    workbenchSignalItems={workbenchSignalItems}
+    workbenchSignalActions={workbenchSignalActions}
     origin={origin}
     reference={reference}
     selectedTpl={selectedTpl}

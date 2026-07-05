@@ -14,7 +14,7 @@ function WorkbenchPageView({
   recentItems,
   canConfigureWatermark,
   setWatermarkOpen,
-  workbenchSignalItems,
+  workbenchSignalActions,
   origin,
   reference,
   selectedTpl,
@@ -65,7 +65,7 @@ function WorkbenchPageView({
       </div>
 
       <section className="wbCenterPanel">
-        <WorkbenchSignalBar title={mediaMode==='video'?'宣传视频智能工作台':'家具图片智能工作台'} items={workbenchSignalItems}/>
+        <WorkbenchSignalBar title={mediaMode==='video'?'宣传视频智能工作台':'家具图片智能工作台'} actions={workbenchSignalActions}/>
         {mediaMode==='image'
           ? <>
             {slots.studioCenterToolbar}

@@ -6,7 +6,7 @@
     display:grid;
     place-items:center;
     overflow:hidden;
-    background:radial-gradient(circle at 50% 42%,rgba(255,255,255,.08),transparent 50%),#030303;
+    background:#030303;
   }
 
 
@@ -14,16 +14,16 @@
   .topApp .wbPreviewWrap img.wbPreview,
   .topApp .wbPreviewWrap .wbPreview{
     position:absolute!important;
-    inset:22px!important;
-    width:calc(100% - 44px)!important;
-    height:calc(100% - 44px)!important;
-    max-width:none!important;
-    max-height:none!important;
+    inset:0!important;
+    width:100%!important;
+    height:100%!important;
+    max-width:100%!important;
+    max-height:100%!important;
     object-fit:contain!important;
     object-position:center center!important;
     background:transparent!important;
     display:block!important;
-    border-radius:10px;
+    border-radius:0;
   }
 
 

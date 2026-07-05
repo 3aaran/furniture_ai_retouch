@@ -1,26 +1,34 @@
 import {useEffect,useState} from 'react';
 import {fetchWorkbenchResources} from '../api/workbenchApi.js';
-import {filterWorkbenchModalResources,filterWorkbenchResources,getCurrentWorkbenchTemplate} from '../model/workbenchResources.js';
+import {buildWorkbenchResourceCategoryOptions,filterWorkbenchModalResources,filterWorkbenchResources,getCurrentWorkbenchTemplate} from '../model/workbenchResources.js';
 
 export function useWorkbenchResourceLibrary({op,mediaMode,resTypeName}){
   const [resources,setResources]=useState([]);
   const [resourceKeyword,setResourceKeyword]=useState('');
   const [resourceScope,setResourceScope]=useState('SYSTEM');
   const [materialTab,setMaterialTab]=useState('material');
+  const [resourceMainCategory,setResourceMainCategory]=useState('');
+  const [resourceSubCategory,setResourceSubCategory]=useState('');
   const [selectedResource,setSelectedResource]=useState('');
 
   useEffect(()=>{
-    fetchWorkbenchResources({pageSize:20}).then(data=>setResources(data.items||[])).catch(()=>{});
+    fetchWorkbenchResources({pageSize:200}).then(data=>setResources(data.items||[])).catch(()=>{});
   },[]);
 
-  useEffect(()=>{setSelectedResource('')},[op,materialTab,resourceScope,mediaMode]);
+  useEffect(()=>{setResourceMainCategory('');setResourceSubCategory('')},[op,materialTab,resourceScope,mediaMode]);
+  useEffect(()=>{setResourceSubCategory('')},[resourceMainCategory]);
+  useEffect(()=>{setSelectedResource('')},[op,materialTab,resourceScope,resourceMainCategory,resourceSubCategory,mediaMode]);
 
   function currentTemplate(){
     return getCurrentWorkbenchTemplate(resources,selectedResource);
   }
 
+  function getResourceCategoryOptions(){
+    return buildWorkbenchResourceCategoryOptions({resources,resourceScope,op,materialTab});
+  }
+
   function getResourceItems(){
-    return filterWorkbenchResources({resources,resourceScope,op,materialTab,keyword:resourceKeyword});
+    return filterWorkbenchResources({resources,resourceScope,op,materialTab,keyword:resourceKeyword,mainCategory:resourceMainCategory,subCategory:resourceSubCategory});
   }
 
   function getModalItems(resourceModal){
@@ -36,9 +44,14 @@ export function useWorkbenchResourceLibrary({op,mediaMode,resTypeName}){
     setResourceScope,
     materialTab,
     setMaterialTab,
+    resourceMainCategory,
+    setResourceMainCategory,
+    resourceSubCategory,
+    setResourceSubCategory,
     selectedResource,
     setSelectedResource,
     currentTemplate,
+    getResourceCategoryOptions,
     getResourceItems,
     getModalItems
   };
