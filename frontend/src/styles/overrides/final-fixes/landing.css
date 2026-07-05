@@ -1,4 +1,28 @@
 /* Final fixes landing page visual effects. */
+:root:has(.landingPage){
+  --app-browser-zoom:1;
+  --app-zoomed-viewport-width:100vw;
+  --app-zoomed-viewport-height:100vh;
+}
+
+html:has(.landingPage){
+  zoom:1;
+  overflow-x:hidden;
+}
+
+body:has(.landingPage){
+  width:100% !important;
+  min-width:0 !important;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+#root:has(.landingPage){
+  width:100% !important;
+  min-width:0 !important;
+  min-height:100vh;
+}
+
 .landingPage{
   position:relative;
 }

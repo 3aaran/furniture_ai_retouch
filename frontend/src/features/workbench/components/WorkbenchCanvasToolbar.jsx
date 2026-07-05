@@ -2,11 +2,6 @@ import React from 'react';
 
 function WorkbenchCanvasToolbar({showWorkbenchWatermark,workbenchWatermark,toggleWorkbenchWatermark}){
   return <div className="wbStudioCanvasToolbar" aria-label="画布工具栏">
-    <div className="wbStudioZoomTools">
-      <button type="button" title="放大">＋</button>
-      <button type="button" title="缩小">－</button>
-      <button type="button" title="拖拽画布">☝</button>
-    </div>
     <button
       className={`wbStudioWatermarkToggle ${showWorkbenchWatermark?'active':''} ${workbenchWatermark.configured?'isReady':'isNotReady'}`}
       type="button"

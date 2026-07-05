@@ -370,43 +370,8 @@ html:has(.wbScreen),
     flex:0 0 auto;
     display:flex;
     align-items:center;
-    justify-content:space-between;
+    justify-content:flex-end;
     margin:0 18px 18px;
-  }
-
-.topApp .wbStudioZoomTools{
-    display:flex;
-    align-items:center;
-    gap:16px;
-  }
-
-.topApp .wbStudioZoomTools button{
-    width:28px;
-    height:28px;
-    padding:0;
-    border:0;
-    border-radius:4px;
-    background:transparent;
-    color:#d9d2c4;
-    display:grid;
-    place-items:center;
-    font-size:24px;
-    font-weight:900;
-    line-height:1;
-  }
-
-.topApp .wbStudioZoomTools button+button{
-    position:relative;
-  }
-
-.topApp .wbStudioZoomTools button+button:before{
-    content:"";
-    position:absolute;
-    left:-8px;
-    top:4px;
-    bottom:4px;
-    width:1px;
-    background:rgba(255,255,255,.12);
   }
 
 .topApp .wbStudioWatermarkToggle{
@@ -599,39 +564,6 @@ html:has(.wbScreen),
     font-weight:900;
   }
 
-.topApp .wbStudioLightCard{
-    display:grid;
-    gap:14px;
-  }
-
-.topApp .wbStudioLightCard label{
-    display:grid;
-    grid-template-columns:1fr auto;
-    gap:7px 12px;
-    align-items:center;
-    color:#fff3da;
-    font-size:13px;
-    font-weight:800;
-  }
-
-.topApp .wbStudioLightCard label span{
-    color:var(--studio-muted);
-  }
-
-.topApp .wbStudioLightCard label b{
-    color:#fff3da;
-    font-size:13px;
-    font-weight:900;
-  }
-
-.topApp .wbStudioLightCard input[type="range"]{
-    grid-column:1/-1;
-    width:100%;
-    height:4px;
-    margin:0;
-    accent-color:var(--studio-gold-2);
-  }
-
 .topApp .wbStudioOutputControls{
     display:grid;
     grid-template-columns:1fr 110px;
@@ -739,7 +671,6 @@ html:has(.wbScreen),
   .topApp .wbStudioRecentStrip,
   .topApp .wbStudioPanelHead,
   .topApp .wbStudioReferenceCard,
-  .topApp .wbStudioLightCard,
   .topApp .wbStudioOutputControls,
   .topApp .wbStudioGenerateMeta{
     display:none!important;

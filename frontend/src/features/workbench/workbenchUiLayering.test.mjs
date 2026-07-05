@@ -12,6 +12,7 @@ const uploadSource = readFileSync(join(workbenchFeatureRoot, 'components/Workben
 const workbenchSource = readFileSync(join(workbenchFeatureRoot, 'hooks/useWorkbenchRecent.js'), 'utf8');
 const appSharedSource = readFileSync(join(srcRoot, 'appShared.jsx'), 'utf8');
 const finalCss = readFileSync(join(srcRoot, 'styles/overrides/final-fixes.css'), 'utf8');
+const studioLayoutCss = readFileSync(join(srcRoot, 'styles/overrides/studio-workbench/layout-panels-2.css'), 'utf8');
 
 describe('workbench resource picker layering', () => {
   it('renders the resource picker in the body with a top-level mask', () => {
@@ -26,6 +27,18 @@ describe('workbench resource picker layering', () => {
     assert.match(finalCss, /\.topApp \.wbUploadInner[\s\S]*display:flex\s*!important/);
     assert.match(finalCss, /\.topApp \.wbUploadInner[\s\S]*flex-direction:column\s*!important/);
     assert.match(uploadSource, /stopPropagation\(\);\s*openResourceModal\('source'\)/);
+  });
+
+  it('keeps the desktop product preview fully contained like the mobile preview', () => {
+    const previewRule=studioLayoutCss.match(/\.topApp \.wbPreview,[\s\S]*?\n\s*\}/)?.[0]||'';
+    assert.match(previewRule, /width:calc\(100% - 44px\)!important;/);
+    assert.match(previewRule, /height:calc\(100% - 44px\)!important;/);
+    assert.match(previewRule, /position:absolute!important;/);
+    assert.match(previewRule, /inset:22px!important;/);
+    assert.match(previewRule, /max-width:none!important;/);
+    assert.match(previewRule, /max-height:none!important;/);
+    assert.match(previewRule, /object-fit:contain!important;/);
+    assert.doesNotMatch(previewRule, /^\s*height:100%!important;/m);
   });
 
   it('does not stop task polling on the first transient status read failure', () => {

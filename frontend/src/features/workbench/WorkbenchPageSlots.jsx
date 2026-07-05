@@ -194,8 +194,6 @@ export function buildWorkbenchPageSlots({
       setMsg={setMsg}
       clearReferenceImage={clearReferenceImage}
       openResourceModal={openResourceModal}
-      studioLight={studioLight}
-      setStudioLight={setStudioLight}
       resolution={resolution}
       setResolution={setResolution}
       ratio={ratio}

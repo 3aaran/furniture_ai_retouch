@@ -19,20 +19,6 @@ function StudioReferenceUpload({reference,draggingRef,dragOver,dragLeave,dropUpl
   </div>;
 }
 
-function StudioLightControls({studioLight,setStudioLight}){
-  return <div className="wbStudioLightCard">
-    <div className="wbStudioPanelTitle">环境光效</div>
-    <label>
-      <span>强度</span><b>{studioLight.strength}%</b>
-      <input type="range" min="0" max="100" value={studioLight.strength} onChange={e=>setStudioLight(value=>({...value,strength:Number(e.target.value)}))}/>
-    </label>
-    <label>
-      <span>色温</span><b>{studioLight.colorTemp}K</b>
-      <input type="range" min="2500" max="7500" step="100" value={studioLight.colorTemp} onChange={e=>setStudioLight(value=>({...value,colorTemp:Number(e.target.value)}))}/>
-    </label>
-  </div>;
-}
-
 function WorkbenchStudioControlPanel({
   currentFeatureLabel,
   isPromotionSelected,
@@ -48,8 +34,6 @@ function WorkbenchStudioControlPanel({
   setMsg,
   clearReferenceImage,
   openResourceModal,
-  studioLight,
-  setStudioLight,
   resolution,
   setResolution,
   ratio,
@@ -81,7 +65,6 @@ function WorkbenchStudioControlPanel({
       clearReferenceImage={clearReferenceImage}
       openResourceModal={openResourceModal}
     />
-    <StudioLightControls studioLight={studioLight} setStudioLight={setStudioLight}/>
     <div className="wbStudioOutputControls">
       <div className="wbControlGroup">
         <span>分辨率</span>

@@ -1,4 +1,4 @@
-import React,{useRef,useState}from'react';
+import React,{useState}from'react';
 import{ChevronDown,ChevronUp,Droplet}from'../../../shared/icons/index.jsx';
 
 export function WorkbenchUploadPanel({
@@ -23,29 +23,6 @@ export function WorkbenchUploadPanel({
   generatedImageUrl=''
 }){
   const [referenceOpen,setReferenceOpen]=useState(false);
-  const [comparePercent,setComparePercent]=useState(50);
-  const compareRef=useRef(null);
-
-  function updateCompareFromEvent(event){
-    const rect=compareRef.current?.getBoundingClientRect?.();
-    if(!rect?.width)return;
-    const clientX=event.clientX??event.touches?.[0]?.clientX??rect.left+rect.width/2;
-    const next=Math.max(0,Math.min(100,((clientX-rect.left)/rect.width)*100));
-    setComparePercent(next);
-  }
-
-  function startCompareDrag(event){
-    event.preventDefault();
-    event.stopPropagation();
-    updateCompareFromEvent(event);
-    const move=nextEvent=>updateCompareFromEvent(nextEvent);
-    const up=()=>{
-      window.removeEventListener('pointermove',move);
-      window.removeEventListener('pointerup',up);
-    };
-    window.addEventListener('pointermove',move);
-    window.addEventListener('pointerup',up,{once:true});
-  }
 
   return <>
     <div className="wbMainBlock">
@@ -57,29 +34,8 @@ export function WorkbenchUploadPanel({
       </div>
       <label className={draggingSource?'wbUploadBox isDragging':'wbUploadBox'} onDragOver={event=>dragOver(event,'source')} onDragLeave={event=>dragLeave(event,'source')} onDrop={event=>dropUpload(event,'source')}>
         <input key={origin?.id||'empty-source'} type="file" accept="image/*" onChange={chooseSource}/>
-        {origin?<div className={generatedImageUrl?'wbPreviewWrap hasCompare':'wbPreviewWrap'} ref={compareRef} style={generatedImageUrl?{'--compare-left':`${comparePercent}%`}:undefined}>
-          {generatedImageUrl?<>
-            <img
-              key={`${origin.id}-source`}
-              className="wbPreview wbCompareImage wbCompareSourceImage"
-              src={origin.imageUrl||imgSrc(origin.url)}
-              loading="lazy"
-              decoding="async"
-              alt="产品原图"
-              onError={event=>setMsg('图片已上传，但前端加载图片失败：'+event.currentTarget.src)}
-            />
-            <div className="wbCompareGeneratedLayer" style={{clipPath:`inset(0 0 0 ${comparePercent}%)`}}>
-              <img
-                className="wbPreview wbCompareImage wbCompareResultImage"
-                src={generatedImageUrl}
-                loading="lazy"
-                decoding="async"
-                alt="生成图"
-                onError={()=>setMsg('生成图加载失败，请到历史任务查看')}
-              />
-            </div>
-            <button className="wbCompareHandle" type="button" style={{left:`${comparePercent}%`}} onPointerDown={startCompareDrag} onClick={event=>{event.preventDefault();event.stopPropagation();}} aria-label="拖动查看原图和生成图对比"><span>‹ ›</span></button>
-          </>:<img
+        {origin?<div className="wbPreviewWrap">
+          <img
             key={origin.id}
             className="wbPreview"
             src={origin.imageUrl||imgSrc(origin.url)}
@@ -87,7 +43,7 @@ export function WorkbenchUploadPanel({
             decoding="async"
             alt="产品原图"
             onError={event=>setMsg('图片已上传，但前端加载图片失败：'+event.currentTarget.src)}
-          />}
+          />
           {watermarkOverlay}
           <button className="wbClearImageBtn" type="button" onClick={event=>{event.preventDefault();event.stopPropagation();clearSourceImage?.();}}>清除</button>
           {origin.uploadStatus&&<span className={`wbUploadStatus ${origin.uploadStatus}`}>
