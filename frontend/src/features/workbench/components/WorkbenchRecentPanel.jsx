@@ -1,5 +1,5 @@
 import React from 'react';
-import {Download,Search,Trash2,X} from '../../../shared/icons/index.jsx';
+import {Download,Pencil,Search,Trash2,X} from '../../../shared/icons/index.jsx';
 import {fmt,fallbackToOriginalImage,openImageDownload} from '../../../appShared.jsx';
 
 function RecentActionButton({icon,onClick,title,danger=false,disabled=false}){
@@ -49,7 +49,7 @@ function WorkbenchRecentPanel({
       <b>{mediaMode==='video'?'最近视频':'最近图片'}</b>
       <div className="wbRightHeaderActions">
         <button onClick={refreshRecent}>↻</button>
-        <button type="button" className="wbDrawerClose" onClick={()=>setRightDrawerOpen(false)} aria-label="关闭最近生成侧栏"><X size={18}/></button>
+        <button type="button" className="wbDrawerClose" onClick={()=>setRightDrawerOpen(false)} aria-label="关闭最近生成"><X size={18}/></button>
       </div>
     </div>
     <div className="wbRecentSearch"><Search size={16}/><input placeholder={mediaMode==='video'?'搜索视频任务...':'搜索任务编号...'} value={recentKeyword} onChange={e=>setRecentKeyword(e.target.value)}/></div>
@@ -66,8 +66,17 @@ function WorkbenchRecentPanel({
         onClick={()=>mediaMode==='video'?setMsg('视频任务详情后续接入'):openRecentTask(item)}
       >
         <div className="wbRecentThumb"><img src={listImgSrc(item)} alt="最近生成" onError={e=>fallbackToOriginalImage(e,item)} loading="lazy" decoding="async"/>{running&&<i className="wbSpin"/>}{failed&&<em>失败</em>}</div>
-        <div className="wbRecentInfo"><b>{recentTypeName(item)}</b><span>{running?'生成中...':failed?'失败，已退回算力':fmt(item.createdAt||item.submittedAt)}</span><small>{item.id}</small></div>
+        <div className="wbRecentInfo">
+          <b>{recentTypeName(item)}</b>
+          <span>{running?'生成中...':failed?'失败，已退回算力':fmt(item.createdAt||item.submittedAt)}</span>
+          <small>{item.id}</small>
+          {mediaMode==='image'&&!running&&<div className="wbRecentMobileActions" style={{display:'none'}}>
+            <button type="button" title="编辑" aria-label="编辑" onClick={e=>{e.stopPropagation();openRecentTask(item);}}><Pencil size={13}/><span>编辑</span></button>
+            <button type="button" className="danger" title="删除" aria-label="删除" onClick={e=>{e.stopPropagation();deleteRecentTask(item,e);}}><Trash2 size={13}/><span>删除</span></button>
+          </div>}
+        </div>
         {!running&&!failed&&<div
+          className="wbRecentDesktopActions"
           style={{
             position:'absolute',
             right:8,

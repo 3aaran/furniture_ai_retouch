@@ -31,7 +31,7 @@ function WorkbenchSignalBar({title,actions=[],recentCount=0,onOpenRecent}){
       </button>
     </div>
     <div className="rbDataPulseStrip wbSignalActions" aria-label="当前页面状态">
-      {actions.map((action,index)=><div className="wbSignalActionWrap" key={`${action.label}-${index}`}>
+      {actions.map((action,index)=><div className={index===0?'wbSignalActionWrap isMobileFeatureMode':'wbSignalActionWrap'} key={`${action.label}-${index}`}>
         <button
           className="wbSignalAction"
           type="button"

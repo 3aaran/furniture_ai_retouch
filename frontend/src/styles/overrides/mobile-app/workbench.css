@@ -256,46 +256,6 @@
     object-fit: cover !important;
   }
 
-.topApp .wbRecentSearch {
-    width: 100% !important;
-  }
-
-.topApp .wbRecentList {
-    display: grid !important;
-    gap: 10px !important;
-    flex: none !important;
-    width: 100% !important;
-    max-height: none !important;
-    overflow: visible !important;
-    padding-right: 0 !important;
-  }
-
-.topApp .wbRecentItem {
-    position: relative !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    grid-template-columns: 78px minmax(0, 1fr) !important;
-    padding: 10px !important;
-  }
-
-.topApp .wbRecentThumb,
-  .topApp .wbRecentThumb img {
-    width: 78px !important;
-    height: 68px !important;
-  }
-
-.topApp .wbRecentInfo {
-    min-width: 0 !important;
-  }
-
-.topApp .wbRecentInfo b,
-  .topApp .wbRecentInfo span,
-  .topApp .wbRecentInfo small {
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-  }
-
 .topApp .wbMoreBtn,
   .topApp .wbGenerateBtn,
   .topApp .wbPrimaryBtn,
@@ -587,53 +547,6 @@ html:has(.wbScreen),
     min-width: 0 !important;
   }
 
-.topApp .wbRecentList {
-    display: grid !important;
-    gap: 10px !important;
-    flex: none !important;
-    width: 100% !important;
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    overflow: visible !important;
-    padding: 0 !important;
-  }
-
-.topApp .wbRecentItem {
-    position: relative !important;
-    display: grid !important;
-    grid-template-columns: 76px minmax(0,1fr) !important;
-    gap: 10px !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    padding: 10px !important;
-    overflow: hidden !important;
-  }
-
-.topApp .wbRecentThumb,
-  .topApp .wbRecentThumb img {
-    width: 76px !important;
-    height: 66px !important;
-    min-width: 76px !important;
-  }
-
-.topApp .wbRecentInfo {
-    min-width: 0 !important;
-    max-width: 100% !important;
-    overflow: hidden !important;
-  }
-
-.topApp .wbRecentInfo :is(b,span,small) {
-    display: block !important;
-    max-width: 100% !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-  }
-
-.topApp .wbRecentHoverPreview {
-    display: none !important;
-  }
 }
 
 @media (max-width: 390px){

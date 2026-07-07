@@ -14,7 +14,7 @@ function WorkbenchFeaturePanel({
     <div className="wbFeatureNavBlock">
       <div className="wbMobileDrawerHead">
         <div><span>{currentFeatureMode}</span><b>{currentFeatureLabel}</b></div>
-        <button type="button" className="wbDrawerClose" onClick={()=>setLeftDrawerOpen(false)} aria-label="关闭功能侧栏"><X size={18}/></button>
+        <button type="button" className="wbDrawerClose" onClick={()=>setLeftDrawerOpen(false)} aria-label="关闭功能选择"><X size={18}/></button>
       </div>
       <div className="wbSectionTabs wbMainFeatureBranches" aria-label="功能主分支">
         <button type="button" className={featureGroup==='base'&&mediaMode==='image'?'active':''} onClick={event=>openFeaturePopover('base',event)}>基础</button>
