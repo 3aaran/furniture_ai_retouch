@@ -18,9 +18,9 @@
     min-width: 46px !important;
     justify-content: center !important;
     border-radius: 14px !important;
-    border: 1px solid rgba(242, 213, 140, .18) !important;
-    background: rgba(255, 255, 255, .035) !important;
-    color: #f3dc9a !important;
+    border: 1px solid var(--icon-border) !important;
+    background: var(--icon-bg) !important;
+    color: var(--icon-color) !important;
   }
 
   .topApp .topBrandButton .topBrandMenuIconV5 {
@@ -50,9 +50,9 @@
     max-height: 100dvh !important;
     overflow-y: auto !important;
     padding: 16px 14px calc(18px + env(safe-area-inset-bottom, 0px)) !important;
-    border-right: 1px solid rgba(242, 213, 140, .18) !important;
-    background: linear-gradient(180deg, rgba(18, 19, 21, .98), rgba(9, 10, 12, .99)) !important;
-    box-shadow: 26px 0 70px rgba(0, 0, 0, .56) !important;
+    border-right: 1px solid var(--nav-border) !important;
+    background: var(--nav-menu-bg) !important;
+    box-shadow: var(--nav-shadow) !important;
   }
 
   .mobileSideNavHeadV5,
@@ -90,12 +90,12 @@
   }
 
   .mobileSideNavHeadV5 b {
-    color: #fff4df !important;
+    color: var(--nav-text-strong) !important;
     font-size: 18px !important;
   }
 
   .mobileSideNavHeadV5 small {
-    color: rgba(255, 244, 223, .58) !important;
+    color: var(--nav-text) !important;
     font-size: 12px !important;
   }
 
@@ -108,9 +108,9 @@
     align-items: center !important;
     justify-content: center !important;
     border-radius: 13px !important;
-    border: 1px solid rgba(255, 255, 255, .12) !important;
-    background: rgba(255, 255, 255, .04) !important;
-    color: #f5ead0 !important;
+    border: 1px solid var(--icon-border) !important;
+    background: var(--icon-bg) !important;
+    color: var(--icon-color) !important;
   }
 
   .mobileSideNavListV5,
@@ -127,23 +127,23 @@
     gap: 12px !important;
     padding: 0 14px !important;
     border-radius: 16px !important;
-    border: 1px solid rgba(255, 255, 255, .1) !important;
-    background: rgba(255, 255, 255, .035) !important;
-    color: #f5f0e6 !important;
+    border: 1px solid var(--border-subtle) !important;
+    background: var(--bg-card-soft) !important;
+    color: var(--nav-text-strong) !important;
     font-size: 15px !important;
     font-weight: 900 !important;
   }
 
   .mobileSideNavListV5 button.active {
-    border-color: rgba(242, 213, 140, .42) !important;
-    background: linear-gradient(135deg, #f3da94, #c79b3b) !important;
-    color: #181207 !important;
+    border-color: var(--color-accent) !important;
+    background: var(--nav-active-bg) !important;
+    color: var(--nav-active-text) !important;
   }
 
   .mobileSideNavToolsV5 {
     margin-top: 16px !important;
     padding-top: 16px !important;
-    border-top: 1px solid rgba(255, 255, 255, .08) !important;
+    border-top: 1px solid var(--border-subtle) !important;
   }
 
   .mobileSideNavToolsV5 i {
@@ -196,21 +196,21 @@
     align-items: center !important;
     padding: 9px 12px !important;
     border-radius: 16px !important;
-    border: 1px solid rgba(242, 213, 140, .16) !important;
-    background: rgba(13, 15, 18, .94) !important;
-    color: #f5f0e6 !important;
+    border: 1px solid var(--border-subtle) !important;
+    background: var(--bg-card-soft) !important;
+    color: var(--nav-text-strong) !important;
     text-align: left !important;
-    box-shadow: 0 12px 36px rgba(0, 0, 0, .26) !important;
+    box-shadow: var(--shadow-card) !important;
   }
 
   .topApp .wbRailBtn.primary {
-    background: linear-gradient(135deg, rgba(242, 213, 140, .2), rgba(18, 20, 22, .96)) !important;
-    border-color: rgba(242, 213, 140, .34) !important;
+    background: var(--nav-hover-bg) !important;
+    border-color: var(--color-accent) !important;
   }
 
   .topApp .wbRailBtn svg {
     grid-row: 1 / 3 !important;
-    color: #f3dc9a !important;
+    color: var(--icon-color) !important;
   }
 
   .topApp .wbRailBtn span,
@@ -222,12 +222,12 @@
   }
 
   .topApp .wbRailBtn span {
-    color: rgba(255, 244, 223, .58) !important;
+    color: var(--nav-text) !important;
     font-size: 12px !important;
   }
 
   .topApp .wbRailBtn b {
-    color: #fff5dc !important;
+    color: var(--nav-text-strong) !important;
     font-size: 15px !important;
     line-height: 1.15 !important;
   }

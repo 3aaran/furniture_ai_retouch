@@ -6,27 +6,27 @@
 */
 
 :root{
-  --stitch-base:#050506;
-  --stitch-surface:#131315;
-  --stitch-lowest:#0e0e0f;
-  --stitch-low:#1c1b1d;
-  --stitch-mid:#201f21;
-  --stitch-high:#2a2a2b;
-  --stitch-highest:#353436;
-  --stitch-text:#e5e1e3;
-  --stitch-muted:#cec6b4;
-  --stitch-dim:#8f8678;
-  --stitch-line:rgba(255,255,255,.09);
-  --stitch-line-soft:rgba(255,255,255,.055);
-  --stitch-gold:#f0d68a;
-  --stitch-gold-2:#f8e3a5;
-  --stitch-gold-deep:#d1a33c;
-  --stitch-blue:#96ccff;
+  --stitch-base:var(--bg-page);
+  --stitch-surface:var(--bg-card-soft);
+  --stitch-lowest:var(--bg-card);
+  --stitch-low:var(--bg-card);
+  --stitch-mid:var(--bg-card-soft);
+  --stitch-high:var(--bg-card-strong);
+  --stitch-highest:#dfeeff;
+  --stitch-text:var(--text-main);
+  --stitch-muted:var(--text-muted);
+  --stitch-dim:var(--text-dim);
+  --stitch-line:var(--border-soft);
+  --stitch-line-soft:var(--border-subtle);
+  --stitch-gold:var(--color-primary);
+  --stitch-gold-2:var(--color-accent);
+  --stitch-gold-deep:var(--color-primary-deep);
+  --stitch-blue:#268bff;
   --stitch-radius-sm:10px;
   --stitch-radius:16px;
   --stitch-radius-lg:24px;
-  --stitch-shadow:0 26px 80px rgba(0,0,0,.42);
-  --stitch-shadow-soft:0 18px 46px rgba(0,0,0,.26);
+  --stitch-shadow:var(--shadow-soft);
+  --stitch-shadow-soft:var(--shadow-card);
 }
 
 @media (min-width:861px){

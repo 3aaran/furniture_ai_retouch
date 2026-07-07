@@ -630,10 +630,10 @@ html:has(.wbScreen),
   .topApp .wbSelect{
     height:32px;
     width:100%;
-    border:1px solid rgba(255,255,255,.12)!important;
+    border:1px solid var(--studio-line)!important;
     border-radius:6px!important;
-    background:#2a292a!important;
-    color:#fff3da!important;
+    background:var(--studio-panel-2)!important;
+    color:var(--studio-text)!important;
     font-size:12px!important;
     font-weight:900!important;
   }
@@ -645,20 +645,20 @@ html:has(.wbScreen),
     margin-top:auto;
     border:0!important;
     border-radius:12px!important;
-    background:linear-gradient(180deg,#ffe9a8,#f0d68a)!important;
-    color:#130f06!important;
+    background:linear-gradient(135deg,var(--color-primary),var(--color-accent))!important;
+    color:var(--text-on-primary)!important;
     display:flex;
     align-items:center;
     justify-content:center;
     gap:10px;
-    box-shadow:0 12px 34px rgba(240,214,138,.16)!important;
+    box-shadow:0 12px 34px var(--color-primary-soft)!important;
     font-size:15px!important;
     font-weight:1000!important;
   }
 
 .topApp .wbStudioGenerateBtn:hover{
     transform:translateY(-1px);
-    box-shadow:0 18px 46px rgba(240,214,138,.22)!important;
+    box-shadow:0 18px 46px var(--color-primary-soft)!important;
   }
 
 .topApp .wbStudioGenerateMeta{
@@ -669,7 +669,7 @@ html:has(.wbScreen),
   }
 
 .topApp .wbStudioGenerateMeta b{
-    color:#fff3da;
+    color:var(--studio-text);
   }
 
 .topApp .wbVideoConfigSlot{

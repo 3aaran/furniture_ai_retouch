@@ -1,7 +1,7 @@
 /* Final fixes avatar, toast and status styles. */
 .avatarBtn>span{
   overflow:hidden;
-  background:linear-gradient(135deg,#f0d68a,#ad8640)!important;
+  background:var(--nav-active-bg)!important;
 }
 
 .avatarBtn>span img{

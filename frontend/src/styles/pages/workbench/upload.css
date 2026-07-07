@@ -1,47 +1,47 @@
 /* Workbench upload styles. Prefix split. */
-.wbSearchInput{flex:1;display:flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.10);background:#111214;border-radius:14px;padding:0 14px;height:46px;color:#d8d0c0}
+.wbSearchInput{flex:1;display:flex;align-items:center;gap:8px;border:1px solid var(--border-subtle);background:var(--bg-card-soft);border-radius:14px;padding:0 14px;height:46px;color:var(--text-muted)}
 
-.wbSearchInput input{flex:1;border:0;background:transparent;color:#f2eee5;outline:none;font-size:15px}
+.wbSearchInput input{flex:1;border:0;background:transparent;color:var(--text-main);outline:none;font-size:15px}
 
-.wbUploadCard,.wbResourceCard{border-radius:18px;border:1px dashed rgba(255,255,255,.12);background:#111214;color:#efe7d7;min-height:148px;padding:14px;text-align:left}
+.wbUploadCard,.wbResourceCard{border-radius:18px;border:1px dashed var(--border-soft);background:var(--bg-card-soft);color:var(--text-main);min-height:148px;padding:14px;text-align:left}
 
 .wbUploadCard{display:grid;place-items:center;gap:8px}
 
-.wbUploadCard span{font-size:44px;color:#fff;line-height:1}
+.wbUploadCard span{font-size:44px;color:var(--color-primary);line-height:1}
 
 .wbUploadCard b{font-size:18px}
 
-.wbUploadBox{position:relative;display:block;height:300px;border-radius:24px;border:1px dashed rgba(240,214,138,.52);background:rgba(255,255,255,.02);overflow:hidden;cursor:pointer}
+.wbUploadBox{position:relative;display:block;height:300px;border-radius:24px;border:1px dashed var(--color-accent);background:var(--bg-card);overflow:hidden;cursor:pointer}
 
 .wbUploadBox input{display:none}
 
-.wbUploadInner{height:100%;display:grid;place-items:center;text-align:center;padding:20px;color:#e6dfd0}
+.wbUploadInner{height:100%;display:grid;place-items:center;text-align:center;padding:20px;color:var(--text-muted)}
 
-.wbUploadInner b{font-size:18px;color:#fff;margin-top:12px}
+.wbUploadInner b{font-size:18px;color:var(--text-main);margin-top:12px}
 
-.wbUploadInner span{color:#cabd9e;margin-top:6px}
+.wbUploadInner span{color:var(--text-muted);margin-top:6px}
 
-.wbUploadInner em{color:#8b846f;font-style:normal;margin:14px 0}
+.wbUploadInner em{color:var(--text-dim);font-style:normal;margin:14px 0}
 
-.wbUploadInner button{height:44px;padding:0 22px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:#18191b;color:#f2ece0}
+.wbUploadInner button{height:44px;padding:0 22px;border-radius:999px;border:1px solid var(--border-soft);background:var(--bg-card-soft);color:var(--text-main)}
 
-.wbUploadCircle{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:rgba(240,214,138,.18);color:#f0d68a;font-size:28px;font-weight:900}
+.wbUploadCircle{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:var(--color-primary-soft);color:var(--color-primary);font-size:28px;font-weight:900}
 
-.wbRefCard{border:1px solid rgba(255,255,255,.08);border-radius:22px;background:#17181a;padding:16px 18px;margin-bottom:16px}
+.wbRefCard{border:1px solid var(--border-subtle);border-radius:22px;background:var(--bg-card-soft);padding:16px 18px;margin-bottom:16px}
 
 .wbRefHeader{display:flex;align-items:center;justify-content:space-between;gap:14px}
 
-.wbRefHeader b{display:block;color:#fff;font-size:18px;margin-bottom:6px}
+.wbRefHeader b{display:block;color:var(--text-main);font-size:18px;margin-bottom:6px}
 
-.wbRefHeader span{display:block;color:#a69f93;font-size:14px;line-height:1.6}
+.wbRefHeader span{display:block;color:var(--text-muted);font-size:14px;line-height:1.6}
 
-.wbRefHeader strong{color:#d4d0c7;font-size:14px;font-weight:700;white-space:nowrap}
+.wbRefHeader strong{color:var(--text-main);font-size:14px;font-weight:700;white-space:nowrap}
 
 .wbRefHeaderActions{display:flex;align-items:center;gap:10px}
 
-.wbRefToggle{width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:#101113;color:#ead89f;display:grid;place-items:center;cursor:pointer;transition:border-color .18s ease,background .18s ease,color .18s ease,transform .18s ease}
+.wbRefToggle{width:36px;height:36px;border-radius:50%;border:1px solid var(--border-soft);background:var(--bg-card);color:var(--color-primary);display:grid;place-items:center;cursor:pointer;transition:border-color .18s ease,background .18s ease,color .18s ease,transform .18s ease}
 
-.wbRefToggle:hover{border-color:rgba(240,214,138,.48);background:rgba(240,214,138,.12);color:#f0d68a}
+.wbRefToggle:hover{border-color:var(--color-accent);background:var(--color-accent-soft);color:var(--color-primary)}
 
 .wbRefToggle svg{transition:transform .18s ease}
 
@@ -49,7 +49,7 @@
 
 .wbRefBody{display:flex;align-items:center;gap:14px;margin-top:14px;flex-wrap:wrap}
 
-.wbRefUpload{width:132px;height:112px;border-radius:18px;border:1px dashed rgba(255,255,255,.16);background:#121315;display:grid;place-items:center;color:#d1c6a5;overflow:hidden;cursor:pointer}
+.wbRefUpload{width:132px;height:112px;border-radius:18px;border:1px dashed var(--border-soft);background:var(--bg-card);display:grid;place-items:center;color:var(--text-muted);overflow:hidden;cursor:pointer}
 
 .wbRefUpload input{display:none}
 
@@ -61,19 +61,19 @@
 
 .wbPreviewWrap{position:relative;width:100%;height:100%;max-width:100%;max-height:100%;overflow:hidden}
 
-.wbRefPreviewWrap{position:relative;width:132px;height:112px;flex:0 0 132px;border-radius:18px;background:#121315;overflow:hidden}
+.wbRefPreviewWrap{position:relative;width:132px;height:112px;flex:0 0 132px;border-radius:18px;background:var(--bg-card);overflow:hidden}
 
 .wbPreviewWrap .wbPreview,.wbRefPreviewWrap img{display:block;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;object-position:center center}
 
-.wbUploadStatus{position:absolute;left:14px;top:14px;z-index:4;height:34px;display:inline-flex;align-items:center;padding:0 12px;border-radius:999px;background:rgba(10,10,10,.72);border:1px solid rgba(255,255,255,.18);color:#f0d68a;font-size:13px;font-weight:900;backdrop-filter:blur(8px)}
+.wbUploadStatus{position:absolute;left:14px;top:14px;z-index:4;height:34px;display:inline-flex;align-items:center;padding:0 12px;border-radius:999px;background:rgba(255,255,255,.78);border:1px solid var(--border-soft);color:var(--color-primary);font-size:13px;font-weight:900;backdrop-filter:blur(8px)}
 
 .wbUploadStatus.success{color:#9df0b5;border-color:rgba(90,220,130,.38)}
 
 .wbUploadStatus.failed{color:#ffadad;border-color:rgba(255,120,120,.4)}
 
-.wbUploadStatus.uploading{color:#f0d68a;border-color:rgba(240,214,138,.38)}
+.wbUploadStatus.uploading{color:var(--color-primary);border-color:var(--color-primary-soft)}
 
-.wbPromptInput{width:100%;min-height:102px;border-radius:18px;border:1px solid rgba(255,255,255,.08);background:#141517;color:#f2eee5;padding:18px;resize:vertical;outline:none}
+.wbPromptInput{width:100%;min-height:102px;border-radius:18px;border:1px solid var(--border-subtle);background:var(--bg-card);color:var(--text-main);padding:18px;resize:vertical;outline:none}
 
 @media (max-width:640px){
 .wbRefBody{align-items:flex-start}
@@ -103,13 +103,13 @@
 
 .wbUploadBox,.wbRefUpload{position:relative;transition:border-color .2s ease,box-shadow .2s ease,background .2s ease}
 
-.wbUploadBox.isDragging,.wbRefUpload.isDragging{border-color:#f0d68a!important;box-shadow:0 0 0 2px rgba(240,214,138,.18);background:rgba(240,214,138,.08)!important}
+.wbUploadBox.isDragging,.wbRefUpload.isDragging{border-color:var(--color-accent)!important;box-shadow:0 0 0 2px var(--color-accent-soft);background:var(--color-accent-soft)!important}
 
 .wbUploadInner button{cursor:pointer}
 
 .wbUploadBox:before,.wbRefUpload:before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none}
 
-.wbUploadBox.isDragging:before,.wbRefUpload.isDragging:before{background:rgba(240,214,138,.05)}
+.wbUploadBox.isDragging:before,.wbRefUpload.isDragging:before{background:var(--color-accent-soft)}
 
 .wbRecentItem,.wbResourceCard,.wbUploadCard,.wbGenerateBtn,.wbMoreBtn{cursor:pointer}
 

@@ -1,23 +1,66 @@
 ﻿
 :root{
-  --color-primary:#f0d68a;
-  --color-danger:#ef4444;
-  --color-success:#22c55e;
-  --bg-page:#0b0c0d;
-  --bg-card:#161718;
-  --border-soft:rgba(255,255,255,.12);
-  --text-main:#f6f6f6;
-  --text-muted:#cfc7b8;
-  --app-bg:#0b0c0d;
-  --panel-bg:#161718;
-  --panel-bg-soft:#1b1b1b;
-  --gold:#f0d68a;
-  --gold-2:#e2cb8a;
-  --text:#f6f6f6;
-  --text-soft:#cfc7b8;
-  --border:rgba(255,255,255,.12);
+  --color-primary:#3040a0;
+  --color-primary-rgb:48,64,160;
+  --color-accent:#00bcd4;
+  --color-accent-rgb:0,188,212;
+  --color-primary-deep:#26358f;
+  --color-primary-deep-rgb:38,53,143;
+  --color-accent-soft:rgba(var(--color-accent-rgb),.12);
+  --color-primary-soft:rgba(var(--color-primary-rgb),.12);
+  --color-danger:#ff7087;
+  --color-danger-rgb:255,112,135;
+  --color-success:#32c7a3;
+  --color-success-rgb:50,199,163;
+
+  --bg-page:#eef4fb;
+  --bg-page-rgb:238,244,251;
+  --bg-card:#ffffff;
+  --bg-card-rgb:255,255,255;
+  --bg-card-soft:#f7faff;
+  --bg-card-soft-rgb:247,250,255;
+  --bg-card-strong:#edf4ff;
+  --bg-card-strong-rgb:237,244,255;
+
+  --border-soft:rgba(86,110,145,.18);
+  --border-subtle:rgba(86,110,145,.10);
+
+  --text-main:#16223a;
+  --text-main-rgb:22,34,58;
+  --text-muted:#60708c;
+  --text-muted-rgb:96,112,140;
+  --text-dim:#8a98ad;
+  --text-dim-rgb:138,152,173;
+  --text-on-primary:#ffffff;
+  --text-on-primary-rgb:255,255,255;
+
+  --shadow-modal:0 30px 80px rgba(50,80,120,.18);
+  --shadow-soft:0 18px 46px rgba(50,80,120,.12);
+  --shadow-card:0 12px 30px rgba(50,80,120,.10);
+
+  --nav-bg:rgba(var(--bg-card-rgb),.86);
+  --nav-border:var(--border-soft);
+  --nav-text:var(--text-muted);
+  --nav-text-strong:var(--text-main);
+  --nav-active-text:var(--text-on-primary);
+  --nav-active-bg:linear-gradient(135deg,var(--color-primary),var(--color-accent));
+  --nav-hover-bg:var(--color-primary-soft);
+  --nav-menu-bg:rgba(var(--bg-card-rgb),.96);
+  --nav-shadow:0 18px 54px rgba(var(--text-main-rgb),.14);
+  --icon-bg:rgba(var(--bg-card-rgb),.68);
+  --icon-border:var(--border-soft);
+  --icon-color:var(--color-primary);
+
+  --app-bg:var(--bg-page);
+  --panel-bg:var(--bg-card);
+  --panel-bg-soft:var(--bg-card-soft);
+  --gold:var(--color-primary);
+  --gold-2:var(--color-accent);
+  --text:var(--text-main);
+  --text-soft:var(--text-muted);
+  --border:var(--border-soft);
+
   --radius-lg:20px;
   --radius-md:14px;
-  --shadow-modal:0 40px 120px rgba(0,0,0,.68);
 }
 

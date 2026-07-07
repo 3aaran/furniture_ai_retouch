@@ -39,8 +39,10 @@ body:has(.landingPage){
 }
 
 .landingNav{
-  background:rgba(5,5,6,.82);
-  backdrop-filter:blur(12px);
+  background:rgba(var(--bg-card-rgb),.88);
+  border-bottom-color:var(--border-soft);
+  box-shadow:0 12px 34px rgba(var(--text-main-rgb),.08);
+  backdrop-filter:blur(18px) saturate(1.08);
 }
 
 .landingFloatCard,

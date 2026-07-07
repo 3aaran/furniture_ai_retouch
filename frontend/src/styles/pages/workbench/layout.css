@@ -307,7 +307,7 @@ body:has(.wbScreen){
   height:100vh !important;
   max-height:100vh !important;
   overflow:hidden !important;
-  background:#0b0c0d !important;
+  background:var(--bg-page) !important;
 }
 
 .topMain:has(.wbScreen){
@@ -341,7 +341,7 @@ body:has(.wbScreen){
   margin:0 !important;
   padding:0 !important;
   box-sizing:border-box !important;
-  background:#0b0c0d !important;
+  background:var(--bg-page) !important;
 }
 
 .topApp .wbScreen > *{
@@ -360,11 +360,11 @@ body:has(.wbScreen){
   border-left:0 !important;
   border-top:0 !important;
   border-bottom:0 !important;
-  border-right:1px solid rgba(255,255,255,.13) !important;
+  border-right:1px solid var(--border-soft) !important;
   padding:20px 24px 14px !important;
   display:flex !important;
   flex-direction:column !important;
-  background:linear-gradient(180deg,rgba(24,24,24,.96),rgba(17,17,17,.98)) !important;
+  background:var(--bg-card) !important;
 }
 
 .topApp .wbSectionLabel{
@@ -385,7 +385,7 @@ body:has(.wbScreen){
   padding:24px 28px 36px !important;
   box-shadow:none !important;
   box-sizing:border-box !important;
-  background:#050607 !important;
+  background:var(--bg-page) !important;
 }
 
 .topApp .wbCenterPanel > *{
@@ -410,18 +410,18 @@ body:has(.wbScreen){
   border-top:0 !important;
   border-bottom:0 !important;
   border-right:0 !important;
-  border-left:1px solid rgba(255,255,255,.13) !important;
+  border-left:1px solid var(--border-soft) !important;
   padding:0 !important;
   display:flex !important;
   flex-direction:column !important;
-  background:linear-gradient(180deg,rgba(24,24,24,.96),rgba(17,17,17,.98)) !important;
+  background:var(--bg-card) !important;
 }
 
 .topApp .wbRightHeader{
   flex:0 0 auto !important;
   padding:18px 16px 12px !important;
   margin:0 !important;
-  border-bottom:1px solid rgba(255,255,255,.08) !important;
+  border-bottom:1px solid var(--border-subtle) !important;
 }
 
 .topApp .wbRightHeader b{

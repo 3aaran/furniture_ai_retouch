@@ -3,18 +3,18 @@
    Source reference: uploaded Obsidian Studio design. This file is intentionally loaded last. */
 
 :root{
-  --studio-bg:#050506;
-  --studio-surface:#131315;
-  --studio-panel:#1c1b1d;
-  --studio-panel-2:#201f21;
-  --studio-panel-3:#2a2a2b;
-  --studio-line:rgba(255,255,255,.09);
-  --studio-line-soft:rgba(255,255,255,.06);
-  --studio-gold:#f0d68a;
-  --studio-gold-2:#ffe39b;
-  --studio-text:#e5e1e3;
-  --studio-muted:#cec6b4;
-  --studio-dim:#8d867a;
+  --studio-bg:var(--bg-page);
+  --studio-surface:var(--bg-card-soft);
+  --studio-panel:var(--bg-card);
+  --studio-panel-2:var(--bg-card-soft);
+  --studio-panel-3:var(--bg-card-strong);
+  --studio-line:var(--border-soft);
+  --studio-line-soft:var(--border-subtle);
+  --studio-gold:var(--color-primary);
+  --studio-gold-2:var(--color-accent);
+  --studio-text:var(--text-main);
+  --studio-muted:var(--text-muted);
+  --studio-dim:var(--text-dim);
 }
 
 @media (min-width:861px){
