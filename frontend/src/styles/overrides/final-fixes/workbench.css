@@ -20,8 +20,8 @@
   width:22px;
   height:22px;
   border-radius:50%;
-  border:3px solid rgba(255,255,255,.35);
-  border-top-color:#f0d68a;
+  border:3px solid var(--border-subtle);
+  border-top-color:var(--color-accent);
   animation:wbSpin 1s linear infinite;
 }
 
@@ -33,14 +33,14 @@
   border-radius:999px;
   display:grid;
   place-items:center;
-  background:#b63838;
-  color:#fff;
+  background:var(--color-danger);
+  color:var(--text-on-primary);
   font-style:normal;
   font-size:12px;
   font-weight:900;
 }
 
-.wbRecentItem.isLoading{border-color:rgba(240,214,138,.28)}
+.wbRecentItem.isLoading{border-color:rgba(var(--color-accent-rgb),.28)}
 
 .wbRecentItem.isFailed{border-color:rgba(255,90,90,.34)}
 
@@ -105,7 +105,7 @@
   display:grid!important;
   place-items:center!important;
   padding:24px!important;
-  background:rgba(0,0,0,.72)!important;
+  background:rgba(var(--text-main-rgb),.34)!important;
   backdrop-filter:blur(6px)!important;
 }
 
@@ -138,10 +138,10 @@
   min-width:0 !important;
   height:38px !important;
   padding:0 10px !important;
-  border:1px solid rgba(255,255,255,.12) !important;
+  border:1px solid var(--border-soft) !important;
   border-radius:10px !important;
-  background:#151617 !important;
-  color:#cfc7ba !important;
+  background:var(--bg-card-soft) !important;
+  color:var(--text-muted) !important;
   font-size:14px !important;
   font-weight:900 !important;
   line-height:1.1 !important;
@@ -150,16 +150,16 @@
 }
 
 .topApp .wbSectionTabs button.active{
-  border-color:rgba(231,207,136,.72) !important;
-  background:linear-gradient(135deg,#e7cf88,#f5e1b2) !important;
-  color:#17120a !important;
-  box-shadow:0 10px 28px rgba(229,200,117,.14) !important;
+  border-color:var(--color-accent) !important;
+  background:var(--nav-active-bg) !important;
+  color:var(--text-on-primary) !important;
+  box-shadow:0 10px 28px var(--color-primary-soft) !important;
 }
 
 .topApp .wbSectionTabs button.isComing{
-  border-color:rgba(126,176,150,.22) !important;
-  background:rgba(126,176,150,.08) !important;
-  color:#a9c8b7 !important;
+  border-color:rgba(var(--color-success-rgb),.22) !important;
+  background:rgba(var(--color-success-rgb),.08) !important;
+  color:var(--color-success) !important;
 }
 
 .topApp .wbPromoFormCard{
@@ -180,7 +180,7 @@
 }
 
 .topApp .wbPromoFormCard::-webkit-scrollbar-thumb{
-  background:rgba(242,213,140,.36) !important;
+  background:var(--color-accent-soft) !important;
   border-radius:999px !important;
 }
 
@@ -195,7 +195,7 @@
 }
 
 .topApp .wbPromoField span{
-  color:#f2ead8 !important;
+  color:var(--text-main) !important;
   font-size:13px !important;
   font-weight:900 !important;
 }
@@ -208,17 +208,17 @@
 .topApp .wbPromoTextarea{
   min-height:92px !important;
   padding:12px 13px !important;
-  border:1px solid rgba(255,255,255,.14) !important;
+  border:1px solid var(--border-soft) !important;
   border-radius:12px !important;
-  background:#101112 !important;
-  color:#f8f1df !important;
+  background:var(--bg-card) !important;
+  color:var(--text-main) !important;
   resize:vertical !important;
   outline:none !important;
 }
 
 .topApp .wbPromoTextarea:focus{
-  border-color:rgba(231,207,136,.62) !important;
-  box-shadow:0 0 0 3px rgba(231,207,136,.12) !important;
+  border-color:rgba(var(--color-accent-rgb),.62) !important;
+  box-shadow:0 0 0 3px var(--color-accent-soft) !important;
 }
 
 @media (max-width:1280px){

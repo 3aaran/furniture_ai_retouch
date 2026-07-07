@@ -141,7 +141,7 @@
   background:
     linear-gradient(180deg,rgba(255,255,255,.78),rgba(255,255,255,.55) 54%,rgba(166,154,135,.36) 55%,rgba(126,113,92,.48)),
     linear-gradient(120deg,#f2f1ec,#d4d2ca);
-  box-shadow:0 22px 55px rgba(0,0,0,.16);
+  box-shadow:var(--shadow-card);
 }
 
 .watermarkPreviewImage:before{
@@ -172,7 +172,7 @@
   position:absolute;
   left:18px;
   top:16px;
-  color:rgba(0,0,0,.38);
+  color:rgba(var(--text-main-rgb),.38);
   font-size:13px;
   font-weight:900;
 }
@@ -185,7 +185,7 @@
   max-width:70%;
   font-weight:900;
   line-height:1.1;
-  text-shadow:0 2px 8px rgba(0,0,0,.22);
+  text-shadow:0 2px 8px rgba(var(--text-main-rgb),.18);
   pointer-events:none;
 }
 
@@ -204,7 +204,7 @@
   padding:.45em .8em;
   border:2px solid currentColor;
   border-radius:999px;
-  background:rgba(0,0,0,.42);
+  background:rgba(var(--text-main-rgb),.28);
 }
 
 .watermarkPreviewText.corner{
@@ -228,7 +228,7 @@
   pointer-events:none;
   font-weight:900;
   line-height:1;
-  text-shadow:0 2px 8px rgba(0,0,0,.22);
+  text-shadow:0 2px 8px rgba(var(--text-main-rgb),.18);
 }
 
 .watermarkPreviewTile span{

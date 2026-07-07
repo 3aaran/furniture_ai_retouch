@@ -110,9 +110,9 @@
   position:relative!important;
   height:104px!important;
   overflow:hidden!important;
-  border:1px solid rgba(255,255,255,.12)!important;
+  border:1px solid var(--border-soft)!important;
   border-radius:14px!important;
-  background:#101112!important;
+  background:var(--bg-card-soft)!important;
 }
 
 .topApp .wbStoryboardItem img{
@@ -131,8 +131,8 @@
   display:grid!important;
   place-items:center!important;
   border-radius:50%!important;
-  background:rgba(0,0,0,.64)!important;
-  color:#f6df95!important;
+  background:rgba(var(--bg-card-rgb),.82)!important;
+  color:var(--color-primary)!important;
   font-weight:900!important;
   font-size:12px!important;
 }
@@ -143,10 +143,10 @@
   top:8px!important;
   height:24px!important;
   padding:0 8px!important;
-  border:1px solid rgba(255,255,255,.18)!important;
+  border:1px solid var(--border-soft)!important;
   border-radius:999px!important;
-  background:rgba(0,0,0,.64)!important;
-  color:#fff!important;
+  background:rgba(var(--bg-card-rgb),.82)!important;
+  color:var(--text-main)!important;
   font-size:12px!important;
   font-weight:900!important;
   cursor:pointer!important;
@@ -163,7 +163,7 @@
   height:auto !important;
 }
 
-.wbGhostBtn{height:42px;border-radius:12px;background:#17181a;border:1px solid rgba(255,255,255,.10);color:#efe7d7}
+.wbGhostBtn{height:42px;border-radius:12px;background:var(--bg-card-soft);border:1px solid var(--border-soft);color:var(--text-main)}
 
 .wbRecentItem{position:relative;overflow:visible}
 
@@ -276,8 +276,8 @@
 .topApp .wbRecentInfo b{
   display:inline-flex !important;
   max-width:100% !important;
-  background:#4fc567 !important;
-  color:#fff !important;
+  background:var(--color-success) !important;
+  color:var(--text-on-primary) !important;
   font-size:12px !important;
   line-height:1 !important;
   border-radius:999px !important;
@@ -296,9 +296,9 @@
   width:30px !important;
   height:30px !important;
   border-radius:50% !important;
-  background:rgba(0,0,0,.42) !important;
-  color:#fff !important;
-  border:1px solid rgba(255,255,255,.18) !important;
+  background:rgba(var(--bg-card-rgb),.82) !important;
+  color:var(--text-main) !important;
+  border:1px solid var(--border-soft) !important;
   display:grid !important;
   place-items:center !important;
   opacity:0 !important;
@@ -424,8 +424,8 @@
 .topApp .wbRecentInfo b{
   display:inline-flex !important;
   max-width:100% !important;
-  background:#4fc567 !important;
-  color:#fff !important;
+  background:var(--color-success) !important;
+  color:var(--text-on-primary) !important;
   font-size:12px !important;
   line-height:1 !important;
   border-radius:999px !important;
@@ -444,9 +444,9 @@
   width:30px !important;
   height:30px !important;
   border-radius:50% !important;
-  background:rgba(0,0,0,.42) !important;
-  color:#fff !important;
-  border:1px solid rgba(255,255,255,.18) !important;
+  background:rgba(var(--bg-card-rgb),.82) !important;
+  color:var(--text-main) !important;
+  border:1px solid var(--border-soft) !important;
   display:grid !important;
   place-items:center !important;
   opacity:0 !important;

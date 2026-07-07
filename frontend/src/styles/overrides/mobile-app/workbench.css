@@ -348,7 +348,7 @@ html:has(.wbScreen),
     max-height: none !important;
     overflow-x: hidden !important;
     overflow-y: visible !important;
-    background: radial-gradient(circle at 78% -8%, rgba(214,168,94,.12), transparent 30%), #080b10 !important;
+    background: radial-gradient(circle at 78% -8%, var(--color-accent-soft), transparent 30%), var(--bg-page) !important;
   }
 
 .topMain:has(.wbScreen),
@@ -412,9 +412,9 @@ html:has(.wbScreen),
     flex: none !important;
     overflow: visible !important;
     border-radius: 20px !important;
-    border: 1px solid rgba(255,255,255,.09) !important;
-    background: linear-gradient(180deg, rgba(22,23,25,.96), rgba(13,14,16,.98)) !important;
-    box-shadow: 0 16px 44px rgba(0,0,0,.26) !important;
+    border: 1px solid var(--border-soft) !important;
+    background: var(--bg-card) !important;
+    box-shadow: var(--shadow-card) !important;
   }
 
 .topApp .wbCenterPanel {

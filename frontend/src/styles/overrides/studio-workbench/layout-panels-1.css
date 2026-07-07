@@ -107,11 +107,11 @@ html:has(.wbScreen),
     margin-left:16px;
     display:grid;
     place-items:center;
-    border:1px solid rgba(255,255,255,.14);
+    border:1px solid var(--studio-line);
     border-radius:6px;
-    color:#fff3da;
+    color:var(--studio-gold);
     font-size:22px;
-    background:rgba(255,255,255,.03);
+    background:var(--studio-panel-2);
   }
 
 .topApp .wbMobileDrawerHead div{
@@ -129,7 +129,7 @@ html:has(.wbScreen),
 
 .topApp .wbMobileDrawerHead b{
     order:1;
-    color:#fff3da;
+    color:var(--studio-text);
     font-size:18px;
     font-weight:900;
     letter-spacing:.02em;
@@ -188,13 +188,13 @@ html:has(.wbScreen),
   .topApp .wbMainFeatureBranches button:nth-child(3):before{content:"▷";}
 
 .topApp .wbSectionTabs button.active{
-    background:rgba(240,214,138,.14);
-    color:#fff3da;
+    background:var(--color-primary-soft);
+    color:var(--studio-gold);
     box-shadow:inset -2px 0 0 var(--studio-gold);
   }
 
 .topApp .wbSectionTabs button.active:before{
-    color:#fff3da;
+    color:var(--studio-gold);
   }
 
 .topApp .wbDivider{
@@ -222,10 +222,10 @@ html:has(.wbScreen),
     width:100%;
     height:32px;
     min-width:0;
-    border:1px solid rgba(255,255,255,.12)!important;
+    border:1px solid var(--studio-line)!important;
     border-radius:6px!important;
-    background:#232224!important;
-    color:#fff3da!important;
+    background:var(--studio-panel-2)!important;
+    color:var(--studio-text)!important;
     font-size:12px!important;
     font-weight:900!important;
   }
@@ -237,7 +237,7 @@ html:has(.wbScreen),
 
 .topApp .wbSectionLabel{
     margin:0 0 10px;
-    color:#fff3da;
+    color:var(--studio-text);
     font-size:14px;
     font-weight:900;
     letter-spacing:.02em;
@@ -267,7 +267,7 @@ html:has(.wbScreen),
   .topApp .wbCenterPanel::-webkit-scrollbar-thumb,
   .topApp .wbRightPanel::-webkit-scrollbar-thumb{
     border-radius:999px;
-    background:rgba(240,214,138,.26);
+    background:var(--color-accent-soft);
   }
 
 .topApp .wbUploadCard,
@@ -279,10 +279,10 @@ html:has(.wbScreen),
     height:116px!important;
     padding:0!important;
     overflow:hidden!important;
-    border:1px solid rgba(255,255,255,.12)!important;
+    border:1px solid var(--studio-line)!important;
     border-radius:8px!important;
-    background:#343235!important;
-    color:#fff3da!important;
+    background:var(--studio-panel-2)!important;
+    color:var(--studio-text)!important;
     display:flex!important;
     flex-direction:column!important;
     justify-content:flex-end!important;
@@ -294,7 +294,7 @@ html:has(.wbScreen),
     align-items:center!important;
     justify-content:center!important;
     border-style:dashed!important;
-    background:rgba(255,255,255,.03)!important;
+    background:var(--studio-panel-3)!important;
   }
 
 .topApp .wbUploadCard span{
@@ -324,8 +324,8 @@ html:has(.wbScreen),
     display:grid;
     place-items:center;
     padding:0 6px;
-    background:rgba(0,0,0,.72);
-    color:#fff3da;
+    background:rgba(var(--bg-card-rgb),.88);
+    color:var(--studio-text);
     font-size:12px;
     font-weight:900;
     white-space:nowrap;
@@ -353,7 +353,7 @@ html:has(.wbScreen),
     place-items:center;
     border-radius:999px;
     background:var(--studio-gold);
-    color:#2b210f;
+    color:var(--text-on-primary);
     font-size:11px;
     font-weight:900;
     z-index:4;
@@ -365,7 +365,7 @@ html:has(.wbScreen),
     display:grid;
     place-items:center;
     color:var(--studio-dim);
-    border:1px dashed rgba(255,255,255,.12);
+    border:1px dashed var(--studio-line);
     border-radius:8px;
   }
 
@@ -376,7 +376,7 @@ html:has(.wbScreen),
     gap:0!important;
     padding:28px 18px 14px!important;
     overflow:hidden!important;
-    background:#000!important;
+    background:var(--studio-bg)!important;
     border:0!important;
     border-right:1px solid var(--studio-line)!important;
     z-index:2;
@@ -388,9 +388,9 @@ html:has(.wbScreen),
     inset:0;
     pointer-events:none;
     background:
-      radial-gradient(circle at 50% 42%,rgba(240,214,138,.09),transparent 34%),
-      radial-gradient(circle at 48% 55%,rgba(150,204,255,.08),transparent 46%),
-      linear-gradient(90deg,rgba(255,255,255,.02),transparent 18%,transparent 82%,rgba(255,255,255,.02));
+      radial-gradient(circle at 50% 42%,var(--color-primary-soft),transparent 34%),
+      radial-gradient(circle at 48% 55%,var(--color-accent-soft),transparent 46%),
+      linear-gradient(90deg,rgba(var(--bg-card-rgb),.22),transparent 18%,transparent 82%,rgba(var(--bg-card-rgb),.22));
     opacity:.75;
   }
 
@@ -413,10 +413,10 @@ html:has(.wbScreen),
     display:flex;
     align-items:center;
     gap:10px;
-    border:1px solid rgba(255,255,255,.12);
+    border:1px solid var(--studio-line);
     border-radius:5px;
-    background:rgba(255,255,255,.1);
-    color:#fff3da;
+    background:var(--studio-panel-2);
+    color:var(--studio-text);
     font-size:13px;
     font-weight:900;
   }
@@ -425,7 +425,7 @@ html:has(.wbScreen),
     width:40px;
     height:18px;
     border-radius:999px;
-    background:#464343;
+    background:var(--border-soft);
     position:relative;
   }
 
@@ -437,7 +437,7 @@ html:has(.wbScreen),
     width:16px;
     height:16px;
     border-radius:50%;
-    background:#8f8879;
+    background:var(--text-dim);
     transition:.18s ease;
   }
 
@@ -464,10 +464,10 @@ html:has(.wbScreen),
     flex-direction:column;
     margin:0!important;
     padding:0!important;
-    border:1px solid rgba(255,255,255,.08)!important;
+    border:1px solid var(--studio-line)!important;
     border-radius:12px!important;
-    background:rgba(0,0,0,.82)!important;
-    box-shadow:inset 0 0 70px rgba(255,255,255,.03),0 30px 90px rgba(0,0,0,.58)!important;
+    background:var(--studio-panel)!important;
+    box-shadow:var(--shadow-soft)!important;
     overflow:hidden;
   }
 
@@ -503,11 +503,11 @@ html:has(.wbScreen),
     align-items:center;
     justify-content:center;
     gap:10px;
-    border:1px dashed rgba(240,214,138,.32);
+    border:1px dashed rgba(var(--color-accent-rgb),.42);
     border-radius:12px;
-    background:rgba(255,255,255,.025);
-    color:#fff3da;
-    box-shadow:0 24px 90px rgba(0,0,0,.44), inset 0 0 80px rgba(255,255,255,.025);
+    background:rgba(var(--bg-card-rgb),.72);
+    color:var(--studio-text);
+    box-shadow:var(--shadow-card);
   }
 
 .topApp .wbCenterPanel .wbUploadCircle{
@@ -516,7 +516,7 @@ html:has(.wbScreen),
     border-radius:50%;
     display:grid;
     place-items:center;
-    background:rgba(240,214,138,.12);
+    background:var(--color-primary-soft);
     color:var(--studio-gold);
     font-size:32px;
     font-weight:300;
@@ -535,10 +535,10 @@ html:has(.wbScreen),
 .topApp .wbCenterPanel .wbUploadInner button{
     height:34px;
     padding:0 16px;
-    border:1px solid rgba(240,214,138,.34);
+    border:1px solid rgba(var(--color-accent-rgb),.34);
     border-radius:999px;
-    background:rgba(240,214,138,.08);
-    color:#fff3da;
+    background:var(--color-accent-soft);
+    color:var(--studio-gold);
     font-weight:900;
   }
 }
@@ -549,7 +549,7 @@ html:has(.wbScreen),
     width:100%;
     height:100%;
     min-height:138px;
-    background:#0f0f10;
+    background:var(--studio-panel-2);
   }
 
 .topApp .wbStudioRefPreview img{
@@ -566,20 +566,20 @@ html:has(.wbScreen),
     bottom:10px;
     height:30px;
     padding:0 10px;
-    border:1px solid rgba(255,255,255,.16);
+    border:1px solid var(--studio-line);
     border-radius:999px;
-    background:rgba(0,0,0,.62);
-    color:#fff3da;
+    background:rgba(var(--bg-card-rgb),.82);
+    color:var(--studio-text);
     font-size:12px;
     font-weight:900;
   }
 
 .topApp .wbStudioResourcePick{
     height:34px;
-    border:1px solid rgba(240,214,138,.22);
+    border:1px solid rgba(var(--color-accent-rgb),.28);
     border-radius:6px;
-    background:rgba(240,214,138,.06);
-    color:#fff3da;
+    background:var(--color-accent-soft);
+    color:var(--studio-gold);
     font-weight:900;
   }
 
@@ -612,18 +612,18 @@ html:has(.wbScreen),
     height:32px;
     min-width:46px;
     padding:0 10px;
-    border:1px solid rgba(255,255,255,.12);
+    border:1px solid var(--studio-line);
     border-radius:999px;
-    background:rgba(255,255,255,.05);
-    color:#fff3da;
+    background:var(--studio-panel-2);
+    color:var(--studio-text);
     font-weight:900;
     font-size:12px;
   }
 
 .topApp .wbPills button.active{
     border-color:var(--studio-gold);
-    background:var(--studio-gold-2);
-    color:#2b210f;
+    background:var(--nav-active-bg);
+    color:var(--text-on-primary);
   }
 
 .topApp .wbSelect.dark,

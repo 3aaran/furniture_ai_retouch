@@ -1,7 +1,7 @@
 /* Workbench layout styles. Prefix split. */
 .wbScreen{display:grid;grid-template-columns:340px minmax(0,1fr) 300px;gap:18px;align-items:start}
 
-.wbSidePanel,.wbCenterPanel,.wbRightPanel{background:linear-gradient(180deg,rgba(24,24,24,.96),rgba(17,17,17,.98));border:1px solid rgba(255,255,255,.08);border-radius:24px;box-shadow:0 18px 50px rgba(0,0,0,.3)}
+.wbSidePanel,.wbCenterPanel,.wbRightPanel{background:var(--bg-card);border:1px solid var(--border-soft);border-radius:24px;box-shadow:var(--shadow-soft)}
 
 .wbSidePanel{padding:22px 24px;min-height:760px}
 
@@ -9,15 +9,15 @@
 
 .wbRightPanel{padding:18px 18px 16px;min-height:760px;display:flex;flex-direction:column}
 
-.wbSectionLabel{font-size:15px;color:#e9e0cf;margin-bottom:12px}
+.wbSectionLabel{font-size:15px;color:var(--text-main);margin-bottom:12px}
 
 .wbMainBlock{margin-bottom:18px}
 
-.wbRightHeader{display:flex;align-items:center;justify-content:space-between;color:#f4efe6;margin-bottom:16px}
+.wbRightHeader{display:flex;align-items:center;justify-content:space-between;color:var(--text-main);margin-bottom:16px}
 
 .wbRightHeader b{font-size:18px}
 
-.wbRightHeader button{width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:#151618;color:#fff}
+.wbRightHeader button{width:32px;height:32px;border-radius:50%;border:1px solid var(--border-soft);background:var(--bg-card-soft);color:var(--text-main)}
 
 @media (max-width:1380px){
 .wbScreen{grid-template-columns:320px minmax(0,1fr)}
@@ -184,7 +184,7 @@
   border-left:0 !important;
   border-top:0 !important;
   border-bottom:0 !important;
-  border-right:1px solid rgba(255,255,255,.13) !important;
+  border-right:1px solid var(--border-soft) !important;
   padding:22px 28px 16px !important;
   display:flex !important;
   flex-direction:column !important;
@@ -228,7 +228,7 @@
   border-top:0 !important;
   border-bottom:0 !important;
   border-right:0 !important;
-  border-left:1px solid rgba(255,255,255,.13) !important;
+  border-left:1px solid var(--border-soft) !important;
   padding:0 !important;
   display:flex !important;
   flex-direction:column !important;
@@ -238,7 +238,7 @@
   flex:0 0 auto !important;
   padding:22px 18px 12px !important;
   margin:0 !important;
-  border-bottom:1px solid rgba(255,255,255,.08) !important;
+  border-bottom:1px solid var(--border-subtle) !important;
 }
 
 .topApp .wbRightHeader b{
@@ -259,7 +259,7 @@
 .topApp .wbResourceGrid::-webkit-scrollbar-thumb,
 .topApp .wbRecentList::-webkit-scrollbar-thumb,
 .topApp .wbCenterPanel::-webkit-scrollbar-thumb{
-  background:rgba(242,213,140,.36) !important;
+  background:var(--color-accent-soft) !important;
   border-radius:999px !important;
 }
 
@@ -442,7 +442,7 @@ body:has(.wbScreen){
 .topApp .wbResourceGrid::-webkit-scrollbar-thumb,
 .topApp .wbRecentList::-webkit-scrollbar-thumb,
 .topApp .wbCenterPanel::-webkit-scrollbar-thumb{
-  background:rgba(242,213,140,.36) !important;
+  background:var(--color-accent-soft) !important;
   border-radius:999px !important;
 }
 

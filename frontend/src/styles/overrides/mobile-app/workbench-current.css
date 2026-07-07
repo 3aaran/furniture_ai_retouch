@@ -102,9 +102,9 @@
     align-items:center !important;
     min-height:72px !important;
     padding:8px 10px !important;
-    border:1px solid rgba(255,255,255,.08) !important;
+    border:1px solid var(--border-soft) !important;
     border-radius:12px !important;
-    background:rgba(255,255,255,.035) !important;
+    background:var(--bg-card-soft) !important;
     overflow:hidden !important;
   }
 
@@ -116,7 +116,7 @@
     min-width:64px !important;
     border-radius:10px !important;
     overflow:hidden !important;
-    background:#101214 !important;
+    background:var(--bg-card-strong) !important;
   }
 
   .topApp .wbWorkbenchRightDrawer .wbRecentThumb img{
@@ -141,8 +141,8 @@
     max-width:100% !important;
     padding:3px 7px !important;
     border-radius:999px !important;
-    background:rgba(74,196,138,.9) !important;
-    color:#fff !important;
+    background:var(--color-success) !important;
+    color:var(--text-on-primary) !important;
     font-size:12px !important;
     line-height:1.2 !important;
     overflow:hidden !important;
@@ -152,7 +152,7 @@
 
   .topApp .wbWorkbenchRightDrawer .wbRecentInfo span{
     display:block !important;
-    color:#9ea8b3 !important;
+    color:var(--text-muted) !important;
     font-size:12px !important;
     line-height:1.4 !important;
     overflow:hidden !important;
@@ -180,17 +180,17 @@
     justify-content:center !important;
     gap:3px !important;
     padding:0 7px !important;
-    border:1px solid rgba(255,255,255,.12) !important;
+    border:1px solid var(--border-soft) !important;
     border-radius:9px !important;
-    background:rgba(255,255,255,.055) !important;
-    color:#f5ead0 !important;
+    background:var(--bg-card) !important;
+    color:var(--text-main) !important;
     font-size:11px !important;
   }
 
   .topApp .wbWorkbenchRightDrawer .wbRecentMobileActions button.danger{
-    border-color:rgba(255,112,112,.22) !important;
-    background:rgba(120,16,16,.28) !important;
-    color:#ffb0b0 !important;
+    border-color:rgba(var(--color-danger-rgb),.22) !important;
+    background:rgba(var(--color-danger-rgb),.12) !important;
+    color:var(--color-danger) !important;
   }
 
   .topApp .wbWorkbenchRightDrawer .wbRecentDesktopActions{
@@ -206,15 +206,15 @@
     display:grid !important;
     gap:10px !important;
     padding:14px !important;
-    border:1px solid rgba(242,213,140,.14) !important;
+    border:1px solid var(--border-soft) !important;
     border-radius:18px !important;
-    background:linear-gradient(180deg,rgba(22,23,25,.96),rgba(13,14,16,.98)) !important;
+    background:var(--bg-card) !important;
   }
 
   .topApp .wbMobileSubmitPanel label{
     display:grid !important;
     gap:8px !important;
-    color:#f4dc95 !important;
+    color:var(--text-main) !important;
     font-size:14px !important;
     font-weight:900 !important;
   }
@@ -224,10 +224,10 @@
     min-height:96px !important;
     resize:vertical !important;
     padding:12px !important;
-    border:1px solid rgba(255,255,255,.1) !important;
+    border:1px solid var(--border-soft) !important;
     border-radius:12px !important;
-    background:#101112 !important;
-    color:#f7f0e5 !important;
+    background:var(--bg-card-soft) !important;
+    color:var(--text-main) !important;
     font:inherit !important;
   }
 

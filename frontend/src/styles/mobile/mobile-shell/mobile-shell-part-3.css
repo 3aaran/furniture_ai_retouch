@@ -2,20 +2,20 @@
 @media (max-width: 860px){
 .mobileProcessFieldList input[type="range"] {
     padding: 0 !important;
-    accent-color: #f2d58c !important;
+    accent-color: var(--color-primary) !important;
   }
 .mobileProcessFieldList input[readonly] {
-    color: #bfb6a4 !important;
-    background: rgba(255, 255, 255, .045) !important;
+    color: var(--text-muted) !important;
+    background: var(--bg-card-soft) !important;
   }
 .mobileProcessOptions button {
     width: 100% !important;
     max-width: 100% !important;
     min-height: 58px !important;
     border-radius: 14px !important;
-    border: 1px solid rgba(255, 255, 255, .11) !important;
-    background: rgba(255, 255, 255, .045) !important;
-    color: #fff !important;
+    border: 1px solid var(--border-soft) !important;
+    background: var(--bg-card-soft) !important;
+    color: var(--text-main) !important;
     display: grid !important;
     grid-template-columns: minmax(0, 1fr) auto !important;
     align-items: center !important;
@@ -25,8 +25,8 @@
     box-sizing: border-box !important;
   }
 .mobileProcessOptions button.active {
-    border-color: rgba(242, 213, 140, .62) !important;
-    background: rgba(242, 213, 140, .11) !important;
+    border-color: rgba(var(--color-accent-rgb),.62) !important;
+    background: var(--color-primary-soft) !important;
   }
 .mobileProcessOptions button div {
     min-width: 0 !important;
@@ -34,22 +34,22 @@
     gap: 4px !important;
   }
 .mobileProcessOptions button b {
-    color: #fff !important;
+    color: var(--text-main) !important;
     font-size: 14px !important;
     line-height: 1.25 !important;
   }
 .mobileProcessOptions button small {
-    color: rgba(255, 255, 255, .56) !important;
+    color: var(--text-muted) !important;
     font-size: 12px !important;
     line-height: 1.35 !important;
   }
 .mobileProcessOptions button > span {
-    color: #f2d58c !important;
+    color: var(--color-primary) !important;
     font-size: 14px !important;
   }
 .mobileProcessResult p {
     margin: 0 !important;
-    color: #e9ddbd !important;
+    color: var(--text-muted) !important;
     font-size: 13px !important;
     line-height: 1.45 !important;
   }
@@ -64,8 +64,8 @@
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
     gap: 10px !important;
-    border-top: 1px solid rgba(255, 255, 255, .1) !important;
-    background: #090a0c !important;
+    border-top: 1px solid var(--border-soft) !important;
+    background: var(--bg-card) !important;
     box-sizing: border-box !important;
   }
 .mobileProcessFooter button {
@@ -77,14 +77,14 @@
     font-weight: 900 !important;
   }
 .mobileProcessFooter .ghost {
-    border: 1px solid rgba(242, 213, 140, .3) !important;
-    background: rgba(25, 26, 29, .96) !important;
-    color: #f4dfaa !important;
+    border: 1px solid var(--border-soft) !important;
+    background: var(--bg-card-soft) !important;
+    color: var(--text-main) !important;
   }
 .mobileProcessFooter .primary {
     border: 0 !important;
-    background: linear-gradient(135deg, #f3da94, #c79b3b) !important;
-    color: #171207 !important;
+    background: var(--nav-active-bg) !important;
+    color: var(--text-on-primary) !important;
   }
 .mobileProcessFooter .primary:disabled {
     opacity: .46 !important;

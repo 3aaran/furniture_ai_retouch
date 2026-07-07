@@ -6,7 +6,7 @@
     display:grid;
     place-items:center;
     overflow:hidden;
-    background:#030303;
+    background:var(--studio-bg);
   }
 
 
@@ -39,10 +39,10 @@
     z-index:8;
     height:34px;
     padding:0 14px;
-    border:1px solid rgba(255,255,255,.16);
+    border:1px solid var(--studio-line);
     border-radius:999px;
-    background:rgba(0,0,0,.62);
-    color:#fff3da;
+    background:rgba(var(--bg-card-rgb),.82);
+    color:var(--studio-text);
     font-weight:900;
   }
 
@@ -53,8 +53,8 @@
     z-index:8;
     padding:7px 10px;
     border-radius:999px;
-    background:rgba(0,0,0,.62);
-    color:#98efbd;
+    background:rgba(var(--bg-card-rgb),.82);
+    color:var(--color-success);
     font-size:12px;
     font-weight:900;
   }
@@ -96,10 +96,10 @@
     display:grid;
     place-items:center;
     overflow:hidden;
-    border:1px solid rgba(255,255,255,.12);
+    border:1px solid var(--studio-line);
     border-radius:8px;
-    background:rgba(255,255,255,.03);
-    color:#111;
+    background:var(--studio-panel-2);
+    color:var(--text-main);
   }
 
 .topApp .wbStudioRecentStrip button img{
@@ -107,12 +107,12 @@
     height:100%;
     object-fit:cover;
     display:block;
-    background:#111;
+    background:var(--studio-panel-2);
   }
 
 .topApp .wbStudioRecentGhost svg{
     opacity:.4;
-    color:#0c0c0c;
+    color:var(--studio-dim);
   }
 
 .topApp .wbStudioRecentStrip button em{
@@ -171,17 +171,17 @@
     margin:0!important;
     padding:18px!important;
     resize:none;
-    border:1px solid rgba(255,255,255,.12)!important;
+    border:1px solid var(--studio-line)!important;
     border-radius:8px!important;
-    background:#2a292a!important;
-    color:#fff3da!important;
+    background:var(--studio-panel-2)!important;
+    color:var(--studio-text)!important;
     box-shadow:none!important;
     font-size:14px!important;
     line-height:1.7!important;
   }
 
 .topApp .wbStudioPromptInput::placeholder{
-    color:rgba(206,198,180,.38);
+    color:rgba(var(--text-muted-rgb),.58);
   }
 
 .topApp .wbStudioReferenceCard{
@@ -208,9 +208,9 @@
 
 .topApp .wbStudioReferenceUpload{
     min-height:138px;
-    border:1px dashed rgba(255,255,255,.18);
+    border:1px dashed var(--studio-line);
     border-radius:8px;
-    background:#2a292a;
+    background:var(--studio-panel-2);
     display:grid;
     place-items:center;
     overflow:hidden;
@@ -219,7 +219,7 @@
 
 .topApp .wbStudioReferenceUpload.isDragging{
     border-color:var(--studio-gold);
-    background:rgba(240,214,138,.08);
+    background:var(--color-primary-soft);
   }
 
 .topApp .wbStudioReferenceUpload input{
@@ -230,12 +230,12 @@
     display:grid;
     place-items:center;
     gap:10px;
-    color:#fff3da;
+    color:var(--studio-text);
     text-align:center;
     font-size:13px;
   }
 
 .topApp .wbStudioReferenceEmpty svg{
-    color:#fff3da;
+    color:var(--studio-gold);
   }
 }

@@ -1,36 +1,36 @@
 /* Stitch premium layout workbench override styles. Prefix split. */
 .topApp :is(.resourcePageV3,.adminLogPage,.profilePageV3,.quotaPageV2,.storeUsersV2,.stack) :is(.primary,.storeCreateBtnV2,.promotionInviteHeadV2 .primary,.wbGenerateBtn){
-  background:linear-gradient(135deg,var(--stitch-gold-2),var(--stitch-gold-deep))!important;
-  color:#231b00!important;
-  border-color:rgba(255,243,218,.45)!important;
-  box-shadow:0 12px 32px rgba(209,163,60,.18)!important;
+  background:var(--nav-active-bg)!important;
+  color:var(--text-on-primary)!important;
+  border-color:rgba(var(--color-accent-rgb),.42)!important;
+  box-shadow:0 12px 32px var(--color-primary-soft)!important;
   font-weight:900!important;
 }
 
 @media (min-width:861px){
 .topApp .wbScreen{
     background:
-      radial-gradient(circle at 50% 15%,rgba(240,214,138,.08),transparent 34rem),
-      radial-gradient(circle at 72% 90%,rgba(150,204,255,.045),transparent 24rem),
-      var(--stitch-base)!important;
+      radial-gradient(circle at 50% 15%,var(--color-primary-soft),transparent 34rem),
+      radial-gradient(circle at 72% 90%,var(--color-accent-soft),transparent 24rem),
+      var(--bg-page)!important;
   }
 
 .topApp .wbSidePanel,
   .topApp .wbRightPanel{
-    background:linear-gradient(180deg,rgba(28,27,29,.96),rgba(14,14,15,.98))!important;
+    background:var(--bg-card)!important;
   }
 
 .topApp .wbCenterPanel{
     background:
-      radial-gradient(circle at 50% 34%,rgba(240,214,138,.08),transparent 40%),
-      linear-gradient(180deg,rgba(19,19,21,.98),rgba(5,5,6,1))!important;
+      radial-gradient(circle at 50% 34%,var(--color-primary-soft),transparent 40%),
+      var(--bg-page)!important;
   }
 
 .topApp .wbCenterPanel .wbMainBlock,
   .topApp .wbStudioRecentStrip,
   .topApp .wbStudioReferenceCard,
   .topApp .wbStudioOutputControls{
-    border-color:rgba(255,255,255,.085)!important;
-    box-shadow:0 18px 54px rgba(0,0,0,.28)!important;
+    border-color:var(--border-soft)!important;
+    box-shadow:var(--shadow-soft)!important;
   }
 }
