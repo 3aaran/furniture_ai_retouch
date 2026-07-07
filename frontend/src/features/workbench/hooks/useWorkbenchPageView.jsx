@@ -72,8 +72,8 @@ function useWorkbenchPageView({me,setMe,setMsg,goPage,TaskDetailModal}){
   const currentFeatureLabel=mediaMode==='video'?'宣传视频生成':ops[op]?.label||'生图功能';
   const currentFeatureMode=mediaMode==='video'?'视频功能':isPromotionSelected?'宣传图':'生图功能';
   const workbenchSignalActions=[
-    {label:currentFeatureMode,onClick:event=>openFeaturePopover(featureGroup,event)},
-    {label:currentFeatureLabel,onClick:event=>openFeaturePopover(featureGroup,event)},
+    {label:currentFeatureMode,value:isPromotionSelected?'宣传图':'基础',options:['基础','宣传图'],onSelect:value=>activateFeatureGroup(value==='宣传图'?'promotion':'base')},
+    {label:currentFeatureLabel,onClick:()=>setLeftDrawerOpen(true)},
     mediaMode==='video'
       ?{label:videoParams.duration,value:videoParams.duration,options:['5秒','10秒','15秒','30秒'],onSelect:value=>updateVideoParam('duration',value)}
       :{label:resolution,value:resolution,options:BASE_RESOLUTION_OPTIONS,onSelect:setResolution},

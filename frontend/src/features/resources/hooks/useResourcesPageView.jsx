@@ -11,6 +11,7 @@ function useResourcesPageView({me,setMsg}){
   const [gridCols,setGridCols]=useState(3);
   const [gridRows,setGridRows]=useState(3);
   const [sidebarCollapsed,setSidebarCollapsed]=useState(false);
+  const [mobileSidebarOpen,setMobileSidebarOpen]=useState(false);
   const pageSize=gridCols*gridRows;
   const {query,setQuery,data,setData,load}=usePaged('/api/merchant/resources',{keyword:'',resourceType:'',mainCategory:'',subCategory:'',status:'',scope:'MERCHANT',page:1,pageSize});
   const [sys,setSys]=useState([]);
@@ -206,6 +207,7 @@ function useResourcesPageView({me,setMsg}){
   }
 
   function openCategoryPanel(){
+    setMobileSidebarOpen(false);
     clearDetail();
     setRenameTarget(null);
     setCategoryOpen(true);
@@ -214,6 +216,8 @@ function useResourcesPageView({me,setMsg}){
 
   return <ResourcesPageView
     sidebarCollapsed={sidebarCollapsed}
+    mobileSidebarOpen={mobileSidebarOpen}
+    setMobileSidebarOpen={setMobileSidebarOpen}
     gridCols={gridCols}
     gridRows={gridRows}
     pageSize={pageSize}
@@ -281,7 +285,7 @@ function useResourcesPageView({me,setMsg}){
     displayItems={displayItems}
     selectedResourceIds={selectedResourceIds}
     toggleResourceSelected={toggleResourceSelected}
-    openPreview={id=>{setCategoryOpen(false);setRenameTarget(null);openDetail(id)}}
+    openPreview={id=>{setMobileSidebarOpen(false);setCategoryOpen(false);setRenameTarget(null);openDetail(id)}}
     total={total}
     currentPage={currentPage}
     totalPages={totalPages}

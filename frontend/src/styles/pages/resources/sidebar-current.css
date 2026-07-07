@@ -183,4 +183,19 @@
     background:linear-gradient(135deg,#f8e3a5,#d1a33c) !important;
     color:#211900 !important;
   }
+
+  .topApp .resourceSideSpaceButtonsV10{
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    gap:8px !important;
+  }
+
+  .topApp .resourceSideSpaceButtonsV10 button{
+    min-height:46px !important;
+    justify-content:center !important;
+    padding:0 !important;
+  }
+
+  .topApp .resourceSideSpaceButtonsV10 button span{
+    display:none !important;
+  }
 }

@@ -2,7 +2,7 @@ import React from'react';
 import{Brush,Camera,ImageIcon,Layers,PenLine,Rotate3d,Search,WandSparkles}from'../../shared/icons/index.jsx';
 import{resTypeName}from'../../appShared.jsx';
 import{promotionFeatures,promotionOptionDefaults}from'./model/promotionFeatures.js';
-import{WorkbenchCanvasToolbar,WorkbenchFeaturePanel,WorkbenchFeaturePopover,WorkbenchLeftPanel,WorkbenchRecentPanel,WorkbenchStudioControlPanel,WorkbenchStudioRecentStrip,WorkbenchVideoPanel}from'./components/index.jsx';
+import{WorkbenchCanvasToolbar,WorkbenchFeaturePanel,WorkbenchFeaturePopover,WorkbenchLeftPanel,WorkbenchMobileSubmitPanel,WorkbenchRecentPanel,WorkbenchStudioControlPanel,WorkbenchStudioRecentStrip,WorkbenchVideoPanel}from'./components/index.jsx';
 
 const featureList=[
   ['material','材质替换',Brush],
@@ -211,6 +211,14 @@ export function buildWorkbenchPageSlots({
       gen={gen}
       calcWorkbenchCost={calcWorkbenchCost}
       me={me}
+    />,
+    mobileSubmitPanel:<WorkbenchMobileSubmitPanel
+      custom={custom}
+      setCustom={setCustom}
+      isPromotionSelected={isPromotionSelected}
+      gen={gen}
+      calcWorkbenchCost={calcWorkbenchCost}
+      quota={me.quota}
     />,
     studioRecentStrip:<WorkbenchStudioRecentStrip
       recentItems={recentItems}

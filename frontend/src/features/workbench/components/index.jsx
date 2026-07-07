@@ -4,6 +4,7 @@ export {default as WorkbenchCanvasToolbar} from './WorkbenchCanvasToolbar.jsx';
 export {default as WorkbenchFeaturePanel} from './WorkbenchFeaturePanel.jsx';
 export {default as WorkbenchFeaturePopover} from './WorkbenchFeaturePopover.jsx';
 export {default as WorkbenchLeftPanel} from './WorkbenchLeftPanel.jsx';
+export {default as WorkbenchMobileSubmitPanel} from './WorkbenchMobileSubmitPanel.jsx';
 export {default as WorkbenchModals} from './WorkbenchModals.jsx';
 export {default as WorkbenchRecentPanel} from './WorkbenchRecentPanel.jsx';
 export {default as WorkbenchRecentSourcePreview} from './WorkbenchRecentSourcePreview.jsx';

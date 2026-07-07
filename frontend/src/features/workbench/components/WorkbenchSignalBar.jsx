@@ -1,7 +1,7 @@
 import React,{useState} from 'react';
 import {RevealText} from '../../../shared/effects/index.jsx';
 
-function WorkbenchSignalBar({title,actions=[]}){
+function WorkbenchSignalBar({title,actions=[],recentCount=0,onOpenRecent}){
   const [openAction,setOpenAction]=useState(-1);
 
   function activateAction(action,index,event){
@@ -21,9 +21,14 @@ function WorkbenchSignalBar({title,actions=[]}){
   }
 
   return <div className="furnitureWorkbenchSignal">
-    <div className="furnitureSignalMain">
-      <span>AI STUDIO</span>
-      <RevealText text={title}/>
+    <div className="furnitureSignalHeader">
+      <div className="furnitureSignalMain">
+        <span>AI STUDIO</span>
+        <RevealText text={title}/>
+      </div>
+      <button className="wbSignalRecentButton" type="button" onClick={onOpenRecent}>
+        <span>最近生成</span><b>{recentCount}</b>
+      </button>
     </div>
     <div className="rbDataPulseStrip wbSignalActions" aria-label="当前页面状态">
       {actions.map((action,index)=><div className="wbSignalActionWrap" key={`${action.label}-${index}`}>

@@ -488,3 +488,41 @@
 .wbSourceHead .wbBlockTitle{
   margin-bottom:0;
 }
+
+.furnitureWorkbenchSignal .furnitureSignalHeader{
+  min-width:0;
+  flex:1 1 auto;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:14px;
+}
+
+.wbSignalRecentButton{
+  flex:0 0 auto;
+  min-height:32px;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:0 11px;
+  border:1px solid rgba(240,214,138,.22);
+  border-radius:999px;
+  background:rgba(255,255,255,.05);
+  color:#f8ecd0;
+  font-size:12px;
+  font-weight:900;
+}
+
+.wbSignalRecentButton b{
+  color:#f0d68a;
+  font-size:14px;
+}
+
+.wbMobileSubmitPanel{
+  display:none;
+}
+
+.topApp .wbMainFeatureBranches button:disabled{
+  opacity:.42;
+  cursor:not-allowed;
+}

@@ -4,6 +4,8 @@ import{ResourceActionPanel,ResourceGridSection,ResourceModals,ResourceSignalBar,
 
 function ResourcesPageView({
   sidebarCollapsed,
+  mobileSidebarOpen,
+  setMobileSidebarOpen,
   gridCols,
   gridRows,
   pageSize,
@@ -56,8 +58,14 @@ function ResourcesPageView({
   uploadOpen,
   uploadProps
 }){
-  return <div className={`resourcePageV3 ${sidebarCollapsed?'resourcePageCollapsedV10':''}`} style={{'--resource-cols':gridCols}}>
+  return <div className={`resourcePageV3 ${sidebarCollapsed?'resourcePageCollapsedV10':''} ${mobileSidebarOpen?'isResourceSidebarOpen':''}`} style={{'--resource-cols':gridCols}}>
     <AuroraLayer variant="resources"/>
+    {(mobileSidebarOpen||activeResourcePanel)&&<button
+      className="resourceMobileDrawerBackdrop"
+      type="button"
+      aria-label="关闭资产侧栏"
+      onClick={()=>{setMobileSidebarOpen(false);closeSidePanel();}}
+    />}
     <ResourceToolbar
       query={query}
       setQuery={setQuery}
@@ -92,6 +100,8 @@ function ResourcesPageView({
       setGridCols={setGridCols}
       setGridRows={setGridRows}
       pageSize={pageSize}
+      onCloseMobile={()=>setMobileSidebarOpen(false)}
+      mobileOpen={mobileSidebarOpen}
     />
 
     <ResourceActionPanel
@@ -119,7 +129,7 @@ function ResourcesPageView({
     <ResourceModals {...modalsProps}/>
 
     <div className="resourceInlineLayoutV6">
-      <ResourceSignalBar items={resourceSignalItems}/>
+      <ResourceSignalBar items={resourceSignalItems} onOpenFilters={()=>{closeSidePanel();setMobileSidebarOpen(true);}}/>
       <ResourceGridSection
         displayItems={displayItems}
         space={space}

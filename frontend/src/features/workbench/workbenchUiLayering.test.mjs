@@ -12,6 +12,7 @@ const uploadSource = readFileSync(join(workbenchFeatureRoot, 'components/Workben
 const featurePanelSource = readFileSync(join(workbenchFeatureRoot, 'components/WorkbenchFeaturePanel.jsx'), 'utf8');
 const leftPanelSource = readFileSync(join(workbenchFeatureRoot, 'components/WorkbenchLeftPanel.jsx'), 'utf8');
 const signalBarSource = readFileSync(join(workbenchFeatureRoot, 'components/WorkbenchSignalBar.jsx'), 'utf8');
+const pageViewSource = readFileSync(join(workbenchFeatureRoot, 'WorkbenchPageView.jsx'), 'utf8');
 const pageViewHookSource = readFileSync(join(workbenchFeatureRoot, 'hooks/useWorkbenchPageView.jsx'), 'utf8');
 const workbenchSource = readFileSync(join(workbenchFeatureRoot, 'hooks/useWorkbenchRecent.js'), 'utf8');
 const appSharedSource = readFileSync(join(srcRoot, 'appShared.jsx'), 'utf8');
@@ -77,9 +78,24 @@ describe('workbench resource picker layering', () => {
     assert.match(signalBarSource, /action\.options/);
     assert.match(signalBarSource, /action\.onSelect/);
     assert.match(pageViewHookSource, /workbenchSignalActions/);
-    assert.match(pageViewHookSource, /openFeaturePopover\(featureGroup,event\)/);
+    assert.match(pageViewHookSource, /setLeftDrawerOpen\(true\)/);
     assert.match(pageViewHookSource, /setResolution/);
     assert.match(pageViewHookSource, /setRatio/);
+  });
+
+  it('uses the signal bar as the only mobile workbench entry area', () => {
+    assert.doesNotMatch(pageViewSource, /className="wbToolRail"/);
+    assert.match(signalBarSource, /wbSignalRecentButton/);
+    assert.match(signalBarSource, /onOpenRecent/);
+    assert.match(pageViewHookSource, /options:\['基础','宣传图'\]/);
+    assert.match(pageViewHookSource, /onSelect:value=>activateFeatureGroup/);
+    assert.match(pageViewHookSource, /onClick:\(\)=>setLeftDrawerOpen\(true\)/);
+  });
+
+  it('keeps video unavailable and provides a mobile generation footer', () => {
+    assert.match(featurePanelSource, /disabled/);
+    assert.match(featurePanelSource, /宣传短视频（开发中）/);
+    assert.match(pageViewSource, /slots\.mobileSubmitPanel/);
   });
 
   it('does not stop task polling on the first transient status read failure', () => {

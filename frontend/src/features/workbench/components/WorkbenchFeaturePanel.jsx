@@ -19,7 +19,7 @@ function WorkbenchFeaturePanel({
       <div className="wbSectionTabs wbMainFeatureBranches" aria-label="功能主分支">
         <button type="button" className={featureGroup==='base'&&mediaMode==='image'?'active':''} onClick={event=>openFeaturePopover('base',event)}>基础</button>
         <button type="button" className={featureGroup==='promotion'&&mediaMode==='image'?'active':''} onClick={event=>openFeaturePopover('promotion',event)}>宣传图</button>
-        <button type="button" className={mediaMode==='video'?'active':''} onClick={event=>openFeaturePopover('video',event)}>宣传短视频</button>
+        <button type="button" disabled title="宣传短视频正在开发中">宣传短视频（开发中）</button>
       </div>
       <div className="wbDivider"/>
     </div>

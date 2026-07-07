@@ -14,7 +14,7 @@ export function useResourcePagination({
   const systemDisplay=(systemItems||[]).slice((sysPage-1)*safePageSize,sysPage*safePageSize);
   const storeItems=data?.items||[];
   const storePages=Math.max(1,Math.ceil((data?.total||0)/(data?.pageSize||safePageSize)));
-  const displayItems=isSystem?systemDisplay:storeItems;
+  const displayItems=isSystem?systemDisplay:storeItems.slice(0,safePageSize);
   const total=isSystem?(systemItems||[]).length:(data?.total||0);
   const currentPage=isSystem?sysPage:(data?.page||query?.page||1);
   const totalPages=isSystem?systemPages:storePages;

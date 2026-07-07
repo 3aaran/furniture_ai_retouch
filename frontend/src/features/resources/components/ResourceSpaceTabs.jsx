@@ -1,5 +1,5 @@
-import React from'react';
-import{Box,ChevronDown,ChevronLeft,ChevronRight,FolderTree,Globe2,Grid3X3,Plus,Search,Settings,Store,Upload,UserRound}from'../../../shared/icons/index.jsx';
+import React,{useState}from'react';
+import{Box,ChevronDown,ChevronLeft,ChevronRight,FolderTree,Globe2,Grid3X3,Plus,Search,Settings,Store,Upload,UserRound,X}from'../../../shared/icons/index.jsx';
 
 export default function ResourceSpaceTabs({
   space,
@@ -23,16 +23,20 @@ export default function ResourceSpaceTabs({
   gridRows=3,
   setGridCols,
   setGridRows,
-  pageSize=9
+  pageSize=9,
+  onCloseMobile,
+  mobileOpen=false
 }){
   const activeMain=String(query?.mainCategory||'');
   const activeSub=String(query?.subCategory||'');
+  const [expandedMains,setExpandedMains]=useState(()=>new Set());
   const spaceTabs=[
     {key:'SYSTEM',label:'系统空间',icon:<Globe2 size={15}/>},
     ...(!isSystemAdmin?[{key:'STORE',label:'门店空间',icon:<Store size={15}/>},{key:'PERSONAL',label:'我的空间',icon:<UserRound size={15}/>}]:[])
   ];
   function chooseSpace(nextSpace){
     setSpace(nextSpace);
+    setExpandedMains(new Set());
     setQuery?.(value=>({...value,mainCategory:'',subCategory:'',page:1}));
   }
   function chooseCategory(mainCategory='',subCategory=''){
@@ -40,7 +44,25 @@ export default function ResourceSpaceTabs({
   }
   function mainName(main){return String(main?.name||main?.rawName||'').trim();}
   function subName(sub){return String(sub?.name||sub||'').trim();}
-  return <aside className="resourceSpaceTabsV3">
+  function toggleMain(name,hasSubs){
+    if(!hasSubs){
+      chooseCategory(name,'');
+      return;
+    }
+    const isOpen=expandedMains.has(name);
+    setExpandedMains(current=>{
+      const next=new Set(current);
+      if(isOpen)next.delete(name);
+      else next.add(name);
+      return next;
+    });
+    chooseCategory(isOpen&&activeMain===name?'':name,'');
+  }
+  return <aside className={`resourceSpaceTabsV3 ${mobileOpen?'isOpen':''}`}>
+    <div className="resourceMobileDrawerHead">
+      <div><span>资产库</span><b>筛选与显示</b></div>
+      <button type="button" onClick={onCloseMobile} aria-label="关闭资产筛选"><X size={18}/></button>
+    </div>
     <button type="button" className="resourceSideCollapseV10" onClick={()=>setSidebarCollapsed?.(!sidebarCollapsed)} title={sidebarCollapsed?'展开分类栏':'收起分类栏'}>
       {sidebarCollapsed?<ChevronRight size={16}/>:<ChevronLeft size={16}/>}<span>{sidebarCollapsed?'展开':'收起'}</span>
     </button>
@@ -84,11 +106,12 @@ export default function ResourceSpaceTabs({
             const subs=main.subs||[];
             if(!name)return null;
             const mainActive=activeMain===name&&!activeSub;
+            const expanded=expandedMains.has(name);
             return <div className="resourceSideMainGroupV10" key={main.id||name}>
-              <button type="button" className={mainActive?'active':''} onClick={()=>chooseCategory(name,'')}>
-                <span>{name}</span>{subs.length?<ChevronDown size={15}/>:<ChevronRight size={15}/>} 
+              <button type="button" className={mainActive?'active':''} aria-expanded={subs.length?expanded:undefined} onClick={()=>toggleMain(name,!!subs.length)}>
+                <span>{name}</span>{subs.length&&expanded?<ChevronDown size={15}/>:<ChevronRight size={15}/>} 
               </button>
-              {!!subs.length&&<div className="resourceSideSubTreeV10">
+              {!!subs.length&&expanded&&<div className="resourceSideSubTreeV10">
                 {subs.map(sub=>{
                   const nameOfSub=subName(sub);
                   return <button key={sub?.id||nameOfSub} type="button" className={activeMain===name&&activeSub===nameOfSub?'active':''} onClick={()=>chooseCategory(name,nameOfSub)}>{nameOfSub}</button>
