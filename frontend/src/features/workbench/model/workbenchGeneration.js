@@ -1,4 +1,5 @@
 import {buildPromotionOptions,isPromotionFeatureKey} from './promotionFeatures.js';
+import {referenceImageIds} from './workbenchReferences.js';
 
 const COST_KEY_BY_OPERATION={
   material:'cost_material',
@@ -131,7 +132,8 @@ export function buildWorkbenchGenerationOptions({
   return base;
 }
 
-export function buildAiTaskPayload({origin,op,tpl,custom,reference,resolution,ratio,options}){
+export function buildAiTaskPayload({origin,op,tpl,custom,references=[],resolution,ratio,options}){
+  const userReferenceImageIds=referenceImageIds(references);
   return {
     originImageId:origin.id,
     featureKey:op,
@@ -148,8 +150,8 @@ export function buildAiTaskPayload({origin,op,tpl,custom,reference,resolution,ra
     functionalReferenceImageId:null,
     templatePrompt:tpl?(tpl.description||tpl.name):'',
     userPrompt:custom.trim(),
-    userReferenceImageIds:reference?[reference.id]:[],
-    referenceImageIds:reference?[reference.id]:[],
+    userReferenceImageIds,
+    referenceImageIds:userReferenceImageIds,
     resolution,
     ratio,
     options

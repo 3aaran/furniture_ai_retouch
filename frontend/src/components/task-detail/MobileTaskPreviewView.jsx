@@ -1,7 +1,6 @@
 import React from 'react';
 import{ChevronLeft,ChevronRight,Copy,Download,FileText,Flag,Hash,SlidersHorizontal,Trash2,User,WalletCards}from'lucide-react';
 import{fmt,imageViewUrl}from'../../appShared.jsx';
-import TaskWatermarkOverlay from'./TaskWatermarkOverlay.jsx';
 
 export default function MobileTaskPreviewView({
   detail,
@@ -22,11 +21,6 @@ export default function MobileTaskPreviewView({
   canNext,
   busy,
   isAdmin,
-  watermark,
-  wmReady,
-  useWatermark,
-  watermarkActive,
-  watermarkConfig,
   onClose,
   onPrev,
   onNext,
@@ -35,8 +29,6 @@ export default function MobileTaskPreviewView({
   onDelete,
   onCopyPrompt,
   onContinueImage,
-  onWatermarkToggle,
-  onWatermarkConfig,
   onPreviewError,
   children
 }){
@@ -66,13 +58,13 @@ export default function MobileTaskPreviewView({
             </div>
           </div>
           <div className="mobileTaskImageStage">
-            {resultUrl?<><img src={resultPreviewSrc} alt={detail.originalName||opLabel||'成品图'} onError={onPreviewError} loading="lazy" decoding="async"/>{watermarkActive&&<TaskWatermarkOverlay config={watermarkConfig}/>}</>:<span>暂无生成图</span>}
+            {resultUrl?<img src={resultPreviewSrc} alt={detail.originalName||opLabel||'成品图'} onError={onPreviewError} loading="lazy" decoding="async"/>:<span>暂无生成图</span>}
           </div>
         </section>
 
         <nav className="mobileTaskActions" aria-label="任务操作">
           <button type="button" onClick={onOpenProcess} aria-label="参数" title="参数"><SlidersHorizontal size={18}/></button>
-          <button type="button" className="primary downloadBtn" onClick={onSave} disabled={!resultUrl||busy==='watermark'} aria-label="下载" title="下载"><Download size={18}/><span>下载</span></button>
+          <button type="button" className="primary downloadBtn" onClick={onSave} disabled={!resultUrl} aria-label="下载" title="下载"><Download size={18}/><span>下载</span></button>
           {!isAdmin&&<button type="button" className="danger" onClick={onDelete} disabled={!!busy} aria-label="删除" title="删除"><Trash2 size={18}/></button>}
         </nav>
 
@@ -101,19 +93,6 @@ export default function MobileTaskPreviewView({
             <p>{displayPrompt||'无'}</p>
           </div>
 
-          {!isAdmin&&<div className="taskWatermarkControl mobileTaskWatermark">
-            <div>
-              <b>{'\u4f7f\u7528\u6c34\u5370'}</b>
-              <small>{watermark.loading?'\u6b63\u5728\u8bfb\u53d6\u95e8\u5e97\u6c34\u5370\u914d\u7f6e':wmReady?'开启后会预览水印，下载时前端临时合成':watermark.canConfigure?'\u95e8\u5e97\u672a\u914d\u7f6e\u6c34\u5370':'\u95e8\u5e97\u672a\u914d\u7f6e\u6c34\u5370'}</small>
-            </div>
-            {wmReady?
-              <label className="taskWatermarkToggle">
-                <input type="checkbox" checked={useWatermark} onChange={e=>onWatermarkToggle(e.target.checked)}/>
-                <i/>
-              </label>
-              :
-              <button type="button" disabled={!watermark.canConfigure||watermark.loading} onClick={onWatermarkConfig}>{'\u53bb\u914d\u7f6e'}</button>}
-          </div>}
         </section>
       </main>
     </section>

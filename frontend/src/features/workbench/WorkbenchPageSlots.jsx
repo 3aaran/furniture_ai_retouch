@@ -70,20 +70,17 @@ export function buildWorkbenchPageSlots({
   recentTypeName,
   setMsg,
   goPage,
-  showWorkbenchWatermark,
-  workbenchWatermark,
-  toggleWorkbenchWatermark,
   isPromotionSelected,
   custom,
   setCustom,
-  reference,
+  references,
   draggingRef,
   dragOver,
   dragLeave,
   dropUpload,
   chooseReference,
   imgSrc,
-  clearReferenceImage,
+  removeReferenceImage,
   openResourceModal,
   studioLight,
   setStudioLight,
@@ -188,13 +185,13 @@ export function buildWorkbenchPageSlots({
       setMsg={setMsg}
       goPage={goPage}
     />,
-    studioCenterToolbar:<WorkbenchCanvasToolbar showWorkbenchWatermark={showWorkbenchWatermark} workbenchWatermark={workbenchWatermark} toggleWorkbenchWatermark={toggleWorkbenchWatermark}/>,
+    studioCenterToolbar:<WorkbenchCanvasToolbar/>,
     studioControlPanel:<WorkbenchStudioControlPanel
       currentFeatureLabel={currentFeatureLabel}
       isPromotionSelected={isPromotionSelected}
       custom={custom}
       setCustom={setCustom}
-      reference={reference}
+      references={references}
       draggingRef={draggingRef}
       dragOver={dragOver}
       dragLeave={dragLeave}
@@ -202,7 +199,7 @@ export function buildWorkbenchPageSlots({
       chooseReference={chooseReference}
       imgSrc={imgSrc}
       setMsg={setMsg}
-      clearReferenceImage={clearReferenceImage}
+      removeReferenceImage={removeReferenceImage}
       openResourceModal={openResourceModal}
       resolution={resolution}
       setResolution={setResolution}

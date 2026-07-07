@@ -1,20 +1,24 @@
 import React from 'react';
 import {ImageIcon,WandSparkles} from '../../../shared/icons/index.jsx';
 import {BASE_RATIO_OPTIONS,BASE_RESOLUTION_OPTIONS} from '../model/workbenchOptions.js';
+import {MAX_REFERENCE_IMAGES} from '../model/workbenchReferences.js';
 
-function StudioReferenceUpload({reference,draggingRef,dragOver,dragLeave,dropUpload,chooseReference,imgSrc,setMsg,clearReferenceImage,openResourceModal}){
+function StudioReferenceUpload({references=[],draggingRef,dragOver,dragLeave,dropUpload,chooseReference,imgSrc,setMsg,removeReferenceImage,openResourceModal}){
   return <div className="wbStudioReferenceCard">
-    <div className="wbStudioPanelTitle">上传参考图</div>
+    <div className="wbStudioPanelTitle">上传参考图（{references.length}/{MAX_REFERENCE_IMAGES}）</div>
     <label className={draggingRef?'wbStudioReferenceUpload isDragging':'wbStudioReferenceUpload'} onDragOver={e=>dragOver(e,'reference')} onDragLeave={e=>dragLeave(e,'reference')} onDrop={e=>dropUpload(e,'reference')}>
-      <input key={reference?.id||'studio-empty-reference'} type="file" accept="image/*" onChange={chooseReference}/>
-      {reference?<div className="wbStudioRefPreview">
-        <img src={reference.imageUrl||imgSrc(reference.url)} alt="参考图" loading="lazy" decoding="async" onError={()=>setMsg('参考图已上传，但前端加载失败')}/>
-        <button type="button" onClick={e=>{e.preventDefault();e.stopPropagation();clearReferenceImage?.();}}>清除</button>
-      </div>:<div className="wbStudioReferenceEmpty">
+      <input type="file" accept="image/*" multiple onChange={chooseReference}/>
+      <div className="wbStudioReferenceEmpty">
         <ImageIcon size={24}/>
-        <b>点击或拖拽上传参考图</b>
-      </div>}
+        <b>{references.length?'继续添加参考图':'点击或拖拽上传参考图'}</b>
+      </div>
     </label>
+    {references.length>0&&<div className="wbStudioReferenceList">
+      {references.map((reference,index)=><div className="wbStudioRefPreview" key={reference.id||index}>
+        <img src={reference.imageUrl||imgSrc(reference.url)} alt={`参考图 ${index+1}`} loading="lazy" decoding="async" onError={()=>setMsg('参考图已上传，但前端加载失败')}/>
+        <button type="button" onClick={()=>removeReferenceImage?.(reference.id)}>移除</button>
+      </div>)}
+    </div>}
     <button className="wbStudioResourcePick" type="button" onClick={()=>openResourceModal('reference')}>从资源库选择参考图</button>
   </div>;
 }
@@ -24,7 +28,7 @@ function WorkbenchStudioControlPanel({
   isPromotionSelected,
   custom,
   setCustom,
-  reference,
+  references,
   draggingRef,
   dragOver,
   dragLeave,
@@ -32,7 +36,7 @@ function WorkbenchStudioControlPanel({
   chooseReference,
   imgSrc,
   setMsg,
-  clearReferenceImage,
+  removeReferenceImage,
   openResourceModal,
   resolution,
   setResolution,
@@ -54,7 +58,7 @@ function WorkbenchStudioControlPanel({
       onChange={e=>setCustom(e.target.value)}
     />
     <StudioReferenceUpload
-      reference={reference}
+      references={references}
       draggingRef={draggingRef}
       dragOver={dragOver}
       dragLeave={dragLeave}
@@ -62,7 +66,7 @@ function WorkbenchStudioControlPanel({
       chooseReference={chooseReference}
       imgSrc={imgSrc}
       setMsg={setMsg}
-      clearReferenceImage={clearReferenceImage}
+      removeReferenceImage={removeReferenceImage}
       openResourceModal={openResourceModal}
     />
     <div className="wbStudioOutputControls">

@@ -13,7 +13,7 @@ test('workbench canvas toolbar omits the unused zoom and drag controls',()=>{
   assert.doesNotMatch(canvasToolbarSource,/title="(?:放大|缩小|拖拽画布)"/);
   assert.doesNotMatch(workbenchLayoutStyles,/wbStudioZoomTools/);
   assert.match(workbenchLayoutStyles,/\.wbStudioCanvasToolbar\{[\s\S]*?justify-content:flex-end;/);
-  assert.match(canvasToolbarSource,/wbStudioWatermarkToggle/);
+  assert.doesNotMatch(canvasToolbarSource,/wbStudioWatermarkToggle/);
 });
 
 test('workbench control panel omits environment light controls',()=>{

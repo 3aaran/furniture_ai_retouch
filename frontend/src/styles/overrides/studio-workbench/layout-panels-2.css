@@ -189,6 +189,23 @@
     gap:10px;
   }
 
+.topApp .wbStudioReferenceList{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:8px;
+  }
+
+.topApp .wbStudioReferenceList .wbStudioRefPreview{
+    aspect-ratio:1;
+    min-width:0;
+    height:auto;
+  }
+
+.topApp .wbStudioReferenceList .wbStudioRefPreview img{
+    min-height:0;
+    object-fit:cover;
+  }
+
 .topApp .wbStudioReferenceUpload{
     min-height:138px;
     border:1px dashed rgba(255,255,255,.18);

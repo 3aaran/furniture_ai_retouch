@@ -1,6 +1,6 @@
 import React from'react';
 import{AuroraLayer}from'../../shared/effects/index.jsx';
-import{WorkbenchModals,WorkbenchRecentSourcePreview,WorkbenchSignalBar,WorkbenchUploadPanel,WorkbenchWatermarkOverlay}from'./components/index.jsx';
+import{WorkbenchModals,WorkbenchRecentSourcePreview,WorkbenchSignalBar,WorkbenchUploadPanel}from'./components/index.jsx';
 
 function WorkbenchPageView({
   mediaMode,
@@ -11,11 +11,9 @@ function WorkbenchPageView({
   currentFeatureMode,
   currentFeatureLabel,
   recentItems,
-  canConfigureWatermark,
-  setWatermarkOpen,
   workbenchSignalActions,
   origin,
-  reference,
+  references,
   selectedTpl,
   imgSrc,
   draggingSource,
@@ -27,10 +25,8 @@ function WorkbenchPageView({
   dropUpload,
   openResourceModal,
   clearSourceImage,
-  clearReferenceImage,
+  removeReferenceImage,
   setMsg,
-  showWorkbenchWatermark,
-  workbenchWatermark,
   latestCompareImageUrl,
   slots,
   recentSourcePreview,
@@ -58,7 +54,7 @@ function WorkbenchPageView({
             {slots.studioCenterToolbar}
             <WorkbenchUploadPanel
               origin={origin}
-              reference={reference}
+              references={references}
               selectedTpl={selectedTpl}
               imgSrc={imgSrc}
               draggingSource={draggingSource}
@@ -69,12 +65,9 @@ function WorkbenchPageView({
               dragLeave={dragLeave}
               dropUpload={dropUpload}
               openResourceModal={openResourceModal}
-              onOpenWatermark={()=>setWatermarkOpen(true)}
-              canConfigureWatermark={canConfigureWatermark}
               clearSourceImage={clearSourceImage}
-              clearReferenceImage={clearReferenceImage}
+              removeReferenceImage={removeReferenceImage}
               setMsg={setMsg}
-              watermarkOverlay={showWorkbenchWatermark&&workbenchWatermark.configured?<WorkbenchWatermarkOverlay config={workbenchWatermark.config}/>:null}
               generatedImageUrl={latestCompareImageUrl}
             />
             {slots.mobileSubmitPanel}

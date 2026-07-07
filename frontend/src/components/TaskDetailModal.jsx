@@ -1,17 +1,14 @@
 import React,{useEffect,useMemo,useState}from'react';
 import{createPortal}from'react-dom';
 import{req,imageViewUrl,openImageDownload}from'../appShared.jsx';
-import{createWatermarkedImageBlob,downloadBlob,watermarkedFilename}from'../utils/watermarkImage.js';
 import{getDisplayStatusName,getFeatureDisplayName}from'../config/uiText.js';
-import WatermarkConfigModal from'../features/workbench/components/WatermarkConfigModal.jsx';
 import ConfirmDialog from'../shared/ui/ConfirmDialog.jsx';
 import DesktopTaskPreviewView from'./task-detail/DesktopTaskPreviewView.jsx';
 import ExternalMobileTaskPreviewView from'./task-detail/MobileTaskPreviewView.jsx';
 import ImageProcessModal from'./task-detail/ImageProcessModal.jsx';
 import{copyText}from'./task-detail/clipboard.js';
-import{asArray,buildReferenceImages,getTaskFeature,joinParts,optionTextList,parseJson,taskStatusMap,textWatermarkConfig}from'./task-detail/taskDetailModel.js';
+import{asArray,buildReferenceImages,getTaskFeature,joinParts,optionTextList,parseJson,taskStatusMap}from'./task-detail/taskDetailModel.js';
 import{useTaskDetailResponsive}from'./task-detail/useTaskDetailResponsive.js';
-import{useTaskDetailWatermark}from'./task-detail/useTaskDetailWatermark.js';
 
 function canUseBrowserDownload(){
   if(typeof document==='undefined')return false;
@@ -33,13 +30,11 @@ function TaskDetailModal({
 }){
   const [processOpen,setProcessOpen]=useState(false);
   const [busy,setBusy]=useState('');
-  const {useWatermark,setUseWatermark,watermark,watermarkConfigOpen,setWatermarkConfigOpen,loadWatermark}=useTaskDetailWatermark(isAdmin);
   const [previewFailed,setPreviewFailed]=useState(false);
   const [confirmAction,setConfirmAction]=useState(null);
   const isMobile=useTaskDetailResponsive();
 
   useEffect(()=>{
-    setUseWatermark(false);
     setPreviewFailed(false);
   },[detail?.id]);
 
@@ -96,46 +91,6 @@ function TaskDetailModal({
         setMsg&&setMsg('可以打开浏览器下载');
         return;
       }
-      if(!useWatermark){
-        openImageDownload({
-          id:imageId,
-          url:resultUrl,
-          downloadUrl:selectedResultImage.downloadUrl||detail.downloadUrl||detail.resultImage?.downloadUrl
-        },setMsg);
-        return;
-      }
-      if(!wmReady||!watermark.config){
-        setMsg&&setMsg('请先配置水印');
-        return;
-      }
-      try{
-        setBusy('watermark');
-        const blob=await createWatermarkedImageBlob(resultImageSrc,watermarkConfig);
-        downloadBlob(blob,watermarkedFilename(detail.originalName||selectedResultImage.originalName||imageId));
-      }catch(e){
-        const message=e?.message?.includes('跨域')?e.message:'水印图片生成失败，请重试';
-        setMsg&&setMsg(message);
-      }finally{
-        setBusy('');
-      }
-      return;
-    }
-    if(useWatermark){
-      if(!wmReady||!watermark.config){
-        setMsg&&setMsg('请先配置水印');
-        return;
-      }
-      try{
-        setBusy('watermark');
-        const blob=await createWatermarkedImageBlob(resultImageSrc,watermarkConfig);
-        downloadBlob(blob,watermarkedFilename(detail.originalName||selectedResultImage.originalName||imageId));
-      }catch(e){
-        const message=e?.message?.includes('跨域')?e.message:'水印图片生成失败，请重试';
-        setMsg&&setMsg(message);
-      }finally{
-        setBusy('');
-      }
-      return;
     }
     openImageDownload({
       id:imageId,
@@ -175,14 +130,10 @@ function TaskDetailModal({
     finally{setBusy('')}
   }
 
-  const watermarkConfig=textWatermarkConfig(watermark.config||{});
-  const wmReady=!!watermark.configured&&!!watermarkConfig.text;
-  const watermarkActive=useWatermark&&wmReady;
   const resultPreviewSrc=resultImageSrc;
 
   const taskOverlays=<>
     {processOpen&&<ImageProcessModal detail={{...detail,id:imageId,url:resultUrl}} onClose={()=>setProcessOpen(false)} setMsg={setMsg}/>}
-    <WatermarkConfigModal open={watermarkConfigOpen} onClose={()=>{setWatermarkConfigOpen(false);loadWatermark(true);}} setMsg={setMsg}/>
     <ConfirmDialog
       open={confirmAction==='delete'}
       title="删除图片"
@@ -215,11 +166,6 @@ function TaskDetailModal({
       canNext={canNext}
       busy={busy}
       isAdmin={isAdmin}
-      watermark={watermark}
-      wmReady={wmReady}
-      useWatermark={useWatermark}
-      watermarkActive={watermarkActive}
-      watermarkConfig={watermarkConfig}
       onClose={onClose}
       onPrev={()=>switchTo(-1)}
       onNext={()=>switchTo(1)}
@@ -228,8 +174,6 @@ function TaskDetailModal({
       onDelete={()=>setConfirmAction('delete')}
       onCopyPrompt={copyPrompt}
       onContinueImage={()=>continueWith({id:imageId,url:resultUrl,originalName:detail.originalName})}
-      onWatermarkToggle={setUseWatermark}
-      onWatermarkConfig={()=>setWatermarkConfigOpen(true)}
       onPreviewError={()=>setPreviewFailed(true)}
     >
       {taskOverlays}
@@ -259,11 +203,6 @@ function TaskDetailModal({
     canNext={canNext}
     busy={busy}
     isAdmin={isAdmin}
-    watermark={watermark}
-    wmReady={wmReady}
-    useWatermark={useWatermark}
-    watermarkActive={watermarkActive}
-    watermarkConfig={watermarkConfig}
     onClose={onClose}
     onPrev={()=>switchTo(-1)}
     onNext={()=>switchTo(1)}
@@ -272,8 +211,6 @@ function TaskDetailModal({
     onDelete={()=>setConfirmAction('delete')}
     onCopyPrompt={copyPrompt}
     onContinueImage={continueWith}
-    onWatermarkToggle={setUseWatermark}
-    onWatermarkConfig={()=>setWatermarkConfigOpen(true)}
     onPreviewError={()=>setPreviewFailed(true)}
   >
     {taskOverlays}

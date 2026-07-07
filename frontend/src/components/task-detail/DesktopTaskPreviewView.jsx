@@ -1,7 +1,6 @@
 import React from'react';
 import{ChevronLeft,ChevronRight,Copy,Download,FileText,Flag,Hash,SlidersHorizontal,Trash2,User,WalletCards}from'lucide-react';
 import{fmt,imageViewUrl}from'../../appShared.jsx';
-import TaskWatermarkOverlay from'./TaskWatermarkOverlay.jsx';
 
 function DesktopTaskPreviewView({
   detail,
@@ -26,11 +25,6 @@ function DesktopTaskPreviewView({
   canNext,
   busy,
   isAdmin,
-  watermark,
-  wmReady,
-  useWatermark,
-  watermarkActive,
-  watermarkConfig,
   onClose,
   onPrev,
   onNext,
@@ -39,8 +33,6 @@ function DesktopTaskPreviewView({
   onDelete,
   onCopyPrompt,
   onContinueImage,
-  onWatermarkToggle,
-  onWatermarkConfig,
   onPreviewError,
   children
 }){
@@ -61,7 +53,7 @@ function DesktopTaskPreviewView({
         </div>
         <div className="compareCol">
           <div className="compareHead"><h3>生成结果</h3>{!isAdmin&&<button onClick={()=>onContinueImage({id:imageId,url:resultUrl,originalName:detail.originalName})}>以此图继续创作</button>}</div>
-          <div className="taskImageFrame">{resultUrl?<><img src={resultPreviewSrc} onError={onPreviewError} loading="lazy" decoding="async"/>{watermarkActive&&<TaskWatermarkOverlay config={watermarkConfig}/>}</>:<span>无生成图</span>}</div>
+          <div className="taskImageFrame">{resultUrl?<img src={resultPreviewSrc} onError={onPreviewError} loading="lazy" decoding="async"/>:<span>无生成图</span>}</div>
         </div>
       </div>
       <div className="taskMobileActionBar" aria-label="任务操作">
@@ -91,19 +83,6 @@ function DesktopTaskPreviewView({
           </div>}
 
           <div className="promptBox"><div><span>用户要求</span><button className="iconOnly" title="复制用户要求" aria-label="复制用户要求" onClick={onCopyPrompt} disabled={!displayPrompt}><Copy size={14}/></button></div><p>{displayPrompt||'无'}</p></div>
-          {!isAdmin&&<div className="taskWatermarkControl">
-            <div>
-              <b>{'\u4f7f\u7528\u6c34\u5370'}</b>
-              <small>{watermark.loading?'\u6b63\u5728\u8bfb\u53d6\u95e8\u5e97\u6c34\u5370\u914d\u7f6e':wmReady?'\u5f00\u542f\u540e\u4e0b\u8f7d\u539f\u56fe\u4f1a\u6dfb\u52a0\u6c34\u5370':watermark.canConfigure?'\u95e8\u5e97\u672a\u914d\u7f6e\u6c34\u5370':'\u95e8\u5e97\u672a\u914d\u7f6e\u6c34\u5370'}</small>
-            </div>
-            {wmReady?
-              <label className="taskWatermarkToggle">
-                <input type="checkbox" checked={useWatermark} onChange={e=>onWatermarkToggle(e.target.checked)}/>
-                <i/>
-              </label>
-              :
-              <button type="button" disabled={!watermark.canConfigure||watermark.loading} onClick={onWatermarkConfig}>{'\u53bb\u914d\u7f6e'}</button>}
-          </div>}
         </div>
         <div className="taskDetailActions">
           <button className="outlineGold iconOnly" title="图片处理" aria-label="图片处理" onClick={onOpenProcess}><SlidersHorizontal size={18}/></button>

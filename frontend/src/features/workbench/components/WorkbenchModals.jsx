@@ -2,7 +2,6 @@ import React from 'react';
 import{ConfirmDialog}from '../../../shared/ui/index.jsx';
 import ResourcePickerModal from './ResourcePickerModal.jsx';
 import WorkbenchResourceUploadModal from './WorkbenchResourceUploadModal.jsx';
-import WatermarkConfigModal from './WatermarkConfigModal.jsx';
 
 function WorkbenchModals({
   TaskDetailModal,
@@ -21,9 +20,6 @@ function WorkbenchModals({
   modalItems,
   chooseResourceImage,
   listImgSrc,
-  watermarkOpen,
-  setWatermarkOpen,
-  loadWorkbenchWatermark,
   deleteTarget,
   setDeleteTarget,
   confirmDeleteRecentTask,
@@ -57,7 +53,6 @@ function WorkbenchModals({
     />}
 
     <ResourcePickerModal resourceModal={resourceModal} setResourceModal={setResourceModal} modalItems={modalItems} chooseResourceImage={chooseResourceImage} imgSrc={listImgSrc}/>
-    <WatermarkConfigModal open={watermarkOpen} onClose={()=>{setWatermarkOpen(false);loadWorkbenchWatermark();}} setMsg={setMsg}/>
     <ConfirmDialog
       open={!!deleteTarget}
       title="删除图片"

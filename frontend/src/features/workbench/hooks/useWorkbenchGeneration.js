@@ -13,7 +13,7 @@ export function useWorkbenchGeneration({
   multiView,
   promotionOptions,
   custom,
-  reference,
+  references,
   costSettings,
   ops,
   setMsg,
@@ -44,7 +44,7 @@ export function useWorkbenchGeneration({
     try{
       const tpl=currentTemplate();
       const options=buildGenerationOptions();
-      const data=await createAiTask(buildAiTaskPayload({origin,op,tpl,custom,reference,resolution,ratio,options}));
+      const data=await createAiTask(buildAiTaskPayload({origin,op,tpl,custom,references,resolution,ratio,options}));
       if(data.user)setMe?.(data.user);
       setMsg?.('任务已提交，正在生成');
       if(data.task)setRecent?.(prev=>[data.task,...prev.filter(item=>item.id!==data.task.id)].slice(0,20));

@@ -65,11 +65,9 @@ describe('workbench resource picker layering', () => {
     assert.match(filterMarkup, /aria-label="子分类"/);
   });
 
-  it('hides the watermark toggle while preserving its toolbar space', () => {
-    const toggleRule=studioCanvasCss.match(/\.topApp \.wbStudioWatermarkToggle\{[\s\S]*?\n\s*\}/)?.[0]||'';
+  it('removes the watermark toggle while preserving the toolbar layout', () => {
     const toolbarRule=studioCanvasCss.match(/\.topApp \.wbStudioCanvasToolbar\{[\s\S]*?\n\s*\}/)?.[0]||'';
-    assert.match(toggleRule, /visibility:hidden;/);
-    assert.match(toggleRule, /pointer-events:none;/);
+    assert.doesNotMatch(pageViewSource, /WorkbenchWatermarkOverlay/);
     assert.doesNotMatch(toolbarRule, /display:none/);
   });
 

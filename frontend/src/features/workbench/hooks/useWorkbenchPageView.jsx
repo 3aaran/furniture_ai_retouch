@@ -5,7 +5,7 @@ import WorkbenchPageView from'../WorkbenchPageView.jsx';
 import{buildWorkbenchPageSlots}from'../WorkbenchPageSlots.jsx';
 import{buildWorkbenchOps,workbenchImageSrc,workbenchListImageSrc}from'../model/index.js';
 import{BASE_RATIO_OPTIONS,BASE_RESOLUTION_OPTIONS}from'../model/workbenchOptions.js';
-import{useVideoStoryboard,useWorkbenchFeatureMode,useWorkbenchGeneration,useWorkbenchImageUpload,useWorkbenchRecent,useWorkbenchResourceLibrary,useWorkbenchResourceUpload,useWorkbenchWatermark}from'./index.js';
+import{useVideoStoryboard,useWorkbenchFeatureMode,useWorkbenchGeneration,useWorkbenchImageUpload,useWorkbenchRecent,useWorkbenchResourceLibrary,useWorkbenchResourceUpload}from'./index.js';
 import{fetchPublicSettings}from'../api/index.js';
 
 function useWorkbenchPageView({me,setMe,setMsg,goPage,TaskDetailModal}){
@@ -24,8 +24,7 @@ function useWorkbenchPageView({me,setMe,setMsg,goPage,TaskDetailModal}){
   const [multiView,setMultiView]=useState('三角度视图');
   const [promotionOptions,setPromotionOptions]=useState(promotionOptionDefaults);
   const {recent,setRecent,taskDetail,setTaskDetail,taskDetailLoading,recentSourcePreview,recentHoverId,setRecentHoverId,deleteTarget,setDeleteTarget,refreshRecent,pollAiTask,recentTypeName,recentPreviewSrc,showRecentOriginal,moveRecentOriginal,hideRecentOriginal,deleteRecentTask,confirmDeleteRecentTask,openRecentTask}=useWorkbenchRecent({imgSrc,ops,setMe,setMsg});
-  const {origin,setOrigin,reference,setReference,draggingSource,draggingRef,resourceModal,setResourceModal,chooseSource,chooseReference,clearSourceImage,clearReferenceImage,continueWithImage,dropUpload,dragOver,dragLeave,openResourceModal,chooseResourceImage}=useWorkbenchImageUpload({imgSrc,setMsg,refreshRecent,setTaskDetail,goPage});
-  const {canConfigureWatermark,watermarkOpen,setWatermarkOpen,workbenchWatermark,showWorkbenchWatermark,loadWorkbenchWatermark,toggleWorkbenchWatermark}=useWorkbenchWatermark({me,setMsg});
+  const {origin,setOrigin,references,draggingSource,draggingRef,resourceModal,setResourceModal,chooseSource,chooseReference,clearSourceImage,removeReferenceImage,continueWithImage,dropUpload,dragOver,dragLeave,openResourceModal,chooseResourceImage}=useWorkbenchImageUpload({imgSrc,setMsg,refreshRecent,setTaskDetail,goPage});
   const [costSettings,setCostSettings]=useState({});
   const [leftDrawerOpen,setLeftDrawerOpen]=useState(false);
   const [rightDrawerOpen,setRightDrawerOpen]=useState(false);
@@ -56,7 +55,7 @@ function useWorkbenchPageView({me,setMe,setMsg,goPage,TaskDetailModal}){
     multiView,
     promotionOptions,
     custom,
-    reference,
+    references,
     costSettings,
     ops,
     setMsg,
@@ -146,20 +145,17 @@ function useWorkbenchPageView({me,setMe,setMsg,goPage,TaskDetailModal}){
     recentTypeName,
     setMsg,
     goPage,
-    showWorkbenchWatermark,
-    workbenchWatermark,
-    toggleWorkbenchWatermark,
     isPromotionSelected,
     custom,
     setCustom,
-    reference,
+    references,
     draggingRef,
     dragOver,
     dragLeave,
     dropUpload,
     chooseReference,
     imgSrc,
-    clearReferenceImage,
+    removeReferenceImage,
     openResourceModal,
     studioLight,
     setStudioLight,
@@ -191,11 +187,9 @@ function useWorkbenchPageView({me,setMe,setMsg,goPage,TaskDetailModal}){
     currentFeatureMode={currentFeatureMode}
     currentFeatureLabel={currentFeatureLabel}
     recentItems={recentItems}
-    canConfigureWatermark={canConfigureWatermark}
-    setWatermarkOpen={setWatermarkOpen}
     workbenchSignalActions={workbenchSignalActions}
     origin={origin}
-    reference={reference}
+    references={references}
     selectedTpl={selectedTpl}
     imgSrc={imgSrc}
     draggingSource={draggingSource}
@@ -207,10 +201,8 @@ function useWorkbenchPageView({me,setMe,setMsg,goPage,TaskDetailModal}){
     dropUpload={dropUpload}
     openResourceModal={openResourceModal}
     clearSourceImage={clearSourceImage}
-    clearReferenceImage={clearReferenceImage}
+    removeReferenceImage={removeReferenceImage}
     setMsg={setMsg}
-    showWorkbenchWatermark={showWorkbenchWatermark}
-    workbenchWatermark={workbenchWatermark}
     latestCompareImageUrl={latestCompareImageUrl}
     slots={slots}
     recentSourcePreview={recentSourcePreview}
@@ -233,9 +225,6 @@ function useWorkbenchPageView({me,setMe,setMsg,goPage,TaskDetailModal}){
       modalItems,
       chooseResourceImage,
       listImgSrc,
-      watermarkOpen,
-      setWatermarkOpen,
-      loadWorkbenchWatermark,
       deleteTarget,
       setDeleteTarget,
       confirmDeleteRecentTask,
