@@ -1,254 +1,104 @@
 .assetPage {
   min-height: calc(100vh - var(--topbar-height));
-  padding: 24px clamp(18px, 3.2vw, 42px);
-  display: grid;
-  grid-template-columns: 260px minmax(0, 1fr);
-  gap: 28px;
+  padding: 18px clamp(16px, 3vw, 38px) 34px;
   background:
     radial-gradient(circle at 18% 0, rgba(var(--color-accent-rgb), .12), transparent 28rem),
-    radial-gradient(circle at 82% 8%, rgba(var(--color-primary-rgb), .09), transparent 32rem),
+    radial-gradient(circle at 82% 8%, rgba(var(--color-primary-rgb), .08), transparent 32rem),
     var(--bg-page);
 }
 
-.assetDesktopSide,
 .assetMainPanel {
-  min-width: 0;
-}
-
-.assetSidePanel {
-  position: sticky;
-  top: calc(var(--topbar-height) + 18px);
-  max-height: calc(100vh - var(--topbar-height) - 48px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  width: min(1380px, 100%);
+  margin: 0 auto;
   display: grid;
   align-content: start;
-  gap: 16px;
-  padding: 14px;
+  gap: 14px;
+}
+
+.assetSearchBar {
+  min-height: 118px;
+  padding: 12px;
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-xl);
-  background: rgba(var(--bg-card-rgb), .9);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  background: rgba(var(--bg-card-rgb), .92);
   box-shadow: var(--shadow-sm);
   backdrop-filter: blur(18px);
 }
 
-.assetSideHead {
-  min-height: 70px;
-  padding: 14px;
-  border-radius: var(--radius-lg);
-  display: grid;
-  align-content: center;
-  background:
-    linear-gradient(135deg, rgba(var(--color-primary-rgb), .1), rgba(var(--color-accent-rgb), .08)),
-    var(--bg-card-soft);
+.assetSearchActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
-.assetSideHead span,
-.assetHeroCard span,
-.assetDetailHead span {
-  color: var(--color-primary);
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: .12em;
-}
-
-.assetSideHead b {
-  margin-top: 4px;
-  color: var(--text-main);
-  font-size: 20px;
-}
-
-.assetSearchBox,
-.assetFilterBlock {
-  display: grid;
-  gap: 9px;
-}
-
-.assetSearchBox span,
-.assetFilterBlock h3 {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 900;
-}
-
-.assetSearchBox input {
-  min-height: 40px;
-  width: 100%;
+.assetSearchBar label {
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 14px;
   border: 1px solid var(--border-soft);
-  border-radius: var(--radius-md);
-  padding: 0 12px;
-  color: var(--text-main);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  gap: 10px;
   background: var(--bg-card-soft);
+}
+
+.assetSearchBar label span {
+  flex: 0 0 auto;
+  color: var(--color-primary);
+  font-weight: 900;
+}
+
+.assetSearchBar input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  color: var(--text-main);
+  background: transparent;
+  font-size: 15px;
   outline: none;
 }
 
-.assetSearchBox input:focus {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px var(--color-accent-soft);
-}
-
-.assetScopeList,
-.assetCategoryList,
-.assetSubCategoryList {
-  display: grid;
-  gap: 7px;
-}
-
-.assetScopeList button,
-.assetCategoryList button,
-.assetSubCategoryList button,
-.assetTypePills button {
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-md);
-  color: var(--text-main);
-  background: var(--bg-card-soft);
+.assetSearchBar button,
+.assetFilterActions button,
+.assetBatchBar button,
+.assetFormGrid button {
+  min-height: 48px;
+  border: 1px solid rgba(var(--color-primary-rgb), .18);
+  border-radius: var(--radius-lg);
+  padding: 0 18px;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
   font-weight: 900;
   cursor: pointer;
 }
 
-.assetScopeList button {
-  min-height: 54px;
-  padding: 9px 11px;
-  display: grid;
-  gap: 3px;
-  text-align: left;
-}
-
-.assetScopeList span {
-  font-size: 14px;
-}
-
-.assetScopeList em {
-  color: var(--text-muted);
-  font-size: 11px;
-  font-style: normal;
-}
-
-.assetCategoryList button,
-.assetSubCategoryList button {
-  min-height: 34px;
-  padding: 0 10px;
-  text-align: left;
-}
-
-.assetTypePills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-}
-
-.assetTypePills button {
-  min-height: 34px;
-  padding: 0 10px;
-  border-radius: var(--radius-pill);
-}
-
-.assetScopeList button.isActive,
-.assetCategoryList button.isActive,
-.assetSubCategoryList button.isActive,
-.assetTypePills button.isActive {
+.assetSearchBar button:hover,
+.assetFilterActions button:hover,
+.assetBatchBar button:hover,
+.assetFormGrid button:hover {
   color: var(--text-inverse);
   border-color: transparent;
   background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
-  box-shadow: 0 10px 22px rgba(var(--color-primary-rgb), .14);
-}
-
-.assetMainPanel {
-  display: grid;
-  align-content: start;
-  gap: 16px;
-}
-
-.assetHeroCard,
-.assetToolbarCard,
-.assetStateCard {
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-xl);
-  background: rgba(var(--bg-card-rgb), .9);
-  box-shadow: var(--shadow-sm);
-  backdrop-filter: blur(18px);
-}
-
-.assetHeroCard {
-  min-height: 126px;
-  padding: 22px 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-}
-
-.assetHeroCard h1 {
-  margin: 6px 0 0;
-  color: var(--text-main);
-  font-size: clamp(26px, 3vw, 42px);
-  letter-spacing: -.05em;
-}
-
-.assetHeroCard p {
-  max-width: 680px;
-  margin: 8px 0 0;
-  color: var(--text-muted);
-  line-height: 1.7;
-}
-
-.assetHeroStats {
-  min-width: 132px;
-  min-height: 82px;
-  border: 1px solid rgba(var(--color-primary-rgb), .16);
-  border-radius: var(--radius-lg);
-  display: grid;
-  place-items: center;
-  background: var(--color-primary-soft);
-}
-
-.assetHeroStats b {
-  color: var(--color-primary);
-  font-size: 30px;
-  line-height: 1;
-}
-
-.assetHeroStats span {
-  color: var(--text-muted);
-  font-size: 12px;
-  letter-spacing: 0;
-}
-
-.assetToolbarCard {
-  min-height: 58px;
-  padding: 10px 12px 10px 18px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.assetStatusLine {
-  min-width: 0;
-  display: grid;
-  gap: 3px;
-  margin-right: auto;
-}
-
-.assetStatusLine b {
-  color: var(--text-main);
-}
-
-.assetStatusLine span {
-  color: var(--text-muted);
-  font-size: 12px;
-}
-
-.assetMobileFilterButton {
-  display: none;
 }
 
 .assetStateCard {
   min-height: 96px;
   padding: 22px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-xl);
   display: grid;
   place-items: center;
   color: var(--text-muted);
+  background: rgba(var(--bg-card-rgb), .9);
+  box-shadow: var(--shadow-sm);
   font-weight: 900;
 }
 
@@ -257,16 +107,57 @@
   background: rgba(var(--color-danger-rgb), .08);
 }
 
+.assetPager {
+  min-height: 58px;
+  padding: 10px 12px 10px 16px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text-muted);
+  background: rgba(var(--bg-card-rgb), .92);
+  box-shadow: var(--shadow-sm);
+  font-weight: 900;
+}
+
+.assetPager div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.assetPager button {
+  min-height: 38px;
+  border: 1px solid rgba(var(--color-primary-rgb), .18);
+  border-radius: var(--radius-lg);
+  padding: 0 14px;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.assetPager button:disabled {
+  opacity: .42;
+  cursor: not-allowed;
+}
+
 .assetGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
+  align-items: stretch;
 }
 
 .assetCard {
+  position: relative;
   overflow: hidden;
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-xl);
+  display: grid;
+  grid-template-rows: auto minmax(72px, auto);
   background: rgba(var(--bg-card-rgb), .92);
   box-shadow: var(--shadow-xs);
   transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
@@ -280,7 +171,9 @@
 }
 
 .assetImageBox {
-  height: 176px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
   display: grid;
   place-items: center;
   background:
@@ -291,7 +184,11 @@
 .assetImageBox img {
   width: 100%;
   height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
   object-fit: contain;
+  object-position: center;
 }
 
 .assetImageBox span {
@@ -300,16 +197,12 @@
 }
 
 .assetCardInfo {
+  min-height: 72px;
   padding: 13px 14px 14px;
   display: grid;
-  gap: 8px;
-}
-
-.assetCardInfo > div {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  align-content: start;
+  gap: 7px;
+  background: rgba(var(--bg-card-rgb), .98);
 }
 
 .assetCardInfo b {
@@ -319,13 +212,6 @@
   font-size: 16px;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.assetCardInfo em {
-  flex: 0 0 auto;
-  color: var(--text-dim);
-  font-size: 11px;
-  font-style: normal;
 }
 
 .assetCardInfo p {
@@ -338,36 +224,7 @@
   white-space: nowrap;
 }
 
-.assetCardInfo footer {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.assetCardInfo span,
-.assetCardInfo i {
-  min-height: 24px;
-  padding: 0 8px;
-  border-radius: var(--radius-pill);
-  display: inline-flex;
-  align-items: center;
-  font-size: 11px;
-  font-style: normal;
-  font-weight: 900;
-}
-
-.assetCardInfo span {
-  color: var(--color-primary);
-  background: var(--color-primary-soft);
-}
-
-.assetCardInfo i {
-  color: var(--text-muted);
-  background: var(--bg-card-soft);
-}
-
-.assetDetailBackdrop,
-.assetMobileBackdrop {
+.assetOverlay {
   position: fixed;
   inset: var(--topbar-height) 0 0;
   z-index: calc(var(--z-drawer) - 1);
@@ -375,24 +232,47 @@
   background: rgba(var(--text-main-rgb), .42);
 }
 
-.assetDetailDrawer {
+.assetFilterSheet,
+.assetDetailDrawer,
+.assetActionSheet,
+.assetCategoryManageSheet {
   position: fixed;
   top: calc(var(--topbar-height) + 16px);
   right: 18px;
   bottom: 18px;
   z-index: var(--z-drawer);
-  width: min(420px, calc(100vw - 36px));
+  width: min(430px, calc(100vw - 36px));
   padding: 16px;
   overflow-y: auto;
+  overscroll-behavior: contain;
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-xl);
-  display: grid;
+  display: none;
   align-content: start;
   gap: 14px;
   background: rgba(var(--bg-card-rgb), .98);
   box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(18px);
 }
 
+.assetFilterSheet.isOpen,
+.assetDetailDrawer,
+.assetActionSheet.isOpen,
+.assetCategoryManageSheet.isOpen {
+  display: grid;
+}
+
+.assetFilterSheet {
+  width: min(560px, calc(100vw - 36px));
+  padding: 18px;
+  gap: 16px;
+  background:
+    radial-gradient(circle at 18% 0, rgba(var(--color-primary-rgb), .12), transparent 18rem),
+    radial-gradient(circle at 92% 8%, rgba(var(--color-accent-rgb), .1), transparent 16rem),
+    rgba(var(--bg-card-rgb), .98);
+}
+
+.assetFilterHead,
 .assetDetailHead {
   display: flex;
   align-items: center;
@@ -400,9 +280,18 @@
   gap: 12px;
 }
 
+.assetFilterHead span,
+.assetDetailHead span {
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .1em;
+}
+
+.assetFilterHead b,
 .assetDetailHead b {
   display: block;
-  max-width: 300px;
+  max-width: 360px;
   margin-top: 4px;
   overflow: hidden;
   color: var(--text-main);
@@ -411,6 +300,19 @@
   white-space: nowrap;
 }
 
+.assetFilterHero {
+  padding: 4px 2px 0;
+}
+
+.assetFilterHero p {
+  max-width: 420px;
+  margin: 7px 0 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.assetFilterHead button,
 .assetDetailHead button {
   width: 36px;
   height: 36px;
@@ -419,6 +321,232 @@
   color: var(--text-main);
   background: var(--bg-card-soft);
   font-size: 20px;
+  cursor: pointer;
+}
+
+.assetFilterSummary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.assetFilterSummary article {
+  min-height: 74px;
+  padding: 12px 14px;
+  border: 1px solid rgba(var(--color-primary-rgb), .12);
+  border-radius: var(--radius-lg);
+  display: grid;
+  align-content: center;
+  gap: 2px;
+  background: rgba(var(--bg-card-rgb), .68);
+}
+
+.assetFilterSummary span,
+.assetFilterSummary em {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.assetFilterSummary b {
+  color: var(--color-primary);
+  font-size: 28px;
+  line-height: 1;
+}
+
+.assetFilterBlock {
+  display: grid;
+  gap: 10px;
+}
+
+.assetFilterPanel {
+  padding: 13px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-xl);
+  background: rgba(var(--bg-card-rgb), .7);
+  box-shadow: var(--shadow-xs);
+}
+
+.assetFilterTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.assetFilterBlock h3 {
+  margin: 0;
+  color: var(--text-main);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.assetFilterTitle > span {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.assetScopeList,
+.assetCategoryList,
+.assetSubCategoryList {
+  display: grid;
+  gap: 8px;
+}
+
+.assetScopeList {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.assetPurposePills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.assetScopeList button,
+.assetPurposePills button,
+.assetCategoryList button,
+.assetSubCategoryList button {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  background: rgba(var(--bg-card-rgb), .78);
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease, background .16s ease;
+}
+
+.assetScopeList button:hover,
+.assetPurposePills button:hover,
+.assetCategoryList button:hover,
+.assetSubCategoryList button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(var(--color-primary-rgb), .22);
+  box-shadow: var(--shadow-xs);
+}
+
+.assetScopeList button {
+  min-height: 76px;
+  padding: 11px 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 3px 8px;
+  text-align: left;
+}
+
+.assetScopeList span {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assetScopeList b,
+.assetCategoryList b,
+.assetSubCategoryList b,
+.assetPurposePills b {
+  min-width: 28px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  font-size: 12px;
+}
+
+.assetScopeList em {
+  grid-column: 1 / -1;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-style: normal;
+}
+
+.assetPurposePills button {
+  min-height: 38px;
+  padding: 0 10px 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.assetCategoryList button,
+.assetSubCategoryList button {
+  min-height: 46px;
+  padding: 8px 10px 8px 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 3px 10px;
+  text-align: left;
+}
+
+.assetCategoryList button span,
+.assetSubCategoryList button span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assetCategoryList small {
+  grid-column: 1 / -1;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.assetScopeList button.isActive,
+.assetPurposePills button.isActive,
+.assetCategoryList button.isActive,
+.assetSubCategoryList button.isActive {
+  color: var(--text-inverse);
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  box-shadow: 0 10px 22px rgba(var(--color-primary-rgb), .14);
+}
+
+.assetScopeList button.isActive b,
+.assetPurposePills button.isActive b,
+.assetCategoryList button.isActive b,
+.assetSubCategoryList button.isActive b {
+  color: var(--text-inverse);
+  background: rgba(255, 255, 255, .2);
+}
+
+.assetScopeList button.isActive em,
+.assetCategoryList button.isActive small {
+  color: rgba(255, 255, 255, .76);
+}
+
+.assetSubCategoryList > span {
+  padding: 12px;
+  border: 1px dashed var(--border-soft);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  background: var(--bg-card-soft);
+  text-align: center;
+}
+
+.assetFilterActions {
+  position: sticky;
+  bottom: -16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  padding-top: 10px;
+  background: rgba(var(--bg-card-rgb), .98);
+}
+
+.assetFilterActions button:last-child {
+  color: var(--text-inverse);
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
 }
 
 .assetDetailImage {
@@ -465,88 +593,232 @@
   font-weight: 900;
 }
 
-.assetMobileDrawer {
-  display: none;
+.assetSelectBox {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(var(--bg-card-rgb), .72);
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+}
+
+.assetSelectBox input {
+  position: absolute;
+  opacity: 0;
+}
+
+.assetSelectBox span {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(var(--color-primary-rgb), .45);
+  border-radius: 6px;
+  background: rgba(var(--bg-card-rgb), .94);
+}
+
+.assetSelectBox input:checked + span {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+}
+
+.assetSelectBox input:disabled + span {
+  opacity: .35;
+}
+
+.assetBatchBar {
+  min-height: 72px;
+  padding: 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(var(--bg-card-rgb), .92);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(18px);
+}
+
+.assetBatchBar b {
+  margin-right: auto;
+  color: var(--text-main);
+  font-size: 18px;
+}
+
+.assetFilterActions button.danger,
+.assetDangerText {
+  color: var(--color-danger);
+}
+
+.assetDangerText,
+.assetNotice {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  background: var(--bg-card-soft);
+  line-height: 1.6;
+}
+
+.assetNotice {
+  color: var(--color-primary);
+  font-weight: 900;
+}
+
+.assetFormGrid {
+  display: grid;
+  gap: 12px;
+}
+
+.assetFormGrid label,
+.assetDetailEdit label {
+  display: grid;
+  gap: 6px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.assetFormGrid input,
+.assetFormGrid select,
+.assetDetailEdit input {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  padding: 0 12px;
+  color: var(--text-main);
+  background: var(--bg-card-soft);
+  outline: none;
+}
+
+.assetFormGrid input[type="file"] {
+  padding: 9px 12px;
+}
+
+.assetFormGrid input:focus,
+.assetFormGrid select:focus,
+.assetDetailEdit input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+.assetDetailEdit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.assetDetailEdit button {
+  min-height: 42px;
+  border: 1px solid rgba(var(--color-primary-rgb), .18);
+  border-radius: var(--radius-md);
+  padding: 0 14px;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  font-weight: 900;
+}
+
+.assetCategoryManageSheet {
+  width: min(720px, calc(100vw - 36px));
+}
+
+.assetCategoryManageList {
+  display: grid;
+  gap: 10px;
+}
+
+.assetCategoryManageList article {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+  background: var(--bg-card-soft);
+}
+
+.assetCategoryManageList header,
+.assetCategoryManageList p {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0;
+}
+
+.assetCategoryManageList b,
+.assetCategoryManageList span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assetCategoryManageList em {
+  color: var(--text-muted);
+  font-style: normal;
+}
+
+.assetCategoryManageList button {
+  min-height: 30px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-pill);
+  padding: 0 10px;
+  color: var(--color-danger);
+  background: rgba(var(--color-danger-rgb), .08);
+  font-weight: 900;
 }
 
 @media (max-width: 767px) {
   .assetPage {
     min-height: calc(100dvh - var(--mobile-topbar-height));
     padding: 12px;
-    display: block;
-  }
-
-  .assetDesktopSide {
-    display: none;
-  }
-
-  .assetMobileDrawer {
-    position: fixed;
-    inset: var(--mobile-topbar-height) auto 0 0;
-    z-index: var(--z-drawer);
-    width: min(86vw, 326px);
-    display: block;
-    transform: translateX(-105%);
-    transition: transform .2s ease;
-  }
-
-  .assetMobileDrawer.isOpen {
-    transform: translateX(0);
-  }
-
-  .assetMobileDrawer .assetSidePanel {
-    height: calc(100dvh - var(--mobile-topbar-height));
-    max-height: none;
-    border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
-  }
-
-  .assetMobileBackdrop {
-    inset: var(--mobile-topbar-height) 0 0;
   }
 
   .assetMainPanel {
     gap: 12px;
   }
 
-  .assetHeroCard {
+  .assetSearchBar {
     min-height: 0;
-    padding: 16px;
-    display: grid;
+    padding: 9px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    border-radius: var(--radius-lg);
   }
 
-  .assetHeroCard h1 {
-    font-size: 26px;
+  .assetSearchActions {
+    justify-content: flex-end;
+    gap: 8px;
   }
 
-  .assetHeroStats {
-    min-width: 0;
-    min-height: 58px;
-    grid-template-columns: auto 1fr;
-    justify-content: start;
-    padding: 0 14px;
+  .assetPcOnlyAction,
+  .assetSelectBox,
+  .assetBatchBar {
+    display: none;
   }
 
-  .assetToolbarCard {
+  .assetSearchBar label {
+    min-height: 42px;
+    padding: 0 10px;
+  }
+
+  .assetSearchBar label span {
+    display: none;
+  }
+
+  .assetSearchBar button {
+    min-height: 42px;
+    padding: 0 12px;
+  }
+
+  .assetPager {
     align-items: stretch;
-    display: grid;
-    grid-template-columns: 1fr auto;
-  }
-
-  .assetMobileFilterButton {
-    min-height: 38px;
-    border: 1px solid rgba(var(--color-primary-rgb), .18);
-    border-radius: var(--radius-md);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-primary);
-    background: var(--color-primary-soft);
-    font-weight: 900;
-  }
-
-  .assetStatusLine {
-    grid-column: 1 / -1;
-    order: 2;
+    flex-direction: column;
   }
 
   .assetGrid {
@@ -554,23 +826,23 @@
     gap: 10px;
   }
 
-  .assetImageBox {
-    height: 126px;
+  .assetCard {
+    grid-template-rows: auto minmax(68px, auto);
   }
 
   .assetCardInfo {
+    min-height: 68px;
     padding: 10px;
   }
 
-  .assetCardInfo footer {
-    flex-wrap: wrap;
-  }
-
-  .assetDetailBackdrop {
+  .assetOverlay {
     inset: var(--mobile-topbar-height) 0 0;
   }
 
-  .assetDetailDrawer {
+  .assetFilterSheet,
+  .assetDetailDrawer,
+  .assetActionSheet,
+  .assetCategoryManageSheet {
     top: auto;
     left: 12px;
     right: 12px;

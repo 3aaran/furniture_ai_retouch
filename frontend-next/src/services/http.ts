@@ -63,12 +63,12 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
   return parseResponse<T>(response);
 }
 
-export async function requestForm<T>(path: string, formData: FormData): Promise<T> {
+export async function requestForm<T>(path: string, formData: FormData, method = 'POST'): Promise<T> {
   const headers = new Headers();
   Object.entries(authHeader()).forEach(([key, value]) => headers.set(key, value));
 
   const response = await fetch(`${API_BASE}${path}`, {
-    method: 'POST',
+    method,
     headers,
     body: formData,
   });

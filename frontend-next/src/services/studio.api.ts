@@ -44,6 +44,9 @@ export type PagedResult<T> = {
 export type CategorySubItem = {
   id: string | number;
   name: string;
+  canManage?: boolean;
+  isFixed?: boolean;
+  sortOrder?: number;
 };
 
 export type CategoryMainItem = {
@@ -52,6 +55,9 @@ export type CategoryMainItem = {
   scope?: string;
   purposeKey?: string;
   purposeName?: string;
+  canManage?: boolean;
+  isFixed?: boolean;
+  sortOrder?: number;
   subs?: CategorySubItem[];
 };
 
@@ -129,6 +135,47 @@ export function uploadWorkbenchResource(payload: UploadResourcePayload) {
   formData.append('objectName', payload.objectName || '未分类');
   formData.append('colorName', payload.colorName || '');
   return requestForm<{ items?: ResourceApiItem[]; ids?: Array<string | number>; storage?: unknown }>('/api/merchant/resources', formData);
+}
+
+export function uploadWorkbenchResources(payload: { files: File[]; name?: string; scope?: string; objectName?: string; colorName?: string }) {
+  const formData = new FormData();
+  payload.files.forEach((file) => formData.append('image', file));
+  formData.append('name', payload.name || '');
+  formData.append('scope', payload.scope || 'USER');
+  formData.append('objectName', payload.objectName || '未分类');
+  formData.append('colorName', payload.colorName || '');
+  return requestForm<{ items?: ResourceApiItem[]; ids?: Array<string | number>; storage?: unknown }>('/api/merchant/resources', formData);
+}
+
+export function updateWorkbenchResource(id: string | number, payload: { name?: string; objectName?: string; colorName?: string; scope?: string; status?: string }) {
+  const formData = new FormData();
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value !== undefined) formData.append(key, String(value));
+  });
+  return request<{ message?: string }>(`/api/merchant/resources/${encodeURIComponent(String(id))}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  }).catch(() => requestForm<{ message?: string }>(`/api/merchant/resources/${encodeURIComponent(String(id))}`, formData, 'PATCH'));
+}
+
+export function deleteWorkbenchResource(id: string | number) {
+  return request<{ message?: string }>(`/api/merchant/resources/${encodeURIComponent(String(id))}`, { method: 'DELETE' });
+}
+
+export function createMainCategory(payload: { scope: string; name: string; purposeKey: string; sortOrder?: number }) {
+  return request<{ message?: string; id?: string }>('/api/categories/main', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export function createSubCategory(mainId: string | number, payload: { name: string; sortOrder?: number }) {
+  return request<{ message?: string; id?: string }>(`/api/categories/${encodeURIComponent(String(mainId))}/sub`, { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export function updateMainCategory(id: string | number, payload: { name?: string; status?: string; sortOrder?: number }) {
+  return request<{ message?: string }>(`/api/categories/main/${encodeURIComponent(String(id))}`, { method: 'PATCH', body: JSON.stringify(payload) });
+}
+
+export function updateSubCategory(id: string | number, payload: { name?: string; status?: string; sortOrder?: number }) {
+  return request<{ message?: string }>(`/api/categories/sub/${encodeURIComponent(String(id))}`, { method: 'PATCH', body: JSON.stringify(payload) });
 }
 
 export function fetchCategoryTree(scope = 'SYSTEM') {
