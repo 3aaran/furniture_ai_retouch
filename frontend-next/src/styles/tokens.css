@@ -1,0 +1,97 @@
+:root {
+  /* Brand */
+  --color-primary: #3040a0;
+  --color-primary-rgb: 48, 64, 160;
+  --color-primary-deep: #26358f;
+  --color-primary-soft: rgba(var(--color-primary-rgb), .12);
+
+  --color-accent: #00bcd4;
+  --color-accent-rgb: 0, 188, 212;
+  --color-accent-soft: rgba(var(--color-accent-rgb), .12);
+
+  --color-success: #32c7a3;
+  --color-success-rgb: 50, 199, 163;
+  --color-warning: #ffb84d;
+  --color-warning-rgb: 255, 184, 77;
+  --color-danger: #ff7087;
+  --color-danger-rgb: 255, 112, 135;
+
+  /* Auth page palette aligned with old frontend */
+  --auth-bg-dark: #090b0e;
+  --auth-bg-dark-rgb: 9, 11, 14;
+  --auth-bg-panel: #161b22;
+  --auth-bg-panel-rgb: 22, 27, 34;
+  --auth-bg-panel-deep: #0d1015;
+  --auth-bg-panel-deep-rgb: 13, 16, 21;
+  --auth-bg-input: #0c1118;
+  --auth-bg-input-rgb: 12, 17, 24;
+  --auth-gold: #f2d58c;
+  --auth-gold-rgb: 242, 213, 140;
+  --auth-gold-deep: #d8b86a;
+  --auth-gold-deep-rgb: 216, 184, 106;
+  --auth-gold-light: #f5dfa2;
+  --auth-gold-light-rgb: 245, 223, 162;
+  --auth-text-soft: #aeb8c5;
+  --auth-text-soft-rgb: 174, 184, 197;
+  --auth-text-main: #d9e1eb;
+  --auth-text-main-rgb: 217, 225, 235;
+  --auth-text-dark: #141414;
+  --auth-text-dark-rgb: 20, 20, 20;
+
+  /* Background */
+  --bg-page: #eef4fb;
+  --bg-page-rgb: 238, 244, 251;
+  --bg-surface: #f6f9fc;
+  --bg-surface-rgb: 246, 249, 252;
+  --bg-card: #ffffff;
+  --bg-card-rgb: 255, 255, 255;
+  --bg-card-soft: #f7faff;
+  --bg-card-soft-rgb: 247, 250, 255;
+  --bg-card-strong: #edf4ff;
+  --bg-card-strong-rgb: 237, 244, 255;
+
+  /* Text */
+  --text-main: #16223a;
+  --text-main-rgb: 22, 34, 58;
+  --text-muted: #60708c;
+  --text-muted-rgb: 96, 112, 140;
+  --text-dim: #8a98ad;
+  --text-dim-rgb: 138, 152, 173;
+  --text-inverse: #ffffff;
+  --text-inverse-rgb: 255, 255, 255;
+
+  /* Border */
+  --border-subtle: rgba(86, 110, 145, .10);
+  --border-soft: rgba(86, 110, 145, .18);
+  --border-strong: rgba(var(--color-primary-rgb), .28);
+
+  /* Shadow */
+  --shadow-xs: 0 4px 12px rgba(50, 80, 120, .06);
+  --shadow-sm: 0 8px 22px rgba(50, 80, 120, .08);
+  --shadow-md: 0 14px 34px rgba(50, 80, 120, .12);
+  --shadow-lg: 0 24px 70px rgba(50, 80, 120, .16);
+
+  /* Radius */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+
+  /* Layout */
+  --topbar-height: 64px;
+  --mobile-topbar-height: 54px;
+  --mobile-bottom-nav-height: 62px;
+  --pc-page-padding: 20px;
+  --mobile-page-padding: 12px;
+  --studio-left-width: 252px;
+  --studio-right-width: 288px;
+  --studio-gap: 16px;
+
+  /* Layer */
+  --z-topbar: 100;
+  --z-bottom-nav: 100;
+  --z-drawer: 300;
+  --z-modal: 500;
+  --z-toast: 700;
+}

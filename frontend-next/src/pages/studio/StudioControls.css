@@ -1,0 +1,398 @@
+.studioBranchTabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.studioBranchTabs button,
+.studioFeatureList button,
+.studioPillGroup button,
+.studioControlGroup button,
+.studioCenterToolbar button,
+.studioFilterStack select,
+.studioField select,
+.studioControlGroup select {
+  min-height: 36px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  background: var(--bg-card-soft);
+  font-weight: 900;
+}
+
+.studioBranchTabs button:disabled {
+  color: var(--text-dim);
+  cursor: not-allowed;
+  opacity: .58;
+}
+
+.studioBranchTabs button.isActive,
+.studioFeatureList button.isActive,
+.studioPillGroup button.isActive,
+.studioControlGroup button.isActive,
+.studioCenterToolbar button.isActive {
+  color: var(--text-inverse);
+  border-color: var(--border-strong);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  box-shadow: var(--shadow-sm);
+}
+
+.studioDivider {
+  height: 1px;
+  flex: 0 0 auto;
+  background: var(--border-subtle);
+}
+
+.studioFeatureList,
+.studioFeatureConfig,
+.studioFilterStack,
+.studioPromoForm,
+.studioOptionCard,
+.studioPillGroup,
+.studioField,
+.studioOutputControls,
+.studioControlGroup,
+.studioReferenceCard,
+.studioRecentStrip {
+  display: grid;
+  gap: 9px;
+}
+
+.studioFeatureList button {
+  min-height: 52px;
+  padding: 8px 10px;
+  display: grid;
+  grid-template-columns: 38px 1fr;
+  align-items: center;
+  gap: 9px;
+  text-align: left;
+}
+
+.studioFeatureList button span {
+  width: 36px;
+  height: 31px;
+  border-radius: var(--radius-pill);
+  display: grid;
+  place-items: center;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  font-size: 12px;
+}
+
+.studioFeatureList button.isActive span {
+  color: var(--text-inverse);
+  background: rgba(var(--bg-card-rgb), .18);
+}
+
+.studioDescRow {
+  padding: 11px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  display: grid;
+  grid-template-columns: 29px 1fr;
+  gap: 9px;
+  background: var(--bg-card-soft);
+}
+
+.studioDescRow > span {
+  width: 29px;
+  height: 29px;
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+  color: var(--text-inverse);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.studioDescRow p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.studioOnlyDesc {
+  margin-top: 2px;
+}
+
+.studioSearchBox input,
+.studioPromptInput,
+.studioField textarea {
+  width: 100%;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  background: var(--bg-card-soft);
+  outline: none;
+}
+
+.studioSearchBox input {
+  min-height: 36px;
+  padding: 0 11px;
+}
+
+.studioSearchBox input:focus,
+.studioPromptInput:focus,
+.studioField textarea:focus,
+.studioField select:focus,
+.studioControlGroup select:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+.studioFilterStack select,
+.studioField select,
+.studioControlGroup select {
+  padding: 0 11px;
+}
+
+.studioSectionLabel,
+.studioConfigTitle {
+  margin-top: 2px;
+}
+
+.studioResourceGrid {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.studioUploadResource,
+.studioResourceCard {
+  min-height: 95px;
+  padding: 8px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  background: var(--bg-card-soft);
+}
+
+.studioUploadResource {
+  display: grid;
+  place-items: center;
+  gap: 3px;
+  font-weight: 900;
+}
+
+.studioUploadResource span {
+  color: var(--color-primary);
+  font-size: 25px;
+}
+
+.studioResourceCard {
+  overflow: hidden;
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  text-align: left;
+}
+
+.studioResourceCard.isActive {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+.studioResourceCard img {
+  width: 100%;
+  height: 68px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+}
+
+.studioResourceCard i {
+  width: max-content;
+  padding: 4px 8px;
+  border-radius: var(--radius-pill);
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.studioResourceCard b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.studioResourceCard > span,
+.studioLibraryEmpty {
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.studioLibraryEmpty {
+  grid-column: 1 / -1;
+  padding: 14px;
+  border: 1px dashed var(--border-soft);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.studioOptionRow,
+.studioRadioList label {
+  min-height: 54px;
+  padding: 10px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--bg-card-soft);
+}
+
+.studioOptionRow b,
+.studioRadioList b,
+.studioPillGroup b {
+  display: block;
+  color: var(--text-main);
+}
+
+.studioOptionRow em,
+.studioRadioList em {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-style: normal;
+}
+
+.studioOptionRow input,
+.studioRadioList input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary);
+}
+
+.studioPillGroup > div,
+.studioControlGroup > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.studioPillGroup button,
+.studioControlGroup button {
+  min-width: 47px;
+  padding: 0 10px;
+}
+
+.studioField {
+  color: var(--text-muted);
+  font-weight: 900;
+}
+
+.studioField textarea {
+  min-height: 86px;
+  padding: 10px;
+  resize: vertical;
+}
+
+@media (min-width: 768px) {
+  .studioBranchTabs {
+    height: 119px;
+    padding-bottom: 13px;
+    grid-template-columns: 1fr;
+  }
+
+  .studioBranchTabs button {
+    min-height: 31px;
+    border-radius: var(--radius-sm);
+    padding-inline: 9px;
+    font-size: 13px;
+  }
+
+  .studioFeatureList {
+    display: none;
+  }
+
+  .studioFeatureList.isPickerOpen {
+    position: absolute;
+    top: 77px;
+    left: 16px;
+    right: 16px;
+    z-index: 3;
+    max-height: calc(100% - 104px);
+    padding: 10px;
+    overflow-y: auto;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    display: grid;
+    background: var(--bg-card);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .studioFeatureConfig {
+    min-height: 0;
+    margin-top: -13px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1 1 auto;
+  }
+
+  .studioDescRow,
+  .studioSearchBox {
+    display: none;
+  }
+
+  .studioFilterStack {
+    gap: 8px;
+  }
+
+  .studioFilterStack select {
+    min-height: 28px;
+    height: 29px;
+    padding-inline: 14px;
+    border-radius: 6px;
+    font-size: 12px;
+  }
+
+  .studioResourceGrid {
+    min-height: 0;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 7px 22px 0;
+    align-content: start;
+    grid-auto-rows: 104px;
+  }
+
+  .studioUploadResource,
+  .studioResourceCard {
+    min-height: 104px;
+    height: 104px;
+    border-radius: 8px;
+  }
+
+  .studioUploadResource {
+    padding: 0;
+  }
+
+  .studioControlGroup button {
+    min-height: 29px;
+    border-radius: var(--radius-pill);
+    padding-inline: 10px;
+    font-size: 12px;
+  }
+
+  .studioControlGroup select {
+    min-height: 29px;
+    height: 29px;
+    border-radius: 6px;
+  }
+
+  .studioFeatureList button {
+    grid-template-columns: 36px 1fr;
+  }
+
+  .studioFeatureList button span {
+    width: 34px;
+  }
+}

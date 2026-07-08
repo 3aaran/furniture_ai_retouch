@@ -28,7 +28,7 @@
       <view class="brand-row">
         <view class="brand-logo">
           <image v-if="logo" class="brand-logo-img" :src="logo" mode="aspectFill" />
-          <text v-else class="brand-logo-text">AI</text>
+          <text v-else class="brand-logo-text">勋</text>
         </view>
         <view class="brand-copy">
           <text class="brand-name">勋港家具 AI</text>
@@ -65,7 +65,7 @@ export default {
     quota: { type: [String, Number], default: '' },
     avatarText: { type: String, default: '勋' },
     avatarUrl: { type: String, default: '' },
-    logo: { type: String, default: '' },
+    logo: { type: String, default: '/static/brand/xungang-mark.svg' },
     showAvatar: { type: Boolean, default: true },
     showBack: { type: Boolean, default: false },
     backUrl: { type: String, default: '/pages/workbench/index' }

@@ -1,0 +1,45 @@
+.uiButton {
+  min-height: 38px;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-weight: 900;
+  color: var(--text-main);
+  background: var(--bg-card);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+}
+
+.uiButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.uiButton--primary {
+  color: var(--text-inverse);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  box-shadow: var(--shadow-sm);
+}
+
+.uiButton--secondary {
+  color: var(--color-primary);
+  border-color: rgba(var(--color-accent-rgb), .36);
+  background: var(--color-accent-soft);
+}
+
+.uiButton--ghost {
+  border-color: var(--border-soft);
+  background: rgba(var(--bg-card-rgb), .76);
+}
+
+.uiButton--danger {
+  color: var(--text-inverse);
+  background: var(--color-danger);
+}
+
+.uiButton:disabled {
+  opacity: .52;
+}

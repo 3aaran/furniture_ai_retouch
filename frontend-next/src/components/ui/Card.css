@@ -1,0 +1,6 @@
+.uiCard {
+  background: rgba(var(--bg-card-rgb), .92);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}

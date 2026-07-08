@@ -1,0 +1,905 @@
+.landingPageNext {
+  min-height: 100vh;
+  color: var(--text-main);
+}
+
+.landingTopbarNext {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-topbar);
+  height: 70px;
+  padding: 0 clamp(16px, 3.6vw, 42px);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: rgba(var(--bg-card-rgb), .9);
+  border-bottom: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-xs);
+  backdrop-filter: blur(18px);
+}
+
+.landingBrandLink {
+  flex: 0 0 auto;
+}
+
+.landingNavNext {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.landingNavNext a,
+.landingTextLink,
+.landingInstallBtnNext {
+  min-height: 38px;
+  padding: 0 13px;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-main);
+  font-weight: 900;
+}
+
+.landingNavNext a:hover,
+.landingTextLink:hover,
+.landingInstallBtnNext:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.landingInstallBtnNext {
+  border: 1px solid var(--border-soft);
+  background: rgba(var(--bg-card-rgb), .72);
+}
+
+.landingTopActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.landingHeroNext {
+  width: min(1332px, 100%);
+  min-height: calc(100vh - 70px);
+  margin: 0 auto;
+  padding: clamp(38px, 6.3vw, 78px) clamp(16px, 3.6vw, 42px) clamp(30px, 4.5vw, 60px);
+  display: grid;
+  grid-template-columns: minmax(0, .92fr) minmax(504px, 1.08fr);
+  align-items: center;
+  gap: clamp(27px, 4.5vw, 64px);
+}
+
+.landingEyebrowNext {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--color-primary);
+  font-weight: 900;
+}
+
+.landingEyebrowNext::before {
+  content: '';
+  width: 38px;
+  height: 2px;
+  background: var(--color-accent);
+}
+
+.landingHeroCopyNext h1 {
+  margin: 20px 0 0;
+  color: var(--text-main);
+  font-size: clamp(48px, 6.3vw, 90px);
+  line-height: .96;
+  letter-spacing: -.07em;
+}
+
+.landingHeroCopyNext p {
+  max-width: 620px;
+  margin: 22px 0 0;
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.landingHeroActionsNext,
+.landingTagRowNext,
+.landingMetaGridNext {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.landingHeroActionsNext {
+  margin-top: 27px;
+}
+
+.landingTagRowNext {
+  margin-top: 25px;
+}
+
+.landingTagRowNext span {
+  min-height: 31px;
+  padding: 0 13px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-primary);
+  background: rgba(var(--bg-card-rgb), .66);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.landingMetaGridNext {
+  margin-top: 22px;
+}
+
+.landingMetaGridNext span {
+  min-width: 152px;
+  padding: 16px 18px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  background: rgba(var(--bg-card-rgb), .76);
+  box-shadow: var(--shadow-xs);
+}
+
+.landingMetaGridNext b {
+  display: block;
+  color: var(--color-primary);
+  font-size: 25px;
+  line-height: 1;
+}
+
+.landingMetaGridNext small {
+  display: block;
+  margin-top: 8px;
+  color: var(--text-muted);
+}
+
+.landingVisualNext {
+  position: relative;
+  min-height: 585px;
+  overflow: hidden;
+  padding: 30px;
+  border: 1px solid var(--border-soft);
+  border-radius: 30px;
+  display: grid;
+  grid-template-rows: auto auto auto;
+  gap: 16px;
+  background:
+    radial-gradient(circle at 74% 18%, rgba(var(--color-accent-rgb), .22), transparent 18rem),
+    radial-gradient(circle at 18% 86%, rgba(var(--color-primary-rgb), .16), transparent 20rem),
+    rgba(var(--bg-card-rgb), .78);
+  box-shadow: var(--shadow-lg);
+}
+
+.landingVisualNext::before,
+.landingFlowStageNext::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(var(--color-accent-rgb), .42);
+  opacity: .9;
+  pointer-events: none;
+}
+
+.landingVisualNext::after,
+.landingFlowStageNext::after {
+  content: '';
+  position: absolute;
+  width: 62%;
+  height: 62%;
+  right: -18%;
+  top: -20%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(var(--color-accent-rgb), .28), transparent 62%);
+  filter: blur(18px);
+  pointer-events: none;
+  animation: landingAuroraDrift 8s ease-in-out infinite alternate;
+}
+
+.landingVisualBadge {
+  position: relative;
+  z-index: 3;
+  width: max-content;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid rgba(var(--color-primary-rgb), .28);
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-primary);
+  background: rgba(var(--bg-card-rgb), .84);
+  font-weight: 900;
+}
+
+.landingMotionLine {
+  position: absolute;
+  inset: 80px 25px auto auto;
+  width: 78%;
+  height: 252px;
+  border: 2px solid rgba(var(--color-accent-rgb), .18);
+  border-left: 0;
+  border-bottom: 0;
+  border-radius: 50%;
+  transform: rotate(12deg);
+}
+
+.heroVisualGridNext {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.visualProduct {
+  position: relative;
+  height: clamp(216px, 22vw, 288px);
+  overflow: hidden;
+  border: 1px solid var(--border-soft);
+  border-radius: 25px;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-md);
+}
+
+.visualProduct img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  transition: transform .45s ease;
+}
+
+.visualProduct:hover img {
+  transform: scale(1.035);
+}
+
+.visualProduct span {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 2;
+  min-height: 31px;
+  padding: 0 11px;
+  border: 1px solid rgba(var(--bg-card-rgb), .72);
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-primary);
+  background: rgba(var(--bg-card-rgb), .86);
+  font-weight: 900;
+  backdrop-filter: blur(12px);
+}
+
+.visualCard {
+  position: relative;
+  z-index: 3;
+  padding: 20px;
+  border: 1px solid var(--border-soft);
+  border-radius: 23px;
+  background: rgba(var(--bg-card-rgb), .94);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(12px);
+}
+
+.visualCardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.visualCard small {
+  color: var(--text-muted);
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+
+.visualCard strong {
+  min-height: 25px;
+  padding: 0 9px;
+  border: 1px solid rgba(var(--color-success-rgb), .3);
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-success);
+  background: rgba(var(--color-success-rgb), .08);
+  font-size: 12px;
+}
+
+.pipelineRows {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.pipelineRows span {
+  min-height: 100px;
+  padding: 13px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  background: var(--bg-card-soft);
+}
+
+.pipelineRows i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+.pipelineRows b {
+  color: var(--text-main);
+  font-size: 15px;
+}
+
+.pipelineRows em {
+  color: var(--text-muted);
+  font-style: normal;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.heroSignalGridNext {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.visualFloatCard {
+  min-height: 80px;
+  padding: 14px 16px;
+  border: 1px solid var(--border-soft);
+  border-radius: 20px;
+  background: rgba(var(--bg-card-rgb), .86);
+  box-shadow: var(--shadow-xs);
+}
+
+.visualFloatCard small {
+  display: block;
+  color: var(--text-muted);
+}
+
+.visualFloatCard b {
+  display: block;
+  margin-top: 5px;
+  color: var(--color-primary);
+  font-size: 16px;
+}
+
+.landingSectionNext {
+  width: min(1332px, 100%);
+  margin: 0 auto;
+  padding: clamp(52px, 7.2vw, 88px) clamp(16px, 3.6vw, 42px);
+}
+
+.landingSectionHeadNext {
+  max-width: 792px;
+  margin-bottom: 25px;
+}
+
+.landingSectionHeadNext.compact {
+  margin-bottom: 25px;
+}
+
+.landingSectionHeadNext span {
+  color: var(--color-primary);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: .14em;
+}
+
+.landingSectionHeadNext h2 {
+  margin: 11px 0 0;
+  color: var(--text-main);
+  font-size: clamp(27px, 3.6vw, 50px);
+  line-height: 1.08;
+  letter-spacing: -.04em;
+}
+
+.landingFeatureGridNext {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.landingFeatureCardNext {
+  min-height: 212px;
+  overflow: hidden;
+  padding: 22px;
+}
+
+.landingFeatureCardNext > span {
+  color: rgba(var(--color-primary-rgb), .58);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.landingFeatureCardNext b {
+  display: block;
+  margin-top: 40px;
+  color: var(--text-main);
+  font-size: 20px;
+}
+
+.landingFeatureCardNext p {
+  margin: 14px 0 0;
+  color: var(--text-muted);
+  line-height: 1.75;
+}
+
+.landingWorkflowNext {
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  background: linear-gradient(180deg, rgba(var(--bg-card-rgb), .34), transparent);
+}
+
+.landingFlowStageNext {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border-soft);
+  border-radius: 34px;
+  padding: clamp(22px, 3vw, 34px);
+  background:
+    radial-gradient(circle at 18% 16%, rgba(var(--color-primary-rgb), .16), transparent 22rem),
+    radial-gradient(circle at 82% 78%, rgba(var(--color-accent-rgb), .22), transparent 22rem),
+    rgba(var(--bg-card-rgb), .86);
+  box-shadow: var(--shadow-lg);
+}
+
+.workflowCarouselNext {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 22px;
+  align-items: stretch;
+}
+
+.workflowCarouselViewportNext {
+  position: relative;
+  min-height: clamp(440px, 48vw, 620px);
+  overflow: hidden;
+  border: 1px solid rgba(var(--color-primary-rgb), .24);
+  border-radius: 30px;
+  background: var(--bg-card);
+  box-shadow: 0 26px 80px rgba(var(--color-primary-rgb), .16);
+}
+
+.workflowSlideNext {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  transform: scale(1.035);
+  animation: workflowSlideCycle 16s infinite;
+}
+
+.workflowSlideNext.slide1 { animation-delay: 0s; }
+.workflowSlideNext.slide2 { animation-delay: 4s; }
+.workflowSlideNext.slide3 { animation-delay: 8s; }
+.workflowSlideNext.slide4 { animation-delay: 12s; }
+
+.workflowSlideNext img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.workflowSlideNext::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(var(--text-main-rgb), .46), transparent 52%),
+    linear-gradient(180deg, transparent 52%, rgba(var(--text-main-rgb), .28));
+  pointer-events: none;
+}
+
+.workflowSlideNext figcaption {
+  position: absolute;
+  left: clamp(18px, 3vw, 34px);
+  bottom: clamp(18px, 3vw, 34px);
+  z-index: 2;
+  width: min(430px, calc(100% - 36px));
+  padding: 22px 24px;
+  border: 1px solid rgba(var(--bg-card-rgb), .6);
+  border-radius: 24px;
+  background: rgba(var(--bg-card-rgb), .82);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow-md);
+}
+
+.workflowSlideNext small {
+  display: block;
+  color: var(--color-accent);
+  font-weight: 900;
+  letter-spacing: .14em;
+}
+
+.workflowSlideNext b {
+  display: block;
+  margin-top: 8px;
+  color: var(--text-main);
+  font-size: clamp(30px, 4vw, 52px);
+  line-height: 1;
+  letter-spacing: -.04em;
+}
+
+.workflowSlideNext span {
+  display: block;
+  margin-top: 12px;
+  color: var(--text-muted);
+  font-size: 16px;
+}
+
+.workflowScanNext {
+  position: absolute;
+  z-index: 3;
+  top: -20%;
+  bottom: -20%;
+  width: 26%;
+  background: linear-gradient(90deg, transparent, rgba(var(--color-accent-rgb), .26), rgba(var(--bg-card-rgb), .38), transparent);
+  transform: translateX(-160%) skewX(-10deg);
+  animation: workflowScan 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.workflowIndicatorNext {
+  display: grid;
+  gap: 14px;
+}
+
+.workflowIndicatorNext span {
+  position: relative;
+  overflow: hidden;
+  min-height: 92px;
+  padding: 18px 18px 16px;
+  border: 1px solid var(--border-soft);
+  border-radius: 22px;
+  background: rgba(var(--bg-card-rgb), .88);
+  box-shadow: var(--shadow-xs);
+}
+
+.workflowIndicatorNext span::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: workflowIndicatorCycle 16s infinite;
+}
+
+.workflowIndicatorNext .indicator1::before { animation-delay: 0s; }
+.workflowIndicatorNext .indicator2::before { animation-delay: 4s; }
+.workflowIndicatorNext .indicator3::before { animation-delay: 8s; }
+.workflowIndicatorNext .indicator4::before { animation-delay: 12s; }
+
+.workflowIndicatorNext b {
+  display: block;
+  color: var(--color-primary);
+  font-size: 13px;
+  letter-spacing: .12em;
+}
+
+.workflowIndicatorNext em {
+  display: block;
+  margin-top: 8px;
+  color: var(--text-main);
+  font-style: normal;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.workflowGridNext {
+  position: relative;
+  z-index: 2;
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.workflowCardNext {
+  min-height: 150px;
+  padding: 20px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  background: rgba(var(--bg-card-rgb), .82);
+  box-shadow: var(--shadow-xs);
+}
+
+.workflowCardNext b {
+  color: var(--color-primary);
+  font-size: 18px;
+}
+
+.workflowCardNext p {
+  margin: 14px 0 0;
+  color: var(--text-muted);
+  line-height: 1.75;
+}
+
+.landingSceneGridNext {
+  display: grid;
+  grid-template-columns: 1.08fr .92fr;
+  gap: 16px;
+}
+
+.landingScenePanelNext {
+  position: relative;
+  min-height: 360px;
+  overflow: hidden;
+  padding: 34px;
+  background:
+    radial-gradient(circle at 82% 24%, var(--color-accent-soft), transparent 16rem),
+    rgba(var(--bg-card-rgb), .9);
+}
+
+.landingScenePanelNext h3 {
+  width: min(620px, 82%);
+  margin: 0;
+  color: var(--text-main);
+  font-size: clamp(30px, 4vw, 46px);
+  line-height: 1.12;
+  letter-spacing: -.04em;
+}
+
+.landingSceneOrbitNext {
+  position: absolute;
+  right: -90px;
+  bottom: -120px;
+  width: 500px;
+  height: 500px;
+  border: 1px solid rgba(var(--color-primary-rgb), .22);
+  border-radius: 50%;
+}
+
+.landingSceneOrbitNext::before,
+.landingSceneOrbitNext::after {
+  content: '';
+  position: absolute;
+  border: 1px solid rgba(var(--color-accent-rgb), .16);
+  border-radius: inherit;
+}
+
+.landingSceneOrbitNext::before { inset: 76px; }
+.landingSceneOrbitNext::after { inset: 150px; }
+
+.sceneListNext {
+  display: grid;
+  gap: 16px;
+}
+
+.sceneCardNext {
+  padding: 24px;
+  display: grid;
+  gap: 10px;
+}
+
+.sceneCardNext b {
+  color: var(--text-main);
+  font-size: 20px;
+}
+
+.sceneCardNext span {
+  color: var(--text-muted);
+  line-height: 1.75;
+}
+
+.planGridNext {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.planCardNext {
+  min-height: 258px;
+  padding: 26px;
+}
+
+.planCardNext h3 {
+  margin: 0;
+  color: var(--text-main);
+  font-size: 23px;
+}
+
+.planCardNext b {
+  display: block;
+  margin-top: 22px;
+  color: var(--color-primary);
+  font-size: 40px;
+  line-height: 1;
+}
+
+.planCardNext p {
+  margin: 18px 0 0;
+  color: var(--text-muted);
+  line-height: 1.8;
+}
+
+.landingFooterNext {
+  width: min(1480px, 100%);
+  margin: 0 auto;
+  padding: 28px clamp(18px, 4vw, 48px) 42px;
+  border-top: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  color: var(--text-muted);
+}
+
+.landingFooterInfoNext {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  text-align: right;
+}
+
+.landingFooterInfoNext a {
+  color: var(--color-primary);
+}
+
+@keyframes workflowSlideCycle {
+  0% { opacity: 0; transform: scale(1.035); }
+  4% { opacity: 1; transform: scale(1.01); }
+  22% { opacity: 1; transform: scale(1); }
+  28% { opacity: 0; transform: scale(.99); }
+  100% { opacity: 0; transform: scale(1.035); }
+}
+
+@keyframes workflowIndicatorCycle {
+  0% { transform: scaleX(0); }
+  4% { transform: scaleX(.12); }
+  22% { transform: scaleX(1); }
+  28% { transform: scaleX(0); }
+  100% { transform: scaleX(0); }
+}
+
+@keyframes workflowScan {
+  0%, 35% { transform: translateX(-170%) skewX(-10deg); }
+  70%, 100% { transform: translateX(430%) skewX(-10deg); }
+}
+
+@keyframes landingAuroraDrift {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(-10%, 8%, 0) scale(1.08); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workflowSlideNext,
+  .workflowIndicatorNext span::before,
+  .workflowScanNext,
+  .landingVisualNext::after,
+  .landingFlowStageNext::after {
+    animation: none;
+  }
+
+  .workflowSlideNext.slide1 {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 1180px) {
+  .landingHeroNext,
+  .landingSceneGridNext {
+    grid-template-columns: 1fr;
+  }
+
+  .landingFeatureGridNext,
+  .workflowGridNext,
+  .planGridNext {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .workflowCarouselNext {
+    grid-template-columns: 1fr;
+  }
+
+  .workflowIndicatorNext {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .landingTopbarNext {
+    height: 64px;
+    gap: 12px;
+  }
+
+  .landingTopbarNext .brandLogoText,
+  .landingNavNext,
+  .landingInstallBtnNext,
+  .landingTextLink {
+    display: none;
+  }
+
+  .landingTopActions {
+    margin-left: auto;
+  }
+
+  .landingHeroNext {
+    min-height: auto;
+    padding-top: 34px;
+  }
+
+  .landingHeroCopyNext h1 {
+    font-size: clamp(46px, 15vw, 70px);
+  }
+
+  .landingHeroCopyNext p {
+    font-size: 16px;
+  }
+
+  .landingVisualNext {
+    min-height: auto;
+    padding: 20px;
+    border-radius: 26px;
+  }
+
+  .heroVisualGridNext,
+  .landingMetaGridNext,
+  .pipelineRows,
+  .heroSignalGridNext,
+  .landingFeatureGridNext,
+  .workflowGridNext,
+  .planGridNext,
+  .workflowIndicatorNext {
+    grid-template-columns: 1fr;
+  }
+
+  .visualProduct {
+    height: 240px;
+  }
+
+  .workflowCarouselViewportNext {
+    min-height: 430px;
+  }
+
+  .workflowSlideNext figcaption {
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+    width: auto;
+  }
+
+  .landingMetaGridNext span {
+    width: 100%;
+  }
+
+  .landingScenePanelNext h3 {
+    width: 100%;
+  }
+
+  .landingFooterNext {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .landingFooterInfoNext {
+    justify-content: flex-start;
+    text-align: left;
+  }
+}

@@ -1,0 +1,195 @@
+.studioPage {
+  width: 100%;
+  height: calc(100vh - var(--studio-shell-topbar-height, var(--topbar-height)));
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.studioLayoutPc {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 270px minmax(0, 1fr) 270px;
+  align-items: stretch;
+  background: var(--bg-page);
+}
+
+.studioSidePanel,
+.studioCenterPanel {
+  min-width: 0;
+  min-height: 0;
+  background: var(--bg-card);
+}
+
+.studioSidePanel {
+  padding: 18px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.studioLeftPanel {
+  border-right: 1px solid var(--border-soft);
+}
+
+.studioRightPanel {
+  border-left: 1px solid var(--border-soft);
+}
+
+.studioCenterPanel {
+  padding: 22px 25px 32px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--bg-page);
+}
+
+.studioCenterPanel > * {
+  width: min(864px, 100%);
+  margin-inline: auto;
+}
+
+.studioMobileDrawerHead,
+.studioPanelHead,
+.studioSourceHead,
+.studioSectionTitle,
+.studioReferenceHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.studioMobileDrawerHead span,
+.studioSignalTitle small,
+.studioPanelHead span,
+.studioSectionLabel,
+.studioConfigTitle {
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .1em;
+}
+
+.studioMobileDrawerHead b,
+.studioPanelHead b {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-main);
+  font-size: 18px;
+}
+
+.studioMobileDrawerHead > button,
+.studioDrawerBackdrop {
+  display: none;
+}
+
+.studioPanelHead em {
+  padding: 4px 8px;
+  border-radius: var(--radius-pill);
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+@media (min-width: 768px) {
+  .studioLayoutPc {
+    grid-template-columns: 210px minmax(0, 1fr) 267px;
+  }
+
+  .studioSidePanel {
+    gap: 16px;
+  }
+
+  .studioLeftPanel {
+    position: relative;
+    padding: 16px 13px;
+    overflow: hidden;
+  }
+
+  .studioRightPanel {
+    padding: 16px 14px;
+  }
+
+  .studioCenterPanel {
+    position: relative;
+    padding: 22px 15px 13px 14px;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  .studioCenterPanel > * {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .studioPage {
+    height: auto;
+    min-height: calc(100vh - var(--mobile-topbar-height));
+    overflow: visible;
+  }
+
+  .studioLayoutPc {
+    min-height: calc(100vh - var(--mobile-topbar-height));
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-page);
+  }
+
+  .studioCenterPanel {
+    order: 1;
+    padding: 12px 12px 16px;
+    overflow: visible;
+    gap: 10px;
+  }
+
+  .studioCenterPanel > * {
+    width: 100%;
+  }
+
+  .studioLeftPanel {
+    position: fixed;
+    inset: var(--mobile-topbar-height) auto 0 0;
+    z-index: var(--z-drawer);
+    width: min(88vw, 324px);
+    padding: 14px;
+    border: 0;
+    border-right: 1px solid var(--border-soft);
+    box-shadow: var(--shadow-lg);
+    transform: translateX(-105%);
+    transition: transform .22s ease;
+  }
+
+  .studioLeftPanel.isFeatureOpen {
+    transform: translateX(0);
+  }
+
+  .studioDrawerBackdrop {
+    position: fixed;
+    inset: var(--mobile-topbar-height) 0 0;
+    z-index: calc(var(--z-drawer) - 1);
+    display: block;
+    border: 0;
+    background: rgba(var(--text-main-rgb), .48);
+  }
+
+  .studioMobileDrawerHead > button {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border-soft);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: var(--text-main);
+    background: var(--bg-card-soft);
+    font-size: 20px;
+  }
+}

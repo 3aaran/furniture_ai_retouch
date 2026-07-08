@@ -1,0 +1,201 @@
+.studioPromptField {
+  display: grid;
+  gap: 7px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.studioPromptInput {
+  min-height: 119px;
+  padding: 11px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.studioReferenceHead > span {
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.studioReferenceUpload {
+  position: relative;
+  min-height: 104px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  display: grid;
+  place-items: center;
+  background: var(--bg-card-soft);
+  cursor: pointer;
+}
+
+.studioReferenceUpload > span {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-md);
+  display: grid;
+  place-items: center;
+  color: var(--text-inverse);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  font-size: 20px;
+}
+
+.studioReferenceUpload > b {
+  margin-top: 7px;
+  color: var(--text-main);
+  font-size: 12px;
+}
+
+.studioReferenceList {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.studioReferenceList > div {
+  position: relative;
+  height: 68px;
+  overflow: hidden;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+}
+
+.studioReferenceList img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.studioReferenceList button {
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  min-height: 22px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  color: var(--text-inverse);
+  background: rgba(var(--text-main-rgb), .72);
+  font-size: 11px;
+}
+
+.studioControlGroup {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.studioGenerateArea {
+  margin-top: auto;
+  display: grid;
+  gap: 7px;
+}
+
+.studioGenerateButton {
+  width: 100%;
+  min-height: 47px;
+  border-radius: var(--radius-md);
+}
+
+.studioGenerateMeta {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.studioGenerateMeta b {
+  color: var(--color-primary);
+}
+
+@media (min-width: 768px) {
+  .studioPanelHead {
+    min-height: 17px;
+  }
+
+  .studioPromptField {
+    display: block;
+    margin-top: -15px;
+  }
+
+  .studioPromptField > span {
+    display: none;
+  }
+
+  .studioRightPanel .studioPromptInput {
+    display: block;
+    height: 112px;
+    min-height: 112px;
+    padding: 16px;
+    border-radius: 8px;
+  }
+
+  .studioRightPanel .studioReferenceCard {
+    gap: 7px;
+  }
+
+  .studioRightPanel .studioReferenceHead b {
+    font-size: 15px;
+    line-height: 1;
+  }
+
+  .studioRightPanel .studioReferenceUpload {
+    height: 112px;
+    min-height: 112px;
+    border-radius: 8px;
+  }
+
+  .studioRightPanel .studioOutputControls {
+    gap: 13px;
+  }
+
+  .studioGenerateButton {
+    min-height: 50px;
+    height: 50px;
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 767px) {
+  .studioRightPanel {
+    order: 2;
+    margin: 0 12px calc(var(--mobile-bottom-nav-height) + 27px);
+    padding: 14px;
+    overflow: visible;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .studioPanelHead,
+  .studioPromptField,
+  .studioReferenceCard,
+  .studioOutputControls,
+  .studioGenerateArea {
+    width: 100%;
+  }
+
+  .studioPromptInput {
+    min-height: 86px;
+  }
+
+  .studioReferenceUpload {
+    min-height: 86px;
+  }
+
+  .studioGenerateArea {
+    position: sticky;
+    bottom: calc(var(--mobile-bottom-nav-height) + 16px + env(safe-area-inset-bottom, 0px));
+    z-index: 2;
+    padding: 9px;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg);
+    background: rgba(var(--bg-card-rgb), .94);
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(14px);
+  }
+
+  .studioGenerateButton {
+    min-height: 45px;
+  }
+}

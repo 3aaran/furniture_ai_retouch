@@ -1,0 +1,48 @@
+.uploadBox {
+  min-height: 234px;
+  padding: 20px;
+  border: 1px dashed rgba(var(--color-accent-rgb), .52);
+  border-radius: var(--radius-xl);
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 9px;
+  text-align: center;
+  color: var(--text-main);
+  background: rgba(var(--bg-card-rgb), .86);
+}
+
+.uploadBox input {
+  display: none;
+}
+
+.uploadBoxIcon {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  font-size: 27px;
+  font-weight: 900;
+}
+
+.uploadBox strong {
+  font-size: 18px;
+}
+
+.uploadBox small {
+  color: var(--text-muted);
+}
+
+.uploadBox em {
+  margin-top: 5px;
+  padding: 9px 16px;
+  border: 1px solid rgba(var(--color-accent-rgb), .42);
+  border-radius: var(--radius-pill);
+  color: var(--color-primary);
+  background: var(--color-accent-soft);
+  font-style: normal;
+  font-weight: 900;
+}

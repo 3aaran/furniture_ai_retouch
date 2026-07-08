@@ -3,8 +3,11 @@
   "version": "3.0.0-store-admin",
   "private": true,
   "scripts": {
-    "install:all": "npm install --legacy-peer-deps --no-audit --no-fund && npm --prefix backend install --legacy-peer-deps --no-audit --no-fund && npm --prefix frontend install --legacy-peer-deps --no-audit --no-fund",
-    "dev": "concurrently \"npm --prefix backend run dev\" \"npm --prefix frontend run dev -- --host 0.0.0.0\"",
+    "install:all": "npm install --legacy-peer-deps --no-audit --no-fund && npm --prefix backend install --legacy-peer-deps --no-audit --no-fund && npm --prefix frontend-next install --legacy-peer-deps --no-audit --no-fund && npm --prefix frontend install --legacy-peer-deps --no-audit --no-fund",
+    "dev": "concurrently \"npm --prefix backend run dev\" \"npm --prefix frontend-next run dev -- --host 0.0.0.0\"",
+    "dev:next": "concurrently \"npm --prefix backend run dev\" \"npm --prefix frontend-next run dev -- --host 0.0.0.0\"",
+    "dev:old": "concurrently \"npm --prefix backend run dev\" \"npm --prefix frontend run dev -- --host 0.0.0.0\"",
+    "build:next": "npm --prefix frontend-next run build",
     "start": "npm run dev"
   },
   "devDependencies": {

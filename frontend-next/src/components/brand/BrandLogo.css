@@ -1,0 +1,38 @@
+.brandLogo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-main);
+}
+
+.brandLogoMark {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 auto;
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.brandLogoMark img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.brandLogoText b {
+  display: block;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.brandLogoText small {
+  display: block;
+  margin-top: 5px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.brandLogo--compact .brandLogoMark {
+  width: 38px;
+  height: 38px;
+}

@@ -1,0 +1,55 @@
+.appRoot {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 16% 0, var(--color-accent-soft), transparent 28rem),
+    radial-gradient(circle at 86% 8%, var(--color-primary-soft), transparent 34rem),
+    var(--bg-page);
+}
+
+.pageContainer {
+  width: min(1440px, 100%);
+  margin: 0 auto;
+  padding: var(--pc-page-padding);
+}
+
+.pageTitle {
+  margin: 0;
+  font-size: clamp(25px, 2.7vw, 38px);
+  line-height: 1.08;
+  color: var(--text-main);
+}
+
+.pageDesc {
+  margin: 8px 0 0;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+.cardSurface {
+  background: rgba(var(--bg-card-rgb), .9);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.desktopOnly {
+  display: initial;
+}
+
+.mobileOnly {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .pageContainer {
+    padding: var(--mobile-page-padding);
+  }
+
+  .desktopOnly {
+    display: none;
+  }
+
+  .mobileOnly {
+    display: initial;
+  }
+}

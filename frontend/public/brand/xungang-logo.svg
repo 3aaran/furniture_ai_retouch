@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 150" role="img" aria-label="勋港 智能家具AI修图平台">
+  <defs>
+    <linearGradient id="xg-logo-frame" x1="20" y1="20" x2="112" y2="116" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#3040A0"/><stop offset="0.56" stop-color="#2359D9"/><stop offset="1" stop-color="#00BCD4"/></linearGradient>
+    <linearGradient id="xg-logo-chair" x1="40" y1="48" x2="94" y2="104" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#3040A0"/><stop offset="1" stop-color="#16223A"/></linearGradient>
+  </defs>
+  <rect x="8" y="13" width="124" height="124" rx="32" fill="#FFFFFF"/>
+  <rect x="13" y="18" width="114" height="114" rx="30" fill="#F7FAFF" stroke="#DDE9F8" stroke-width="2"/>
+  <path d="M91 32h5c16 0 26 10 26 26v27h-14V59c0-8-5-13-13-13H46c-12 0-19 7-19 19v24c0 9 6 15 16 15h46v14H42c-17 0-29-12-29-29V65c0-20 14-33 33-33h45Z" fill="url(#xg-logo-frame)"/>
+  <path d="M43 56c8-13 27-10 36 4 5 8 15 11 27 8 3 21-10 36-30 36H51c-12 0-19-8-19-19V72c0-7 4-13 11-16Z" fill="url(#xg-logo-chair)"/>
+  <path d="M49 100l-7 19M88 100l9 19M48 114h45" fill="none" stroke="#16223A" stroke-width="8" stroke-linecap="round"/>
+  <path d="M96 38l5 13 13 5-13 5-5 13-5-13-13-5 13-5 5-13Z" fill="#00BCD4"/>
+  <text x="158" y="76" fill="#16223A" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="54" font-weight="900" letter-spacing="2">勋港</text>
+  <text x="162" y="112" fill="#60708C" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="22" font-weight="700" letter-spacing="4">智能家具AI修图平台</text>
+</svg>

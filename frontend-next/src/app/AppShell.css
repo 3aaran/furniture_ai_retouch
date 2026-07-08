@@ -1,0 +1,176 @@
+.shellRoot {
+  min-height: 100vh;
+  padding-top: var(--topbar-height);
+}
+
+.shellTopbar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: var(--z-topbar);
+  height: var(--topbar-height);
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: rgba(var(--bg-card-rgb), .88);
+  border-bottom: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-xs);
+  backdrop-filter: blur(18px);
+}
+
+.shellBrand {
+  flex: 0 0 auto;
+}
+
+.shellNav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.shellNavItem {
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-muted);
+  font-weight: 900;
+}
+
+.shellNavItem:hover,
+.shellNavItem.isActive {
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.shellActions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.quotaBadge {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-primary);
+  background: rgba(var(--bg-card-rgb), .72);
+  font-weight: 900;
+}
+
+.avatarBadge {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--text-inverse);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  font-weight: 900;
+}
+
+.shellLogout {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-pill);
+  color: var(--text-muted);
+  background: rgba(var(--bg-card-rgb), .72);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.shellLogout:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.shellMain {
+  min-height: calc(100vh - var(--topbar-height));
+}
+
+.shellBottomNav {
+  position: fixed;
+  left: 9px;
+  right: 9px;
+  bottom: calc(9px + env(safe-area-inset-bottom, 0px));
+  z-index: var(--z-bottom-nav);
+  height: var(--mobile-bottom-nav-height);
+  padding: 5px;
+  border: 1px solid var(--border-soft);
+  border-radius: 20px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+  background: rgba(var(--bg-card-rgb), .92);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(18px);
+}
+
+.bottomNavItem {
+  border-radius: 15px;
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.bottomNavItem.isActive {
+  color: var(--text-inverse);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+}
+
+@media (min-width: 768px) {
+  .shellRoot.studioShell {
+    --studio-shell-topbar-height: 72px;
+    padding-top: var(--studio-shell-topbar-height);
+  }
+
+  .studioShell .shellTopbar {
+    height: var(--studio-shell-topbar-height);
+    padding-inline: 52px;
+    gap: 16px;
+  }
+
+  .studioShell .shellMain {
+    min-height: calc(100vh - var(--studio-shell-topbar-height));
+  }
+}
+
+@media (max-width: 767px) {
+  .shellRoot {
+    padding-top: var(--mobile-topbar-height);
+    padding-bottom: calc(var(--mobile-bottom-nav-height) + 18px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .shellTopbar {
+    height: var(--mobile-topbar-height);
+    padding: 0 12px;
+  }
+
+  .shellBrand .brandLogoText {
+    display: none;
+  }
+
+  .shellActions {
+    gap: 7px;
+  }
+
+  .quotaBadge {
+    min-height: 31px;
+    padding: 0 9px;
+    font-size: 12px;
+  }
+
+  .avatarBadge {
+    width: 34px;
+    height: 34px;
+  }
+}

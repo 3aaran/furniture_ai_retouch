@@ -1,0 +1,28 @@
+{
+  "name": "勋港智能家具AI修图平台",
+  "short_name": "勋港",
+  "description": "面向家具门店的智能家具 AI 修图平台。",
+  "lang": "zh-CN",
+  "id": "/",
+  "start_url": "/studio?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#eef4fb",
+  "theme_color": "#3040a0",
+  "categories": ["business", "productivity", "photo"],
+  "icons": [
+    {
+      "src": "/brand/xungang-app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/brand/xungang-app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
