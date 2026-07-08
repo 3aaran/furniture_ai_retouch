@@ -153,12 +153,14 @@
 @media (max-width: 767px) {
   .studioPage {
     height: auto;
-    min-height: calc(100vh - var(--mobile-topbar-height));
+    min-height: calc(100dvh - var(--mobile-topbar-height));
     overflow: visible;
+    touch-action: pan-y;
   }
 
   .studioLayoutPc {
-    min-height: calc(100vh - var(--mobile-topbar-height));
+    height: auto;
+    min-height: calc(100dvh - var(--mobile-topbar-height));
     display: flex;
     flex-direction: column;
     background: var(--bg-page);

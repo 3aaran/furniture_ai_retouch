@@ -216,11 +216,13 @@
 }
 
 @media (max-width: 767px) {
-  .studioRightPanel {
+  .studioSidePanel.studioRightPanel {
     order: 2;
     margin: 0 12px 18px;
     padding: 14px;
     overflow: visible;
+    overscroll-behavior: auto;
+    -webkit-overflow-scrolling: auto;
     touch-action: pan-y;
     border: 1px solid var(--border-soft);
     border-radius: var(--radius-lg);
@@ -265,15 +267,16 @@
   }
 
   .studioGenerateArea {
-    position: sticky;
-    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-    z-index: 2;
+    position: static;
+    z-index: auto;
     padding: 9px;
     border: 1px solid var(--border-soft);
     border-radius: var(--radius-lg);
     background: rgba(var(--bg-card-rgb), .94);
     box-shadow: var(--shadow-md);
     backdrop-filter: blur(14px);
+    overscroll-behavior: auto;
+    touch-action: pan-y;
   }
 
   .studioGenerateButton {
