@@ -273,45 +273,65 @@
     position: absolute;
     left: 16px;
     right: 17px;
-    bottom: 100px;
+    bottom: 132px;
     z-index: 2;
   }
 
   .studioRecentStrip {
-    height: 86px;
-    padding-top: 18px;
-    flex: 0 0 86px;
+    height: 122px;
+    padding-top: 14px;
+    flex: 0 0 122px;
   }
 
   .studioRecentList {
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 8px;
+    gap: 9px;
   }
 
   .studioRecentList article,
   .studioRecentGhost {
-    height: 46px;
-    min-height: 46px;
+    height: 74px;
+    min-height: 74px;
     overflow: hidden;
     border: 1px solid var(--border-soft);
-    border-radius: var(--radius-sm);
-    display: block;
+    border-radius: var(--radius-md);
     background: var(--bg-card);
   }
 
   .studioRecentList article {
-    padding: 0;
+    padding: 7px;
+    display: grid;
+    grid-template-columns: 74px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
   }
 
   .studioRecentList article img {
-    height: 100%;
+    width: 74px;
+    height: 58px;
     margin: 0;
   }
 
   .studioRecentList article b,
   .studioRecentList article span,
   .studioRecentList article em {
-    display: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .studioRecentList article b {
+    font-size: 13px;
+  }
+
+  .studioRecentList article span {
+    margin-top: 2px;
+    font-size: 12px;
+  }
+
+  .studioRecentList article em {
+    margin-top: 2px;
+    font-size: 10px;
   }
 }
 

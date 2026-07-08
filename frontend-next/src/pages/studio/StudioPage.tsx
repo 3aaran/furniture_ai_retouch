@@ -4,7 +4,6 @@ import { StudioSettingsPanel } from './StudioSettingsPanel';
 import type { StudioLocalImage, StudioRecentTask } from './studioViewTypes';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 import {
-  demoResources,
   featureBranches,
   promoOptionChoices,
   ratioOptions,
@@ -18,13 +17,17 @@ import {
 import {
   createAiTask,
   fetchAiTaskStatus,
+  fetchCategoryTree,
+  fetchPublicSettings,
   fetchRecentAiTasks,
   fetchWorkbenchResources,
   uploadImage,
+  uploadWorkbenchResource,
   type AiTask,
   type ImageUploadResult,
   type ResourceApiItem,
 } from '../../services/studio.api';
+import { getCurrentUser } from '../../services/auth.api';
 import { resolveApiUrl } from '../../services/http';
 import { getCurrentUserSnapshot } from '../../stores/auth.store';
 import './StudioPage.css';
@@ -71,7 +74,32 @@ function resourceName(item: ResourceApiItem) {
 }
 
 function resourceImageUrl(item: ResourceApiItem) {
-  return resolveApiUrl(item.thumbUrl || item.imageUrl || item.url) || '';
+  return resolveApiUrl(item.thumbUrl || item.imageUrl || item.url || item.downloadUrl) || '';
+}
+
+function resourceType(item: ResourceApiItem) {
+  return item.resourceType || item.resource_type || '';
+}
+
+function resourceMainName(item: ResourceApiItem) {
+  return item.mainCategoryName || item.objectName || '';
+}
+
+function resourceSubName(item: ResourceApiItem) {
+  return item.subCategoryName || item.colorName || '';
+}
+
+function resourceToLocalImage(item: ResourceApiItem): LocalImage | null {
+  const url = resourceImageUrl(item);
+  const imageId = String(item.imageId || item.id || '');
+  if (!url || !imageId) return null;
+  return {
+    id: imageId,
+    imageId,
+    name: String(resourceName(item)),
+    url,
+    status: 'ready',
+  };
 }
 
 function resourceSnapshot(item: ResourceApiItem | null) {
@@ -81,11 +109,11 @@ function resourceSnapshot(item: ResourceApiItem | null) {
     resourceId: String(item.id),
     imageId: item.imageId || String(item.id),
     name: String(resourceName(item)),
-    url: item.url || item.imageUrl || '',
-    imageUrl: item.imageUrl || item.url || '',
-    resourceType: item.resourceType || '',
-    mainCategoryName: item.mainCategoryName || '',
-    subCategoryName: item.subCategoryName || '',
+    url: resourceImageUrl(item) || item.url || item.imageUrl || '',
+    imageUrl: resourceImageUrl(item) || item.imageUrl || item.url || '',
+    resourceType: resourceType(item),
+    mainCategoryName: resourceMainName(item),
+    subCategoryName: resourceSubName(item),
     source: 'resource',
   };
 }
@@ -93,6 +121,7 @@ function resourceSnapshot(item: ResourceApiItem | null) {
 export function StudioPage() {
   const { isMobile } = useBreakpoint();
   const featureButtonRef = useRef<HTMLButtonElement>(null);
+  const resourceUploadInputRef = useRef<HTMLInputElement>(null);
   const [featureGroup, setFeatureGroup] = useState<FeatureGroup>('base');
   const [featureKey, setFeatureKey] = useState<StudioFeatureKey>('material');
   const [featureDrawerOpen, setFeatureDrawerOpen] = useState(false);
@@ -107,6 +136,8 @@ export function StudioPage() {
   const [ratio, setRatio] = useState('自适应');
   const [resourceKeyword, setResourceKeyword] = useState('');
   const [resourceScope, setResourceScope] = useState('SYSTEM');
+  const [resourceCategoryOptions, setResourceCategoryOptions] = useState(resourceCategories);
+  const [categoryLoading, setCategoryLoading] = useState(false);
   const [mainCategory, setMainCategory] = useState('');
   const [subCategory, setSubCategory] = useState('');
   const [selectedResource, setSelectedResource] = useState('');
@@ -136,31 +167,44 @@ export function StudioPage() {
 
   const currentFeature = studioFeatures.find((item) => item.key === featureKey) || studioFeatures[0];
   const visibleFeatures = studioFeatures.filter((item) => item.group === (featurePickerGroup || featureGroup));
-  const currentCategory = resourceCategories.find((item) => item.name === mainCategory);
+  const currentCategory = resourceCategoryOptions.find((item) => item.name === mainCategory);
   const currentSubOptions = currentCategory?.subs || [];
   const isPromotionSelected = currentFeature.group === 'promotion';
   const needsResourceLibrary = featureKey === 'material' || featureKey === 'replace_bg';
   const selectedResourceItem = resourceItems.find((item) => String(item.id) === selectedResource) || null;
 
-  const filteredDemoResources = useMemo(() => {
-    const targetType = featureKey === 'replace_bg' ? '场景' : '材质';
-    return demoResources.filter((item) => {
-      if (needsResourceLibrary && item.type !== targetType) return false;
+  const visibleResourceItems = useMemo(() => {
+    const targetType = featureKey === 'replace_bg' ? 'scene' : 'material';
+    return resourceItems.filter((item) => {
+      if (needsResourceLibrary && resourceType(item) !== targetType) return false;
       if (resourceScope !== 'ALL' && item.scope !== resourceScope) return false;
-      if (mainCategory && item.mainCategory !== mainCategory) return false;
-      if (subCategory && item.subCategory !== subCategory) return false;
+      if (mainCategory && resourceMainName(item) !== mainCategory) return false;
+      if (subCategory && resourceSubName(item) !== subCategory) return false;
       if (resourceKeyword.trim()) {
         const keyword = resourceKeyword.trim().toLowerCase();
-        return `${item.name}${item.mainCategory}${item.subCategory}${item.tone}`.toLowerCase().includes(keyword);
+        return `${resourceName(item)}${resourceMainName(item)}${resourceSubName(item)}`.toLowerCase().includes(keyword);
       }
       return true;
     });
-  }, [featureKey, mainCategory, needsResourceLibrary, resourceKeyword, resourceScope, subCategory]);
+  }, [featureKey, mainCategory, needsResourceLibrary, resourceItems, resourceKeyword, resourceScope, subCategory]);
 
   const closeFeatureDrawer = useCallback(() => {
     setFeatureDrawerOpen(false);
     if (isMobile) window.requestAnimationFrame(() => featureButtonRef.current?.focus());
   }, [isMobile]);
+
+  useEffect(() => {
+    let cancelled = false;
+    getCurrentUser()
+      .then((user) => {
+        if (!cancelled) setQuota(Number(user.quota ?? user.merchantQuota ?? 0));
+      })
+      .catch((error: Error) => {
+        if (!cancelled && !isAuthRequiredMessage(error.message)) setMessage(`用户信息加载失败：${error.message}`);
+      });
+    fetchPublicSettings().catch(() => undefined);
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -178,11 +222,42 @@ export function StudioPage() {
   useEffect(() => {
     if (!needsResourceLibrary) return;
     let cancelled = false;
+    setCategoryLoading(true);
+    const scopeForCategory = resourceScope === 'ALL' ? 'SYSTEM' : resourceScope;
+    fetchCategoryTree(scopeForCategory)
+      .then((tree) => {
+        if (cancelled) return;
+        const purposeKey = featureKey === 'replace_bg' ? 'scene' : 'material';
+        const purpose = tree.purposes.find((item) => item.purposeKey === purposeKey);
+        const nextCategories = (purpose?.mains || []).map((item) => ({
+          name: item.name,
+          subs: (item.subs || []).map((sub) => sub.name),
+        }));
+        setResourceCategoryOptions(nextCategories.length ? nextCategories : resourceCategories);
+        if (mainCategory && !nextCategories.some((item) => item.name === mainCategory)) {
+          setMainCategory('');
+          setSubCategory('');
+        }
+      })
+      .catch((error: Error) => {
+        if (!cancelled) setResourceError(`分类加载失败：${error.message}`);
+      })
+      .finally(() => {
+        if (!cancelled) setCategoryLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [featureKey, mainCategory, needsResourceLibrary, resourceScope]);
+
+  useEffect(() => {
+    if (!needsResourceLibrary) return;
+    let cancelled = false;
     setResourceLoading(true);
     setResourceError('');
     fetchWorkbenchResources({
       keyword: resourceKeyword,
       resourceType: featureKey === 'replace_bg' ? 'scene' : 'material',
+      scope: resourceScope,
+      pageSize: 999,
     })
       .then((data) => {
         if (cancelled) return;
@@ -197,7 +272,7 @@ export function StudioPage() {
         if (!cancelled) setResourceLoading(false);
       });
     return () => { cancelled = true; };
-  }, [featureKey, needsResourceLibrary, resourceKeyword]);
+  }, [featureKey, needsResourceLibrary, resourceKeyword, resourceScope]);
 
   useEffect(() => {
     if (!featureDrawerOpen && !featurePickerGroup) return;
@@ -315,6 +390,78 @@ export function StudioPage() {
     setReferenceImages((current) => current.filter((item) => item.id !== id));
   }
 
+  async function uploadResourceFile(file: File) {
+    setResourceLoading(true);
+    setResourceError('');
+    setMessage('正在上传资源到后端资源库...');
+    try {
+      const result = await uploadWorkbenchResource({
+        file,
+        scope: resourceScope === 'ALL' || resourceScope === 'SYSTEM' ? 'USER' : resourceScope,
+        objectName: mainCategory || (featureKey === 'replace_bg' ? '场景模板' : '材质'),
+        colorName: subCategory,
+      });
+      const items = result.items || [];
+      if (items.length) {
+        setResourceItems((current) => [...items, ...current.filter((item) => !items.some((next) => String(next.id) === String(item.id)))]);
+        setSelectedResource(String(items[0].id));
+      }
+      setMessage('资源已上传并写入后端资源库');
+    } catch (error) {
+      setResourceError(error instanceof Error ? error.message : '资源上传失败');
+      setMessage(`资源上传失败：${error instanceof Error ? error.message : '请稍后重试'}`);
+    } finally {
+      setResourceLoading(false);
+    }
+  }
+
+  function handleResourceUploadInput(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (file) void uploadResourceFile(file);
+  }
+
+  async function pickLatestResourceAsSource() {
+    setMessage('正在读取真实资源库...');
+    try {
+      const data = await fetchWorkbenchResources({ resourceType: 'user_reference', pageSize: 20 });
+      const image = (data.items || []).map(resourceToLocalImage).find(Boolean);
+      if (!image) {
+        setMessage('资源库中暂无可作为产品原图的图片，请先上传产品原图');
+        return;
+      }
+      setSourceImage(image);
+      setMessage('已从真实资源库选择产品原图');
+    } catch (error) {
+      setMessage(`资源库读取失败：${error instanceof Error ? error.message : '请稍后重试'}`);
+    }
+  }
+
+  async function pickLatestResourcesAsReferences() {
+    const slots = MAX_REFERENCE_IMAGES - referenceImages.length;
+    if (slots <= 0) {
+      setMessage('参考图数量已达上限');
+      return;
+    }
+    setMessage('正在读取真实资源库参考图...');
+    try {
+      const data = await fetchWorkbenchResources({ resourceType: 'user_reference', pageSize: 20 });
+      const existing = new Set(referenceImages.map((item) => item.imageId || item.id));
+      const images = (data.items || [])
+        .map(resourceToLocalImage)
+        .filter((item): item is LocalImage => !!item && !existing.has(item.imageId || item.id))
+        .slice(0, slots);
+      if (!images.length) {
+        setMessage('资源库中暂无可添加的参考图');
+        return;
+      }
+      setReferenceImages((current) => [...current, ...images].slice(0, MAX_REFERENCE_IMAGES));
+      setMessage(`已从真实资源库添加 ${images.length} 张参考图`);
+    } catch (error) {
+      setMessage(`资源库读取失败：${error instanceof Error ? error.message : '请稍后重试'}`);
+    }
+  }
+
   function buildOptions() {
     if (featureKey === 'remove_bg') return { whiteBg: removeWhiteBg, mirror: removeMirror };
     if (featureKey === 'enhance') return { focus: enhanceFocus, angle: enhanceAngle };
@@ -370,10 +517,14 @@ export function StudioPage() {
     setIsGenerating(true);
     setMessage('正在提交生成任务...');
     try {
+      const selectedResourceData = resourceSnapshot(selectedResourceItem);
+      const selectedResourceImageId = selectedResourceData?.imageId ? String(selectedResourceData.imageId) : '';
       const task = await createAiTask({
         featureKey,
-        imageA: { imageId: sourceImage.imageId, url: sourceImage.url, name: sourceImage.name },
-        selectedResource: resourceSnapshot(selectedResourceItem),
+        imageA: { imageId: sourceImage.imageId, url: sourceImage.url, imageUrl: sourceImage.url, name: sourceImage.name },
+        imageB: selectedResourceImageId ? { imageId: selectedResourceImageId, url: String(selectedResourceData?.url || ''), imageUrl: String(selectedResourceData?.imageUrl || ''), name: String(selectedResourceData?.name || '') } : undefined,
+        selectedResource: selectedResourceData,
+        selectedResourceSnapshot: selectedResourceData,
         selectedResourceId: selectedResourceItem ? String(selectedResourceItem.id) : undefined,
         userReferenceImageIds: referenceImages.map((item) => item.imageId).filter(Boolean) as string[],
         referenceImageIds: referenceImages.map((item) => item.imageId).filter(Boolean) as string[],
@@ -410,9 +561,9 @@ export function StudioPage() {
     const img = resourceImageUrl(item);
     return (
       <button key={String(item.id)} type="button" className={selectedResource === String(item.id) ? 'studioResourceCard isActive' : 'studioResourceCard'} onClick={() => setSelectedResource(String(item.id))}>
-        {img ? <img src={img} alt={title} loading="lazy" decoding="async" /> : <i>{item.resourceType || (featureKey === 'replace_bg' ? '场景' : '材质')}</i>}
+        {img ? <img src={img} alt={title} loading="lazy" decoding="async" /> : <i>{resourceType(item) || (featureKey === 'replace_bg' ? '场景' : '材质')}</i>}
         <b>{title}</b>
-        <span>{item.scope === 'SYSTEM' ? '系统资源' : item.scope === 'USER' ? '个人资源' : '用户资源'} / {item.mainCategoryName || item.objectName || '未分类'}{item.subCategoryName || item.colorName ? ` / ${item.subCategoryName || item.colorName}` : ''}</span>
+        <span>{item.scope === 'SYSTEM' ? '系统资源' : item.scope === 'USER' ? '个人资源' : '用户资源'} / {resourceMainName(item) || '未分类'}{resourceSubName(item) ? ` / ${resourceSubName(item)}` : ''}</span>
       </button>
     );
   }
@@ -428,8 +579,8 @@ export function StudioPage() {
               {resourceScopes.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
             </select>
             <select value={mainCategory} onChange={(event) => { setMainCategory(event.target.value); setSubCategory(''); }}>
-              <option value="">全部主分类</option>
-              {resourceCategories.map((item) => <option key={item.name}>{item.name}</option>)}
+              <option value="">{categoryLoading ? '分类加载中...' : '全部主分类'}</option>
+              {resourceCategoryOptions.map((item) => <option key={item.name}>{item.name}</option>)}
             </select>
             <select value={subCategory} disabled={!mainCategory || !currentSubOptions.length} onChange={(event) => setSubCategory(event.target.value)}>
               <option value="">全部子分类</option>
@@ -438,14 +589,14 @@ export function StudioPage() {
           </div>
           <div className="studioSectionLabel">{featureKey === 'replace_bg' ? '场景融合资源' : '材质替换'}</div>
           <div className="studioResourceGrid">
-            <button className="studioUploadResource" type="button" onClick={() => setMessage('资源上传入口将在资源库页面接入')}>
+            <input ref={resourceUploadInputRef} type="file" accept="image/*" hidden onChange={handleResourceUploadInput} />
+            <button className="studioUploadResource" type="button" onClick={() => resourceUploadInputRef.current?.click()}>
               <span>+</span><b>上传</b>
             </button>
-            {resourceItems.map(renderResourceCard)}
-            {!resourceLoading && !resourceItems.length && resourceError && filteredDemoResources.map((item) => <button key={item.id} type="button" className="studioResourceCard" onClick={() => setMessage('当前展示的是本地示例资源，请登录后加载真实资源')}><i>{item.type}</i><b>{item.name}</b><span>{item.scope === 'SYSTEM' ? '系统资源' : item.scope === 'USER' ? '个人资源' : '用户资源'} / {item.mainCategory} / {item.subCategory}</span></button>)}
-            {resourceLoading && <div className="studioLibraryEmpty">资源加载中...</div>}
-            {!resourceLoading && !resourceItems.length && !resourceError && <div className="studioLibraryEmpty">暂无匹配资源，可切换分类或点击加号上传</div>}
-            {!resourceLoading && resourceError && filteredDemoResources.length === 0 && <div className="studioLibraryEmpty">资源加载失败：{resourceError}</div>}
+            {visibleResourceItems.map(renderResourceCard)}
+            {resourceLoading && <div className="studioLibraryEmpty">正在读取后端资源库...</div>}
+            {!resourceLoading && !visibleResourceItems.length && !resourceError && <div className="studioLibraryEmpty">真实资源库暂无匹配资源，可切换分类或点击加号上传</div>}
+            {!resourceLoading && resourceError && <div className="studioLibraryEmpty">资源加载失败：{resourceError}</div>}
           </div>
         </>
       );
@@ -491,7 +642,6 @@ export function StudioPage() {
           title={featureGroup === 'promotion' ? '宣传图智能工作台' : '家具图片智能工作台'}
           featureModeLabel={featureGroup === 'base' ? '生图功能' : '宣传图'}
           currentFeatureLabel={currentFeature.label}
-          recentCount={recentTasks.length}
           resolution={resolution}
           ratio={ratio}
           sourceImage={sourceImage}
@@ -508,7 +658,7 @@ export function StudioPage() {
           onSourceDragOver={(event) => handleDragOver(event, 'source')}
           onSourceDragLeave={() => handleDragLeave('source')}
           onSourceDrop={(event) => handleDrop(event, 'source')}
-          onSelectSourceResource={() => setMessage('资源库选择将在下一步接入真实接口')}
+          onSelectSourceResource={() => void pickLatestResourceAsSource()}
         />
 
         <StudioSettingsPanel
@@ -531,7 +681,7 @@ export function StudioPage() {
           onReferenceDragLeave={() => handleDragLeave('reference')}
           onReferenceDrop={(event) => handleDrop(event, 'reference')}
           onRemoveReference={removeReference}
-          onSelectReferenceResource={() => setMessage('从资源库选择参考图将在下一步接入真实接口')}
+          onSelectReferenceResource={() => void pickLatestResourcesAsReferences()}
           onResolutionChange={setResolution}
           onRatioChange={setRatio}
           onGenerate={generateTask}

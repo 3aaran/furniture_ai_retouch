@@ -21,12 +21,17 @@ export type ResourceApiItem = {
   imageUrl?: string;
   url?: string;
   thumbUrl?: string;
+  downloadUrl?: string;
   resourceType?: string;
+  resource_type?: string;
   scope?: string;
   mainCategoryName?: string;
   subCategoryName?: string;
   objectName?: string;
   colorName?: string;
+  source?: string;
+  status?: string;
+  createdAt?: string;
 };
 
 export type PagedResult<T> = {
@@ -34,6 +39,31 @@ export type PagedResult<T> = {
   page?: number;
   pageSize?: number;
   total?: number;
+};
+
+export type CategorySubItem = {
+  id: string | number;
+  name: string;
+};
+
+export type CategoryMainItem = {
+  id: string | number;
+  name: string;
+  scope?: string;
+  purposeKey?: string;
+  purposeName?: string;
+  subs?: CategorySubItem[];
+};
+
+export type CategoryPurpose = {
+  purposeKey: string;
+  purposeName: string;
+  mains: CategoryMainItem[];
+};
+
+export type CategoryTree = {
+  scope: string;
+  purposes: CategoryPurpose[];
 };
 
 export type AiTask = {
@@ -58,13 +88,15 @@ export type AiTask = {
   createdAt?: string;
   submittedAt?: string;
   finishedAt?: string;
-  user?: { quota?: number; [key: string]: unknown };
+  user?: { quota?: number; merchantQuota?: number; [key: string]: unknown };
 };
 
 export type CreateAiTaskPayload = {
   featureKey: string;
-  imageA: { imageId: string; url?: string; name?: string };
+  imageA: { imageId: string; url?: string; imageUrl?: string; name?: string };
+  imageB?: { imageId: string; url?: string; imageUrl?: string; name?: string };
   selectedResource?: Record<string, unknown> | null;
+  selectedResourceSnapshot?: Record<string, unknown> | null;
   selectedResourceId?: string;
   userReferenceImageIds?: string[];
   referenceImageIds?: string[];
@@ -75,10 +107,32 @@ export type CreateAiTaskPayload = {
   options?: Record<string, unknown>;
 };
 
+export type UploadResourcePayload = {
+  file: File;
+  name?: string;
+  scope?: string;
+  objectName?: string;
+  colorName?: string;
+};
+
 export function uploadImage(file: File) {
   const formData = new FormData();
   formData.append('image', file);
   return requestForm<ImageUploadResult>('/api/images/upload', formData);
+}
+
+export function uploadWorkbenchResource(payload: UploadResourcePayload) {
+  const formData = new FormData();
+  formData.append('image', payload.file);
+  formData.append('name', payload.name || payload.file.name.replace(/\.[^.]+$/, ''));
+  formData.append('scope', payload.scope || 'USER');
+  formData.append('objectName', payload.objectName || '未分类');
+  formData.append('colorName', payload.colorName || '');
+  return requestForm<{ items?: ResourceApiItem[]; ids?: Array<string | number>; storage?: unknown }>('/api/merchant/resources', formData);
+}
+
+export function fetchCategoryTree(scope = 'SYSTEM') {
+  return request<CategoryTree>(withQuery('/api/categories/tree', { scope }));
 }
 
 export function fetchWorkbenchResources(params: Record<string, string | number | undefined | null>) {

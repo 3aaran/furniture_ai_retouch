@@ -17,6 +17,14 @@ export default defineConfig({
         target: backendTarget,
         changeOrigin: true,
       },
+      '/outputs': {
+        target: backendTarget,
+        changeOrigin: true,
+      },
+      '/files': {
+        target: backendTarget,
+        changeOrigin: true,
+      },
     },
   },
 });

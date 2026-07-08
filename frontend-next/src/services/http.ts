@@ -16,9 +16,12 @@ export function getAuthToken() {
 }
 
 export function resolveApiUrl(url?: string | null) {
-  const value = String(url || '').trim();
+  let value = String(url || '').trim();
   if (!value) return '';
   if (/^(https?:)?\/\//i.test(value) || value.startsWith('blob:') || value.startsWith('data:')) return value;
+  if (value.startsWith('/api/files/')) value = value.replace(/^\/api\/files\//, '/files/');
+  if (value.startsWith('/api/uploads/')) value = value.replace(/^\/api\/uploads\//, '/uploads/');
+  if (value.startsWith('/api/outputs/')) value = value.replace(/^\/api\/outputs\//, '/outputs/');
   if (!value.startsWith('/')) return value;
   return API_BASE ? `${API_BASE}${value}` : value;
 }

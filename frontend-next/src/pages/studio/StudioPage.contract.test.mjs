@@ -72,18 +72,21 @@ test('studio styles stay split into focused component files', () => {
   }
 });
 
-test('desktop studio follows the measured legacy workspace geometry and density', () => {
+test('desktop studio keeps compact measured workspace geometry and density', () => {
   assert.match(appShellSource, /studioShell/);
   assert.match(source, /featurePickerGroup/);
   assert.match(source, /studioFeatureList isPickerOpen/);
   assert.match(source, /studioRecentGhost/);
-  assert.match(css, /grid-template-columns:\s*234px minmax\(0, 1fr\) 297px/);
+  assert.match(css, /grid-template-columns:\s*210px minmax\(0, 1fr\) 267px/);
   assert.match(css, /@media \(min-width: 768px\)[\s\S]*\.studioFeatureList\s*\{[\s\S]*display:\s*none/);
   assert.match(css, /@media \(min-width: 768px\)[\s\S]*\.studioDescRow,[\s\S]*\.studioSearchBox\s*\{[\s\S]*display:\s*none/);
   assert.match(css, /\.studioUploadBox\s*\{[\s\S]*border-radius:\s*0/);
 });
 
-test('logged-out demo mode does not add error blocks to the desktop reference layout', () => {
-  assert.match(source, /function isAuthRequiredMessage/);
-  assert.match(source, /filteredDemoResources\.length === 0/);
+test('pc studio reads real backend content instead of local demo resources', () => {
+  assert.match(source, /fetchWorkbenchResources/);
+  assert.match(source, /fetchCategoryTree/);
+  assert.match(source, /uploadWorkbenchResource/);
+  assert.match(source, /visibleResourceItems/);
+  assert.doesNotMatch(source, /filteredDemoResources|本地示例资源/);
 });

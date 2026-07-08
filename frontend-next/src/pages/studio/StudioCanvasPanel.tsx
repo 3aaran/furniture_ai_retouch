@@ -6,7 +6,6 @@ type StudioCanvasPanelProps = {
   title: string;
   featureModeLabel: string;
   currentFeatureLabel: string;
-  recentCount: number;
   resolution: string;
   ratio: string;
   sourceImage: StudioLocalImage | null;
@@ -30,7 +29,6 @@ export function StudioCanvasPanel({
   title,
   featureModeLabel,
   currentFeatureLabel,
-  recentCount,
   resolution,
   ratio,
   sourceImage,
@@ -63,7 +61,7 @@ export function StudioCanvasPanel({
         >
           <span>功能与资源</span><b>{currentFeatureLabel}</b>
         </button>
-        <div className="studioSignalActions"><span>最近生成 {recentCount}</span><span className="studioDesktopStatus">{featureModeLabel}</span><span className="studioDesktopStatus">{currentFeatureLabel}</span><span>{resolution}</span><span>{ratio}</span></div>
+        <div className="studioSignalActions"><span className="studioDesktopStatus">{featureModeLabel}</span><span className="studioDesktopStatus">{currentFeatureLabel}</span><span>{resolution}</span><span>{ratio}</span></div>
       </div>
 
       <div className="studioCenterToolbar" aria-label="画布工具栏">
