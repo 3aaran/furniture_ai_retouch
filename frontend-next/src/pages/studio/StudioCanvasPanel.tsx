@@ -12,6 +12,7 @@ type StudioCanvasPanelProps = {
   draggingSource: boolean;
   message: string;
   recentTasks: StudioRecentTask[];
+  showInlineRecent: boolean;
   featureDrawerOpen: boolean;
   featureButtonRef: RefObject<HTMLButtonElement | null>;
   onOpenFeatureConfig: () => void;
@@ -36,6 +37,7 @@ export function StudioCanvasPanel({
   draggingSource,
   message,
   recentTasks,
+  showInlineRecent,
   featureDrawerOpen,
   featureButtonRef,
   onOpenFeatureConfig,
@@ -87,18 +89,20 @@ export function StudioCanvasPanel({
 
       {message && <div className="studioMessage">{message}</div>}
 
-      <section id="studio-recent-strip" className="studioRecentStrip">
-        <div className="studioSectionTitle"><b>最近生成</b><span>来自后端 AI 任务记录</span></div>
-        <div className="studioRecentList">
-          {recentTasks.slice(0, 5).map((task) => (
-            <article key={task.id}>
-              {task.previewUrl && <img src={task.previewUrl} alt={task.feature} loading="lazy" decoding="async" />}
-              <b>{task.feature}</b><span>{task.status}</span><em>{task.resolution} · {task.ratio} · {task.time}</em>
-            </article>
-          ))}
-          {recentTasks.length === 0 ? Array.from({ length: 5 }).map((_, index) => <span className="studioRecentGhost" key={index} aria-hidden="true" />) : null}
-        </div>
-      </section>
+      {showInlineRecent && (
+        <section id="studio-recent-strip" className="studioRecentStrip">
+          <div className="studioSectionTitle"><b>最近生成</b><span>来自后端 AI 任务记录</span></div>
+          <div className="studioRecentList">
+            {recentTasks.slice(0, 5).map((task) => (
+              <article key={task.id}>
+                {task.previewUrl && <img src={task.previewUrl} alt={task.feature} loading="lazy" decoding="async" />}
+                <b>{task.feature}</b><span>{task.status}</span><em>{task.resolution} · {task.ratio} · {task.time}</em>
+              </article>
+            ))}
+            {recentTasks.length === 0 ? Array.from({ length: 5 }).map((_, index) => <span className="studioRecentGhost" key={index} aria-hidden="true" />) : null}
+          </div>
+        </section>
+      )}
     </main>
   );
 }

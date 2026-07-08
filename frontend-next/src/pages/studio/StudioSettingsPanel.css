@@ -221,6 +221,7 @@
     margin: 0 12px 18px;
     padding: 14px;
     overflow: visible;
+    touch-action: pan-y;
     border: 1px solid var(--border-soft);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
@@ -240,6 +241,9 @@
     min-height: 118px;
     max-height: 34dvh;
     overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
   }
 
   .studioReferenceCard {
@@ -248,6 +252,8 @@
     max-height: 46dvh;
     overflow-y: auto;
     overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
   }
 
   .studioReferenceUpload {

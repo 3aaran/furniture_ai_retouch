@@ -13,6 +13,7 @@ type StudioSettingsPanelProps = {
   resolutionOptions: string[];
   ratio: string;
   ratioOptions: string[];
+  showOutputControls: boolean;
   isGenerating: boolean;
   cost: number;
   quota: number;
@@ -38,6 +39,7 @@ export function StudioSettingsPanel({
   resolutionOptions,
   ratio,
   ratioOptions,
+  showOutputControls,
   isGenerating,
   cost,
   quota,
@@ -84,10 +86,12 @@ export function StudioSettingsPanel({
         )}
       </section>
 
-      <div className="studioOutputControls">
-        <div className="studioControlGroup"><span>分辨率</span><div>{resolutionOptions.map((item) => <button key={item} type="button" className={resolution === item ? 'isActive' : ''} onClick={() => onResolutionChange(item)}>{item}</button>)}</div></div>
-        <label className="studioControlGroup"><span>比例</span><select value={ratio} onChange={(event) => onRatioChange(event.target.value)}>{ratioOptions.map((item) => <option key={item}>{item}</option>)}</select></label>
-      </div>
+      {showOutputControls && (
+        <div className="studioOutputControls">
+          <div className="studioControlGroup"><span>分辨率</span><div>{resolutionOptions.map((item) => <button key={item} type="button" className={resolution === item ? 'isActive' : ''} onClick={() => onResolutionChange(item)}>{item}</button>)}</div></div>
+          <label className="studioControlGroup"><span>比例</span><select value={ratio} onChange={(event) => onRatioChange(event.target.value)}>{ratioOptions.map((item) => <option key={item}>{item}</option>)}</select></label>
+        </div>
+      )}
       <div className="studioGenerateArea"><Button className="studioGenerateButton" onClick={onGenerate} disabled={isGenerating}>{isGenerating ? '提交中...' : isPromotionSelected ? '生成宣传图' : '生成效果'}</Button><div className="studioGenerateMeta">消耗 {cost} 点算力 <b>剩余：{quota}</b></div></div>
     </aside>
   );

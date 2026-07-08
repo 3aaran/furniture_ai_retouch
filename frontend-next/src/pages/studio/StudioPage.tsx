@@ -734,6 +734,7 @@ export function StudioPage() {
           draggingSource={draggingSource}
           message={message}
           recentTasks={recentTasks}
+          showInlineRecent={!isMobile}
           featureDrawerOpen={featureDrawerOpen}
           featureButtonRef={featureButtonRef}
           onOpenFeatureConfig={() => setMobileConfigSheet('feature')}
@@ -758,6 +759,7 @@ export function StudioPage() {
           resolutionOptions={resolutionOptions}
           ratio={ratio}
           ratioOptions={ratioOptions}
+          showOutputControls={!isMobile}
           isGenerating={isGenerating}
           cost={currentFeature.cost}
           quota={quota}
