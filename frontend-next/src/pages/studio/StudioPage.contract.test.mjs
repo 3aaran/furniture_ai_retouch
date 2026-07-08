@@ -47,9 +47,10 @@ function duplicateRuleHeaders(stylesheet) {
 
 test('studio exposes one responsive feature drawer and mobile settings flow', () => {
   assert.match(source, /featureDrawerOpen/);
-  assert.match(source, /aria-controls="studio-feature-panel"/);
+  assert.match(source, /id="studio-feature-panel"/);
   assert.match(source, /studioDrawerBackdrop/);
-  assert.match(source, /studioMobileFeatureButton/);
+  assert.match(source, /studioMobileConfigSummary/);
+  assert.match(source, /studioMobileConfigRecent/);
   assert.match(css, /@media \(max-width: 767px\)/);
   assert.doesNotMatch(source, /StudioPage(?:Mobile|Desktop)/);
 });

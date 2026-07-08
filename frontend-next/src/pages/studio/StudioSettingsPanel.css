@@ -1,6 +1,52 @@
+.studioCollapseCard {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  background: rgba(var(--bg-card-rgb), .74);
+  overflow: hidden;
+}
+
+.studioCollapseHead {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 12px;
+  border: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text-main);
+  background: transparent;
+  font-weight: 900;
+  text-align: left;
+}
+
+.studioCollapseHead span {
+  display: grid;
+  gap: 3px;
+}
+
+.studioCollapseHead em {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-style: normal;
+}
+
+.studioCollapseHead i {
+  min-height: 26px;
+  padding: 0 9px;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  font-size: 11px;
+  font-style: normal;
+}
+
 .studioPromptField {
   display: grid;
   gap: 7px;
+  padding: 0 12px 12px;
   color: var(--text-muted);
   font-size: 12px;
   font-weight: 900;
@@ -11,12 +57,11 @@
   padding: 11px;
   resize: vertical;
   line-height: 1.6;
+  overscroll-behavior: contain;
 }
 
-.studioReferenceHead > span {
-  color: var(--color-primary);
-  font-size: 12px;
-  font-weight: 900;
+.studioReferenceCard {
+  padding: 0 12px 12px;
 }
 
 .studioReferenceUpload {
@@ -54,6 +99,9 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 7px;
+  max-height: 168px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .studioReferenceList > div {
@@ -119,8 +167,19 @@
     padding: 0 2px;
   }
 
+  .studioCollapseCard {
+    border: 0;
+    background: transparent;
+    overflow: visible;
+  }
+
+  .studioCollapseHead {
+    display: none;
+  }
+
   .studioPromptField {
     display: block;
+    padding: 0;
   }
 
   .studioPromptField > span {
@@ -137,12 +196,8 @@
   }
 
   .studioRightPanel .studioReferenceCard {
+    padding: 0;
     gap: 8px;
-  }
-
-  .studioRightPanel .studioReferenceHead b {
-    font-size: 15px;
-    line-height: 1;
   }
 
   .studioRightPanel .studioReferenceUpload {
@@ -163,7 +218,7 @@
 @media (max-width: 767px) {
   .studioRightPanel {
     order: 2;
-    margin: 0 12px calc(var(--mobile-bottom-nav-height) + 27px);
+    margin: 0 12px 18px;
     padding: 14px;
     overflow: visible;
     border: 1px solid var(--border-soft);
@@ -172,24 +227,40 @@
   }
 
   .studioPanelHead,
-  .studioPromptField,
-  .studioReferenceCard,
-  .studioOutputControls,
+  .studioCollapseCard,
   .studioGenerateArea {
     width: 100%;
   }
 
+  .studioPanelHead {
+    min-height: 30px;
+  }
+
   .studioPromptInput {
-    min-height: 86px;
+    min-height: 118px;
+    max-height: 34dvh;
+    overflow-y: auto;
+  }
+
+  .studioReferenceCard {
+    display: grid;
+    gap: 9px;
+    max-height: 46dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .studioReferenceUpload {
     min-height: 86px;
   }
 
+  .studioOutputControls {
+    display: none;
+  }
+
   .studioGenerateArea {
     position: sticky;
-    bottom: calc(var(--mobile-bottom-nav-height) + 16px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     z-index: 2;
     padding: 9px;
     border: 1px solid var(--border-soft);

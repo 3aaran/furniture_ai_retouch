@@ -35,6 +35,7 @@ import './StudioControls.css';
 
 type LocalImage = StudioLocalImage;
 type RecentTask = StudioRecentTask;
+type MobileConfigSheet = 'feature' | 'resolution' | 'ratio' | null;
 
 const MAX_REFERENCE_IMAGES = 9;
 const DEFAULT_QUOTA = 0;
@@ -125,6 +126,8 @@ export function StudioPage() {
   const [featureGroup, setFeatureGroup] = useState<FeatureGroup>('base');
   const [featureKey, setFeatureKey] = useState<StudioFeatureKey>('material');
   const [featureDrawerOpen, setFeatureDrawerOpen] = useState(false);
+  const [mobileConfigSheet, setMobileConfigSheet] = useState<MobileConfigSheet>(null);
+  const [mobileRecentOpen, setMobileRecentOpen] = useState(false);
   const [featurePickerGroup, setFeaturePickerGroup] = useState<FeatureGroup | null>(null);
   const [sourceImage, setSourceImage] = useState<LocalImage | null>(null);
   const [referenceImages, setReferenceImages] = useState<LocalImage[]>([]);
@@ -192,6 +195,10 @@ export function StudioPage() {
     setFeatureDrawerOpen(false);
     if (isMobile) window.requestAnimationFrame(() => featureButtonRef.current?.focus());
   }, [isMobile]);
+
+  const closeMobileConfig = useCallback(() => {
+    setMobileConfigSheet(null);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -275,16 +282,18 @@ export function StudioPage() {
   }, [featureKey, needsResourceLibrary, resourceKeyword, resourceScope]);
 
   useEffect(() => {
-    if (!featureDrawerOpen && !featurePickerGroup) return;
+    if (!featureDrawerOpen && !featurePickerGroup && !mobileConfigSheet && !mobileRecentOpen) return;
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setFeaturePickerGroup(null);
+        setMobileConfigSheet(null);
+        setMobileRecentOpen(false);
         closeFeatureDrawer();
       }
     };
     window.addEventListener('keydown', closeOnEscape);
     return () => window.removeEventListener('keydown', closeOnEscape);
-  }, [closeFeatureDrawer, featureDrawerOpen, featurePickerGroup]);
+  }, [closeFeatureDrawer, featureDrawerOpen, featurePickerGroup, mobileConfigSheet, mobileRecentOpen]);
 
   function selectGroup(group: FeatureGroup) {
     if (group === 'video') {
@@ -319,7 +328,23 @@ export function StudioPage() {
     setSelectedResource('');
     setMessage('');
     setFeaturePickerGroup(null);
+    setMobileConfigSheet(null);
     closeFeatureDrawer();
+  }
+
+  function chooseMobileResolution(value: string) {
+    setResolution(value);
+    setMobileConfigSheet(null);
+  }
+
+  function chooseMobileRatio(value: string) {
+    setRatio(value);
+    setMobileConfigSheet(null);
+  }
+
+  function openResourceConfigFromMobile() {
+    setMobileConfigSheet(null);
+    setFeatureDrawerOpen(true);
   }
 
   async function uploadOne(file: File, target: 'source' | 'reference') {
@@ -639,6 +664,66 @@ export function StudioPage() {
           <div className="studioFeatureConfig">{renderLeftConfig()}</div>
         </aside>
 
+        {mobileConfigSheet && <button className="studioMobileConfigBackdrop" type="button" aria-label="关闭配置弹窗" onClick={closeMobileConfig} />}
+        <section id="studio-mobile-config-sheet" className={`studioMobileConfigSheet ${mobileConfigSheet ? 'isOpen' : ''}`.trim()} aria-hidden={!mobileConfigSheet}>
+          <div className="studioMobileConfigHead">
+            <div><span>修改配置</span><b>{mobileConfigSheet === 'resolution' ? '分辨率' : mobileConfigSheet === 'ratio' ? '比例' : '功能'}</b></div>
+            <button type="button" aria-label="关闭配置弹窗" onClick={closeMobileConfig}>×</button>
+          </div>
+
+          {mobileConfigSheet === 'feature' && (
+            <>
+              <div className="studioMobileConfigBlock">
+                <span>生成类型</span>
+                <div className="studioMobileConfigChips">
+                  {featureBranches.filter((item) => item.key !== 'video').map((item) => <button key={item.key} type="button" className={featureGroup === item.key ? 'isActive' : ''} onClick={() => selectGroup(item.key)}>{item.label}</button>)}
+                </div>
+              </div>
+              <div className="studioMobileConfigBlock">
+                <span>功能</span>
+                <div className="studioMobileConfigList">
+                  {studioFeatures.filter((item) => item.group === featureGroup).map((item) => <button key={item.key} type="button" className={featureKey === item.key ? 'isActive' : ''} onClick={() => chooseFeature(item.key)}><b>{item.label}</b><em>{item.tag}</em></button>)}
+                </div>
+              </div>
+              <button className="studioMobileResourceConfig" type="button" onClick={openResourceConfigFromMobile}>打开资源配置</button>
+            </>
+          )}
+
+          {mobileConfigSheet === 'resolution' && (
+            <div className="studioMobileConfigBlock">
+              <span>选择分辨率</span>
+              <div className="studioMobileConfigChips">
+                {resolutionOptions.map((item) => <button key={item} type="button" className={resolution === item ? 'isActive' : ''} onClick={() => chooseMobileResolution(item)}>{item}</button>)}
+              </div>
+            </div>
+          )}
+
+          {mobileConfigSheet === 'ratio' && (
+            <div className="studioMobileConfigBlock">
+              <span>选择比例</span>
+              <div className="studioMobileConfigChips">
+                {ratioOptions.map((item) => <button key={item} type="button" className={ratio === item ? 'isActive' : ''} onClick={() => chooseMobileRatio(item)}>{item}</button>)}
+              </div>
+            </div>
+          )}
+        </section>
+
+        {mobileRecentOpen && <button className="studioMobileRecentBackdrop" type="button" aria-label="关闭最近生成" onClick={() => setMobileRecentOpen(false)} />}
+        <section className={`studioMobileRecentSheet ${mobileRecentOpen ? 'isOpen' : ''}`.trim()} aria-hidden={!mobileRecentOpen}>
+          <div className="studioMobileRecentHead">
+            <div><span>最近生成</span><b>{recentTasks.length ? `${recentTasks.length} 条记录` : '暂无记录'}</b></div>
+            <button type="button" aria-label="关闭最近生成" onClick={() => setMobileRecentOpen(false)}>×</button>
+          </div>
+          <div className="studioMobileRecentList">
+            {recentTasks.length ? recentTasks.slice(0, 8).map((task) => (
+              <article key={task.id}>
+                {task.previewUrl ? <img src={task.previewUrl} alt={task.feature} loading="lazy" decoding="async" /> : <i aria-hidden="true">图</i>}
+                <div><b>{task.feature}</b><span>{task.status}</span><em>{task.resolution} · {task.ratio} · {task.time}</em></div>
+              </article>
+            )) : <div className="studioMobileRecentEmpty">还没有生成记录</div>}
+          </div>
+        </section>
+
         <StudioCanvasPanel
           title={currentFeature.label}
           description={currentFeature.desc}
@@ -646,14 +731,15 @@ export function StudioPage() {
           resolution={resolution}
           ratio={ratio}
           sourceImage={sourceImage}
-          referenceCount={referenceImages.length}
-          maxReferenceImages={MAX_REFERENCE_IMAGES}
           draggingSource={draggingSource}
           message={message}
           recentTasks={recentTasks}
           featureDrawerOpen={featureDrawerOpen}
           featureButtonRef={featureButtonRef}
-          onOpenFeatures={() => setFeatureDrawerOpen(true)}
+          onOpenFeatureConfig={() => setMobileConfigSheet('feature')}
+          onOpenResolutionConfig={() => setMobileConfigSheet('resolution')}
+          onOpenRatioConfig={() => setMobileConfigSheet('ratio')}
+          onOpenRecent={() => setMobileRecentOpen(true)}
           onClearSource={() => setSourceImage(null)}
           onSourceInput={(event) => handleFileInput(event, 'source')}
           onSourceDragOver={(event) => handleDragOver(event, 'source')}

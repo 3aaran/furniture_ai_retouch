@@ -8,7 +8,6 @@
 .studioFeatureList button,
 .studioPillGroup button,
 .studioControlGroup button,
-.studioCenterToolbar button,
 .studioFilterStack select,
 .studioField select,
 .studioControlGroup select {
@@ -56,8 +55,7 @@
 .studioBranchTabs button.isActive,
 .studioFeatureList button.isActive,
 .studioPillGroup button.isActive,
-.studioControlGroup button.isActive,
-.studioCenterToolbar button.isActive {
+.studioControlGroup button.isActive {
   color: var(--text-inverse);
   border-color: transparent;
   background: linear-gradient(135deg, var(--color-primary), var(--color-accent));

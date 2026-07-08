@@ -9,14 +9,15 @@ type StudioCanvasPanelProps = {
   resolution: string;
   ratio: string;
   sourceImage: StudioLocalImage | null;
-  referenceCount: number;
-  maxReferenceImages: number;
   draggingSource: boolean;
   message: string;
   recentTasks: StudioRecentTask[];
   featureDrawerOpen: boolean;
   featureButtonRef: RefObject<HTMLButtonElement | null>;
-  onOpenFeatures: () => void;
+  onOpenFeatureConfig: () => void;
+  onOpenResolutionConfig: () => void;
+  onOpenRatioConfig: () => void;
+  onOpenRecent: () => void;
   onClearSource: () => void;
   onSourceInput: (event: ChangeEvent<HTMLInputElement>) => void;
   onSourceDragOver: (event: DragEvent<HTMLElement>) => void;
@@ -32,14 +33,15 @@ export function StudioCanvasPanel({
   resolution,
   ratio,
   sourceImage,
-  referenceCount,
-  maxReferenceImages,
   draggingSource,
   message,
   recentTasks,
   featureDrawerOpen,
   featureButtonRef,
-  onOpenFeatures,
+  onOpenFeatureConfig,
+  onOpenResolutionConfig,
+  onOpenRatioConfig,
+  onOpenRecent,
   onClearSource,
   onSourceInput,
   onSourceDragOver,
@@ -51,23 +53,21 @@ export function StudioCanvasPanel({
     <main className="studioCenterPanel">
       <div className="studioSignalBar">
         <div className="studioSignalTitle"><small>当前功能</small><h1>{title}</h1><p>{description}</p></div>
-        <button
-          ref={featureButtonRef}
-          type="button"
-          className="studioMobileFeatureButton"
-          aria-controls="studio-feature-panel"
-          aria-expanded={featureDrawerOpen}
-          onClick={onOpenFeatures}
-        >
-          <span>功能与资源</span><b>{title}</b>
-        </button>
+        <div className="studioMobileConfigSummary" aria-label="当前配置">
+          <button ref={featureButtonRef} type="button" className="studioMobileConfigPrimary" aria-controls="studio-mobile-config-sheet" aria-expanded={featureDrawerOpen} onClick={onOpenFeatureConfig}>
+            <span>功能选择</span><b>{title}</b>
+          </button>
+          <button type="button" className="studioMobileConfigRecent" onClick={onOpenRecent}>
+            <span>最近生成</span><b>{recentTasks.length || 0}</b>
+          </button>
+          <button type="button" aria-controls="studio-mobile-config-sheet" onClick={onOpenResolutionConfig}>
+            <span>分辨率</span><b>{resolution}</b>
+          </button>
+          <button type="button" aria-controls="studio-mobile-config-sheet" onClick={onOpenRatioConfig}>
+            <span>比例</span><b>{ratio}</b>
+          </button>
+        </div>
         <div className="studioSignalActions"><span className="studioDesktopStatus">{featureModeLabel}</span><span>{resolution}</span><span>{ratio}</span></div>
-      </div>
-
-      <div className="studioCenterToolbar" aria-label="画布工具栏">
-        <button type="button" className="isActive">产品原图</button>
-        <button type="button">参考图 {referenceCount}/{maxReferenceImages}</button>
-        <button type="button">资源库</button>
       </div>
 
       <section className="studioMainBlock">
@@ -87,7 +87,7 @@ export function StudioCanvasPanel({
 
       {message && <div className="studioMessage">{message}</div>}
 
-      <section className="studioRecentStrip">
+      <section id="studio-recent-strip" className="studioRecentStrip">
         <div className="studioSectionTitle"><b>最近生成</b><span>来自后端 AI 任务记录</span></div>
         <div className="studioRecentList">
           {recentTasks.slice(0, 5).map((task) => (

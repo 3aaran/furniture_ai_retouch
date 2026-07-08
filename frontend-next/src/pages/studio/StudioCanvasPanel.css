@@ -60,20 +60,8 @@
   box-shadow: inset 0 1px 0 rgba(var(--bg-card-rgb), .86);
 }
 
-.studioMobileFeatureButton {
+.studioMobileConfigSummary {
   display: none;
-}
-
-.studioCenterToolbar {
-  min-height: 36px;
-  display: flex;
-  gap: 7px;
-  overflow-x: auto;
-}
-
-.studioCenterToolbar button {
-  min-width: 94px;
-  padding: 0 12px;
 }
 
 .studioMainBlock {
@@ -82,8 +70,7 @@
 }
 
 .studioSourceHead b,
-.studioSectionTitle b,
-.studioReferenceHead b {
+.studioSectionTitle b {
   color: var(--text-main);
   font-size: 16px;
 }
@@ -254,10 +241,6 @@
     flex: 0 0 auto;
   }
 
-  .studioCenterToolbar {
-    display: none;
-  }
-
   .studioMainBlock {
     min-height: 360px;
     display: flex;
@@ -340,56 +323,73 @@
 @media (max-width: 767px) {
   .studioSignalBar {
     min-height: 0;
-    padding: 12px;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    border-radius: var(--radius-md);
+    padding: 0;
+    border: 0;
+    display: block;
+    background: transparent;
+    box-shadow: none;
   }
 
-  .studioSignalTitle h1 {
-    font-size: 18px;
-  }
-
-  .studioSignalTitle p {
-    white-space: normal;
-  }
-
-  .studioMobileFeatureButton {
-    min-height: 42px;
-    padding: 6px 10px;
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius-md);
-    display: grid;
-    justify-items: start;
-    color: var(--color-primary);
-    background: var(--color-primary-soft);
-    font-size: 11px;
-  }
-
-  .studioMobileFeatureButton b {
-    color: var(--text-main);
-    font-size: 13px;
-  }
-
+  .studioSignalTitle,
   .studioSignalActions {
-    grid-column: 1 / -1;
-    justify-content: flex-start;
+    display: none;
+  }
+
+  .studioMobileConfigSummary {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+    background: rgba(var(--bg-card-rgb), .92);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .studioMobileConfigSummary button {
+    min-height: 56px;
+    padding: 8px 10px;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    display: grid;
+    align-content: center;
+    gap: 3px;
+    color: var(--text-main);
+    background: var(--bg-card-soft);
+    text-align: left;
+  }
+
+  .studioMobileConfigSummary span {
+    color: var(--color-primary);
+    font-size: 11px;
+    font-weight: 900;
+  }
+
+  .studioMobileConfigSummary b {
+    overflow: hidden;
+    color: var(--text-main);
+    font-size: 15px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .studioMobileConfigPrimary,
+  .studioMobileConfigRecent {
+    grid-column: span 1;
+  }
+
+  .studioMobileConfigPrimary b,
+  .studioMobileConfigRecent b {
+    font-size: 18px;
   }
 
   .studioSignalActions .studioDesktopStatus {
     display: none;
   }
 
-  .studioCenterToolbar {
-    scrollbar-width: none;
-  }
-
-  .studioCenterToolbar button {
-    min-width: 96px;
-  }
-
   .studioUploadBox {
-    min-height: 310px;
+    min-height: 250px;
   }
 
   .studioUploadInner > div {
@@ -406,7 +406,7 @@
     display: none;
   }
 
-  .studioRecentList {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .studioRecentStrip {
+    display: none;
   }
 }
