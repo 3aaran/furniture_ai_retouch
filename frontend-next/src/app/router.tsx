@@ -3,6 +3,7 @@ import { AppShell } from './AppShell';
 import { LandingPage } from '../pages/landing/LandingPage';
 import { LoginPage } from '../pages/login/LoginPage';
 import { StudioPage } from '../pages/studio/StudioPage';
+import { ResourcesPage } from '../pages/resources/ResourcesPage';
 import { PlaceholderPage } from '../pages/placeholder/PlaceholderPage';
 
 export const router = createBrowserRouter([
@@ -15,7 +16,7 @@ export const router = createBrowserRouter([
     element: <AppShell />,
     children: [
       { path: 'studio', element: <StudioPage /> },
-      { path: 'resources', element: <PlaceholderPage title="资产库" desc="后续接入系统资源、门店资源、个人资源和资源选择弹窗。" /> },
+      { path: 'resources', element: <ResourcesPage /> },
       { path: 'history', element: <PlaceholderPage title="历史记录" desc="后续接入生成记录、任务状态、结果下载和失败原因。" /> },
       { path: 'users', element: <PlaceholderPage title="用户管理" desc="后续接入门店用户、体验账号、额度分配和账号状态。" /> },
       { path: 'promotion', element: <PlaceholderPage title="邀请共创" desc="后续接入邀请链接、共创记录、结算数据和收益明细。" /> },
