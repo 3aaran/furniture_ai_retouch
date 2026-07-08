@@ -1,7 +1,7 @@
 .studioBranchTabs {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 7px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
 }
 
 .studioBranchTabs button,
@@ -20,6 +20,33 @@
   font-weight: 900;
 }
 
+.studioBranchTabs button {
+  position: relative;
+  min-height: 48px;
+  padding: 8px 10px 8px 34px;
+  overflow: hidden;
+  text-align: left;
+}
+
+.studioBranchTabs button::before {
+  content: '图';
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  font-size: 10px;
+  transform: translateY(-50%);
+}
+
+.studioBranchTabs button:nth-child(2)::before { content: '宣'; }
+.studioBranchTabs button:nth-child(3)::before { content: '影'; }
+
 .studioBranchTabs button:disabled {
   color: var(--text-dim);
   cursor: not-allowed;
@@ -32,15 +59,20 @@
 .studioControlGroup button.isActive,
 .studioCenterToolbar button.isActive {
   color: var(--text-inverse);
-  border-color: var(--border-strong);
+  border-color: transparent;
   background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 10px 22px rgba(var(--color-primary-rgb), .15);
+}
+
+.studioBranchTabs button.isActive::before {
+  color: var(--color-primary);
+  background: rgba(var(--bg-card-rgb), .92);
 }
 
 .studioDivider {
   height: 1px;
   flex: 0 0 auto;
-  background: var(--border-subtle);
+  background: linear-gradient(90deg, transparent, var(--border-soft), transparent);
 }
 
 .studioFeatureList,
@@ -55,7 +87,7 @@
 .studioReferenceCard,
 .studioRecentStrip {
   display: grid;
-  gap: 9px;
+  gap: 10px;
 }
 
 .studioFeatureList button {
@@ -142,6 +174,10 @@
   box-shadow: 0 0 0 3px var(--color-accent-soft);
 }
 
+.studioFilterStack {
+  grid-template-columns: 1fr;
+}
+
 .studioFilterStack select,
 .studioField select,
 .studioControlGroup select {
@@ -157,29 +193,36 @@
   min-height: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 7px;
+  gap: 9px;
 }
 
 .studioUploadResource,
 .studioResourceCard {
-  min-height: 95px;
+  min-height: 118px;
   padding: 8px;
   border: 1px solid var(--border-soft);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   color: var(--text-main);
-  background: var(--bg-card-soft);
+  background: rgba(var(--bg-card-rgb), .78);
+  box-shadow: var(--shadow-xs);
 }
 
 .studioUploadResource {
   display: grid;
   place-items: center;
-  gap: 3px;
+  gap: 4px;
   font-weight: 900;
 }
 
 .studioUploadResource span {
-  color: var(--color-primary);
-  font-size: 25px;
+  width: 34px;
+  height: 34px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  color: var(--text-inverse);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  font-size: 22px;
 }
 
 .studioResourceCard {
@@ -191,14 +234,14 @@
 }
 
 .studioResourceCard.isActive {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px var(--color-accent-soft);
+  border-color: rgba(var(--color-accent-rgb), .55);
+  box-shadow: 0 0 0 3px var(--color-accent-soft), var(--shadow-xs);
 }
 
 .studioResourceCard img {
   width: 100%;
-  height: 68px;
-  border-radius: var(--radius-sm);
+  height: 78px;
+  border-radius: var(--radius-md);
   object-fit: cover;
 }
 
@@ -295,17 +338,8 @@
 }
 
 @media (min-width: 768px) {
-  .studioBranchTabs {
-    height: 119px;
-    padding-bottom: 13px;
-    grid-template-columns: 1fr;
-  }
-
-  .studioBranchTabs button {
-    min-height: 31px;
-    border-radius: var(--radius-sm);
-    padding-inline: 9px;
-    font-size: 13px;
+  .studioBranchTabs button:nth-child(3) {
+    grid-column: 1 / -1;
   }
 
   .studioFeatureList {
@@ -314,26 +348,26 @@
 
   .studioFeatureList.isPickerOpen {
     position: absolute;
-    top: 77px;
-    left: 16px;
-    right: 16px;
+    top: 138px;
+    left: 14px;
+    right: 14px;
     z-index: 3;
-    max-height: calc(100% - 104px);
+    max-height: calc(100% - 160px);
     padding: 10px;
     overflow-y: auto;
     border: 1px solid var(--border-soft);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     display: grid;
-    background: var(--bg-card);
+    background: rgba(var(--bg-card-rgb), .98);
     box-shadow: var(--shadow-lg);
+    backdrop-filter: blur(18px);
   }
 
   .studioFeatureConfig {
     min-height: 0;
-    margin-top: -13px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 11px;
     flex: 1 1 auto;
   }
 
@@ -347,10 +381,10 @@
   }
 
   .studioFilterStack select {
-    min-height: 28px;
-    height: 29px;
-    padding-inline: 14px;
-    border-radius: 6px;
+    min-height: 32px;
+    height: 32px;
+    padding-inline: 12px;
+    border-radius: 9px;
     font-size: 12px;
   }
 
@@ -359,33 +393,27 @@
     flex: 1 1 auto;
     overflow-y: auto;
     overscroll-behavior: contain;
-    padding: 0 7px 22px 0;
+    padding: 0 8px 24px 0;
     align-content: start;
-    grid-auto-rows: 104px;
+    grid-auto-rows: 118px;
   }
 
   .studioUploadResource,
   .studioResourceCard {
-    min-height: 104px;
-    height: 104px;
-    border-radius: 8px;
-  }
-
-  .studioUploadResource {
-    padding: 0;
+    height: 118px;
   }
 
   .studioControlGroup button {
-    min-height: 29px;
+    min-height: 30px;
     border-radius: var(--radius-pill);
     padding-inline: 10px;
     font-size: 12px;
   }
 
   .studioControlGroup select {
-    min-height: 29px;
-    height: 29px;
-    border-radius: 6px;
+    min-height: 32px;
+    height: 32px;
+    border-radius: 9px;
   }
 
   .studioFeatureList button {

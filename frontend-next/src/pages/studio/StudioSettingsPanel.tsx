@@ -4,7 +4,6 @@ import type { StudioLocalImage } from './studioViewTypes';
 import './StudioSettingsPanel.css';
 
 type StudioSettingsPanelProps = {
-  currentFeatureLabel: string;
   isPromotionSelected: boolean;
   customPrompt: string;
   referenceImages: StudioLocalImage[];
@@ -30,7 +29,6 @@ type StudioSettingsPanelProps = {
 };
 
 export function StudioSettingsPanel({
-  currentFeatureLabel,
   isPromotionSelected,
   customPrompt,
   referenceImages,
@@ -56,7 +54,7 @@ export function StudioSettingsPanel({
 }: StudioSettingsPanelProps) {
   return (
     <aside className="studioSidePanel studioRightPanel" aria-label="生成设置">
-      <div className="studioPanelHead"><b>AI 指令</b><em>{currentFeatureLabel}</em></div>
+      <div className="studioPanelHead"><b>AI 指令</b><span>生成要求</span></div>
       <label className="studioPromptField"><span>特殊要求（选填）</span><textarea className="studioPromptInput" placeholder={isPromotionSelected ? '描述场景细节、卖点文案或画面氛围...' : '可填写画面氛围、重点细节或其他特殊要求...'} value={customPrompt} onChange={(event) => onPromptChange(event.target.value)} /></label>
       <div className="studioReferenceCard">
         <div className="studioReferenceHead"><b>参考图（可选）</b><span>{referenceImages.length}/{maxReferenceImages}</span></div>

@@ -4,8 +4,8 @@ import './StudioCanvasPanel.css';
 
 type StudioCanvasPanelProps = {
   title: string;
+  description: string;
   featureModeLabel: string;
-  currentFeatureLabel: string;
   resolution: string;
   ratio: string;
   sourceImage: StudioLocalImage | null;
@@ -27,8 +27,8 @@ type StudioCanvasPanelProps = {
 
 export function StudioCanvasPanel({
   title,
+  description,
   featureModeLabel,
-  currentFeatureLabel,
   resolution,
   ratio,
   sourceImage,
@@ -50,7 +50,7 @@ export function StudioCanvasPanel({
   return (
     <main className="studioCenterPanel">
       <div className="studioSignalBar">
-        <div className="studioSignalTitle"><small>AI STUDIO</small><h1>{title}</h1></div>
+        <div className="studioSignalTitle"><small>当前功能</small><h1>{title}</h1><p>{description}</p></div>
         <button
           ref={featureButtonRef}
           type="button"
@@ -59,9 +59,9 @@ export function StudioCanvasPanel({
           aria-expanded={featureDrawerOpen}
           onClick={onOpenFeatures}
         >
-          <span>功能与资源</span><b>{currentFeatureLabel}</b>
+          <span>功能与资源</span><b>{title}</b>
         </button>
-        <div className="studioSignalActions"><span className="studioDesktopStatus">{featureModeLabel}</span><span className="studioDesktopStatus">{currentFeatureLabel}</span><span>{resolution}</span><span>{ratio}</span></div>
+        <div className="studioSignalActions"><span className="studioDesktopStatus">{featureModeLabel}</span><span>{resolution}</span><span>{ratio}</span></div>
       </div>
 
       <div className="studioCenterToolbar" aria-label="画布工具栏">

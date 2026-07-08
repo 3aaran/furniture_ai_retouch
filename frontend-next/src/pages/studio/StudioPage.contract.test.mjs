@@ -77,10 +77,11 @@ test('desktop studio keeps compact measured workspace geometry and density', () 
   assert.match(source, /featurePickerGroup/);
   assert.match(source, /studioFeatureList isPickerOpen/);
   assert.match(source, /studioRecentGhost/);
-  assert.match(css, /grid-template-columns:\s*210px minmax\(0, 1fr\) 267px/);
+  assert.match(css, /grid-template-columns:\s*248px minmax\(0, 1fr\) 302px/);
+  assert.match(css, /studioLeftHeader/);
   assert.match(css, /@media \(min-width: 768px\)[\s\S]*\.studioFeatureList\s*\{[\s\S]*display:\s*none/);
   assert.match(css, /@media \(min-width: 768px\)[\s\S]*\.studioDescRow,[\s\S]*\.studioSearchBox\s*\{[\s\S]*display:\s*none/);
-  assert.match(css, /\.studioUploadBox\s*\{[\s\S]*border-radius:\s*0/);
+  assert.match(css, /\.studioUploadBox\s*\{[\s\S]*border-radius:\s*var\(--radius-xl\)/);
 });
 
 test('pc studio reads real backend content instead of local demo resources', () => {

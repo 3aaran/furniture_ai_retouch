@@ -4,52 +4,58 @@
   min-height: 0;
   padding: 0;
   overflow: hidden;
+  background:
+    radial-gradient(circle at 42% 0, rgba(var(--color-accent-rgb), .16), transparent 34rem),
+    linear-gradient(180deg, var(--bg-page), rgba(var(--color-primary-rgb), .04));
 }
 
 .studioLayoutPc {
   height: 100%;
   display: grid;
-  grid-template-columns: 270px minmax(0, 1fr) 270px;
+  grid-template-columns: 248px minmax(0, 1fr) 302px;
   align-items: stretch;
-  background: var(--bg-page);
+  gap: 0;
 }
 
 .studioSidePanel,
 .studioCenterPanel {
   min-width: 0;
   min-height: 0;
-  background: var(--bg-card);
 }
 
 .studioSidePanel {
-  padding: 18px;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.studioLeftPanel {
-  border-right: 1px solid var(--border-soft);
-}
-
-.studioRightPanel {
-  border-left: 1px solid var(--border-soft);
-}
-
-.studioCenterPanel {
-  padding: 22px 25px 32px;
   overflow-y: auto;
   overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  background: var(--bg-page);
+  background: linear-gradient(180deg, rgba(var(--bg-card-rgb), .98), rgba(var(--bg-card-rgb), .9));
+}
+
+.studioLeftPanel {
+  padding: 18px 14px;
+  border-right: 1px solid var(--border-soft);
+  box-shadow: inset -1px 0 0 rgba(var(--bg-card-rgb), .72);
+}
+
+.studioRightPanel {
+  padding: 18px 16px;
+  border-left: 1px solid var(--border-soft);
+  box-shadow: inset 1px 0 0 rgba(var(--bg-card-rgb), .72);
+}
+
+.studioCenterPanel {
+  padding: 20px 22px 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: transparent;
 }
 
 .studioCenterPanel > * {
-  width: min(864px, 100%);
+  width: 100%;
+  max-width: none;
   margin-inline: auto;
 }
 
@@ -57,13 +63,25 @@
 .studioPanelHead,
 .studioSourceHead,
 .studioSectionTitle,
-.studioReferenceHead {
+.studioReferenceHead,
+.studioLeftHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
 }
 
+.studioLeftHeader {
+  min-height: 46px;
+  padding: 12px 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(135deg, rgba(var(--color-primary-rgb), .09), rgba(var(--color-accent-rgb), .07)),
+    rgba(var(--bg-card-rgb), .82);
+}
+
+.studioLeftHeader span,
 .studioMobileDrawerHead span,
 .studioSignalTitle small,
 .studioPanelHead span,
@@ -72,15 +90,15 @@
   color: var(--color-primary);
   font-size: 11px;
   font-weight: 900;
-  letter-spacing: .1em;
+  letter-spacing: .12em;
 }
 
+.studioLeftHeader b,
 .studioMobileDrawerHead b,
 .studioPanelHead b {
   display: block;
-  margin-top: 4px;
   color: var(--text-main);
-  font-size: 18px;
+  font-size: 15px;
 }
 
 .studioMobileDrawerHead > button,
@@ -88,7 +106,16 @@
   display: none;
 }
 
-.studioPanelHead em {
+.studioMobileDrawerHead {
+  display: none;
+}
+
+.studioPanelHead {
+  min-height: 30px;
+}
+
+.studioPanelHead em,
+.studioPanelHead > span {
   padding: 4px 8px;
   border-radius: var(--radius-pill);
   color: var(--color-primary);
@@ -100,33 +127,20 @@
 
 @media (min-width: 768px) {
   .studioLayoutPc {
-    grid-template-columns: 210px minmax(0, 1fr) 267px;
-  }
-
-  .studioSidePanel {
-    gap: 16px;
+    grid-template-columns: 248px minmax(0, 1fr) 302px;
   }
 
   .studioLeftPanel {
     position: relative;
-    padding: 16px 13px;
     overflow: hidden;
-  }
-
-  .studioRightPanel {
-    padding: 16px 14px;
   }
 
   .studioCenterPanel {
     position: relative;
-    padding: 22px 15px 13px 14px;
-    gap: 0;
-    overflow: hidden;
   }
 
-  .studioCenterPanel > * {
-    width: 100%;
-    max-width: none;
+  .studioRightPanel {
+    overflow: hidden;
   }
 }
 
@@ -151,8 +165,8 @@
     gap: 10px;
   }
 
-  .studioCenterPanel > * {
-    width: 100%;
+  .studioLeftHeader {
+    display: none;
   }
 
   .studioLeftPanel {
@@ -170,6 +184,10 @@
 
   .studioLeftPanel.isFeatureOpen {
     transform: translateX(0);
+  }
+
+  .studioMobileDrawerHead {
+    display: flex;
   }
 
   .studioDrawerBackdrop {

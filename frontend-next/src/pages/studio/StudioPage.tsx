@@ -626,7 +626,8 @@ export function StudioPage() {
       {featureDrawerOpen && <button className="studioDrawerBackdrop" type="button" aria-label="关闭功能与资源" onClick={closeFeatureDrawer} />}
       <section className="studioLayoutPc">
         <aside id="studio-feature-panel" className={`studioSidePanel studioLeftPanel ${featureDrawerOpen ? 'isFeatureOpen' : ''}`.trim()} aria-hidden={isMobile && !featureDrawerOpen} inert={isMobile && !featureDrawerOpen}>
-          <div className="studioMobileDrawerHead"><div><span>{featureGroup === 'base' ? '生图功能' : '宣传图'}</span><b>{currentFeature.label}</b></div><button type="button" aria-label="关闭功能与资源" onClick={closeFeatureDrawer}>×</button></div>
+          <div className="studioMobileDrawerHead"><div><span>当前功能</span><b>{currentFeature.label}</b></div><button type="button" aria-label="关闭功能与资源" onClick={closeFeatureDrawer}>×</button></div>
+          <div className="studioLeftHeader"><span>功能</span><b>选择生成类型与资源</b></div>
           <div className="studioBranchTabs" aria-label="功能主分支">
             {featureBranches.map((item) => {
               const disabled = 'disabled' in item ? item.disabled : false;
@@ -639,9 +640,9 @@ export function StudioPage() {
         </aside>
 
         <StudioCanvasPanel
-          title={featureGroup === 'promotion' ? '宣传图智能工作台' : '家具图片智能工作台'}
+          title={currentFeature.label}
+          description={currentFeature.desc}
           featureModeLabel={featureGroup === 'base' ? '生图功能' : '宣传图'}
-          currentFeatureLabel={currentFeature.label}
           resolution={resolution}
           ratio={ratio}
           sourceImage={sourceImage}
@@ -662,7 +663,6 @@ export function StudioPage() {
         />
 
         <StudioSettingsPanel
-          currentFeatureLabel={currentFeature.label}
           isPromotionSelected={isPromotionSelected}
           customPrompt={customPrompt}
           referenceImages={referenceImages}

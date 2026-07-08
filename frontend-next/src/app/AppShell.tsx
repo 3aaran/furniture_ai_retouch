@@ -8,11 +8,12 @@ import type { CurrentUser } from '../types/auth';
 import './AppShell.css';
 
 const navItems = [
-  { to: '/studio', label: '工作室' },
-  { to: '/resources', label: '资源库' },
-  { to: '/history', label: '历史任务' },
-  { to: '/users', label: '用户管理' },
-  { to: '/profile', label: '我的' },
+  { to: '/studio', label: '智能工作台', icon: '⌁' },
+  { to: '/resources', label: '资源库', icon: '▣' },
+  { to: '/history', label: '历史任务', icon: '◷' },
+  { to: '/users', label: '用户管理', icon: '◇' },
+  { to: '/promotion', label: '推广收益', icon: '↗' },
+  { to: '/profile', label: '我的', icon: '◉' },
 ];
 
 function shortName(user: CurrentUser | null) {
@@ -62,9 +63,9 @@ export function AppShell() {
           <BrandLogo />
         </NavLink>
         <nav className="shellNav desktopOnly" aria-label="主导航">
-          {navItems.slice(0, 4).map((item) => (
+          {navItems.slice(0, 5).map((item) => (
             <NavLink key={item.to} to={item.to} className={({ isActive }) => `shellNavItem ${isActive ? 'isActive' : ''}`.trim()}>
-              {item.label}
+              <span aria-hidden="true">{item.icon}</span>{item.label}
             </NavLink>
           ))}
         </nav>
