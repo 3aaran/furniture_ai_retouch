@@ -3,6 +3,7 @@ import type { CurrentUser, LoginResult } from '../types/auth';
 const TOKEN_KEY = 'furniture_token';
 const USER_KEY = 'furniture_user';
 const LEGACY_TOKEN_KEYS = ['token', 'authToken', 'accessToken'];
+const TOKEN_KEYS = [TOKEN_KEY, ...LEGACY_TOKEN_KEYS];
 
 let currentUser: CurrentUser | null = loadStoredUser();
 
@@ -35,6 +36,38 @@ export function getCurrentUserSnapshot() {
 export function saveAuthSession(result: LoginResult) {
   localStorage.setItem(TOKEN_KEY, result.token);
   setCurrentUser(result.user);
+}
+
+function readStoredToken() {
+  for (const key of TOKEN_KEYS) {
+    const value = localStorage.getItem(key);
+    if (value) return value;
+  }
+  return '';
+}
+
+function jwtExpiryMs(token: string) {
+  const [, payload] = token.split('.');
+  if (!payload) return null;
+  try {
+    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const decoded = JSON.parse(atob(normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '='))) as { exp?: unknown };
+    const exp = Number(decoded.exp);
+    return Number.isFinite(exp) && exp > 0 ? exp * 1000 : null;
+  } catch {
+    return null;
+  }
+}
+
+export function hasActiveAuthSession() {
+  const token = readStoredToken();
+  if (!token) return false;
+  const expiresAt = jwtExpiryMs(token);
+  if (expiresAt !== null && expiresAt <= Date.now()) {
+    clearAuthSession();
+    return false;
+  }
+  return true;
 }
 
 export function loadStoredUser() {

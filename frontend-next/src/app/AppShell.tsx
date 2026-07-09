@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { BrandLogo } from '../components/brand/BrandLogo';
+import { AppIcon, type AppIconName } from '../components/icons/AppIcon';
 import { getCurrentUser as fetchCurrentUser } from '../services/auth.api';
-import { clearAuthSession, getCurrentUserSnapshot, setCurrentUser } from '../stores/auth.store';
 import { getAuthToken } from '../services/http';
+import { clearAuthSession, getCurrentUserSnapshot, setCurrentUser } from '../stores/auth.store';
 import type { CurrentUser } from '../types/auth';
+import { ShellQuickModal, type ShellQuickModalType } from './ShellQuickModal';
 import './AppShell.css';
 
 const primaryNavItems = [
@@ -14,27 +16,27 @@ const primaryNavItems = [
   { to: '/promotion', label: '邀请共创' },
 ];
 
-const utilityNavItems = [
-  { to: '/notices', label: '邮箱', icon: '✉' },
-  { to: '/feedback', label: '反馈', icon: '!' },
-  { to: '/history', label: '历史记录', icon: '◷' },
+const utilityNavItems: Array<{ key: string; to?: string; modal?: Exclude<ShellQuickModalType, null>; label: string; icon: AppIconName }> = [
+  { key: 'notices', modal: 'notices', label: '邮箱', icon: 'mail' },
+  { key: 'feedback', modal: 'feedback', label: '反馈', icon: 'alert' },
+  { key: 'history', to: '/history', label: '历史记录', icon: 'history' },
 ];
 
-const mobileMainNavItems = [
-  { to: '/studio', label: '工作室', icon: '◇' },
-  { to: '/history', label: '历史记录', icon: '◷' },
-  { to: '/resources', label: '资产库', icon: '▣' },
-  { to: '/users', label: '用户管理', icon: '◌' },
-  { to: '/promotion', label: '邀请共创', icon: '↗' },
+const mobileMainNavItems: Array<{ to: string; label: string; icon: AppIconName }> = [
+  { to: '/studio', label: '工作室', icon: 'studio' },
+  { to: '/history', label: '历史记录', icon: 'history' },
+  { to: '/resources', label: '资产库', icon: 'resources' },
+  { to: '/users', label: '用户管理', icon: 'users' },
+  { to: '/promotion', label: '邀请共创', icon: 'promotion' },
 ];
 
-const mobileToolItems = [
-  { to: '/feedback', label: '反馈', icon: '!' },
-  { to: '/notices', label: '邮箱', icon: '✉' },
+const mobileToolItems: Array<{ key: string; modal: Exclude<ShellQuickModalType, null>; label: string; icon: AppIconName }> = [
+  { key: 'feedback', modal: 'feedback', label: '反馈', icon: 'alert' },
+  { key: 'notices', modal: 'notices', label: '邮箱', icon: 'mail' },
 ];
 
 function shortName(user: CurrentUser | null) {
-  const value = user?.name || user?.displayName || user?.username || user?.phone || '用';
+  const value = user?.name || user?.displayName || user?.username || user?.phone || '用户';
   return String(value).trim().slice(0, 1) || '用';
 }
 
@@ -49,6 +51,8 @@ export function AppShell() {
   const [user, setUser] = useState<CurrentUser | null>(() => getCurrentUserSnapshot());
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [quickModal, setQuickModal] = useState<ShellQuickModalType>(null);
+  const [shellNotice, setShellNotice] = useState('');
   const quotaText = useMemo(() => Number(user?.quota ?? 0).toLocaleString('zh-CN'), [user?.quota]);
 
   useEffect(() => {
@@ -90,6 +94,22 @@ export function AppShell() {
     navigate(path);
   }
 
+  function openQuickModal(type: Exclude<ShellQuickModalType, null>) {
+    setProfileMenuOpen(false);
+    setMobileNavOpen(false);
+    if (type === 'feedback') setQuickModal('feedback');
+    if (type === 'notices') setQuickModal('notices');
+    if (type === 'redeem') setQuickModal('redeem');
+  }
+
+  function activateUtility(item: (typeof utilityNavItems)[number]) {
+    if (item.modal) {
+      openQuickModal(item.modal);
+      return;
+    }
+    if (item.to) go(item.to);
+  }
+
   return (
     <div className={`appRoot shellRoot ${isStudioRoute ? 'studioShell' : ''}`.trim()}>
       <header className="shellTopbar" onClick={() => setProfileMenuOpen(false)}>
@@ -111,8 +131,8 @@ export function AppShell() {
         <div className="shellActions" onClick={(event) => event.stopPropagation()}>
           <div className="shellIconActions desktopOnly" aria-label="快捷入口">
             {utilityNavItems.map((item) => (
-              <button key={item.to} className="shellIconAction" type="button" title={item.label} aria-label={item.label} onClick={() => go(item.to)}>
-                <span aria-hidden="true">{item.icon}</span>
+              <button key={item.key} className="shellIconAction" type="button" title={item.label} aria-label={item.label} onClick={() => activateUtility(item)}>
+                <span aria-hidden="true"><AppIcon name={item.icon} /></span>
               </button>
             ))}
           </div>
@@ -124,11 +144,11 @@ export function AppShell() {
             </button>
             {profileMenuOpen && (
               <div className="profileMenuNext" role="menu">
-                <button type="button" role="menuitem" onClick={() => go('/profile')}><span>◇</span>个人中心</button>
-                <button type="button" role="menuitem" onClick={() => go('/quota')}><span>¥</span>额度明细</button>
-                <button type="button" role="menuitem" onClick={() => go('/redeem')}><span>券</span>礼品卡兑换</button>
+                <button type="button" role="menuitem" onClick={() => go('/profile')}><span><AppIcon name="profile" /></span>个人中心</button>
+                <button type="button" role="menuitem" onClick={() => go('/quota')}><span><AppIcon name="quota" /></span>额度明细</button>
+                <button type="button" role="menuitem" onClick={() => openQuickModal('redeem')}><span><AppIcon name="redeem" /></span>礼品卡兑换</button>
                 <i aria-hidden="true" />
-                <button className="logout" type="button" role="menuitem" onClick={handleLogout}><span>↩</span>退出登录</button>
+                <button className="logout" type="button" role="menuitem" onClick={handleLogout}><span><AppIcon name="logout" /></span>退出登录</button>
               </div>
             )}
           </div>
@@ -139,19 +159,19 @@ export function AppShell() {
       <aside className={`mobileSideDrawer mobileOnly ${mobileNavOpen ? 'isOpen' : ''}`.trim()} aria-hidden={!mobileNavOpen}>
         <div className="mobileSideDrawerHead">
           <BrandLogo />
-          <button type="button" aria-label="关闭导航栏" onClick={() => setMobileNavOpen(false)}>×</button>
+          <button type="button" aria-label="关闭导航栏" onClick={() => setMobileNavOpen(false)}><AppIcon name="close" /></button>
         </div>
         <nav className="mobileSideNav" aria-label="移动端侧边导航">
           {mobileMainNavItems.map((item) => (
             <button key={item.to} type="button" className={location.pathname === item.to ? 'isActive' : ''} onClick={() => go(item.to)}>
-              <span aria-hidden="true">{item.icon}</span>{item.label}
+              <span aria-hidden="true"><AppIcon name={item.icon} /></span>{item.label}
             </button>
           ))}
         </nav>
         <div className="mobileSideTools" aria-label="移动端工具入口">
           {mobileToolItems.map((item) => (
-            <button key={item.to} type="button" onClick={() => go(item.to)}>
-              <span aria-hidden="true">{item.icon}</span>{item.label}
+            <button key={item.key} type="button" onClick={() => openQuickModal(item.modal)}>
+              <span aria-hidden="true"><AppIcon name={item.icon} /></span>{item.label}
             </button>
           ))}
         </div>
@@ -160,6 +180,8 @@ export function AppShell() {
       <main className="shellMain">
         <Outlet />
       </main>
+      {shellNotice && <button className="shellToast" type="button" onClick={() => setShellNotice('')}>{shellNotice}</button>}
+      <ShellQuickModal type={quickModal} onClose={() => setQuickModal(null)} onNotice={setShellNotice} />
     </div>
   );
 }

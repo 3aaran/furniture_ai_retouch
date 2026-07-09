@@ -289,6 +289,11 @@ export function LoginPage({ initialMode = 'login' }: LoginPageProps) {
           {message && <div className="authMsgV2" role="status">{message}</div>}
         </section>
       </main>
+      <footer className="authMobileFooterNext">
+        <span>© 2026 勋港。保留所有权利。</span>
+        <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer">粤ICP备2026071107号</a>
+        <span>审核通过日期：2026-06-04</span>
+      </footer>
     </div>
   );
 }

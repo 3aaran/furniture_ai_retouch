@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BrandLogo } from '../../components/brand/BrandLogo';
 import { Button } from '../../components/ui/Button';
+import { hasActiveAuthSession } from '../../stores/auth.store';
 import './LandingPage.css';
 
 const navItems = [
@@ -65,6 +67,18 @@ const planCards = [
 ];
 
 export function LandingPage() {
+  const [isLoggedIn, setIsLoggedIn] = useState(() => hasActiveAuthSession());
+
+  useEffect(() => {
+    const syncAuth = () => setIsLoggedIn(hasActiveAuthSession());
+    window.addEventListener('storage', syncAuth);
+    window.addEventListener('focus', syncAuth);
+    return () => {
+      window.removeEventListener('storage', syncAuth);
+      window.removeEventListener('focus', syncAuth);
+    };
+  }, []);
+
   return (
     <div className="appRoot landingPageNext">
       <header className="landingTopbarNext">
@@ -76,7 +90,7 @@ export function LandingPage() {
         </nav>
         <div className="landingTopActions">
           <button className="landingInstallBtnNext" type="button">安装应用</button>
-          <Link to="/login" className="landingTextLink">登录</Link>
+          {!isLoggedIn && <Link to="/login" className="landingTextLink">登录</Link>}
           <Link to="/studio"><Button>进入工作台</Button></Link>
         </div>
       </header>

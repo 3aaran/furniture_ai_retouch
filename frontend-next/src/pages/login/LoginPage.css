@@ -427,6 +427,10 @@
   line-height: 1.55;
 }
 
+.authMobileFooterNext {
+  display: none;
+}
+
 .authApplyGridV2 {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -458,30 +462,53 @@
 }
 
 @media (max-width: 620px) {
-  .authTopbarNext {
-    height: auto;
-    min-height: 64px;
-    padding-block: 9px;
-    flex-wrap: wrap;
+  .authShellNext {
+    min-height: 100dvh;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    background: var(--bg-page);
   }
 
-  .authTopActionsNext {
-    width: 100%;
-    justify-content: flex-end;
+  .authTopbarNext,
+  .authIntroV2,
+  .authAmbient,
+  .authPageV2::before {
+    display: none;
   }
 
   .authPageV2 {
-    min-height: calc(100vh - 110px);
-    padding: 18px;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: center;
+    padding: 18px 14px 10px;
+    overflow: visible;
+    background: transparent;
   }
 
-  .authStatsV2,
   .authApplyGridV2 {
     grid-template-columns: 1fr;
   }
 
   .authCardV2 {
-    padding: 22px;
+    width: 100%;
+    max-width: 430px;
+    margin: 0 auto;
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .authCardHeadV2 {
+    margin-bottom: 14px;
+  }
+
+  .authCardHeadV2 span {
+    display: none;
+  }
+
+  .authCardHeadV2 h2 {
+    font-size: 24px;
   }
 
   .authHeadRowV2 {
@@ -491,5 +518,37 @@
   .authBackBtnV2 {
     min-height: 31px;
     padding: 0 9px;
+  }
+
+  .authTabsV2 {
+    margin-bottom: 14px;
+  }
+
+  .authFieldV2 {
+    margin-top: 11px;
+  }
+
+  .authFieldV2 textarea {
+    min-height: 76px;
+  }
+
+  .authSubmitV2 {
+    margin-top: 16px;
+  }
+
+  .authMobileFooterNext {
+    padding: 8px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px 12px;
+    color: var(--text-muted);
+    font-size: 11px;
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  .authMobileFooterNext a {
+    color: var(--color-primary);
   }
 }

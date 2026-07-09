@@ -21,6 +21,7 @@ export type ResourceApiItem = {
   imageUrl?: string;
   url?: string;
   thumbUrl?: string;
+  previewUrl?: string;
   downloadUrl?: string;
   resourceType?: string;
   resource_type?: string;

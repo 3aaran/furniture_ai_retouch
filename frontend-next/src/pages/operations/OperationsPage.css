@@ -1,0 +1,1025 @@
+.opShell {
+  min-height: calc(100vh - var(--topbar-height));
+  background:
+    radial-gradient(circle at 14% 0, rgba(var(--color-accent-rgb), .11), transparent 26rem),
+    radial-gradient(circle at 84% 8%, rgba(var(--color-primary-rgb), .1), transparent 30rem),
+    var(--bg-page);
+}
+
+.opPage {
+  width: min(1380px, 100%);
+  margin: 0 auto;
+  padding: 18px clamp(16px, 3vw, 38px) 34px;
+  display: grid;
+  gap: 16px;
+}
+
+.opHero,
+.opPanel,
+.opLinkBox {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-xl);
+  background: rgba(var(--bg-card-rgb), .92);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(18px);
+}
+
+.opHero {
+  min-height: 164px;
+  padding: 22px;
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+}
+
+.opHero > div:first-child {
+  min-width: 0;
+}
+
+.opHero span,
+.opPanel h2 span,
+.opModal header span {
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .1em;
+}
+
+.opHero h1 {
+  margin: 7px 0 0;
+  color: var(--text-main);
+  font-size: clamp(28px, 3vw, 44px);
+  line-height: 1.08;
+}
+
+.opHero p {
+  max-width: 620px;
+  margin: 9px 0 0;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+.opStats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(112px, 1fr));
+  gap: 10px;
+}
+
+.opStats article {
+  min-height: 82px;
+  padding: 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  background: var(--bg-card-soft);
+}
+
+.opStats article span {
+  color: var(--text-muted);
+  letter-spacing: 0;
+}
+
+.opStats article b {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-main);
+  font-size: 24px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.opHeroAction,
+.opHeroActions button,
+.opToolbar button,
+.opPager button,
+.opPanel > button,
+.opModalForm button,
+.opTaskCard footer button,
+.opTaskCard footer a,
+.opFormPanel > button {
+  min-height: 42px;
+  border: 1px solid rgba(var(--color-primary-rgb), .18);
+  border-radius: var(--radius-md);
+  padding: 0 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.opHeroAction:hover,
+.opHeroActions button:hover,
+.opToolbar button:hover,
+.opPager button:hover,
+.opPanel > button:hover,
+.opModalForm button:hover,
+.opTaskCard footer button:hover,
+.opTaskCard footer a:hover,
+.opFormPanel > button:hover {
+  color: var(--text-inverse);
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+}
+
+.opHeroActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.opHeroPill,
+.opHeroBalance {
+  min-height: 42px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-pill);
+  padding: 0 15px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-main);
+  background: var(--bg-card-soft);
+  font-weight: 900;
+}
+
+.opPanel {
+  padding: 16px;
+  display: grid;
+  gap: 14px;
+}
+
+.opToolbar {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) repeat(4, minmax(136px, 220px));
+  gap: 10px;
+}
+
+.opToolbar label,
+.opFormPanel label,
+.opModalForm label {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.opToolbar label {
+  min-height: 44px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--bg-card-soft);
+}
+
+.opToolbar input,
+.opToolbar select,
+.opFormPanel input,
+.opModalForm input,
+.opModalForm select {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  padding: 0 12px;
+  color: var(--text-main);
+  background: var(--bg-card-soft);
+  outline: none;
+}
+
+.opToolbar label input {
+  min-height: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.opState {
+  min-height: 92px;
+  border: 1px dashed var(--border-soft);
+  border-radius: var(--radius-lg);
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+  background: var(--bg-card-soft);
+  font-weight: 900;
+}
+
+.opState.isError {
+  color: var(--color-danger);
+  background: rgba(var(--color-danger-rgb), .08);
+}
+
+.opTaskGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.opTaskCard {
+  overflow: hidden;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-xl);
+  display: grid;
+  background: rgba(var(--bg-card-rgb), .96);
+  box-shadow: var(--shadow-xs);
+}
+
+.opTaskImage {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border: 0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: var(--color-primary);
+  background: var(--bg-card-soft);
+  cursor: pointer;
+}
+
+.opTaskImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.opTaskImage b {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  min-height: 30px;
+  border-radius: var(--radius-pill);
+  padding: 6px 10px;
+  overflow: hidden;
+  color: var(--text-inverse);
+  background: rgba(var(--text-main-rgb), .62);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.opTaskCard > div {
+  padding: 12px 14px;
+  display: grid;
+  gap: 5px;
+}
+
+.opTaskCard strong,
+.opTaskCard small,
+.opTaskCard span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.opTaskCard span,
+.opTaskCard small {
+  color: var(--text-muted);
+}
+
+.opTaskCard footer {
+  padding: 0 14px 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.taskMeta {
+  padding: 12px 14px;
+  display: grid;
+  gap: 5px;
+}
+
+.taskActions {
+  padding: 0 14px 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.opTableWrap {
+  overflow-x: auto;
+}
+
+.opTableWrap table {
+  width: 100%;
+  min-width: 820px;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+}
+
+.opTableWrap th {
+  padding: 0 12px 4px;
+  color: var(--text-muted);
+  font-size: 12px;
+  text-align: left;
+}
+
+.opTableWrap td {
+  padding: 14px 12px;
+  color: var(--text-main);
+  background: var(--bg-card-soft);
+}
+
+.opTableWrap td:first-child {
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+
+.opTableWrap td:last-child {
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.opTableWrap td small {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-muted);
+}
+
+.opBadge,
+.opStatus {
+  min-height: 28px;
+  border-radius: var(--radius-pill);
+  padding: 5px 10px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.opStatus.isGood,
+.opPlus {
+  color: var(--color-success);
+}
+
+.opMinus {
+  color: var(--color-danger);
+}
+
+.opRowActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.opRowActions button,
+.opTextButton {
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  color: var(--color-primary);
+  background: var(--bg-card);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.opRowActions button {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+}
+
+.opTextButton {
+  min-height: 30px;
+  padding: 0 10px;
+}
+
+.opPager {
+  min-height: 54px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text-muted);
+  background: var(--bg-card-soft);
+  font-weight: 900;
+}
+
+.opPager div {
+  display: flex;
+  gap: 8px;
+}
+
+.opPager button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.opLinkBox {
+  padding: 14px;
+  display: grid;
+  gap: 6px;
+}
+
+.opLinkBox span {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.opLinkBox b {
+  overflow: hidden;
+  color: var(--text-main);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.opProfileGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.opFormPanel h2,
+.opStoragePanel h2 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--text-main);
+  font-size: 20px;
+}
+
+.opStoragePanel {
+  grid-column: 1 / -1;
+}
+
+.opStorageStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.opStorageStats span {
+  min-height: 58px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 10px;
+  display: grid;
+  color: var(--text-muted);
+  background: var(--bg-card-soft);
+  font-weight: 900;
+}
+
+.opStorageStats b {
+  color: var(--text-main);
+}
+
+.opStorageBar {
+  height: 12px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--bg-card-strong);
+}
+
+.opStorageBar i {
+  height: 100%;
+  display: block;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+}
+
+.opAvatarPanel {
+  display: grid;
+  grid-template-columns: 58px auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.opAvatarPanel img,
+.opAvatarPanel > span {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  object-fit: cover;
+  color: var(--text-inverse);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.opAvatarPanel input {
+  display: none;
+}
+
+.opAvatarPanel button {
+  min-height: 38px;
+  border: 1px solid rgba(var(--color-primary-rgb), .18);
+  border-radius: var(--radius-md);
+  padding: 0 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.taskPreviewOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  flex-direction: column;
+  color: #f6f6f6;
+  background: #0a0a0a;
+}
+
+.taskPreviewTop {
+  min-height: 78px;
+  border-bottom: 1px solid rgba(255, 255, 255, .12);
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: #111;
+}
+
+.taskPreviewTop b {
+  margin-right: 18px;
+  color: #fff;
+  font-size: 26px;
+}
+
+.taskPreviewTop span {
+  color: #a7a7a7;
+  font-size: 18px;
+}
+
+.taskMobileTitle {
+  display: none;
+}
+
+.taskPreviewTopBtns {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.taskPreviewTopBtns button {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: transparent;
+  cursor: pointer;
+}
+
+.taskPreviewTopBtns button:hover {
+  background: rgba(255, 255, 255, .08);
+}
+
+.taskPreviewTopBtns button:disabled {
+  opacity: .25;
+  cursor: not-allowed;
+}
+
+.taskPreviewBody {
+  flex: 1;
+  min-height: 0;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 420px;
+  gap: 18px;
+  overflow: auto;
+}
+
+.taskComparePanel,
+.taskInfoPanel {
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 24px;
+  background: #171717;
+}
+
+.taskComparePanel {
+  min-height: 620px;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+
+.compareCol {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.compareHead {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.compareHead h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 18px;
+}
+
+.compareHead button {
+  min-height: 32px;
+  border: 1px solid rgba(242, 213, 140, .28);
+  border-radius: var(--radius-pill);
+  padding: 0 12px;
+  color: #f2d58c;
+  background: rgba(242, 213, 140, .1);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.taskImageFrame {
+  flex: 1;
+  min-height: 520px;
+  border: 14px solid #050505;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: #333;
+  background: #f7f4ee;
+}
+
+.taskImageFrame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.taskInfoPanel {
+  min-height: 620px;
+  padding: 26px 22px;
+  display: flex;
+  flex-direction: column;
+}
+
+.taskInfoPanel h3 {
+  margin: 0 0 18px;
+  color: #fff;
+  font-size: 25px;
+}
+
+.taskInfoScroll {
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.infoRows {
+  display: grid;
+  gap: 10px;
+}
+
+.infoRows > div {
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+  padding-bottom: 10px;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.infoRows i {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: #f2d58c;
+  background: rgba(242, 213, 140, .1);
+}
+
+.infoRows p {
+  margin: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.infoRows span,
+.promptBox span {
+  color: #a7a7a7;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.infoRows b {
+  min-width: 0;
+  color: #fff;
+  word-break: break-word;
+}
+
+.goldTag {
+  color: #f2d58c;
+}
+
+.infoRows em.success {
+  color: #54b867;
+  font-style: normal;
+}
+
+.infoRows em.failed {
+  color: #ff6b6b;
+  font-style: normal;
+}
+
+.promptBox {
+  margin-top: 14px;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 16px;
+  padding: 14px;
+  background: rgba(255, 255, 255, .04);
+}
+
+.promptBox p {
+  margin: 8px 0 0;
+  color: #f6f6f6;
+  line-height: 1.7;
+}
+
+.taskDetailActions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.taskDetailActions button,
+.taskMobileActionBar button {
+  min-height: 42px;
+  border: 1px solid rgba(242, 213, 140, .24);
+  border-radius: 14px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #f2d58c;
+  background: rgba(242, 213, 140, .1);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.taskMobileActionBar {
+  display: none;
+}
+
+.opToast {
+  position: fixed;
+  top: calc(var(--topbar-height) + 14px);
+  right: 18px;
+  z-index: var(--z-toast);
+  max-width: min(420px, calc(100vw - 36px));
+  border: 1px solid rgba(var(--color-primary-rgb), .2);
+  border-radius: var(--radius-lg);
+  padding: 12px 16px;
+  color: var(--color-primary);
+  background: rgba(var(--bg-card-rgb), .98);
+  box-shadow: var(--shadow-lg);
+  font-weight: 900;
+}
+
+.opModalMask {
+  position: fixed;
+  inset: var(--topbar-height) 0 0;
+  z-index: var(--z-modal);
+  padding: 22px;
+  display: grid;
+  place-items: center;
+  background: rgba(var(--text-main-rgb), .42);
+}
+
+.opModal {
+  width: min(520px, 100%);
+  max-height: calc(100vh - var(--topbar-height) - 44px);
+  overflow-y: auto;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-xl);
+  background: rgba(var(--bg-card-rgb), .98);
+  box-shadow: var(--shadow-lg);
+}
+
+.opModal header {
+  min-height: 70px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.opModal header b {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-main);
+  font-size: 18px;
+}
+
+.opModal header button {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border-soft);
+  border-radius: 50%;
+  color: var(--text-main);
+  background: var(--bg-card-soft);
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.opModalForm,
+.opTaskDetail {
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+}
+
+.opModalForm footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.opModalForm footer button:last-child {
+  color: var(--text-inverse);
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+}
+
+.opTaskDetail img {
+  width: 100%;
+  max-height: 360px;
+  object-fit: contain;
+  border-radius: var(--radius-lg);
+  background: var(--bg-card-soft);
+}
+
+.opTaskDetail dl {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr);
+  gap: 9px 12px;
+  margin: 0;
+}
+
+.opTaskDetail dt {
+  color: var(--text-muted);
+}
+
+.opTaskDetail dd {
+  margin: 0;
+  min-width: 0;
+  word-break: break-word;
+}
+
+@media (max-width: 980px) {
+  .opHero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .opStats,
+  .opTaskGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .opToolbar,
+  .opProfileGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .opShell {
+    min-height: calc(100dvh - var(--mobile-topbar-height));
+  }
+
+  .opPage {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .opHero,
+  .opPanel {
+    border-radius: var(--radius-lg);
+    padding: 14px;
+  }
+
+  .opStats,
+  .opTaskGrid,
+  .opStorageStats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .opHeroActions,
+  .opPager {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .opToolbar {
+    gap: 8px;
+  }
+
+  .opTaskCard footer {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .taskPreviewTop {
+    min-height: 58px;
+    padding: 0 12px;
+  }
+
+  .taskPreviewTop b {
+    margin-right: 8px;
+    font-size: 18px;
+  }
+
+  .taskPreviewTop span {
+    font-size: 13px;
+  }
+
+  .taskDesktopTitle {
+    display: none;
+  }
+
+  .taskMobileTitle {
+    display: inline;
+  }
+
+  .taskPreviewTopBtns {
+    gap: 4px;
+  }
+
+  .taskPreviewTopBtns button {
+    width: 38px;
+    height: 38px;
+  }
+
+  .taskPreviewBody {
+    padding: 10px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .taskComparePanel {
+    min-height: 0;
+    border-radius: 18px;
+    padding: 10px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .taskImageFrame {
+    min-height: 320px;
+    border-width: 8px;
+  }
+
+  .taskInfoPanel {
+    min-height: auto;
+    border-radius: 18px;
+    padding: 16px;
+  }
+
+  .taskMobileActionBar {
+    display: grid;
+  }
+
+  .opModalMask {
+    inset: var(--mobile-topbar-height) 0 0;
+    padding: 12px;
+    place-items: end center;
+  }
+
+  .opModal {
+    max-height: calc(100dvh - var(--mobile-topbar-height) - 24px);
+    border-radius: 22px;
+  }
+
+  .opToast {
+    top: calc(var(--mobile-topbar-height) + 10px);
+    right: 12px;
+  }
+}
