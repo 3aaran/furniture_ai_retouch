@@ -3,7 +3,7 @@ import { AppIcon } from '../../components/icons/AppIcon';
 import { studioFeatures } from '../studio/studioData';
 import type { QueryState, Row } from './operations.types';
 import { Pager, StateBlock } from './OperationLayout';
-import { featureText, fmt, imageUrl, patchQuery, usePaged } from './operations.utils';
+import { featureText, fmt, fullImageUrl, imageUrl, patchQuery, usePaged } from './operations.utils';
 
 const STATUS_FILTERS = [
   { label: '全部状态', value: '' },
@@ -52,7 +52,7 @@ export function HistoryPage({ openTask }: { openTask: (item: Row, list: Row[]) =
           <article className="opTaskCard taskCard" key={String(item.id)}>
             <button className="opTaskImage taskImg" type="button" onClick={() => openTask(item, visibleItems)}>{imageUrl(item) ? <img src={imageUrl(item)} alt={featureText(item)} loading="lazy" decoding="async" /> : <span>{featureText(item)}</span>}<b>{featureText(item)}</b></button>
             <div className="taskMeta"><span>{fmt(item.createdAt || item.submittedAt)}<em>消耗 {quotaUsed(item) || '-'} 算力</em></span><small>编号：{String(item.id || '').slice(0, 18)}</small></div>
-            {imageUrl(item) && <footer className="taskActions"><a href={imageUrl(item)} target="_blank" rel="noreferrer"><AppIcon name="download" />下载</a></footer>}
+            {imageUrl(item) && <footer className="taskActions"><a href={fullImageUrl(item) || imageUrl(item)} target="_blank" rel="noreferrer"><AppIcon name="download" />下载</a></footer>}
           </article>
         ))}</div>
         <Pager data={data} query={query} setQuery={setQuery} />

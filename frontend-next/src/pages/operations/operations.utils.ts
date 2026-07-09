@@ -54,7 +54,15 @@ export function imageUrl(item: Row) {
 }
 
 export function sourceImageUrl(item: Row) {
-  return resolveApiUrl(item.sourceUrl || item.originUrl || item.originalUrl || item.inputUrl || item.sourceImageUrl || item.originImage?.url) || '';
+  return resolveApiUrl(item.sourceThumbUrl || item.sourcePreviewUrl || item.originImage?.thumbUrl || item.originImage?.previewUrl || item.sourceUrl || item.originUrl || item.originalUrl || item.inputUrl || item.sourceImageUrl || item.originImage?.url) || '';
+}
+
+export function fullImageUrl(item: Row) {
+  return resolveApiUrl(item.downloadUrl || item.resultImage?.downloadUrl || item.resultUrl || item.url || item.imageUrl || item.resultImage?.url || item.resultImage?.imageUrl || item.thumbUrl || item.previewUrl) || '';
+}
+
+export function fullSourceImageUrl(item: Row) {
+  return resolveApiUrl(item.sourceDownloadUrl || item.originImage?.downloadUrl || item.sourceUrl || item.originUrl || item.originalUrl || item.inputUrl || item.sourceImageUrl || item.originImage?.url || item.originImage?.imageUrl || item.sourceThumbUrl) || '';
 }
 
 export function quotaText(value: unknown) {
