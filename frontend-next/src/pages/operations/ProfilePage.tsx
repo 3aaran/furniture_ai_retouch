@@ -4,8 +4,8 @@ import { request, requestForm, resolveApiUrl } from '../../services/http';
 import { getCurrentUserSnapshot, setCurrentUser } from '../../stores/auth.store';
 import type { CurrentUser } from '../../types/auth';
 import type { Row } from './operations.types';
-import { Hero, StateBlock } from './OperationLayout';
-import { pageConfig, roleNames, statusText } from './operations.utils';
+import { StateBlock } from './OperationLayout';
+import { roleNames, statusText } from './operations.utils';
 
 function avatarUrl(user: CurrentUser | null) {
   return resolveApiUrl((user as Row | null)?.avatarUrl || (user as Row | null)?.avatar_url || (user as Row | null)?.avatar) || '';
@@ -71,14 +71,31 @@ export function ProfilePage({ setNotice }: { setNotice: (value: string) => void 
 
   const avatar = avatarUrl(user);
   const initials = String(user?.displayName || user?.phone || user?.username || '用').slice(0, 1);
+  const roleText = roleNames[String(user?.role || '')] || user?.role || '-';
   return (
     <div className="opPage stitchProfilePage">
-      <Hero config={pageConfig('profile')} stats={[['账号', user?.phone || user?.username || '-'], ['角色', roleNames[String(user?.role || '')] || user?.role || '-'], ['状态', statusText(user?.status)], ['门店', user?.companyName || '-']]} action={<div className="opAvatarPanel">{avatar ? <img src={avatar} alt="头像" /> : <span>{initials}</span>}<button type="button" disabled={avatarBusy} onClick={() => fileRef.current?.click()}><AppIcon name="profile" />更换头像</button><input ref={fileRef} type="file" accept="image/*" onChange={(event) => uploadAvatar(event.target.files?.[0])} /></div>} />
+      <section className="profileHeroV3 stitchProfileHero">
+        <div className="profileAvatarV3">
+          {avatar ? <img src={avatar} alt="头像" /> : <span>{initials}</span>}
+          <button type="button" disabled={avatarBusy} onClick={() => fileRef.current?.click()} aria-label="更换头像"><AppIcon name="profile" /></button>
+          <input ref={fileRef} type="file" accept="image/*" onChange={(event) => uploadAvatar(event.target.files?.[0])} />
+        </div>
+        <div className="profileHeroTextV3">
+          <span><AppIcon name="profile" />{roleText}</span>
+          <h2>{user?.displayName || user?.name || user?.username || user?.phone || '个人中心'}</h2>
+          <p>{user?.companyName || '个人中心'}</p>
+          <small className="stitchProfileTagline">账户资料、安全设置与存储空间集中管理</small>
+        </div>
+        <div className="profileHeroMetaV3">
+          <div><small>账号</small><b>{user?.phone || user?.username || '-'}</b></div>
+          <div><small>状态</small><b>{statusText(user?.status)}</b></div>
+        </div>
+      </section>
       <section className="opProfileGrid profileGridV3">
         <article className="opPanel opFormPanel profileCardV3"><h2><AppIcon name="profile" />基础资料</h2><label><span>显示名称</span><input value={name} onChange={(event) => setName(event.target.value)} /></label><label><span>登录账号</span><input value={user?.phone || user?.username || ''} disabled /></label><label><span>账号角色</span><input value={roleNames[String(user?.role || '')] || user?.role || '-'} disabled /></label><button type="button" onClick={saveProfile}><AppIcon name="save" />保存资料</button></article>
         <article className="opPanel opFormPanel profileCardV3"><h2><AppIcon name="lock" />修改密码</h2><label><span>原密码</span><input type="password" value={pwd.oldPassword} onChange={(event) => setPwd({ ...pwd, oldPassword: event.target.value })} /></label><label><span>新密码</span><input type="password" value={pwd.newPassword} onChange={(event) => setPwd({ ...pwd, newPassword: event.target.value })} /></label><label><span>确认新密码</span><input type="password" value={pwd.confirm} onChange={(event) => setPwd({ ...pwd, confirm: event.target.value })} /></label><button type="button" onClick={savePassword}><AppIcon name="lock" />修改密码</button></article>
-        <article className="opPanel opStoragePanel profileStoragePanelV3"><h2>图片存储空间</h2>{storage ? <><div className="opStorageStats"><span>已使用 <b>{storage.usedText || '-'}</b></span><span>总上限 <b>{storage.limitText || '-'}</b></span><span>剩余 <b>{storage.remainingText || '-'}</b></span></div><div className="opStorageBar"><i style={{ width: `${Number(storage.percent || 0)}%` }} /></div></> : <StateBlock loading error="" empty={false} />}</article>
       </section>
+      <section className="opPanel opStoragePanel profileStoragePanelV3"><h2>图片存储空间</h2>{storage ? <><div className="opStorageStats storageSummaryV3"><span>已使用 <b>{storage.usedText || '-'}</b></span><span>总上限 <b>{storage.limitText || '-'}</b></span><span>剩余 <b>{storage.remainingText || '-'}</b></span></div><div className="opStorageBar storageBarV3"><i style={{ width: `${Number(storage.percent || 0)}%` }} /></div><p>图片已使用 {Number(storage.percent || 0)}% 的空间</p></> : <StateBlock loading error="" empty={false} />}</section>
     </div>
   );
 }

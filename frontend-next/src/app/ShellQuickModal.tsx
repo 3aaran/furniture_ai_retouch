@@ -100,7 +100,6 @@ export function ShellQuickModal({ type, onClose, onNotice }: { type: ShellQuickM
 
         {type === 'redeem' && (
           <div className="shellQuickForm">
-            <p className="shellQuickHint">旧前端使用弹窗承载兑换入口；当前不新增后端假接口，只保留一致的入口和状态提示。</p>
             <label className="isFull"><span>兑换码</span><input value={redeemCode} onChange={(event) => setRedeemCode(event.target.value)} placeholder="请输入礼品卡或活动兑换码" /></label>
             <footer><button type="button" onClick={onClose}>取消</button><button type="button" onClick={submitRedeem}><AppIcon name="ticket" />确认兑换</button></footer>
           </div>

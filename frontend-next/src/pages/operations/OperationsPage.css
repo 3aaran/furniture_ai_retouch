@@ -15,8 +15,7 @@
 }
 
 .opHero,
-.opPanel,
-.opLinkBox {
+.opPanel {
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-xl);
   background: rgba(var(--bg-card-rgb), .92);
@@ -289,29 +288,45 @@
   top: calc(100% + 8px);
   right: 0;
   z-index: 2;
-  width: 170px;
-  padding: 8px;
+  width: 250px;
+  padding: 10px;
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-lg);
   display: grid;
-  gap: 4px;
+  gap: 8px;
   background: rgba(var(--bg-card-rgb), .98);
   box-shadow: var(--shadow-lg);
 }
 
 .storeUserCreateMenu button {
-  min-height: 38px;
+  min-height: 62px;
   border: 0;
   border-radius: var(--radius-md);
-  padding: 0 10px;
+  padding: 10px;
   justify-content: flex-start;
+  gap: 10px;
   color: var(--text-main);
-  background: transparent;
+  background: var(--bg-card-soft);
+  text-align: left;
 }
 
 .storeUserCreateMenu button:hover {
   color: var(--color-primary);
   background: var(--color-primary-soft);
+}
+
+.storeUserCreateMenu button > svg {
+  flex: 0 0 auto;
+}
+
+.storeUserCreateMenu button span {
+  display: grid;
+  gap: 3px;
+}
+
+.storeUserCreateMenu button small {
+  color: var(--text-muted);
+  font-size: 12px;
 }
 
 .opState {
@@ -569,25 +584,6 @@
 .opPager button:disabled {
   opacity: .45;
   cursor: not-allowed;
-}
-
-.opLinkBox {
-  padding: 14px;
-  display: grid;
-  gap: 6px;
-}
-
-.opLinkBox span {
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 900;
-}
-
-.opLinkBox b {
-  overflow: hidden;
-  color: var(--text-main);
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .opProfileGrid {

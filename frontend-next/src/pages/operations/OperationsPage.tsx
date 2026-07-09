@@ -10,6 +10,7 @@ import { UserActionModal } from './UserActionModal';
 import { UsersPage } from './UsersPage';
 import type { OperationsPageType, Row, UserModalState } from './operations.types';
 import './OperationsPage.css';
+import './OperationsAccountPages.css';
 
 async function loadTaskDetail(item: Row) {
   const id = item.id || item.imageId || item.related_task_id || item.relatedTaskId;

@@ -350,6 +350,8 @@
     height: calc(100dvh - var(--mobile-topbar-height));
     max-height: calc(100dvh - var(--mobile-topbar-height));
     padding: 16px 14px calc(18px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    flex-direction: column;
     overflow-y: auto;
     overscroll-behavior: contain;
     border-right: 1px solid var(--border-soft);
@@ -366,9 +368,10 @@
   .mobileSideDrawerHead {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 12px;
-    margin-bottom: 14px;
+    min-height: 36px;
+    margin-bottom: 10px;
   }
 
   .mobileSideDrawerHead button {
@@ -384,29 +387,27 @@
   .mobileSideNav,
   .mobileSideTools {
     display: grid;
-    gap: 10px;
+    gap: 8px;
   }
 
-  .mobileSideNav button,
-  .mobileSideTools button {
+  .mobileSideNav button {
     width: 100%;
-    min-height: 50px;
-    border: 1px solid var(--border-soft);
-    border-radius: 16px;
+    min-height: 46px;
+    border: 0;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: flex-start;
     gap: 12px;
     color: var(--text-main);
-    background: var(--bg-card-soft);
+    background: transparent;
     font-size: 15px;
     font-weight: 900;
     text-align: left;
-    padding: 0 14px;
+    padding: 0 10px;
   }
 
-  .mobileSideNav button > span,
-  .mobileSideTools button > span {
+  .mobileSideNav button > span {
     width: 24px;
     height: 24px;
     border-radius: 9px;
@@ -418,19 +419,41 @@
   }
 
   .mobileSideNav button.isActive {
-    color: var(--text-inverse);
-    border-color: transparent;
-    background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+    color: var(--color-primary);
+    background: var(--color-primary-soft);
   }
 
   .mobileSideNav button.isActive > span {
-    color: var(--color-primary);
-    background: rgba(var(--bg-card-rgb), .92);
+    color: var(--text-inverse);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
   }
 
   .mobileSideTools {
-    margin-top: 16px;
+    margin-top: auto;
     padding-top: 16px;
     border-top: 1px solid var(--border-subtle);
+    grid-template-columns: repeat(3, 44px);
+    justify-content: start;
+  }
+
+  .mobileSideTools button {
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--border-soft);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: var(--color-primary);
+    background: var(--bg-card-soft);
+    padding: 0;
+  }
+
+  .mobileSideTools button > span {
+    display: grid;
+    place-items: center;
+  }
+
+  .mobileToolText {
+    display: none;
   }
 }

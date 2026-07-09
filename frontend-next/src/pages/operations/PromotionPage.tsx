@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { AppIcon } from '../../components/icons/AppIcon';
 import type { QueryState } from './operations.types';
-import { Hero, Pager, StateBlock } from './OperationLayout';
-import { fmt, pageConfig, patchQuery, quotaText, usePaged } from './operations.utils';
+import { Pager, StateBlock } from './OperationLayout';
+import { fmt, patchQuery, quotaText, usePaged } from './operations.utils';
 
 export function PromotionPage({ setNotice }: { setNotice: (value: string) => void }) {
   const [query, setQuery] = useState<QueryState>({ keyword: '', status: '', startDate: '', endDate: '', page: 1, pageSize: 10 });
+  const [copyMenuOpen, setCopyMenuOpen] = useState(false);
   const { data, loading, error } = usePaged('/api/merchant/promotion', query);
   const items = data.items || [];
   const inviteCode = String(data.inviteCode || '');
@@ -21,14 +22,29 @@ export function PromotionPage({ setNotice }: { setNotice: (value: string) => voi
   }
   return (
     <div className="opPage stitchInvitePage">
-      <Hero config={pageConfig('promotion')} stats={[['邀请码', inviteCode || '-'], ['已邀请门店', Number(data.summary?.invitedCount || 0)], ['已通过门店', Number(data.summary?.approvedCount || 0)], ['累计邀请收益', quotaText(data.summary?.benefitQuota)]]} action={<div className="opHeroActions"><button type="button" onClick={() => copy(inviteCode, '邀请码')}><AppIcon name="copy" />复制邀请码</button><button type="button" onClick={() => copy(inviteLink, '邀请链接')}><AppIcon name="copy" />复制邀请链接</button></div>} />
-      <section className="opPanel">
-        <div className="opLinkBox"><span>邀请链接</span><b>{inviteLink || '-'}</b></div>
-        <div className="opToolbar">
+      <section className="opPanel promotionInviteCompactV2">
+        <div className="promotionInviteInfoV2">
+          <div><span>邀请码</span><b>{inviteCode || '-'}</b></div>
+          <div><span>邀请链接</span><b>{inviteLink || '-'}</b></div>
+        </div>
+        <div className="promotionCopyBoxV2">
+          <button type="button" aria-expanded={copyMenuOpen} onClick={() => setCopyMenuOpen((open) => !open)}><AppIcon name="copy" />复制</button>
+          {copyMenuOpen && (
+            <div className="promotionCopyMenuV2" role="menu">
+              <button type="button" role="menuitem" onClick={() => { setCopyMenuOpen(false); copy(inviteLink, '邀请链接'); }}>复制邀请链接</button>
+              <button type="button" role="menuitem" onClick={() => { setCopyMenuOpen(false); copy(inviteCode, '邀请码'); }}>复制邀请码</button>
+            </div>
+          )}
+        </div>
+      </section>
+      <section className="opPanel promotionTablePanelV2">
+        <div className="opToolbar promotionToolbarV2">
           <label><AppIcon name="search" /><input placeholder="搜索门店、联系人、手机号、编号" value={query.keyword} onChange={(event) => patchQuery(setQuery, query, { keyword: event.target.value })} /></label>
           <select value={query.status} onChange={(event) => patchQuery(setQuery, query, { status: event.target.value })}><option value="">全部状态</option><option value="PENDING">待审核</option><option value="APPROVED">已通过</option><option value="REJECTED">已驳回</option></select>
-          <input type="date" value={query.startDate} onChange={(event) => patchQuery(setQuery, query, { startDate: event.target.value })} />
-          <input type="date" value={query.endDate} onChange={(event) => patchQuery(setQuery, query, { endDate: event.target.value })} />
+          <div className="promotionDateRowV2">
+            <input type="date" value={query.startDate} onChange={(event) => patchQuery(setQuery, query, { startDate: event.target.value })} />
+            <input type="date" value={query.endDate} onChange={(event) => patchQuery(setQuery, query, { endDate: event.target.value })} />
+          </div>
           <button type="button" onClick={resetFilters}>重置</button>
         </div>
         <StateBlock loading={loading} error={error} empty={!items.length} />

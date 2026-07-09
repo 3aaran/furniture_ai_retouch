@@ -1,0 +1,347 @@
+.promotionInviteCompactV2 {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+}
+
+.promotionInviteInfoV2 {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(120px, 180px) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.promotionInviteInfoV2 div {
+  min-width: 0;
+  min-height: 64px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 10px 12px;
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  background: var(--bg-card-soft);
+}
+
+.promotionInviteInfoV2 span,
+.quotaSummaryStripV2 span {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.promotionInviteInfoV2 b {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-main);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.promotionCopyBoxV2 {
+  position: relative;
+  align-self: center;
+}
+
+.promotionCopyBoxV2 > button {
+  min-width: 116px;
+  min-height: 44px;
+  border: 1px solid rgba(var(--color-primary-rgb), .18);
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.promotionCopyMenuV2 {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 2;
+  width: 172px;
+  padding: 8px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  display: grid;
+  gap: 4px;
+  background: rgba(var(--bg-card-rgb), .98);
+  box-shadow: var(--shadow-lg);
+}
+
+.promotionCopyMenuV2 button {
+  min-height: 38px;
+  border: 0;
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  background: transparent;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.promotionCopyMenuV2 button:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.promotionToolbarV2 {
+  grid-template-columns: minmax(260px, 320px) minmax(140px, 180px) minmax(260px, 340px) minmax(100px, auto);
+  justify-content: start;
+}
+
+.promotionToolbarV2 > button {
+  margin-left: auto;
+  min-width: 98px;
+}
+
+.promotionDateRowV2 {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.quotaSummaryStripV2 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.quotaSummaryStripV2 article {
+  min-width: 0;
+  min-height: 74px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 12px 14px;
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  background: var(--bg-card-soft);
+}
+
+.quotaSummaryStripV2 b {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-main);
+  font-size: 24px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quotaToolbarV2 {
+  grid-template-columns: minmax(260px, 420px);
+}
+
+.profileHeroV3 {
+  min-height: 168px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-xl);
+  padding: 22px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 22px;
+  background: rgba(var(--bg-card-rgb), .92);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(18px);
+}
+
+.profileAvatarV3 {
+  position: relative;
+  width: 94px;
+  height: 94px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  color: var(--text-inverse);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  font-size: 36px;
+  font-weight: 900;
+}
+
+.profileAvatarV3 img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profileAvatarV3 button {
+  position: absolute;
+  right: 7px;
+  bottom: 7px;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: var(--color-primary);
+  background: rgba(var(--bg-card-rgb), .92);
+  cursor: pointer;
+}
+
+.profileAvatarV3 input {
+  display: none;
+}
+
+.profileHeroTextV3 {
+  min-width: 0;
+}
+
+.profileHeroTextV3 span {
+  min-height: 30px;
+  border-radius: var(--radius-pill);
+  padding: 0 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.profileHeroTextV3 h2 {
+  margin: 12px 0 8px;
+  color: var(--text-main);
+  font-size: clamp(28px, 3vw, 38px);
+  line-height: 1;
+}
+
+.profileHeroTextV3 p,
+.profileHeroTextV3 small {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.profileHeroMetaV3 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(128px, 1fr));
+  gap: 10px;
+}
+
+.profileHeroMetaV3 div {
+  min-height: 70px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  display: grid;
+  align-content: center;
+  gap: 6px;
+  background: var(--bg-card-soft);
+}
+
+.profileHeroMetaV3 small {
+  color: var(--text-muted);
+  font-weight: 900;
+}
+
+.profileHeroMetaV3 b {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-main);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profileStoragePanelV3 p {
+  margin: 0;
+  color: var(--text-muted);
+  font-weight: 900;
+}
+
+@media (max-width: 980px) {
+  .promotionInviteCompactV2,
+  .profileHeroV3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .profileHeroMetaV3 {
+    width: 100%;
+  }
+
+  .promotionToolbarV2 {
+    grid-template-columns: minmax(0, 1fr) minmax(136px, 180px);
+  }
+
+  .promotionToolbarV2 > label {
+    grid-column: 1;
+  }
+
+  .promotionToolbarV2 > select {
+    grid-column: 2;
+  }
+
+  .promotionDateRowV2 {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .promotionToolbarV2 > button {
+    grid-column: 2;
+    grid-row: 2;
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .quotaSummaryStripV2 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .quotaSummaryStripV2 article {
+    min-height: 66px;
+    padding: 10px;
+  }
+
+  .quotaSummaryStripV2 b {
+    font-size: 17px;
+  }
+
+  .promotionInviteInfoV2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .promotionCopyBoxV2,
+  .promotionCopyBoxV2 > button {
+    width: 100%;
+  }
+
+  .promotionCopyMenuV2 {
+    width: 100%;
+  }
+
+  .promotionToolbarV2 {
+    grid-template-columns: minmax(0, 1fr) minmax(112px, .7fr);
+    gap: 8px;
+  }
+
+  .promotionDateRowV2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .promotionDateRowV2 input {
+    padding: 0 8px;
+  }
+
+  .profileHeroV3 {
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .profileAvatarV3 {
+    width: 82px;
+    height: 82px;
+  }
+
+  .profileHeroMetaV3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

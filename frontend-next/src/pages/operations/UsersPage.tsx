@@ -47,7 +47,12 @@ export function UsersPage({ setNotice, openModal, reloadKey }: { setNotice: (val
           </div>
           <div className="storeUserCreateBox">
             <button className="storeUserCreateButton" type="button" aria-label="新增用户" aria-expanded={createMenuOpen} onClick={() => setCreateMenuOpen((open) => !open)}><AppIcon name="plus" /></button>
-            {createMenuOpen && <div className="storeUserCreateMenu" role="menu"><button type="button" role="menuitem" onClick={() => openCreate('TRIAL')}>生成体验账号</button><button type="button" role="menuitem" onClick={() => openCreate()}>创建用户</button></div>}
+            {createMenuOpen && (
+              <div className="storeUserCreateMenu" role="menu">
+                <button type="button" role="menuitem" onClick={() => openCreate('TRIAL')}><AppIcon name="ticket" /><span><b>生成体验账号</b><small>外部体验与到期管理</small></span></button>
+                <button type="button" role="menuitem" onClick={() => openCreate()}><AppIcon name="userPlus" /><span><b>创建用户</b><small>门店成员与管理员</small></span></button>
+              </div>
+            )}
           </div>
         </div>
         <StateBlock loading={loading} error={error} empty={!users.length} />

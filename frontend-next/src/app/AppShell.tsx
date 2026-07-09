@@ -24,13 +24,13 @@ const utilityNavItems: Array<{ key: string; to?: string; modal?: Exclude<ShellQu
 
 const mobileMainNavItems: Array<{ to: string; label: string; icon: AppIconName }> = [
   { to: '/studio', label: '工作室', icon: 'studio' },
-  { to: '/history', label: '历史记录', icon: 'history' },
   { to: '/resources', label: '资产库', icon: 'resources' },
   { to: '/users', label: '用户管理', icon: 'users' },
   { to: '/promotion', label: '邀请共创', icon: 'promotion' },
 ];
 
-const mobileToolItems: Array<{ key: string; modal: Exclude<ShellQuickModalType, null>; label: string; icon: AppIconName }> = [
+const mobileToolItems: Array<{ key: string; to?: string; modal?: Exclude<ShellQuickModalType, null>; label: string; icon: AppIconName }> = [
+  { key: 'history', to: '/history', label: '历史记录', icon: 'history' },
   { key: 'feedback', modal: 'feedback', label: '反馈', icon: 'alert' },
   { key: 'notices', modal: 'notices', label: '邮箱', icon: 'mail' },
 ];
@@ -158,7 +158,6 @@ export function AppShell() {
       {mobileNavOpen && <button className="mobileDrawerBackdrop mobileOnly" type="button" aria-label="关闭导航栏" onClick={() => setMobileNavOpen(false)} />}
       <aside className={`mobileSideDrawer mobileOnly ${mobileNavOpen ? 'isOpen' : ''}`.trim()} aria-hidden={!mobileNavOpen}>
         <div className="mobileSideDrawerHead">
-          <BrandLogo />
           <button type="button" aria-label="关闭导航栏" onClick={() => setMobileNavOpen(false)}><AppIcon name="close" /></button>
         </div>
         <nav className="mobileSideNav" aria-label="移动端侧边导航">
@@ -170,8 +169,8 @@ export function AppShell() {
         </nav>
         <div className="mobileSideTools" aria-label="移动端工具入口">
           {mobileToolItems.map((item) => (
-            <button key={item.key} type="button" onClick={() => openQuickModal(item.modal)}>
-              <span aria-hidden="true"><AppIcon name={item.icon} /></span>{item.label}
+            <button key={item.key} type="button" aria-label={item.label} title={item.label} onClick={() => { if (item.to) go(item.to); if (item.modal) openQuickModal(item.modal); }}>
+              <span aria-hidden="true"><AppIcon name={item.icon} /></span><b className="mobileToolText">{item.label}</b>
             </button>
           ))}
         </div>
