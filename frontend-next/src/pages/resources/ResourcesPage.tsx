@@ -67,7 +67,7 @@ function resourceFullImage(item: ResourceApiItem) {
 }
 
 function resourceCategoryPath(item: ResourceApiItem) {
-  return `${scopeName(item.scope)} / ${mainName(item)} / ${subName(item) || resourceTypeName(item)}`;
+  return `${mainName(item)} / ${subName(item) || resourceTypeName(item)}`;
 }
 
 const ASSET_PAGE_SIZE = 20;
@@ -107,6 +107,7 @@ function subName(item: ResourceApiItem) {
 }
 
 function canManageResource(item: ResourceApiItem) {
+  if (typeof item.canManage === 'boolean') return item.canManage;
   return item.scope === 'USER' || item.scope === 'MERCHANT';
 }
 
@@ -664,16 +665,18 @@ export function ResourcesPage() {
 
     <main className="assetMainPanel">
       {selectedItems.length > 0 ? <section className="assetBatchBar"><b>已选择 {selectedItems.length} 项资产</b><button type="button" onClick={() => setModal('batch-category')}>批量分类变更</button><button type="button" onClick={() => setModal('batch-delete')}>批量删除</button><button type="button" onClick={clearSelection}>取消选择</button></section> : <section className="assetSearchBar" aria-label="资产搜索与筛选">
-        <div className="assetSpaceTabs" aria-label="资产空间">
-          <button className={scope === 'SYSTEM' ? 'isActive' : ''} type="button" onClick={() => selectScope('SYSTEM')}>系统空间</button>
-          <button className={scope === 'MERCHANT' ? 'isActive' : ''} type="button" onClick={() => selectScope('MERCHANT')}>门店空间</button>
-          <button className={scope === 'USER' ? 'isActive' : ''} type="button" onClick={() => selectScope('USER')}>我的空间</button>
-        </div>
-        <div className="assetSearchControls">
+        <div className="assetSearchTop">
           <label className="assetSearchInput"><span>搜索资产</span><input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="输入资产名称" /></label>
+          <div className="assetSearchActions"><button className="assetPcOnlyAction" type="button" onClick={() => setModal('category-manage')}>分类管理</button><button className="assetPcOnlyAction" type="button" onClick={() => setModal('upload')}>上传</button></div>
+        </div>
+        <div className="assetFilterRow">
+          <div className="assetSpaceTabs" aria-label="资产空间">
+            <button className={scope === 'SYSTEM' ? 'isActive' : ''} type="button" onClick={() => selectScope('SYSTEM')}>系统空间</button>
+            <button className={scope === 'MERCHANT' ? 'isActive' : ''} type="button" onClick={() => selectScope('MERCHANT')}>门店空间</button>
+            <button className={scope === 'USER' ? 'isActive' : ''} type="button" onClick={() => selectScope('USER')}>我的空间</button>
+          </div>
           <label className="assetInlineSelect"><select aria-label="主分类" value={selectedCategory ? categoryKey(selectedCategory) : ''} onChange={(event) => { const option = visibleFilterCategoryOptions.find((item) => categoryKey(item) === event.target.value); selectFilterMain(option); }}><option value="">主分类</option>{visibleFilterCategoryOptions.map((item) => <option key={categoryKey(item)} value={categoryKey(item)}>{item.main}</option>)}</select></label>
           <label className="assetInlineSelect"><select aria-label="子分类" value={subCategory} disabled={!selectedCategory} onChange={(event) => setSubCategory(event.target.value)}><option value="">子分类</option>{filterSubOptions.map((item) => <option key={item.name} value={item.name}>{item.name}</option>)}</select></label>
-          <div className="assetSearchActions"><button className="assetPcOnlyAction" type="button" onClick={() => setModal('category-manage')}>分类管理</button><button className="assetPcOnlyAction" type="button" onClick={() => setModal('upload')}>上传</button></div>
         </div>
       </section>}
       {notice && !modal && <div className="assetNotice">{notice}</div>}
@@ -686,7 +689,7 @@ export function ResourcesPage() {
           const id = String(item.id);
           const manageable = canManageResource(item);
           return <article className="assetCard" key={id} onClick={() => setSelected(item)}>
-            <label className="assetSelectBox" title={manageable ? '选择资产' : '系统资产仅可查看'} onClick={(event) => event.stopPropagation()}><input type="checkbox" disabled={!manageable} checked={selectedIds.has(id)} onChange={(event) => toggleSelect(item, event.target.checked)} /><span /></label>
+            {manageable && <label className="assetSelectBox" title="选择资产" onClick={(event) => event.stopPropagation()}><input type="checkbox" checked={selectedIds.has(id)} onChange={(event) => toggleSelect(item, event.target.checked)} /><span /></label>}
             <div className="assetImageBox">{img ? <img src={img} alt={resourceName(item)} loading="lazy" decoding="async" /> : <span>{resourceTypeName(item)}</span>}</div>
             <div className="assetCardInfo"><b title={resourceName(item)}>{resourceName(item)}</b><p title={resourceCategoryPath(item)}>{resourceCategoryPath(item)}</p></div>
           </article>;

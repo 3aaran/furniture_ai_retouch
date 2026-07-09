@@ -16,47 +16,60 @@
 }
 
 .assetSearchBar {
-  min-height: 112px;
-  padding: 0 0 12px;
+  min-height: 0;
+  padding: 16px;
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-xl);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 14px;
+  gap: 12px;
   align-items: start;
   background: rgba(var(--bg-card-rgb), .92);
   box-shadow: var(--shadow-sm);
   backdrop-filter: blur(18px);
 }
 
+.assetSearchTop {
+  display: grid;
+  grid-template-columns: minmax(260px, 420px) minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+}
+
+.assetFilterRow {
+  display: grid;
+  grid-template-columns: minmax(300px, max-content) minmax(180px, 260px) minmax(160px, 220px);
+  align-items: center;
+  gap: 12px;
+}
+
 .assetSpaceTabs {
   width: max-content;
   max-width: 100%;
   overflow: hidden;
-  border: 1px solid rgba(var(--auth-text-main-rgb), .12);
-  border-top: 0;
-  border-left: 0;
-  border-radius: 0 0 var(--radius-sm) 0;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
   display: inline-flex;
   align-items: stretch;
-  background: var(--auth-bg-panel-deep);
+  background: var(--bg-card-soft);
 }
 
 .assetSpaceTabs button {
   position: relative;
-  min-height: 64px;
+  min-height: 46px;
   border: 0;
   border-radius: 0;
-  padding: 0 26px;
-  color: var(--auth-text-soft);
+  padding: 0 18px;
+  color: var(--text-muted);
   background: transparent;
-  font-size: 21px;
+  font-size: 15px;
   font-weight: 900;
   cursor: pointer;
 }
 
 .assetSpaceTabs button.isActive {
-  color: var(--auth-gold-light);
+  color: var(--color-primary);
+  background: rgba(var(--color-primary-rgb), .08);
 }
 
 .assetSpaceTabs button.isActive::after {
@@ -66,15 +79,7 @@
   right: 0;
   bottom: 0;
   height: 2px;
-  background: var(--auth-gold);
-}
-
-.assetSearchControls {
-  display: grid;
-  grid-template-columns: minmax(260px, 1fr) minmax(180px, 360px) minmax(150px, 210px) auto;
-  align-items: center;
-  gap: 22px;
-  padding: 0 12px;
+  background: var(--color-accent);
 }
 
 .assetSearchActions {
@@ -88,12 +93,12 @@
 .assetSearchInput,
 .assetInlineSelect {
   min-width: 0;
-  min-height: 52px;
-  border: 1px solid rgba(var(--auth-text-main-rgb), .28);
-  border-radius: var(--radius-sm);
+  min-height: 44px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
-  background: var(--auth-bg-panel-deep);
+  background: var(--bg-card-soft);
 }
 
 .assetSearchInput {
@@ -103,8 +108,8 @@
 
 .assetSearchInput span {
   flex: 0 0 auto;
-  color: var(--auth-text-main);
-  font-size: 18px;
+  color: var(--text-main);
+  font-size: 14px;
   font-weight: 900;
 }
 
@@ -114,14 +119,15 @@
   min-width: 0;
   height: 100%;
   border: 0;
-  color: var(--auth-text-main);
+  color: var(--text-main);
   background: transparent;
-  font-size: 17px;
+  font-size: 14px;
+  font-weight: 800;
   outline: none;
 }
 
 .assetSearchInput input::placeholder {
-  color: var(--auth-text-soft);
+  color: var(--text-muted);
 }
 
 .assetInlineSelect {
@@ -135,7 +141,7 @@
   height: 0;
   border-left: 7px solid transparent;
   border-right: 7px solid transparent;
-  border-top: 7px solid var(--auth-text-soft);
+  border-top: 7px solid var(--text-muted);
   pointer-events: none;
 }
 
@@ -174,17 +180,18 @@
 
 .assetSpaceTabs button,
 .assetSpaceTabs button:hover {
-  min-height: 64px;
+  min-height: 46px;
   border: 0;
   border-radius: 0;
-  padding: 0 26px;
-  color: var(--auth-text-soft);
+  padding: 0 18px;
+  color: var(--text-muted);
   background: transparent;
 }
 
 .assetSpaceTabs button.isActive,
 .assetSpaceTabs button.isActive:hover {
-  color: var(--auth-gold-light);
+  color: var(--color-primary);
+  background: rgba(var(--color-primary-rgb), .08);
 }
 
 .assetStateCard {
@@ -1299,38 +1306,54 @@
 
   .assetSearchBar {
     min-height: 0;
-    padding: 0 0 9px;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 9px;
+    padding: 10px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
     border-radius: var(--radius-lg);
   }
 
+  .assetSearchTop,
+  .assetFilterRow {
+    display: contents;
+  }
+
   .assetSpaceTabs {
+    order: 1;
+    grid-column: 1 / -1;
     width: 100%;
     border-right: 0;
-    border-radius: 0;
+    border-radius: var(--radius-md);
   }
 
   .assetSpaceTabs button,
   .assetSpaceTabs button:hover {
     flex: 1 1 0;
-    min-height: 46px;
-    padding: 0 12px;
-    font-size: 17px;
+    min-height: 42px;
+    padding: 0 10px;
+    font-size: 14px;
   }
 
-  .assetSearchControls {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 8px;
-    padding: 0 9px;
+  .assetSearchInput {
+    order: 2;
+  }
+
+  .assetInlineSelect {
+    order: 3;
+  }
+
+  .assetInlineSelect + .assetInlineSelect {
+    order: 4;
   }
 
   .assetSearchInput,
   .assetInlineSelect {
+    width: 100%;
     min-height: 42px;
   }
 
   .assetSearchActions {
+    order: 5;
+    grid-column: 1 / -1;
     justify-content: flex-end;
     gap: 8px;
   }
@@ -1341,12 +1364,13 @@
     display: none;
   }
 
-  .assetSearchBar label {
+  .assetSearchInput,
+  .assetInlineSelect {
     min-height: 42px;
     padding: 0 10px;
   }
 
-  .assetSearchBar label span {
+  .assetSearchInput span {
     display: none;
   }
 

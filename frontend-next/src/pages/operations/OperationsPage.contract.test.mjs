@@ -48,6 +48,21 @@ test('operation pages keep old frontend patterns without duplicate page files', 
 test('history task detail uses old compare preview pattern', () => {
   assert.match(historySource, /historyTaskFilters/);
   assert.match(historySource, /aiTaskGrid/);
+  assert.doesNotMatch(historySource, /<Hero/);
+  assert.doesNotMatch(historySource, /全部时间/);
+  assert.match(historySource, /historyStatusTabs/);
+  assert.match(historySource, /historySelectRow/);
+  assert.match(historySource, /studioFeatures\.map/);
+  assert.match(historySource, /visibleItems\.map/);
+  assert.match(historySource, /消耗 \{quotaUsed\(item\) \|\| '-'\} 算力/);
+  assert.doesNotMatch(historySource, /<strong>\{item\.userName/);
+  assert.doesNotMatch(historySource, />详情<\/button>/);
+  assert.doesNotMatch(historySource, /AppIcon name="eye"/);
+  assert.match(operationsCss, /\.historyStatusTabs/);
+  assert.match(operationsCss, /\.historySelectRow[\s\S]*repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(operationsCss, /\.stitchHistoryPage \.opTaskImage img[\s\S]*position: absolute[\s\S]*height: 100%[\s\S]*object-fit: contain/);
+  assert.match(operationsCss, /\.stitchHistoryPage \.opTaskImage b[\s\S]*display: none/);
+  assert.match(operationsCss, /\.opTaskCard footer\.taskActions[\s\S]*grid-template-columns: 1fr/);
   assert.match(compareSource, /任务对比预览/);
   assert.match(compareSource, /产品图片/);
   assert.match(compareSource, /生成结果/);

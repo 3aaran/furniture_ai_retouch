@@ -33,6 +33,7 @@ export type ResourceApiItem = {
   source?: string;
   status?: string;
   createdAt?: string;
+  canManage?: boolean;
 };
 
 export type PagedResult<T> = {
