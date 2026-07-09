@@ -7,13 +7,16 @@ import { fileURLToPath } from 'node:url';
 const operationsDir = dirname(fileURLToPath(import.meta.url));
 const routerSource = readFileSync(join(operationsDir, '..', '..', 'app', 'router.tsx'), 'utf8');
 const appShellSource = readFileSync(join(operationsDir, '..', '..', 'app', 'AppShell.tsx'), 'utf8');
+const appShellCss = readFileSync(join(operationsDir, '..', '..', 'app', 'AppShell.css'), 'utf8');
 const operationsSource = readFileSync(join(operationsDir, 'OperationsPage.tsx'), 'utf8');
 const operationsCss = readFileSync(join(operationsDir, 'OperationsPage.css'), 'utf8');
 const historySource = readFileSync(join(operationsDir, 'HistoryPage.tsx'), 'utf8');
+const usersSource = readFileSync(join(operationsDir, 'UsersPage.tsx'), 'utf8');
+const userActionModalSource = readFileSync(join(operationsDir, 'UserActionModal.tsx'), 'utf8');
 const compareSource = readFileSync(join(operationsDir, 'TaskCompareModal.tsx'), 'utf8');
 const splitPageSource = [
   historySource,
-  readFileSync(join(operationsDir, 'UsersPage.tsx'), 'utf8'),
+  usersSource,
   readFileSync(join(operationsDir, 'PromotionPage.tsx'), 'utf8'),
   readFileSync(join(operationsDir, 'QuotaPage.tsx'), 'utf8'),
   readFileSync(join(operationsDir, 'ProfilePage.tsx'), 'utf8'),
@@ -71,6 +74,21 @@ test('history task detail uses old compare preview pattern', () => {
   assert.match(operationsCss, /taskPreviewOverlay/);
 });
 
+test('users page uses compact toolbar actions without the hero block', () => {
+  assert.doesNotMatch(usersSource, /<Hero/);
+  assert.match(usersSource, /storeUserCreateButton/);
+  assert.match(usersSource, /生成体验账号/);
+  assert.match(usersSource, /openCreate\('TRIAL'\)/);
+  assert.match(usersSource, /method: 'DELETE'/);
+  assert.match(usersSource, /AppIcon name="trash"/);
+  assert.match(userActionModalSource, /initialUserForm/);
+  assert.match(userActionModalSource, /useEffect\(\(\) =>/);
+  assert.match(userActionModalSource, /modal\.role \|\| 'STAFF'/);
+  assert.match(operationsCss, /\.storeUserToolbarV2[\s\S]*grid-template-columns: minmax\(260px, 360px\)/);
+  assert.match(operationsCss, /\.storeUserFilterRow[\s\S]*repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(operationsCss, /\.storeUserCreateBox[\s\S]*grid-column: 2[\s\S]*grid-row: 1/);
+});
+
 test('operation route shell stays small enough to maintain', () => {
   assert.ok(operationsSource.length < 9000, `OperationsPage.tsx is too large: ${operationsSource.length}`);
 });
@@ -80,6 +98,8 @@ test('utility-only features stay in shell modal surface', () => {
   assert.match(appShellSource, /setQuickModal\('feedback'\)/);
   assert.match(appShellSource, /setQuickModal\('notices'\)/);
   assert.match(appShellSource, /setQuickModal\('redeem'\)/);
+  assert.match(appShellCss, /\.shellProfileBox[\s\S]*display: block/);
+  assert.match(appShellCss, /\.avatarButton[\s\S]*display: inline-flex/);
 });
 
 test('resources page preserves boundary rules for large asset lists', () => {

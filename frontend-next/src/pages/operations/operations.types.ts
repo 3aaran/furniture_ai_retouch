@@ -6,7 +6,7 @@ export type PagedRows = { items?: Row[]; page?: number; pageSize?: number; total
 
 export type UserModalState =
   | null
-  | { type: 'create-user' }
+  | { type: 'create-user'; role?: string }
   | { type: 'edit-user'; item: Row }
   | { type: 'recharge-user'; item: Row };
 

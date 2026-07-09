@@ -288,10 +288,7 @@
 
   .shellIconActions,
   .shellIconActions.desktopOnly,
-  .shellIconAction,
-  .shellProfileBox,
-  .avatarButton,
-  .profileMenuNext {
+  .shellIconAction {
     display: none;
   }
 
@@ -299,6 +296,33 @@
     min-height: 31px;
     padding: 0 10px;
     font-size: 12px;
+  }
+
+  .shellProfileBox {
+    display: block;
+    margin-left: 6px;
+  }
+
+  .avatarButton {
+    min-height: 36px;
+    padding: 0;
+    display: inline-flex;
+  }
+
+  .avatarBadge {
+    width: 34px;
+    height: 34px;
+    font-size: 14px;
+  }
+
+  .avatarText {
+    display: none;
+  }
+
+  .profileMenuNext {
+    top: calc(100% + 8px);
+    right: 0;
+    width: min(230px, calc(100vw - 24px));
   }
 
   .shellMain {

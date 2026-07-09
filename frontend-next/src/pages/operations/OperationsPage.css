@@ -259,6 +259,61 @@
   background: var(--color-accent);
 }
 
+.storeUserToolbarV2 {
+  grid-template-columns: minmax(260px, 360px) minmax(260px, 340px) minmax(0, 1fr) 44px;
+  align-items: center;
+}
+
+.storeUserFilterRow {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(124px, 1fr));
+  gap: 10px;
+}
+
+.storeUserCreateBox {
+  position: relative;
+  grid-column: 4;
+  justify-self: end;
+}
+
+.storeUserCreateButton {
+  width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.storeUserCreateMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 2;
+  width: 170px;
+  padding: 8px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  display: grid;
+  gap: 4px;
+  background: rgba(var(--bg-card-rgb), .98);
+  box-shadow: var(--shadow-lg);
+}
+
+.storeUserCreateMenu button {
+  min-height: 38px;
+  border: 0;
+  border-radius: var(--radius-md);
+  padding: 0 10px;
+  justify-content: flex-start;
+  color: var(--text-main);
+  background: transparent;
+}
+
+.storeUserCreateMenu button:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
 .opState {
   min-height: 92px;
   border: 1px dashed var(--border-soft);
@@ -476,6 +531,15 @@
   height: 34px;
   display: grid;
   place-items: center;
+}
+
+.opRowActions button.danger {
+  color: var(--color-danger);
+}
+
+.opRowActions button.danger:hover {
+  border-color: rgba(var(--color-danger-rgb), .22);
+  background: rgba(var(--color-danger-rgb), .1);
 }
 
 .opTextButton {
@@ -1004,6 +1068,25 @@
     grid-column: 1 / -1;
     justify-self: start;
   }
+
+  .storeUserToolbarV2 {
+    grid-template-columns: minmax(0, 1fr) 44px;
+  }
+
+  .storeUserToolbarV2 > label {
+    grid-column: 1;
+  }
+
+  .storeUserFilterRow {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .storeUserCreateBox {
+    grid-column: 2;
+    grid-row: 1;
+  }
 }
 
 @media (max-width: 767px) {
@@ -1057,6 +1140,26 @@
   .historyStatusTabs button:hover {
     flex: 1 0 78px;
     padding: 0 10px;
+  }
+
+  .storeUserToolbarV2 {
+    grid-template-columns: minmax(0, 1fr) 44px;
+  }
+
+  .storeUserToolbarV2 > label {
+    grid-column: 1;
+  }
+
+  .storeUserFilterRow {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .storeUserCreateBox {
+    grid-column: 2;
+    grid-row: 1;
   }
 
   .opTaskCard footer {
