@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BrandLogo } from '../../components/brand/BrandLogo';
+import { PwaInstallButton } from '../../components/pwa/PwaInstallButton';
 import { Button } from '../../components/ui/Button';
 import { hasActiveAuthSession } from '../../stores/auth.store';
 import './LandingPage.css';
@@ -89,7 +90,7 @@ export function LandingPage() {
           {navItems.map((item) => <a key={item.href} href={item.href}>{item.label}</a>)}
         </nav>
         <div className="landingTopActions">
-          <button className="landingInstallBtnNext" type="button">安装应用</button>
+          <PwaInstallButton className="landingInstallBtnNext" />
           {!isLoggedIn && <Link to="/login" className="landingTextLink">登录</Link>}
           <Link to="/studio"><Button>进入工作台</Button></Link>
         </div>

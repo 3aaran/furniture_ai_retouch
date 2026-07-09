@@ -10,7 +10,6 @@ type StudioCanvasPanelProps = {
   ratio: string;
   sourceImage: StudioLocalImage | null;
   draggingSource: boolean;
-  message: string;
   recentTasks: StudioRecentTask[];
   showInlineRecent: boolean;
   featureDrawerOpen: boolean;
@@ -25,6 +24,9 @@ type StudioCanvasPanelProps = {
   onSourceDragLeave: () => void;
   onSourceDrop: (event: DragEvent<HTMLElement>) => void;
   onSelectSourceResource: () => void;
+  onOpenRecentTask: (task: StudioRecentTask) => void;
+  onDeleteRecentTask: (task: StudioRecentTask) => void;
+  onContinueRecentTask: (task: StudioRecentTask) => void;
 };
 
 export function StudioCanvasPanel({
@@ -35,7 +37,6 @@ export function StudioCanvasPanel({
   ratio,
   sourceImage,
   draggingSource,
-  message,
   recentTasks,
   showInlineRecent,
   featureDrawerOpen,
@@ -50,6 +51,9 @@ export function StudioCanvasPanel({
   onSourceDragLeave,
   onSourceDrop,
   onSelectSourceResource,
+  onOpenRecentTask,
+  onDeleteRecentTask,
+  onContinueRecentTask,
 }: StudioCanvasPanelProps) {
   return (
     <main className="studioCenterPanel">
@@ -82,21 +86,25 @@ export function StudioCanvasPanel({
         >
           <input type="file" accept="image/*" onChange={onSourceInput} />
           {sourceImage
-            ? <div className="studioPreviewWrap"><img src={sourceImage.url} alt="产品原图" /><span>{sourceImage.status === 'uploading' ? '上传中' : sourceImage.status === 'failed' ? '上传失败' : '上传成功'}</span></div>
-            : <div className="studioUploadInner"><div>+</div><b>点击上传家具图片</b><em>或</em><button type="button" onClick={(event) => { event.preventDefault(); onSelectSourceResource(); }}>从资源库选择</button></div>}
+            ? <div className="studioPreviewWrap"><img src={sourceImage.url} alt="产品原图" /></div>
+            : <div className="studioUploadInner"><div>+</div><b>点击上传家具图片</b><em>或</em><button type="button" onClick={(event) => { event.preventDefault(); onSelectSourceResource(); }}>资产库</button></div>}
         </label>
       </section>
 
-      {message && <div className="studioMessage">{message}</div>}
-
       {showInlineRecent && (
         <section id="studio-recent-strip" className="studioRecentStrip">
-          <div className="studioSectionTitle"><b>最近生成</b><span>来自后端 AI 任务记录</span></div>
+          <div className="studioSectionTitle"><b>最近生成</b></div>
           <div className="studioRecentList">
             {recentTasks.slice(0, 5).map((task) => (
               <article key={task.id}>
-                {task.previewUrl && <img src={task.previewUrl} alt={task.feature} loading="lazy" decoding="async" />}
-                <b>{task.feature}</b><span>{task.status}</span><em>{task.resolution} · {task.ratio} · {task.time}</em>
+                <button className="studioRecentPreview" type="button" onClick={() => onOpenRecentTask(task)}>
+                  {task.previewUrl ? <img src={task.previewUrl} alt={task.feature} loading="lazy" decoding="async" /> : <i aria-hidden="true">图</i>}
+                  <b>{task.feature}</b>
+                </button>
+                <div className="studioRecentActions">
+                  <button type="button" aria-label="放入工作室" title="放入工作室" onClick={() => onContinueRecentTask(task)}>编辑</button>
+                  <button type="button" aria-label="删除记录" title="删除记录" onClick={() => onDeleteRecentTask(task)}>删</button>
+                </div>
               </article>
             ))}
             {recentTasks.length === 0 ? Array.from({ length: 5 }).map((_, index) => <span className="studioRecentGhost" key={index} aria-hidden="true" />) : null}

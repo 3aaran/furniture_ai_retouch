@@ -79,9 +79,11 @@ test('desktop studio keeps compact measured workspace geometry and density', () 
   assert.match(source, /studioFeatureList isPickerOpen/);
   assert.match(source, /studioRecentGhost/);
   assert.match(css, /grid-template-columns:\s*248px minmax\(0, 1fr\) 302px/);
-  assert.match(css, /studioLeftHeader/);
+  assert.doesNotMatch(source, /studioLeftHeader/);
+  assert.doesNotMatch(css, /studioLeftHeader/);
   assert.match(css, /@media \(min-width: 768px\)[\s\S]*\.studioFeatureList\s*\{[\s\S]*display:\s*none/);
   assert.match(css, /@media \(min-width: 768px\)[\s\S]*\.studioDescRow,[\s\S]*\.studioSearchBox\s*\{[\s\S]*display:\s*none/);
+  assert.match(css, /\.studioResourceFilters \.studioSearchBox\s*\{[\s\S]*display:\s*block/);
   assert.match(css, /\.studioUploadBox\s*\{[\s\S]*border-radius:\s*var\(--radius-xl\)/);
 });
 
@@ -91,4 +93,35 @@ test('pc studio reads real backend content instead of local demo resources', () 
   assert.match(source, /uploadWorkbenchResource/);
   assert.match(source, /visibleResourceItems/);
   assert.doesNotMatch(source, /filteredDemoResources|本地示例资源/);
+});
+
+test('studio resource picker follows compact tab and chip layout', () => {
+  assert.match(source, /studioScopeTabs/);
+  assert.match(source, /studioCategoryTabs/);
+  assert.match(source, /studioSubcategoryChips/);
+  assert.doesNotMatch(source, /<select value=\{resourceScope\}/);
+  assert.doesNotMatch(source, /studioFilterStack/);
+  assert.doesNotMatch(css, /studioFilterStack|studioSectionLabel/);
+  assert.doesNotMatch(source, /resourceMainName\(item\) \|\| '未分类'/);
+});
+
+test('studio recent strip and settings match annotated behavior', () => {
+  assert.doesNotMatch(source, /来自后端 AI 任务记录/);
+  assert.match(source, /task\.previewUrl \? <img/);
+  assert.match(source, /className="studioControlGroup studioInlineControl"/);
+  assert.doesNotMatch(source, /<select value=\{ratio\}/);
+  assert.match(source, /const \[promptOpen, setPromptOpen\] = useState\(false\);/);
+  assert.match(source, /const \[referenceOpen, setReferenceOpen\] = useState\(false\);/);
+  assert.doesNotMatch(source, /修改配置/);
+});
+
+test('studio asset picker and recent task actions use real APIs without random selection', () => {
+  assert.match(source, /StudioAssetPickerModal/);
+  assert.match(source, /fetchAiTaskDetail/);
+  assert.match(source, /deleteAiTask/);
+  assert.match(source, /StudioTaskDetailModal/);
+  assert.match(source, /resourceType: 'user_reference'/);
+  assert.doesNotMatch(source, /pickLatestResource|pickLatestResources|从资源库/);
+  assert.match(source, /资产库/);
+  assert.match(source, /studioToast/);
 });

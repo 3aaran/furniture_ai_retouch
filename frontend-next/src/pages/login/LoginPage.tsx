@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { BrandLogo } from '../../components/brand/BrandLogo';
+import { PwaInstallButton } from '../../components/pwa/PwaInstallButton';
 import { Button } from '../../components/ui/Button';
 import { BRAND } from '../../config/brand';
 import {
@@ -196,7 +197,7 @@ export function LoginPage({ initialMode = 'login' }: LoginPageProps) {
           {navItems.map((item) => <a key={item.href} href={item.href}>{item.label}</a>)}
         </nav>
         <div className="authTopActionsNext">
-          <button className="authInstallBtnNext" type="button">安装应用</button>
+          <PwaInstallButton className="authInstallBtnNext" />
           <button className="authTextLinkNext" type="button" onClick={() => switchMode(mode === 'login' ? 'apply' : 'login')}>{mode === 'login' ? '注册' : '登录'}</button>
           <Link to="/studio"><Button>进入工作台</Button></Link>
         </div>

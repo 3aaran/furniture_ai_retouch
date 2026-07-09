@@ -91,6 +91,17 @@ export type AiTask = {
   thumbUrl?: string | null;
   downloadUrl?: string;
   imageId?: string | null;
+  imageUrl?: string | null;
+  sourceImageId?: string | null;
+  sourceUrl?: string | null;
+  originUrl?: string | null;
+  originalUrl?: string | null;
+  inputUrl?: string | null;
+  sourceImageUrl?: string | null;
+  originImage?: { id?: string; url?: string; imageUrl?: string; originalName?: string } | null;
+  resultImage?: { id?: string; url?: string; imageUrl?: string; downloadUrl?: string; originalName?: string } | null;
+  userPrompt?: string;
+  prompt?: string;
   errorMessage?: string;
   createdAt?: string;
   submittedAt?: string;
@@ -200,6 +211,14 @@ export function createAiTask(payload: CreateAiTaskPayload) {
 
 export function fetchAiTaskStatus(taskId: string) {
   return request<AiTask>(`/api/ai/tasks/${encodeURIComponent(taskId)}/status`);
+}
+
+export function fetchAiTaskDetail(taskId: string) {
+  return request<AiTask>(`/api/ai/tasks/${encodeURIComponent(taskId)}`);
+}
+
+export function deleteAiTask(taskId: string) {
+  return request<{ message?: string }>(`/api/ai/tasks/${encodeURIComponent(taskId)}`, { method: 'DELETE' });
 }
 
 export function fetchPublicSettings() {

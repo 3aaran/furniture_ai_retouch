@@ -1,14 +1,13 @@
 .studioCollapseCard {
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-lg);
-  background: rgba(var(--bg-card-rgb), .74);
-  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .studioCollapseHead {
   width: 100%;
-  min-height: 48px;
-  padding: 0 12px;
+  min-height: 38px;
+  padding: 0;
   border: 0;
   display: flex;
   align-items: center;
@@ -32,8 +31,8 @@
 }
 
 .studioCollapseHead i {
-  min-height: 26px;
-  padding: 0 9px;
+  min-height: 24px;
+  padding: 0 8px;
   border-radius: var(--radius-pill);
   display: inline-flex;
   align-items: center;
@@ -46,14 +45,14 @@
 .studioPromptField {
   display: grid;
   gap: 7px;
-  padding: 0 12px 12px;
+  padding: 2px 0 8px;
   color: var(--text-muted);
   font-size: 12px;
   font-weight: 900;
 }
 
 .studioPromptInput {
-  min-height: 119px;
+  min-height: 86px;
   padding: 11px;
   resize: vertical;
   line-height: 1.6;
@@ -61,12 +60,14 @@
 }
 
 .studioReferenceCard {
-  padding: 0 12px 12px;
+  display: grid;
+  gap: 8px;
+  padding: 2px 0 8px;
 }
 
 .studioReferenceUpload {
   position: relative;
-  min-height: 104px;
+  min-height: 74px;
   border: 1px dashed rgba(var(--color-primary-rgb), .28);
   border-radius: var(--radius-lg);
   display: grid;
@@ -138,6 +139,22 @@
   font-weight: 900;
 }
 
+.studioInlineControl {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.studioInlineControl > span {
+  flex: 0 0 auto;
+  color: var(--text-main);
+}
+
+.studioInlineControl > div {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 .studioGenerateArea {
   margin-top: auto;
   display: grid;
@@ -162,51 +179,45 @@
 }
 
 @media (min-width: 768px) {
-  .studioPanelHead {
-    min-height: 32px;
-    padding: 0 2px;
-  }
-
   .studioCollapseCard {
-    border: 0;
-    background: transparent;
-    overflow: visible;
+    border-bottom: 1px solid var(--border-subtle);
+    padding-bottom: 8px;
   }
 
   .studioCollapseHead {
-    display: none;
+    min-height: 34px;
   }
 
   .studioPromptField {
-    display: block;
-    padding: 0;
+    display: grid;
+    padding: 0 0 8px;
   }
 
   .studioPromptField > span {
-    display: none;
+    display: block;
   }
 
   .studioRightPanel .studioPromptInput {
     display: block;
-    height: 128px;
-    min-height: 128px;
-    padding: 15px;
+    height: 84px;
+    min-height: 84px;
+    padding: 11px;
     border-radius: var(--radius-lg);
     background: rgba(var(--bg-card-rgb), .78);
   }
 
   .studioRightPanel .studioReferenceCard {
-    padding: 0;
+    padding: 0 0 8px;
     gap: 8px;
   }
 
   .studioRightPanel .studioReferenceUpload {
-    height: 118px;
-    min-height: 118px;
+    height: 72px;
+    min-height: 72px;
   }
 
   .studioRightPanel .studioOutputControls {
-    gap: 14px;
+    gap: 10px;
   }
 
   .studioGenerateButton {
@@ -229,18 +240,13 @@
     box-shadow: var(--shadow-sm);
   }
 
-  .studioPanelHead,
   .studioCollapseCard,
   .studioGenerateArea {
     width: 100%;
   }
 
-  .studioPanelHead {
-    min-height: 30px;
-  }
-
   .studioPromptInput {
-    min-height: 118px;
+    min-height: 86px;
     max-height: 34dvh;
     overflow-y: auto;
     overscroll-behavior: contain;

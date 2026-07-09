@@ -59,8 +59,6 @@ export function StudioSettingsPanel({
 
   return (
     <aside className="studioSidePanel studioRightPanel" aria-label="生成设置">
-      <div className="studioPanelHead"><b>AI 指令</b><span>生成要求</span></div>
-
       <section className={promptOpen ? 'studioCollapseCard isOpen' : 'studioCollapseCard'}>
         <button className="studioCollapseHead" type="button" onClick={() => setPromptOpen((open) => !open)}>
           <span><b>提示词</b><em>{customPrompt ? '已填写' : '可选'}</em></span><i>{promptOpen ? '收起' : '展开'}</i>
@@ -81,15 +79,15 @@ export function StudioSettingsPanel({
               <span>+</span><b>{referenceImages.length ? '继续添加参考图' : '点击或拖拽上传参考图'}</b>
             </label>
             {referenceImages.length > 0 && <div className="studioReferenceList">{referenceImages.map((item, index) => <div key={item.id}><img src={item.url} alt={`参考图 ${index + 1}`} /><button type="button" onClick={() => onRemoveReference(item.id)}>移除</button></div>)}</div>}
-            <button className="studioResourcePick" type="button" onClick={onSelectReferenceResource}>从资源库选择参考图</button>
+            <button className="studioResourcePick" type="button" onClick={onSelectReferenceResource}>资产库</button>
           </div>
         )}
       </section>
 
       {showOutputControls && (
         <div className="studioOutputControls">
-          <div className="studioControlGroup"><span>分辨率</span><div>{resolutionOptions.map((item) => <button key={item} type="button" className={resolution === item ? 'isActive' : ''} onClick={() => onResolutionChange(item)}>{item}</button>)}</div></div>
-          <label className="studioControlGroup"><span>比例</span><select value={ratio} onChange={(event) => onRatioChange(event.target.value)}>{ratioOptions.map((item) => <option key={item}>{item}</option>)}</select></label>
+          <div className="studioControlGroup studioInlineControl"><span>分辨率：</span><div>{resolutionOptions.map((item) => <button key={item} type="button" className={resolution === item ? 'isActive' : ''} onClick={() => onResolutionChange(item)}>{item}</button>)}</div></div>
+          <div className="studioControlGroup studioInlineControl"><span>比例：</span><div>{ratioOptions.map((item) => <button key={item} type="button" className={ratio === item ? 'isActive' : ''} onClick={() => onRatioChange(item)}>{item}</button>)}</div></div>
         </div>
       )}
       <div className="studioGenerateArea"><Button className="studioGenerateButton" onClick={onGenerate} disabled={isGenerating}>{isGenerating ? '提交中...' : isPromotionSelected ? '生成宣传图' : '生成效果'}</Button><div className="studioGenerateMeta">消耗 {cost} 点算力 <b>剩余：{quota}</b></div></div>
