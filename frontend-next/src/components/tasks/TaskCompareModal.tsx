@@ -102,7 +102,7 @@ export function TaskCompareModal<T extends TaskCompareItem>({
   const feature = featureText(detail);
   const status = statusText(detail.status);
   const failed = String(detail.status || '').toUpperCase().includes('FAIL');
-  const prompt = firstText(detail.userPrompt, detail.detailUserPrompt, detail.settings?.userPrompt, detail.prompt);
+  const prompt = firstText(detail.userPrompt, detail.detailUserPrompt, detail.settings?.userPrompt);
   const details = [
     ['任务编号', taskKey(detail) || '-'],
     ['生成账号', taskUser(detail)],

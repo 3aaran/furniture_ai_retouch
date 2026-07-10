@@ -79,3 +79,17 @@ test('asset upload and category mutations keep independent pending states', () =
   assert.match(source, /disabled=\{categoryBusy\} onClick=\{createSub\}/);
   assert.match(source, /setCategoryDialog\(null\);\s+refreshCategoriesInBackground\(managerScope, '主分类已创建'\)/);
 });
+
+test('mobile resources expose the same selection and batch actions as desktop', () => {
+  assert.match(source, /selectedItems\.length > 0 \? <section className="assetBatchBar"/);
+  assert.match(source, /setModal\('batch-category'\)/);
+  assert.match(source, /setModal\('batch-delete'\)/);
+  assert.doesNotMatch(css, /\.assetSelectBox,\s*\.assetBatchBar\s*\{\s*display:\s*none/);
+  assert.match(css, /@media \(max-width: 767px\)[\s\S]*\.assetBatchBar\s*\{[\s\S]*display:\s*grid/);
+});
+
+test('asset cards preserve the complete thumbnail without cropping', () => {
+  assert.match(source, /item\.thumbUrl \|\| item\.previewUrl/);
+  assert.match(css, /\.assetImageBox img\s*\{[\s\S]*object-fit:\s*contain/);
+  assert.match(css, /\.assetImageBox img\s*\{[\s\S]*object-position:\s*center/);
+});

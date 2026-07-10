@@ -13,3 +13,8 @@ test('one task compare modal uses original urls only for detail preview and down
   assert.match(imageSource, /export function fullTaskImageUrl/);
   assert.match(imageSource, /export function fullTaskSourceImageUrl/);
 });
+
+test('task compare displays only the user-entered generation requirement', () => {
+  assert.match(modalSource, /firstText\(detail\.userPrompt, detail\.detailUserPrompt, detail\.settings\?\.userPrompt\)/);
+  assert.doesNotMatch(modalSource, /detail\.settings\?\.userPrompt, detail\.prompt/);
+});

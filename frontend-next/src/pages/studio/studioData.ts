@@ -41,6 +41,13 @@ export const studioFeatures: StudioFeature[] = [
 export const resolutionOptions = ['1K', '2K', '4K'];
 export const ratioOptions = ['自适应', '1:1', '4:3', '3:4', '16:9'];
 
+export const resourceScopes = [
+  { value: 'SYSTEM', label: '系统资源' },
+  { value: 'MERCHANT', label: '用户资源' },
+  { value: 'USER', label: '个人资源' },
+  { value: 'ALL', label: '全部资源' },
+];
+
 export const promoOptionChoices = {
   mainBackground: ['暖灰渐变商业摄影背景', '浅米色高级背景', '米白色柔和光影', '极简空间背景'],
   mainComposition: ['主体居中', '左侧留白', '右侧留白', '主体偏下'],

@@ -128,6 +128,7 @@ export function registerResourceCategoryRoutes(app) {
 
   app.post('/api/categories/main', requireAuth, async (req, res) => {
     const scope = normalizeScope(req.body.scope, req.user);
+    const owner = ownerWhere(scope, req.user, '');
     if (scope === 'SYSTEM' && !isSystemAdmin(req.user)) return res.status(403).json({ message: '无权维护系统分类' });
     if (scope === 'MERCHANT' && !isMerchantManager(req.user)) return res.status(403).json({ message: '无权维护门店分类' });
     const name = String(req.body.name || '').trim();

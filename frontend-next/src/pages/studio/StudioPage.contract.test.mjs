@@ -83,7 +83,11 @@ test('desktop studio keeps compact measured workspace geometry and density', () 
   assert.doesNotMatch(css, /studioLeftHeader/);
   assert.match(css, /@media \(min-width: 768px\)[\s\S]*\.studioFeatureList\s*\{[\s\S]*display:\s*none/);
   assert.match(css, /@media \(min-width: 768px\)[\s\S]*\.studioDescRow\s*\{[\s\S]*display:\s*none/);
-  assert.doesNotMatch(css, /studioResourceFilters|studioSearchBox/);
+  assert.match(source, /\{!isMobile && <div className="studioResourceFilters">/);
+  assert.match(css, /\.studioResourceFilters/);
+  assert.match(css, /\.studioScopeTabs/);
+  assert.match(css, /\.studioCategoryTabs/);
+  assert.match(css, /\.studioSubcategoryChips/);
   assert.match(css, /\.studioUploadBox\s*\{[\s\S]*border-radius:\s*var\(--radius-xl\)/);
 });
 
@@ -94,11 +98,13 @@ test('pc studio reads real backend content instead of local demo resources', () 
   assert.doesNotMatch(source, /filteredDemoResources|本地示例资源/);
 });
 
-test('studio resource picker removes redundant filter controls', () => {
-  assert.doesNotMatch(source, /studioScopeTabs|studioCategoryTabs|studioSubcategoryChips|studioResourceFilters/);
-  assert.doesNotMatch(source, /resourceScope|resourceCategoryOptions|resourceKeyword/);
+test('desktop studio resource picker restores scoped category filters', () => {
+  assert.match(source, /studioScopeTabs/);
+  assert.match(source, /studioCategoryTabs/);
+  assert.match(source, /studioSubcategoryChips/);
+  assert.match(source, /resourceScope|resourceCategoryOptions|resourceKeyword/);
   assert.doesNotMatch(source, /studioFilterStack/);
-  assert.doesNotMatch(css, /studioFilterStack|studioSectionLabel|studioResourceFilters|studioSearchBox/);
+  assert.doesNotMatch(css, /studioFilterStack|studioSectionLabel/);
   assert.doesNotMatch(source, /resourceMainName\(item\) \|\| '未分类'/);
 });
 
@@ -128,9 +134,8 @@ test('studio asset picker and recent task actions use real APIs without random s
 
 test('mobile feature picker stays open while resource configuration owns all parameters', () => {
   assert.match(source, /if \(!isMobile\) \{\s+setMobileConfigSheet\(null\);\s+closeFeatureDrawer\(\);\s+\}/);
-  assert.match(source, /\{studioFeatures\.map\(\(item\) => <button key=\{item\.key\}/);
+  assert.match(source, /featureBranches\.filter\(\(item\) => item\.key !== 'video'\)/);
+  assert.match(source, /studioFeatures\.filter\(\(item\) => item\.group === featureGroup\)/);
   assert.doesNotMatch(source, /!needsResourceLibrary && <div className="studioMobileConfigBlock"><span>功能参数<\/span>/);
-  assert.doesNotMatch(source, /<div className="studioMobileDrawerHead">/);
-  assert.doesNotMatch(source, /<div className="studioResourceFilters">/);
-  assert.match(source, /\{!isMobile && <>[\s\S]*studioBranchTabs[\s\S]*studioFeatureList[\s\S]*<\/>\}/);
+  assert.match(source, /<button className="studioMobileResourceConfig"/);
 });

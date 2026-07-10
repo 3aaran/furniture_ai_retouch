@@ -1357,9 +1357,33 @@
     gap: 8px;
   }
 
-  .assetSelectBox,
   .assetBatchBar {
-    display: none;
+    position: sticky;
+    top: calc(var(--mobile-topbar-height) + 8px);
+    z-index: 4;
+    min-height: 0;
+    padding: 10px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .assetBatchBar b {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 15px;
+  }
+
+  .assetBatchBar button {
+    min-width: 0;
+    padding-inline: 8px;
+    font-size: 12px;
+  }
+
+  .assetSelectBox {
+    left: 8px;
+    top: 8px;
+    width: 32px;
+    height: 32px;
   }
 
   .assetSearchActionButton {

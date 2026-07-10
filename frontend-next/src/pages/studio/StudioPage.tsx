@@ -10,6 +10,7 @@ import {
   featureBranches,
   promoOptionChoices,
   ratioOptions,
+  resourceScopes,
   resolutionOptions,
   studioFeatures,
   type FeatureGroup,
@@ -20,6 +21,7 @@ import {
   deleteAiTask,
   fetchAiTaskStatus,
   fetchAiTaskDetail,
+  fetchCategoryTree,
   fetchPublicSettings,
   fetchRecentAiTasks,
   fetchWorkbenchResources,
@@ -154,6 +156,12 @@ export function StudioPage() {
   const [customPrompt, setCustomPrompt] = useState('');
   const [resolution, setResolution] = useState('2K');
   const [ratio, setRatio] = useState('自适应');
+  const [resourceKeyword, setResourceKeyword] = useState('');
+  const [resourceScope, setResourceScope] = useState('SYSTEM');
+  const [resourceCategoryOptions, setResourceCategoryOptions] = useState<Array<{ name: string; subs: string[] }>>([]);
+  const [categoryLoading, setCategoryLoading] = useState(false);
+  const [mainCategory, setMainCategory] = useState('');
+  const [subCategory, setSubCategory] = useState('');
   const [selectedResource, setSelectedResource] = useState('');
   const [resourceItems, setResourceItems] = useState<ResourceApiItem[]>([]);
   const [resourceLoading, setResourceLoading] = useState(false);
@@ -183,6 +191,8 @@ export function StudioPage() {
 
   const currentFeature = studioFeatures.find((item) => item.key === featureKey) || studioFeatures[0];
   const visibleFeatures = studioFeatures.filter((item) => item.group === (featurePickerGroup || featureGroup));
+  const currentCategory = resourceCategoryOptions.find((item) => item.name === mainCategory);
+  const currentSubOptions = currentCategory?.subs || [];
   const isPromotionSelected = currentFeature.group === 'promotion';
   const needsResourceLibrary = featureKey === 'material' || featureKey === 'replace_bg';
   const selectedResourceItem = resourceItems.find((item) => String(item.id) === selectedResource) || null;
@@ -192,9 +202,16 @@ export function StudioPage() {
     const targetType = featureKey === 'replace_bg' ? 'scene' : 'material';
     return resourceItems.filter((item) => {
       if (needsResourceLibrary && resourceType(item) !== targetType) return false;
+      if (!isMobile && resourceScope !== 'ALL' && item.scope !== resourceScope) return false;
+      if (!isMobile && mainCategory && resourceMainName(item) !== mainCategory) return false;
+      if (!isMobile && subCategory && resourceSubName(item) !== subCategory) return false;
+      if (!isMobile && resourceKeyword.trim()) {
+        const keyword = resourceKeyword.trim().toLowerCase();
+        return `${resourceName(item)}${resourceMainName(item)}${resourceSubName(item)}`.toLowerCase().includes(keyword);
+      }
       return true;
     });
-  }, [featureKey, needsResourceLibrary, resourceItems]);
+  }, [featureKey, isMobile, mainCategory, needsResourceLibrary, resourceItems, resourceKeyword, resourceScope, subCategory]);
 
   const assetSelectedIds = useMemo(() => {
     const ids = new Set<string>();
@@ -279,13 +296,47 @@ export function StudioPage() {
   }, [assetKeyword, assetPickerTarget]);
 
   useEffect(() => {
+    if (!needsResourceLibrary || isMobile) return;
+    let cancelled = false;
+    setCategoryLoading(true);
+    const scopes = resourceScope === 'ALL' ? ['SYSTEM', 'MERCHANT', 'USER'] : [resourceScope];
+    Promise.all(scopes.map((scope) => fetchCategoryTree(scope)))
+      .then((trees) => {
+        if (cancelled) return;
+        const purposeKey = featureKey === 'replace_bg' ? 'scene' : 'material';
+        const categories = new Map<string, Set<string>>();
+        trees.forEach((tree) => {
+          tree.purposes.find((item) => item.purposeKey === purposeKey)?.mains.forEach((main) => {
+            const subs = categories.get(main.name) || new Set<string>();
+            main.subs?.forEach((sub) => subs.add(sub.name));
+            categories.set(main.name, subs);
+          });
+        });
+        const nextCategories = Array.from(categories, ([name, subs]) => ({ name, subs: Array.from(subs) }));
+        setResourceCategoryOptions(nextCategories);
+        if (mainCategory && !nextCategories.some((item) => item.name === mainCategory)) {
+          setMainCategory('');
+          setSubCategory('');
+        }
+      })
+      .catch((error: Error) => {
+        if (!cancelled) setResourceError(`分类加载失败：${error.message}`);
+      })
+      .finally(() => {
+        if (!cancelled) setCategoryLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [featureKey, isMobile, mainCategory, needsResourceLibrary, resourceScope]);
+
+  useEffect(() => {
     if (!needsResourceLibrary) return;
     let cancelled = false;
     setResourceLoading(true);
     setResourceError('');
     fetchWorkbenchResources({
+      keyword: isMobile ? '' : resourceKeyword,
       resourceType: featureKey === 'replace_bg' ? 'scene' : 'material',
-      scope: 'ALL',
+      scope: isMobile ? 'ALL' : resourceScope,
       pageSize: 999,
     })
       .then((data) => {
@@ -301,7 +352,7 @@ export function StudioPage() {
         if (!cancelled) setResourceLoading(false);
       });
     return () => { cancelled = true; };
-  }, [featureKey, needsResourceLibrary]);
+  }, [featureKey, isMobile, needsResourceLibrary, resourceKeyword, resourceScope]);
 
   useEffect(() => {
     if (!featureDrawerOpen && !featurePickerGroup && !mobileConfigSheet && !mobileRecentOpen) return;
@@ -444,9 +495,9 @@ export function StudioPage() {
     try {
       const result = await uploadWorkbenchResource({
         file,
-        scope: 'USER',
-        objectName: featureKey === 'replace_bg' ? '场景模板' : '材质',
-        colorName: '',
+        scope: isMobile || resourceScope === 'ALL' || resourceScope === 'SYSTEM' ? 'USER' : resourceScope,
+        objectName: isMobile ? (featureKey === 'replace_bg' ? '场景模板' : '材质') : (mainCategory || (featureKey === 'replace_bg' ? '场景模板' : '材质')),
+        colorName: isMobile ? '' : subCategory,
       });
       const items = result.items || [];
       if (items.length) {
@@ -654,9 +705,23 @@ export function StudioPage() {
 
   function renderLeftConfig() {
     if (featureKey === 'material' || featureKey === 'replace_bg') {
-      return (
-        <>
-          <div className="studioResourceGrid">
+        return (
+          <>
+            {!isMobile && <div className="studioResourceFilters">
+              <div className="studioScopeTabs">
+                {resourceScopes.map((item) => <button key={item.value} type="button" className={resourceScope === item.value ? 'isActive' : ''} onClick={() => setResourceScope(item.value)}>{item.label}</button>)}
+              </div>
+              <div className="studioCategoryTabs" aria-label="资源主分类">
+                <button type="button" className={!mainCategory ? 'isActive' : ''} onClick={() => { setMainCategory(''); setSubCategory(''); }}>{categoryLoading ? '加载中' : '全部'}</button>
+                {resourceCategoryOptions.map((item) => <button key={item.name} type="button" className={mainCategory === item.name ? 'isActive' : ''} onClick={() => { setMainCategory(item.name); setSubCategory(''); }}>{item.name}</button>)}
+              </div>
+              <div className="studioSubcategoryChips" aria-label="资源子分类">
+                <button type="button" className={!subCategory ? 'isActive' : ''} onClick={() => setSubCategory('')}>全部</button>
+                {currentSubOptions.map((item) => <button key={item} type="button" className={subCategory === item ? 'isActive' : ''} onClick={() => setSubCategory(item)}>{item}</button>)}
+              </div>
+              <div className="studioSearchBox"><input value={resourceKeyword} onChange={(event) => setResourceKeyword(event.target.value)} placeholder="搜索名称" /></div>
+            </div>}
+            <div className="studioResourceGrid">
             <input ref={resourceUploadInputRef} type="file" accept="image/*" hidden onChange={handleResourceUploadInput} />
             <button className="studioUploadResource" type="button" onClick={() => resourceUploadInputRef.current?.click()}>
               <span>+</span><b>上传</b>
@@ -716,9 +781,15 @@ export function StudioPage() {
           {mobileConfigSheet === 'feature' && (
             <>
               <div className="studioMobileConfigBlock">
+                <span>生成类型</span>
+                <div className="studioMobileConfigChips">
+                  {featureBranches.filter((item) => item.key !== 'video').map((item) => <button key={item.key} type="button" className={featureGroup === item.key ? 'isActive' : ''} onClick={() => selectGroup(item.key)}>{item.label}</button>)}
+                </div>
+              </div>
+              <div className="studioMobileConfigBlock">
                 <span>功能</span>
                 <div className="studioMobileConfigList">
-                  {studioFeatures.map((item) => <button key={item.key} type="button" className={featureKey === item.key ? 'isActive' : ''} onClick={() => chooseFeature(item.key)}><b>{item.label}</b><em>{item.tag}</em></button>)}
+                  {studioFeatures.filter((item) => item.group === featureGroup).map((item) => <button key={item.key} type="button" className={featureKey === item.key ? 'isActive' : ''} onClick={() => chooseFeature(item.key)}><b>{item.label}</b><em>{item.tag}</em></button>)}
                 </div>
               </div>
               <button className="studioMobileResourceConfig" type="button" onClick={openResourceConfigFromMobile}>打开资源配置</button>
