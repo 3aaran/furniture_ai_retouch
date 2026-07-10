@@ -136,7 +136,8 @@ export function LoginPage({ initialMode = 'login' }: LoginPageProps) {
         ? await codeLogin({ phone: identifier, code: form.loginCode })
         : await login({ account: identifier, password: form.password });
       saveAuthSession(result);
-      navigate('/studio', { replace: true });
+      const role = String(result.user.role || '').trim().toUpperCase();
+      navigate(role === 'SYSTEM_ADMIN' || role === 'PLATFORM_ADMIN' ? '/admin/dashboard' : '/studio', { replace: true });
     } catch (error) {
       setMessage(error instanceof Error ? error.message : '登录失败');
     } finally {

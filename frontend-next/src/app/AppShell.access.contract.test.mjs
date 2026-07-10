@@ -23,7 +23,8 @@ test('desktop and mobile navigation hide management entries without permission',
 });
 
 test('direct navigation to management pages redirects unauthorized users', () => {
-  assert.match(source, /managementRoute && !userResolved/);
+  assert.match(source, /\(managementRoute \|\| platformAdminRoute \|\| location\.pathname === '\/studio'\) && !userResolved/);
   assert.match(source, /managementRoute && !hasManagementAccess/);
+  assert.match(source, /platformAdminRoute && !isPlatformAdmin/);
   assert.match(source, /<Navigate to="\/studio" replace \/>/);
 });

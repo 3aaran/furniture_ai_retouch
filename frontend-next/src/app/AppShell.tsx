@@ -35,6 +35,10 @@ const mobileToolItems: Array<{ key: string; to?: string; modal?: Exclude<ShellQu
   { key: 'notices', modal: 'notices', label: '邮箱', icon: 'mail' },
 ];
 
+const platformAdminNavItems = [
+  { to: '/admin/dashboard', label: '平台管理', icon: 'dashboard' as AppIconName },
+];
+
 function shortName(user: CurrentUser | null) {
   const value = user?.name || user?.displayName || user?.username || user?.phone || '用户';
   return String(value).trim().slice(0, 1) || '用';
@@ -43,6 +47,8 @@ function shortName(user: CurrentUser | null) {
 function displayName(user: CurrentUser | null) {
   return user?.displayName || user?.name || user?.username || user?.phone || '用户';
 }
+
+const platformAdminRoles = new Set(['SYSTEM_ADMIN', 'PLATFORM_ADMIN']);
 
 const managementRoles = new Set([
   'SYSTEM_ADMIN',
@@ -54,6 +60,10 @@ const managementRoles = new Set([
 ]);
 
 const managementPaths = new Set(['/resources', '/users', '/promotion']);
+
+function isPlatformAdminUser(user: CurrentUser | null) {
+  return platformAdminRoles.has(String(user?.role || '').trim().toUpperCase());
+}
 
 function canAccessManagementPages(user: CurrentUser | null) {
   return managementRoles.has(String(user?.role || '').trim().toUpperCase());
@@ -75,16 +85,21 @@ export function AppShell() {
   const [quickModal, setQuickModal] = useState<ShellQuickModalType>(null);
   const [shellNotice, setShellNotice] = useState('');
   const quotaText = useMemo(() => Number(user?.quota ?? 0).toLocaleString('zh-CN'), [user?.quota]);
+  const isPlatformAdmin = useMemo(() => isPlatformAdminUser(user), [user]);
   const hasManagementAccess = useMemo(() => canAccessManagementPages(user), [user]);
   const visiblePrimaryNavItems = useMemo(
-    () => primaryNavItems.filter((item) => !item.requiresManagement || hasManagementAccess),
-    [hasManagementAccess],
+    () => isPlatformAdmin ? platformAdminNavItems : primaryNavItems.filter((item) => !item.requiresManagement || hasManagementAccess),
+    [hasManagementAccess, isPlatformAdmin],
   );
   const visibleMobileMainNavItems = useMemo(
-    () => mobileMainNavItems.filter((item) => !item.requiresManagement || hasManagementAccess),
-    [hasManagementAccess],
+    () => isPlatformAdmin ? platformAdminNavItems : mobileMainNavItems.filter((item) => !item.requiresManagement || hasManagementAccess),
+    [hasManagementAccess, isPlatformAdmin],
   );
+  const visibleUtilityNavItems = isPlatformAdmin ? [] : utilityNavItems;
+  const visibleMobileToolItems = isPlatformAdmin ? [] : mobileToolItems;
   const managementRoute = isManagementPath(location.pathname);
+  const platformAdminRoute = location.pathname === '/admin' || location.pathname.startsWith('/admin/');
+  const platformAdminStudioRedirect = isPlatformAdmin && location.pathname === '/studio';
 
   useEffect(() => {
     let cancelled = false;
@@ -162,13 +177,13 @@ export function AppShell() {
 
         <div className="shellActions" onClick={(event) => event.stopPropagation()}>
           <div className="shellIconActions desktopOnly" aria-label="快捷入口">
-            {utilityNavItems.map((item) => (
+            {visibleUtilityNavItems.map((item) => (
               <button key={item.key} className="shellIconAction" type="button" title={item.label} aria-label={item.label} onClick={() => activateUtility(item)}>
                 <span aria-hidden="true"><AppIcon name={item.icon} /></span>
               </button>
             ))}
           </div>
-          <button className="quotaBadge" type="button" onClick={() => go('/quota')}>算力额度 {quotaText}</button>
+          <button className="quotaBadge" type="button" onClick={() => go(isPlatformAdmin ? '/admin/dashboard' : '/quota')}>{isPlatformAdmin ? '平台控制台' : `算力额度 ${quotaText}`}</button>
           <div className="shellProfileBox">
             <button className="avatarButton" type="button" aria-haspopup="menu" aria-expanded={profileMenuOpen} onClick={() => setProfileMenuOpen((open) => !open)}>
               <span className="avatarBadge" aria-hidden="true">{shortName(user)}</span>
@@ -177,8 +192,10 @@ export function AppShell() {
             {profileMenuOpen && (
               <div className="profileMenuNext" role="menu">
                 <button type="button" role="menuitem" onClick={() => go('/profile')}><span><AppIcon name="profile" /></span>个人中心</button>
-                <button type="button" role="menuitem" onClick={() => go('/quota')}><span><AppIcon name="quota" /></span>额度明细</button>
-                <button type="button" role="menuitem" onClick={() => openQuickModal('redeem')}><span><AppIcon name="redeem" /></span>礼品卡兑换</button>
+                {!isPlatformAdmin && <button type="button" role="menuitem" onClick={() => go('/quota')}><span><AppIcon name="quota" /></span>额度明细</button>}
+                {isPlatformAdmin
+                  ? <button type="button" role="menuitem" onClick={() => go('/admin/redeem-codes')}><span><AppIcon name="redeem" /></span>兑换码管理</button>
+                  : <button type="button" role="menuitem" onClick={() => openQuickModal('redeem')}><span><AppIcon name="redeem" /></span>礼品卡兑换</button>}
                 <i aria-hidden="true" />
                 <button className="logout" type="button" role="menuitem" onClick={handleLogout}><span><AppIcon name="logout" /></span>退出登录</button>
               </div>
@@ -200,7 +217,7 @@ export function AppShell() {
           ))}
         </nav>
         <div className="mobileSideTools" aria-label="移动端工具入口">
-          {mobileToolItems.map((item) => (
+          {visibleMobileToolItems.map((item) => (
             <button key={item.key} type="button" aria-label={item.label} title={item.label} onClick={() => { if (item.to) go(item.to); if (item.modal) openQuickModal(item.modal); }}>
               <span aria-hidden="true"><AppIcon name={item.icon} /></span><b className="mobileToolText">{item.label}</b>
             </button>
@@ -209,11 +226,15 @@ export function AppShell() {
       </aside>
 
       <main className="shellMain">
-        {managementRoute && !userResolved
+        {(managementRoute || platformAdminRoute || location.pathname === '/studio') && !userResolved
           ? <div className="shellAccessState" role="status">正在验证访问权限...</div>
-          : managementRoute && !hasManagementAccess
+          : platformAdminRoute && !isPlatformAdmin
             ? <Navigate to="/studio" replace />
-            : <Outlet />}
+            : platformAdminStudioRedirect
+              ? <Navigate to="/admin/dashboard" replace />
+              : managementRoute && !hasManagementAccess
+                ? <Navigate to="/studio" replace />
+                : <Outlet />}
       </main>
       {shellNotice && <button className="shellToast" type="button" onClick={() => setShellNotice('')}>{shellNotice}</button>}
       <ShellQuickModal type={quickModal} onClose={() => setQuickModal(null)} onNotice={setShellNotice} />
