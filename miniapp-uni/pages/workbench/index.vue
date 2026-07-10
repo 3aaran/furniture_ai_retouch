@@ -31,7 +31,7 @@
           <view class="resource-select-btn" @click.stop="openResourceDrawer('origin')">从资产库选择</view>
         </view>
         <view v-else class="upload-preview">
-          <image v-if="originImage.imageUrl" :src="originImage.imageUrl" mode="aspectFill" />
+          <image v-if="originImage.original" :src="originImage.original" mode="aspectFit" @click.stop="previewOriginal(originImage)" />
           <view class="upload-preview-meta">
             <text class="ui-strong">{{ originImage.name }}</text>
             <text>{{ inputImages.length }} 张输入图</text>
@@ -50,7 +50,7 @@
       </view>
       <view v-if="referenceOpen" class="ref-body">
         <view class="ref-upload" @click="chooseReferenceImage">
-          <image v-if="referenceImage && referenceImage.imageUrl" :src="referenceImage.imageUrl" mode="aspectFill" />
+          <image v-if="referenceImage && referenceImage.original" :src="referenceImage.original" mode="aspectFit" @click.stop="previewOriginal(referenceImage)" />
           <template v-else>
             <app-icon name="plus" :size="48" />
             <text class="ui-strong">上传参考图</text>
@@ -125,13 +125,14 @@
               <text class="ui-strong">上传</text>
             </view>
             <view v-for="item in filteredResources" :key="item.id" :class="['resource-tile', selectedResource && selectedResource.id === item.id ? 'active' : '']" @click="selectFeatureResource(item)">
-              <image v-if="item.image" :src="item.image" mode="aspectFill" />
+              <image v-if="item.thumbnail" :src="item.thumbnail" mode="aspectFit" lazy-load />
               <view v-else class="resource-empty-thumb">图</view>
               <text class="ui-strong">{{ item.name }}</text>
               <text>{{ item.categoryText }}</text>
             </view>
           </view>
           <view v-if="!filteredResources.length" class="empty-drawer">暂无资产，切换空间或在资产库上传后再试</view>
+          <button v-if="resourcesHasMore" class="secondary-btn drawer-more" :disabled="resourcesLoadingMore" @click="loadMoreResources">{{ resourcesLoadingMore ? '加载中...' : '加载更多资源' }}</button>
         </view>
         <view v-else class="hint-line">当前参数：{{ optionsSummary }}</view>
         <view v-if="isPromotionSelected" class="option-stack promo-options">
@@ -178,13 +179,14 @@
           <text class="ui-strong">上传</text>
         </view>
         <view v-for="item in filteredResources" :key="item.id" :class="['resource-tile', resourceTileActive(item) ? 'active' : '']" @click="selectResource(item)">
-          <image v-if="item.image" :src="item.image" mode="aspectFill" />
+          <image v-if="item.thumbnail" :src="item.thumbnail" mode="aspectFit" lazy-load />
           <view v-else class="resource-empty-thumb">图</view>
           <text class="ui-strong">{{ item.name }}</text>
           <text>{{ item.categoryText }}</text>
         </view>
       </view>
       <view v-if="!filteredResources.length" class="empty-drawer">暂无资源</view>
+      <button v-if="resourcesHasMore" class="secondary-btn drawer-more" :disabled="resourcesLoadingMore" @click="loadMoreResources">{{ resourcesLoadingMore ? '加载中...' : '加载更多资源' }}</button>
     </view>
 
     <view :class="['recent-drawer', activeDrawer === 'recent' ? 'drawer-show' : '']">
@@ -202,7 +204,7 @@
       <view class="recent-list">
         <view v-for="task in filteredRecentTasks" :key="task.id" class="recent-card" @click="goHistory">
           <view class="recent-image">
-            <image v-if="task.image" :src="task.image" mode="aspectFill" />
+            <image v-if="task.thumbnail" :src="task.thumbnail" mode="aspectFit" lazy-load />
             <text v-else>{{ task.featureShort }}</text>
           </view>
           <view class="recent-copy">
@@ -226,7 +228,7 @@ import { getResources } from '../../api/resource.js';
 import { normalizeFileUrl } from '../../utils/fileUrl.js';
 import { get } from '../../utils/request.js';
 import { requireLogin } from '../../utils/auth.js';
-import { displayName, featureName, fmtTime, imageOf, statusText, unwrapList, unwrapUser, userQuota } from '../../utils/model.js';
+import { displayName, featureName, fmtTime, originalOf, statusText, thumbnailOf, unwrapList, unwrapUser, userQuota } from '../../utils/model.js';
 
 const RESOURCE_KEY = 'miniapp_workbench_resource';
 const FEATURE_KEY = 'miniapp_pending_feature_key';
@@ -272,7 +274,7 @@ export default {
     return {
       user: {}, features: [...baseFeatures, ...promoFeatures],
       featureGroups: [{ key: 'base', name: '基础' }, { key: 'promotion', name: '宣传图' }, { key: 'video', name: '宣传短视频' }],
-      featureGroup: 'base', resources: [], recentTasks: [], activeDrawer: '', selectedFeatureKey: 'material',
+      featureGroup: 'base', resources: [], resourcePage: 1, resourcesHasMore: true, resourcesLoadingMore: false, recentTasks: [], activeDrawer: '', selectedFeatureKey: 'material',
       inputImages: [], referenceImage: null, referenceOpen: false, selectedResource: null, custom: '', resolution: '2K', ratio: '自适应',
       removeOpts: { whiteBg: false, mirror: false }, enhanceOpts: { focus: false, angle: '不变' }, multiView: '三角度视图',
       resourceScopeIndex: 0, resourceKeyword: '', recentKeyword: '', uploadBusy: false, submitBusy: false, resourcePickTarget: 'reference',
@@ -360,7 +362,7 @@ export default {
       await Promise.all([this.loadResources(), this.loadRecent()]);
     },
     async loadResources() {
-      try { this.resources = unwrapList(await getResources({ pageSize: 80 }, { showLoading: false, showErrorToast: false })).map(this.normalizeResource); } catch (error) { this.resources = []; }
+      try { await this.loadResources(1, true); } catch (error) { this.resources = []; }
     },
     async loadRecent() {
       try {
@@ -371,15 +373,32 @@ export default {
         this.recentTasks = [...unwrapList(tasksPayload).map(this.normalizeTask), ...unwrapList(imagesPayload).map(this.normalizeTask)].slice(0, 20);
       } catch (error) { this.recentTasks = []; }
     },
+    async loadResources(page = 1, replace = false) {
+      if (!replace && (this.resourcesLoadingMore || !this.resourcesHasMore)) return;
+      this.resourcesLoadingMore = !replace;
+      try {
+        const payload = await getResources({ page, pageSize: 24 }, { showLoading: false, showErrorToast: false });
+        const items = unwrapList(payload).map(this.normalizeResource);
+        const merged = replace ? items : this.resources.concat(items.filter((item) => !this.resources.some((current) => current.id === item.id)));
+        const total = Number(payload?.total ?? payload?.data?.total);
+        this.resources = merged;
+        this.resourcePage = page;
+        this.resourcesHasMore = items.length === 24 && (!Number.isFinite(total) || merged.length < total);
+      } finally {
+        this.resourcesLoadingMore = false;
+      }
+    },
+    loadMoreResources() { this.loadResources(this.resourcePage + 1, false); },
     normalizeResource(item = {}) {
       const scope = String(item.scope || item.space || '').toUpperCase();
       const type = String(item.resourceType || item.resource_type || item.type || '').toLowerCase();
-      return { ...item, id: item.id, name: item.name || item.title || '未命名资源', image: normalizeFileUrl(imageOf(item)), imageUrl: normalizeFileUrl(imageOf(item)), scope, resourceType: type, typeText: type || '素材', categoryText: [item.mainCategoryName || item.objectName, item.subCategoryName || item.colorName].filter(Boolean).join(' / ') || '未分类' };
+      const original = normalizeFileUrl(originalOf(item));
+      return { ...item, id: item.id, name: item.name || item.title || '未命名资源', thumbnail: normalizeFileUrl(thumbnailOf(item)), original, imageUrl: original, scope, resourceType: type, typeText: type || '素材', categoryText: [item.mainCategoryName || item.objectName, item.subCategoryName || item.colorName].filter(Boolean).join(' / ') || '未分类' };
     },
     normalizeTask(item = {}) {
       const key = item.featureKey || item.operation || item.kind || item.type || '';
       const name = featureName(key, item.featureName || item.operationName || item.kindName || '生成记录');
-      return { ...item, id: item.id || item.taskId, featureName: name, featureShort: name.slice(0, 2), statusText: statusText(item.status || 'success'), createdAtText: fmtTime(item.createdAt || item.created_at), image: normalizeFileUrl(imageOf(item)) };
+      return { ...item, id: item.id || item.taskId, featureName: name, featureShort: name.slice(0, 2), statusText: statusText(item.status || 'success'), createdAtText: fmtTime(item.createdAt || item.created_at), thumbnail: normalizeFileUrl(thumbnailOf(item)), original: normalizeFileUrl(originalOf(item)) };
     },
     openDrawer(name) { this.activeDrawer = name; },
     openResourceDrawer(target = 'reference') { this.resourcePickTarget = target; this.openDrawer('resources'); },
@@ -409,7 +428,7 @@ export default {
       return this.referenceOpen;
     },
     resourceTileActive(item = {}) { return this.resourcePickTarget === 'origin' ? !!(this.originImage && this.originImage.id === item.id) : !!(this.selectedResource && this.selectedResource.id === item.id); },
-    selectOriginResource(item = {}) { this.inputImages = [{ ...item, imageUrl: item.imageUrl || item.image, name: item.name || '资源图片' }]; this.selectedResource = null; this.referenceImage = null; },
+    selectOriginResource(item = {}) { this.inputImages = [{ ...item, original: item.original || item.imageUrl, name: item.name || '资源图片' }]; this.selectedResource = null; this.referenceImage = null; },
     selectFeatureResource(item) { this.selectedResource = item; },
     selectResource(item) { if (this.resourcePickTarget === 'origin') this.selectOriginResource(item); else this.selectedResource = item; this.closeDrawer(); },
     promotionOptionValue(key) { return this.promotionOptions[this.selectedFeatureKey]?.[key] || promotionOptionDefaults[this.selectedFeatureKey]?.[key] || ''; },
@@ -418,13 +437,14 @@ export default {
     applyPendingFeature() { const key = uni.getStorageSync(FEATURE_KEY); if (key && this.features.some((item) => item.key === key)) { this.selectedFeatureKey = key; const feature = this.features.find((item) => item.key === key); this.featureGroup = feature.group || 'base'; uni.removeStorageSync(FEATURE_KEY); } },
     applyPendingResource() { const resource = uni.getStorageSync(RESOURCE_KEY); if (resource && resource.id) { this.selectedResource = resource; uni.removeStorageSync(RESOURCE_KEY); } },
     chooseResourceUpload() { if (this.resourcePickTarget === 'origin') return this.chooseInputImage(); return this.chooseReferenceImage(); },
-    chooseInputImage() { if (this.uploadBusy) return; uni.chooseImage({ count: Math.max(1, 4 - this.inputImages.length), sizeType: ['compressed'], sourceType: ['album', 'camera'], success: async (res) => { for (const path of (res.tempFilePaths || [])) await this.uploadOne(path, 'source'); } }); },
-    chooseReferenceImage() { if (this.uploadBusy) return; uni.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'], success: async (res) => { const path = (res.tempFilePaths || [])[0]; if (path) await this.uploadOne(path, 'reference'); } }); },
-    async uploadOne(filePath, target = 'source') { this.uploadBusy = true; try { const response = await uploadImage(filePath, { source: target === 'reference' ? 'miniapp_workbench_reference' : 'miniapp_workbench' }); const image = response.image || response.data?.image || response.item || response.data || response; const next = { ...image, id: image.id || image.imageId, name: image.originalName || image.name || '上传图片', imageUrl: normalizeFileUrl(imageOf(image)) }; if (target === 'reference') this.referenceImage = next; else this.inputImages.push(next); } catch (error) { this.errorText = error.message || '上传失败'; } finally { this.uploadBusy = false; } },
+    chooseInputImage() { if (this.uploadBusy) return; uni.chooseImage({ count: Math.max(1, 4 - this.inputImages.length), sizeType: ['original', 'compressed'], sourceType: ['album', 'camera'], success: async (res) => { for (const path of (res.tempFilePaths || [])) await this.uploadOne(path, 'source'); } }); },
+    chooseReferenceImage() { if (this.uploadBusy) return; uni.chooseImage({ count: 1, sizeType: ['original', 'compressed'], sourceType: ['album', 'camera'], success: async (res) => { const path = (res.tempFilePaths || [])[0]; if (path) await this.uploadOne(path, 'reference'); } }); },
+    async uploadOne(filePath, target = 'source') { this.uploadBusy = true; try { const response = await uploadImage(filePath, { source: target === 'reference' ? 'miniapp_workbench_reference' : 'miniapp_workbench' }); const image = response.image || response.data?.image || response.item || response.data || response; const next = { ...image, id: image.id || image.imageId, name: image.originalName || image.name || '上传图片', thumbnail: normalizeFileUrl(thumbnailOf(image)), original: normalizeFileUrl(originalOf(image)) }; if (target === 'reference') this.referenceImage = next; else this.inputImages.push(next); } catch (error) { this.errorText = error.message || '上传失败'; } finally { this.uploadBusy = false; } },
+    previewOriginal(item = {}) { if (item.original) uni.previewImage({ urls: [item.original], current: item.original }); },
     changeRatio(e) { this.ratio = this.ratioOptions[Number(e.detail.value)] || this.ratio; },
     changeEnhanceAngle(e) { this.enhanceOpts.angle = this.enhanceAngles[Number(e.detail.value)] || '不变'; },
     buildOptions() { const base = { resolution: this.resolution, ratio: this.ratio }; if (this.isPromotionSelected) return { taskType: this.selectedFeatureKey === 'promo_main_image' ? 'PROMO_MAIN_IMAGE' : this.selectedFeatureKey === 'promo_poster_image' ? 'PROMO_POSTER_IMAGE' : 'PROMO_DETAIL_IMAGE', promotionType: this.currentFeature.name, ...base, ...(promotionOptionDefaults[this.selectedFeatureKey] || {}), ...(this.promotionOptions[this.selectedFeatureKey] || {}), promptTemplate: promotionPrompts[this.selectedFeatureKey], keepSubject: true, forbidGeneratedText: true, forbidLogo: true, forbidPeople: true }; if (this.selectedFeatureKey === 'material') { const tpl = this.selectedResource || {}; return { ...base, materialName: tpl.name || '', materialColor: tpl.colorName || '', materialCategory: tpl.subCategoryName || tpl.mainCategoryName || tpl.objectName || tpl.category || '', resourceName: tpl.name || '', templateName: tpl.name || '', keepStructure: true, keepAngle: true, keepProportion: true }; } if (this.selectedFeatureKey === 'replace_bg') { const tpl = this.selectedResource || {}; return { ...base, sceneType: tpl.name || tpl.subCategoryName || tpl.mainCategoryName || tpl.category || '真实室内商业场景', sceneName: tpl.name || '', sceneDesc: tpl.description || '', resourceName: tpl.name || '', templateName: tpl.name || '', keepLighting: true, keepPerspective: true }; } if (this.selectedFeatureKey === 'remove_bg') return { ...base, whiteBg: !!this.removeOpts.whiteBg, mirror: !!this.removeOpts.mirror, backgroundTone: this.removeOpts.whiteBg ? 'Pure white' : 'Warm white', shadowStyle: '柔和阴影' }; if (this.selectedFeatureKey === 'enhance') return { ...base, focus: !!this.enhanceOpts.focus, angle: this.enhanceOpts.angle, enhanceSharpness: true, enhanceLight: true, enhanceTexture: true, enhanceColor: true, commercialStyle: true }; if (this.selectedFeatureKey === 'lineart') return { ...base, lineStyle: 'Simple line art', lineColor: '黑色', keepDetailLevel: '中等', withShadow: false }; if (this.selectedFeatureKey === 'multiview') { const viewCount = this.multiView === '三角度视图' ? 3 : 4; return { ...base, view: this.multiView, viewCount, layoutType: viewCount === 3 ? '横排' : '宫格', backgroundStyle: '纯白' }; } return base; },
-    async submitTask() { if (!this.originImage) return uni.showToast({ title: '请先上传家具原图', icon: 'none' }); this.submitBusy = true; this.errorText = ''; try { const tpl = this.selectedResource; const referenceIds = this.referenceImage?.id ? [this.referenceImage.id] : []; const result = await createAiTask({ originImageId: this.originImage.id || this.originImage.imageId, featureKey: this.selectedFeatureKey, selectedResourceId: tpl?.id || null, selectedResourceSnapshot: tpl ? { id: tpl.id, imageId: tpl.id, name: tpl.name, resourceType: tpl.resourceType, mainCategoryName: tpl.mainCategoryName || tpl.objectName || '', subCategoryName: tpl.subCategoryName || tpl.colorName || '', imageUrl: tpl.imageUrl || tpl.image || tpl.url || '' } : null, functionalReferenceImageId: null, templatePrompt: tpl ? (tpl.description || tpl.name) : '', userPrompt: this.custom.trim(), userReferenceImageIds: referenceIds, referenceImageIds: referenceIds, resolution: this.resolution, ratio: this.ratio, options: this.buildOptions() }); if (result?.user) this.user = result.user; uni.showToast({ title: '任务已提交，正在生成', icon: 'success' }); await this.loadRecent(); this.openDrawer('recent'); } catch (error) { this.errorText = error.message || '任务提交失败'; } finally { this.submitBusy = false; } },
+    async submitTask() { if (!this.originImage) return uni.showToast({ title: '请先上传家具原图', icon: 'none' }); this.submitBusy = true; this.errorText = ''; try { const tpl = this.selectedResource; const referenceIds = this.referenceImage?.id ? [this.referenceImage.id] : []; const result = await createAiTask({ originImageId: this.originImage.id || this.originImage.imageId, featureKey: this.selectedFeatureKey, selectedResourceId: tpl?.id || null, selectedResourceSnapshot: tpl ? { id: tpl.id, imageId: tpl.id, name: tpl.name, resourceType: tpl.resourceType, mainCategoryName: tpl.mainCategoryName || tpl.objectName || '', subCategoryName: tpl.subCategoryName || tpl.colorName || '', imageUrl: tpl.original || tpl.imageUrl || tpl.url || '' } : null, functionalReferenceImageId: null, templatePrompt: tpl ? (tpl.description || tpl.name) : '', userPrompt: this.custom.trim(), userReferenceImageIds: referenceIds, referenceImageIds: referenceIds, resolution: this.resolution, ratio: this.ratio, options: this.buildOptions() }); if (result?.user) this.user = result.user; uni.showToast({ title: '任务已提交，正在生成', icon: 'success' }); await this.loadRecent(); this.openDrawer('recent'); } catch (error) { this.errorText = error.message || '任务提交失败'; } finally { this.submitBusy = false; } },
     goHistory() { uni.reLaunch({ url: '/pages/tasks/index' }); },
     goMine() { uni.reLaunch({ url: '/pages/mine/index' }); }
   }
@@ -449,9 +469,9 @@ export default {
 .upload-empty .ui-strong { font-size: 34rpx; font-weight: 900; }
 .upload-empty text { color: var(--xg-text-muted); font-size: 24rpx; }
 .resource-select-btn { min-width: 236rpx; height: 68rpx; display: flex; align-items: center; justify-content: center; border-radius: 999rpx; border: 1rpx solid rgba(255,255,255,.18); color: var(--xg-text-main); font-size: 26rpx; }
-.upload-preview { position: relative; height: 408rpx; }
-.upload-preview image { width: 100%; height: 100%; }
-.upload-preview-meta { position: absolute; left: 20rpx; right: 20rpx; bottom: 20rpx; padding: 18rpx; border-radius: 20rpx; color: #fff; background: rgba(0,0,0,.62); }
+.upload-preview { min-height: 408rpx; display: flex; flex-direction: column; }
+.upload-preview image { width: 100%; height: 408rpx; display: block; }
+.upload-preview-meta { margin: 18rpx; padding: 18rpx; border-radius: 20rpx; color: var(--xg-text-main); background: var(--xg-bg-card-soft); border: 1rpx solid var(--xg-border-soft); }
 .upload-preview-meta .ui-strong, .upload-preview-meta text { display: block; }
 .ref-card { margin-top: 28rpx; overflow: hidden; }
 .ref-header { min-height: 118rpx; padding: 0 28rpx; display: flex; align-items: center; justify-content: space-between; }

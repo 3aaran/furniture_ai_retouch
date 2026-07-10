@@ -89,6 +89,14 @@ export function fmtTime(value) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
+export function originalOf(item = {}) {
+  return item.url || item.imageUrl || item.resultUrl || item.originalUrl || item.storageUrl || '';
+}
+
+export function thumbnailOf(item = {}) {
+  return item.thumbUrl || item.thumbnailUrl || originalOf(item);
+}
+
 export function imageOf(item = {}) {
-  return item.thumbUrl || item.thumbnailUrl || item.imageUrl || item.resultUrl || item.url || item.originalUrl || item.storageUrl || '';
+  return thumbnailOf(item);
 }

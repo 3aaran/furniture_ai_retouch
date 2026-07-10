@@ -26,6 +26,7 @@
 		--xg-shadow-soft: 0 16rpx 44rpx rgba(50, 80, 120, 0.08);
 		--xg-radius-lg: 32rpx;
 		--xg-radius-md: 24rpx;
+		--xg-menu-button-safe-width: 176rpx;
 		background: var(--xg-bg-page);
 		color: var(--xg-text-main);
 		font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;

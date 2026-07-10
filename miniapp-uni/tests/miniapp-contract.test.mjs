@@ -186,7 +186,7 @@ test('miniapp visual system follows frontend-next palette and brand mark', () =>
   assert.match(topbar, /var\(--xg-color-primary\)/);
   assert.doesNotMatch(topbar, /#07080a|#f3da94|#c79b3b|#fff4df/);
 
-  assert.match(icon, /\.app-icon-gold\s*\{\s*color:\s*var\(--xg-color-primary\)/);
+  assert.match(icon, /\.app-icon-gold\s+\.app-icon-image\s*\{\s*filter:\s*none/);
   assert.doesNotMatch(icon, /#f3dc9a|#181207|#fff4df/);
 
   assert.match(login, /var\(--xg-bg-page\)/);
@@ -241,4 +241,47 @@ test('miniapp templates and styles avoid unsupported b and small selectors', () 
     assert.doesNotMatch(source, /<\/?\s*(b|small)\b/i, `${file} must use text classes instead of b/small tags`);
     assert.doesNotMatch(source, /(?:^|[\s,{>])(?:b|small)(?=[\s.#:{,>])/im, `${file} must not style b/small tag selectors`);
   }
+});
+
+test('miniapp separates browsing thumbnails from full-resolution image sources', () => {
+  const model = read('utils/model.js');
+  assert.match(model, /export function thumbnailOf\(item = \{\}\)/);
+  assert.match(model, /export function originalOf\(item = \{\}\)/);
+  assert.match(model, /return item\.thumbUrl \|\| item\.thumbnailUrl \|\| originalOf\(item\)/);
+  assert.match(model, /return item\.url \|\| item\.imageUrl \|\| item\.resultUrl/);
+});
+
+test('miniapp icons use local Lucide SVG resources instead of CSS-drawn layers', () => {
+  const icon = read('components/app-icon/app-icon.vue');
+  assert.match(icon, /\/static\/icons\//);
+  assert.match(icon, /:src="iconSrc"/);
+  assert.doesNotMatch(icon, /class="i i\d"/);
+  assert.doesNotMatch(icon, /\.app-icon-[\w-]+\s+\.i\d/);
+});
+
+test('topbar reserves the WeChat capsule area without sacrificing the avatar touch target', () => {
+  const topbar = read('components/app-topbar/app-topbar.vue');
+  assert.match(topbar, /topbar-right/);
+  assert.match(topbar, /quota-chip-compact/);
+  assert.match(topbar, /padding-right:\s*var\(--xg-menu-button-safe-width\)/);
+  assert.match(topbar, /--xg-menu-button-safe-width/);
+});
+
+test('image browsing pages lazy-load thumbnails and retain originals for detail preview', () => {
+  const tasks = read('pages/tasks/index.vue');
+  const resources = read('pages/resources/index.vue');
+  const workbench = read('pages/workbench/index.vue');
+
+  for (const source of [tasks, resources, workbench]) {
+    assert.match(source, /lazy-load/);
+    assert.match(source, /thumbnailOf/);
+    assert.match(source, /originalOf/);
+    assert.match(source, /mode="aspectFit"/);
+  }
+
+  assert.match(tasks, /page:\s*1/);
+  assert.match(tasks, /hasMore/);
+  assert.match(tasks, /urls:\s*\[task\.original\]/);
+  assert.match(resources, /page:\s*1/);
+  assert.match(resources, /hasMore/);
 });

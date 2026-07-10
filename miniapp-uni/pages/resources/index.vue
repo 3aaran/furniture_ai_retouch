@@ -42,10 +42,10 @@
     <view class="resource-grid">
       <view v-for="item in displayResources" :key="item.id" class="resource-card" @click="useInWorkbench(item)">
         <view class="resource-thumb">
-          <image v-if="item.image" :src="item.image" mode="aspectFill" />
+          <image v-if="item.thumbnail" :src="item.thumbnail" mode="aspectFit" lazy-load />
           <app-icon v-else name="image" :size="42" />
-          <view class="scope-badge">{{ item.scopeText }}</view>
         </view>
+        <view class="scope-badge">{{ item.scopeText }}</view>
         <text class="ui-strong">{{ item.name }}</text>
         <text>{{ item.categoryText }}</text>
       </view>
@@ -53,6 +53,8 @@
 
     <view v-if="!displayResources.length && !loading" class="empty-card">暂无资源</view>
     <view v-if="loading" class="empty-card">资源加载中...</view>
+    <button v-if="hasMore" class="secondary-btn more-btn" :disabled="loadingMore" @click="loadMore">{{ loadingMore ? '加载中...' : '加载更多资源' }}</button>
+    <view v-else-if="displayResources.length" class="list-end">已加载全部资源</view>
   </view>
 </template>
 
@@ -62,7 +64,7 @@ import { getResources, getMerchantResources } from '../../api/resource.js';
 import { getCurrentUser } from '../../api/user.js';
 import { requireLogin } from '../../utils/auth.js';
 import { normalizeFileUrl } from '../../utils/fileUrl.js';
-import { displayName, imageOf, unwrapList, unwrapUser, userQuota } from '../../utils/model.js';
+import { displayName, originalOf, thumbnailOf, unwrapList, unwrapUser, userQuota } from '../../utils/model.js';
 
 const RESOURCE_KEY = 'miniapp_workbench_resource';
 const purposeTabs = [
@@ -85,9 +87,11 @@ export default {
       user: {},
       rawResources: [],
       loading: false,
+      loadingMore: false,
+      hasMore: true,
       errorText: '',
       keyword: '',
-      query: { space: 'SYSTEM', purpose: 'ALL', mainCategory: '', pageSize: 50 },
+      query: { space: 'SYSTEM', purpose: 'ALL', mainCategory: '', page: 1, pageSize: 20 },
       spaceTabs: [
         { key: 'SYSTEM', name: '系统空间' },
         { key: 'STORE', name: '门店空间' },
@@ -126,6 +130,9 @@ export default {
     this.loadUser();
     this.reload();
   },
+  onReachBottom() {
+    this.loadMore();
+  },
   methods: {
     async loadUser() {
       try { this.user = unwrapUser(await getCurrentUser({ showLoading: false, showErrorToast: false })) || {}; } catch (e) {}
@@ -142,11 +149,18 @@ export default {
     setMainCategory(mainCategory) {
       this.query.mainCategory = mainCategory;
     },
-    async reload() {
-      this.loading = true;
+    reload() {
+      this.loadPage(1, true);
+    },
+    loadMore() {
+      if (!this.loading && !this.loadingMore && this.hasMore) this.loadPage(this.query.page + 1, false);
+    },
+    async loadPage(page, replace) {
+      if (replace) this.loading = true;
+      else this.loadingMore = true;
       this.errorText = '';
       try {
-        const params = { pageSize: 100, keyword: this.keyword };
+        const params = { page, pageSize: this.query.pageSize, keyword: this.keyword };
         const apiScope = this.normalizeSpaceKey(this.query.space);
         let payload;
         if (apiScope === 'MERCHANT' || apiScope === 'USER') {
@@ -154,12 +168,18 @@ export default {
         } else {
           payload = await getResources(params, { showLoading: false });
         }
-        this.rawResources = unwrapList(payload);
+        const items = unwrapList(payload);
+        const merged = replace ? items : this.rawResources.concat(items.filter((item) => !this.rawResources.some((current) => current.id === item.id)));
+        const total = Number(payload?.total ?? payload?.data?.total);
+        this.rawResources = merged;
+        this.query.page = page;
+        this.hasMore = items.length === this.query.pageSize && (!Number.isFinite(total) || merged.length < total);
       } catch (error) {
         this.errorText = error.message || '资产库读取失败';
-        this.rawResources = [];
+        if (replace) this.rawResources = [];
       } finally {
         this.loading = false;
+        this.loadingMore = false;
       }
     },
     normalizeSpaceKey(space) {
@@ -176,7 +196,8 @@ export default {
         ...item,
         id: item.id,
         name: item.name || item.title || '未命名资源',
-        image: normalizeFileUrl(imageOf(item)),
+        thumbnail: normalizeFileUrl(thumbnailOf(item)),
+        original: normalizeFileUrl(originalOf(item)),
         scope,
         resourceType,
         mainCategoryName,
@@ -261,9 +282,11 @@ export default {
 .resource-card { overflow: hidden; border-radius: 20rpx; background: rgba(255,255,255,.045); border: 1rpx solid rgba(255,255,255,.1); }
 .resource-thumb { position: relative; width: 100%; height: 210rpx; display: flex; align-items: center; justify-content: center; color: var(--xg-color-primary); background: rgba(var(--xg-color-primary-rgb), .1); font-size: 40rpx; }
 .resource-thumb image { width: 100%; height: 100%; display: block; }
-.scope-badge { position: absolute; left: 10rpx; top: 10rpx; padding: 4rpx 12rpx; border-radius: 999rpx; color: var(--xg-text-inverse); background: rgba(255,236,170,.92); font-size: 18rpx; font-weight: 900; }
+.scope-badge { display: inline-flex; margin: 12rpx 14rpx 0; padding: 4rpx 12rpx; border-radius: 999rpx; color: var(--xg-color-primary); background: rgba(var(--xg-color-primary-rgb), .08); font-size: 18rpx; font-weight: 900; }
 .resource-card .ui-strong { display: block; padding: 14rpx 14rpx 0; color: var(--xg-text-main); font-size: 24rpx; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .resource-card text { display: block; padding: 6rpx 14rpx 16rpx; color: var(--xg-text-muted); font-size: 20rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .empty-card, .error-card { margin-top: 20rpx; padding: 24rpx; border-radius: 22rpx; background: rgba(255,255,255,.04); color: var(--xg-text-muted); font-size: 26rpx; border: 1rpx solid rgba(255,255,255,.08); }
 .error-card { color: #ffb4a8; border-color: rgba(255,112,112,.22); }
+.more-btn { width: 100%; margin-top: 24rpx; }
+.list-end { margin-top: 24rpx; text-align: center; color: var(--xg-text-dim); font-size: 24rpx; }
 </style>

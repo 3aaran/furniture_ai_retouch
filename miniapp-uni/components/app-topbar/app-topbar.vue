@@ -13,13 +13,15 @@
         <text v-if="displaySubtitle" class="topbar-subtitle">{{ displaySubtitle }}</text>
       </view>
 
-      <view v-if="quota" class="quota-chip">
-        <app-icon name="wallet" tone="dark" :size="24" />
-        <text>{{ quota }}</text>
-      </view>
-      <view v-if="showAvatar" class="topbar-avatar" @click="goProfile">
-        <image v-if="avatarUrl" class="avatar-img" :src="avatarUrl" mode="aspectFill" />
-        <text v-else class="avatar-text">{{ avatarText || '勋' }}</text>
+      <view class="topbar-right">
+        <view v-if="quota" class="quota-chip quota-chip-compact">
+          <app-icon name="wallet" tone="dark" :size="24" />
+          <text>{{ quota }}</text>
+        </view>
+        <view v-if="showAvatar" class="topbar-avatar" @click="goProfile">
+          <image v-if="avatarUrl" class="avatar-img" :src="avatarUrl" mode="aspectFill" />
+          <text v-else class="avatar-text">{{ avatarText || '勋' }}</text>
+        </view>
       </view>
     </view>
 
@@ -151,6 +153,7 @@ export default {
   align-items: center;
   gap: 16rpx;
   padding: 14rpx 24rpx;
+  padding-right: var(--xg-menu-button-safe-width);
   background: rgba(255, 255, 255, 0.94);
   border-bottom: 1rpx solid var(--xg-border-soft);
   box-shadow: var(--xg-shadow-soft);
@@ -173,6 +176,7 @@ export default {
   font-weight: 500;
 }
 .topbar-title-box { flex: 1; min-width: 0; }
+.topbar-right { display: flex; align-items: center; gap: 12rpx; flex: 0 0 auto; min-width: 72rpx; }
 .topbar-title { display: block; color: var(--xg-text-main); font-size: 31rpx; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .topbar-subtitle { display: block; margin-top: 3rpx; color: var(--xg-text-muted); font-size: 21rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .quota-chip {
@@ -204,6 +208,10 @@ export default {
 }
 .avatar-img { width: 100%; height: 100%; }
 .avatar-text { color: var(--xg-text-inverse); font-size: 29rpx; font-weight: 900; }
+@media screen and (max-width: 375px) {
+  .quota-chip-compact { width: 58rpx; padding: 0; justify-content: center; }
+  .quota-chip-compact text { display: none; }
+}
 .menu-mask {
   position: fixed;
   left: 0;
