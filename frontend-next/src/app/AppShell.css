@@ -230,6 +230,14 @@
   min-height: calc(100vh - var(--topbar-height));
 }
 
+.shellAccessState {
+  min-height: calc(100vh - var(--topbar-height));
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+  font-weight: 800;
+}
+
 .shellToast {
   position: fixed;
   top: calc(var(--topbar-height) + 14px);

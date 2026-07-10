@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { BrandLogo } from '../components/brand/BrandLogo';
 import { AppIcon, type AppIconName } from '../components/icons/AppIcon';
 import { getCurrentUser as fetchCurrentUser } from '../services/auth.api';
@@ -11,9 +11,9 @@ import './AppShell.css';
 
 const primaryNavItems = [
   { to: '/studio', label: '工作室' },
-  { to: '/resources', label: '资产库' },
-  { to: '/users', label: '用户管理' },
-  { to: '/promotion', label: '邀请共创' },
+  { to: '/resources', label: '资产库', requiresManagement: true },
+  { to: '/users', label: '用户管理', requiresManagement: true },
+  { to: '/promotion', label: '邀请共创', requiresManagement: true },
 ];
 
 const utilityNavItems: Array<{ key: string; to?: string; modal?: Exclude<ShellQuickModalType, null>; label: string; icon: AppIconName }> = [
@@ -22,11 +22,11 @@ const utilityNavItems: Array<{ key: string; to?: string; modal?: Exclude<ShellQu
   { key: 'history', to: '/history', label: '历史记录', icon: 'history' },
 ];
 
-const mobileMainNavItems: Array<{ to: string; label: string; icon: AppIconName }> = [
+const mobileMainNavItems: Array<{ to: string; label: string; icon: AppIconName; requiresManagement?: boolean }> = [
   { to: '/studio', label: '工作室', icon: 'studio' },
-  { to: '/resources', label: '资产库', icon: 'resources' },
-  { to: '/users', label: '用户管理', icon: 'users' },
-  { to: '/promotion', label: '邀请共创', icon: 'promotion' },
+  { to: '/resources', label: '资产库', icon: 'resources', requiresManagement: true },
+  { to: '/users', label: '用户管理', icon: 'users', requiresManagement: true },
+  { to: '/promotion', label: '邀请共创', icon: 'promotion', requiresManagement: true },
 ];
 
 const mobileToolItems: Array<{ key: string; to?: string; modal?: Exclude<ShellQuickModalType, null>; label: string; icon: AppIconName }> = [
@@ -44,16 +44,47 @@ function displayName(user: CurrentUser | null) {
   return user?.displayName || user?.name || user?.username || user?.phone || '用户';
 }
 
+const managementRoles = new Set([
+  'SYSTEM_ADMIN',
+  'MERCHANT_OWNER',
+  'MERCHANT_ADMIN',
+  'PLATFORM_ADMIN',
+  'STORE_OWNER',
+  'STORE_ADMIN',
+]);
+
+const managementPaths = new Set(['/resources', '/users', '/promotion']);
+
+function canAccessManagementPages(user: CurrentUser | null) {
+  return managementRoles.has(String(user?.role || '').trim().toUpperCase());
+}
+
+function isManagementPath(pathname: string) {
+  const normalizedPath = pathname.replace(/\/+$/, '') || '/';
+  return managementPaths.has(normalizedPath);
+}
+
 export function AppShell() {
   const location = useLocation();
   const navigate = useNavigate();
   const isStudioRoute = location.pathname === '/studio';
   const [user, setUser] = useState<CurrentUser | null>(() => getCurrentUserSnapshot());
+  const [userResolved, setUserResolved] = useState(() => Boolean(getCurrentUserSnapshot()));
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [quickModal, setQuickModal] = useState<ShellQuickModalType>(null);
   const [shellNotice, setShellNotice] = useState('');
   const quotaText = useMemo(() => Number(user?.quota ?? 0).toLocaleString('zh-CN'), [user?.quota]);
+  const hasManagementAccess = useMemo(() => canAccessManagementPages(user), [user]);
+  const visiblePrimaryNavItems = useMemo(
+    () => primaryNavItems.filter((item) => !item.requiresManagement || hasManagementAccess),
+    [hasManagementAccess],
+  );
+  const visibleMobileMainNavItems = useMemo(
+    () => mobileMainNavItems.filter((item) => !item.requiresManagement || hasManagementAccess),
+    [hasManagementAccess],
+  );
+  const managementRoute = isManagementPath(location.pathname);
 
   useEffect(() => {
     let cancelled = false;
@@ -68,6 +99,7 @@ export function AppShell() {
         if (cancelled) return;
         setCurrentUser(nextUser);
         setUser(getCurrentUserSnapshot());
+        setUserResolved(true);
       })
       .catch(() => {
         if (cancelled) return;
@@ -121,7 +153,7 @@ export function AppShell() {
         </button>
 
         <nav className="shellNav desktopOnly" aria-label="主导航" onClick={(event) => event.stopPropagation()}>
-          {primaryNavItems.map((item) => (
+          {visiblePrimaryNavItems.map((item) => (
             <NavLink key={item.to} to={item.to} className={({ isActive }) => `shellNavItem ${isActive ? 'isActive' : ''}`.trim()}>
               {item.label}
             </NavLink>
@@ -161,7 +193,7 @@ export function AppShell() {
           <button type="button" aria-label="关闭导航栏" onClick={() => setMobileNavOpen(false)}><AppIcon name="close" /></button>
         </div>
         <nav className="mobileSideNav" aria-label="移动端侧边导航">
-          {mobileMainNavItems.map((item) => (
+          {visibleMobileMainNavItems.map((item) => (
             <button key={item.to} type="button" className={location.pathname === item.to ? 'isActive' : ''} onClick={() => go(item.to)}>
               <span aria-hidden="true"><AppIcon name={item.icon} /></span>{item.label}
             </button>
@@ -177,7 +209,11 @@ export function AppShell() {
       </aside>
 
       <main className="shellMain">
-        <Outlet />
+        {managementRoute && !userResolved
+          ? <div className="shellAccessState" role="status">正在验证访问权限...</div>
+          : managementRoute && !hasManagementAccess
+            ? <Navigate to="/studio" replace />
+            : <Outlet />}
       </main>
       {shellNotice && <button className="shellToast" type="button" onClick={() => setShellNotice('')}>{shellNotice}</button>}
       <ShellQuickModal type={quickModal} onClose={() => setQuickModal(null)} onNotice={setShellNotice} />
