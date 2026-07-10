@@ -1,4 +1,5 @@
 import type { ChangeEvent, DragEvent, RefObject } from 'react';
+import { AppIcon } from '../../components/icons/AppIcon';
 import type { StudioLocalImage, StudioRecentTask } from './studioViewTypes';
 import './StudioCanvasPanel.css';
 
@@ -79,7 +80,7 @@ export function StudioCanvasPanel({
       <section className="studioMainBlock">
         <div className="studioSourceHead"><b>产品原图</b>{sourceImage && <button type="button" onClick={onClearSource}>清除</button>}</div>
         <label
-          className={draggingSource ? 'studioUploadBox isDragging' : 'studioUploadBox'}
+          className={`${draggingSource ? 'studioUploadBox isDragging' : 'studioUploadBox'}${sourceImage ? ' hasImage' : ''}`}
           onDragOver={onSourceDragOver}
           onDragLeave={onSourceDragLeave}
           onDrop={onSourceDrop}
@@ -87,7 +88,7 @@ export function StudioCanvasPanel({
           <input type="file" accept="image/*" onChange={onSourceInput} />
           {sourceImage
             ? <div className="studioPreviewWrap"><img src={sourceImage.url} alt="产品原图" /></div>
-            : <div className="studioUploadInner"><div>+</div><b>点击上传家具图片</b><em>或</em><button type="button" onClick={(event) => { event.preventDefault(); onSelectSourceResource(); }}>资产库</button></div>}
+            : <div className="studioUploadInner"><div><AppIcon name="plus" size={30} /></div><b>点击上传家具图片</b><em>或</em><button type="button" onClick={(event) => { event.preventDefault(); onSelectSourceResource(); }}>资产库</button></div>}
         </label>
       </section>
 
@@ -102,8 +103,8 @@ export function StudioCanvasPanel({
                   <b>{task.feature}</b>
                 </button>
                 <div className="studioRecentActions">
-                  <button type="button" aria-label="放入工作室" title="放入工作室" onClick={() => onContinueRecentTask(task)}>编辑</button>
-                  <button type="button" aria-label="删除记录" title="删除记录" onClick={() => onDeleteRecentTask(task)}>删</button>
+                  <button type="button" aria-label="放入工作室" title="放入工作室" onClick={() => onContinueRecentTask(task)}><AppIcon name="edit" size={14} /></button>
+                  <button type="button" aria-label="删除记录" title="删除记录" onClick={() => onDeleteRecentTask(task)}><AppIcon name="trash" size={14} /></button>
                 </div>
               </article>
             ))}

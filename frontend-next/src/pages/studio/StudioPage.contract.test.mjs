@@ -118,6 +118,8 @@ test('studio recent strip and settings match annotated behavior', () => {
   assert.match(source, /const \[promptOpen, setPromptOpen\] = useState\(false\);/);
   assert.match(source, /const \[referenceOpen, setReferenceOpen\] = useState\(false\);/);
   assert.doesNotMatch(source, /修改配置/);
+  assert.match(css, /@media \(min-width: 768px\)[\s\S]*\.studioRecentList\s*\{[\s\S]*overflow-x:\s*auto/);
+  assert.match(css, /scroll-snap-type:\s*x proximity/);
 });
 
 test('studio asset picker and recent task actions use real APIs without random selection', () => {
@@ -134,12 +136,18 @@ test('studio asset picker and recent task actions use real APIs without random s
   assert.match(source, /studioToast/);
 });
 
-test('mobile feature picker stays open while resource configuration owns all parameters', () => {
+test('mobile feature picker stays open while feature configuration owns all parameters', () => {
   assert.match(source, /if \(!isMobile\) \{\s+setMobileConfigSheet\(null\);\s+closeFeatureDrawer\(\);\s+\}/);
   assert.match(source, /featureBranches\.filter\(\(item\) => item\.key !== 'video'\)/);
   assert.match(source, /studioFeatures\.filter\(\(item\) => item\.group === featureGroup\)/);
   assert.doesNotMatch(source, /!needsResourceLibrary && <div className="studioMobileConfigBlock"><span>功能参数<\/span>/);
   assert.match(source, /<button className="studioMobileResourceConfig"/);
   assert.match(source, /'resource'/);
-  assert.match(source, /setMobileConfigSheet\('resource'\)/);
+  assert.match(source, /setMobileConfigSheet\('options'\)/);
+});
+
+test('mobile exposes feature configuration for every studio feature', () => {
+  assert.doesNotMatch(source, /\{needsResourceLibrary && <button className="studioMobileResourceConfig"/);
+  assert.match(source, /function openFeatureOptionsFromMobile\(\)/);
+  assert.match(source, /打开功能配置/);
 });

@@ -5,6 +5,15 @@ const backendTarget = process.env.VITE_API_PROXY_TARGET || 'http://localhost:300
 
 export default defineConfig({
   plugins: [react()],
+  build: {
+    rolldownOptions: {
+      output: {
+        manualChunks(id) {
+          return id.includes('@tabler/icons-react') ? 'tabler-icons' : undefined;
+        },
+      },
+    },
+  },
   server: {
     port: 5174,
     host: '0.0.0.0',

@@ -261,6 +261,10 @@
     padding: 0 14px;
     border: 1px solid var(--border-soft);
     border-radius: var(--radius-pill);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     color: var(--text-main);
     background: var(--bg-card-soft);
     font-weight: 900;
@@ -311,8 +315,9 @@
     border: 1px solid var(--border-soft);
     border-radius: var(--radius-md);
     display: grid;
-    align-content: center;
-    gap: 3px;
+    grid-template-columns: 30px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
     color: var(--text-main);
     background: var(--bg-card-soft);
     text-align: left;
@@ -325,10 +330,19 @@
     white-space: nowrap;
   }
 
-  .studioMobileConfigList em {
-    color: var(--text-muted);
-    font-size: 11px;
-    font-style: normal;
+  .studioMobileConfigList button > span {
+    width: 28px;
+    height: 28px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    color: var(--color-primary);
+    background: var(--color-primary-soft);
+  }
+
+  .studioMobileConfigList button.isActive > span {
+    color: var(--color-primary);
+    background: rgba(var(--bg-card-rgb), .92);
   }
 
   .studioMobileResourceConfig {

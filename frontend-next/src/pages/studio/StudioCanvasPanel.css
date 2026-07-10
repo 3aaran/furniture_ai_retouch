@@ -338,12 +338,19 @@
   }
 
   .studioRecentList {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    display: flex;
     gap: 9px;
+    max-height: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0 2px 5px;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
   }
 
   .studioRecentList article,
   .studioRecentGhost {
+    flex: 0 0 clamp(124px, 14vw, 166px);
     height: 76px;
     min-height: 76px;
     overflow: hidden;
@@ -351,6 +358,7 @@
     border-radius: var(--radius-lg);
     background: rgba(var(--bg-card-rgb), .9);
     box-shadow: var(--shadow-xs);
+    scroll-snap-align: start;
   }
 
   .studioRecentPreview,

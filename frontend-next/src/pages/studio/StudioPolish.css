@@ -1,0 +1,105 @@
+@keyframes studio-panel-rise {
+  from { opacity: 0; transform: translateY(12px) scale(.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes studio-generate-breathe {
+  0%, 100% { box-shadow: 0 14px 28px rgba(var(--color-primary-rgb), .16); }
+  50% { box-shadow: 0 18px 38px rgba(var(--color-accent-rgb), .24); }
+}
+
+@media (min-width: 768px) {
+  .studioLayoutPc > .studioLeftPanel {
+    background:
+      linear-gradient(180deg, rgba(var(--bg-card-rgb), .99), rgba(var(--bg-card-rgb), .9)),
+      radial-gradient(circle at 0 0, rgba(var(--color-primary-rgb), .08), transparent 18rem);
+    box-shadow: inset -1px 0 0 rgba(var(--bg-card-rgb), .88), 12px 0 30px rgba(var(--text-main-rgb), .025);
+  }
+
+  .studioLayoutPc > .studioRightPanel {
+    background:
+      linear-gradient(180deg, rgba(var(--bg-card-rgb), .98), rgba(var(--bg-card-rgb), .9)),
+      radial-gradient(circle at 100% 8%, rgba(var(--color-accent-rgb), .08), transparent 18rem);
+    box-shadow: inset 1px 0 0 rgba(var(--bg-card-rgb), .88), -12px 0 30px rgba(var(--text-main-rgb), .025);
+  }
+
+  .studioCenterPanel > .studioSignalBar {
+    animation: studio-panel-rise var(--motion-slow) var(--motion-ease) both;
+  }
+
+  .studioUploadBox.hasImage {
+    border-style: solid;
+    border-color: rgba(var(--color-accent-rgb), .3);
+    box-shadow: inset 0 0 0 1px rgba(var(--bg-card-rgb), .55), var(--shadow-sm);
+  }
+
+  .studioUploadBox.hasImage:hover {
+    transform: translateY(-1px);
+    box-shadow: inset 0 0 0 1px rgba(var(--bg-card-rgb), .68), var(--shadow-md);
+  }
+
+  #studio-recent-strip .studioRecentList {
+    scrollbar-color: rgba(var(--color-primary-rgb), .35) transparent;
+  }
+
+  .studioRecentList .studioRecentActions {
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity var(--motion-fast) ease, transform var(--motion-fast) var(--motion-ease);
+  }
+
+  .studioRecentList article:hover .studioRecentActions,
+  .studioRecentList article:focus-within .studioRecentActions {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .studioRecentList .studioRecentActions button {
+    width: 28px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+  }
+}
+
+.studioGenerateButton.isGenerating {
+  cursor: progress;
+  animation: studio-generate-breathe 1.35s var(--motion-ease) infinite;
+}
+
+@media (max-width: 767px) {
+  .studioCenterPanel .studioMobileConfigSummary {
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--surface-highlight), var(--shadow-md);
+  }
+
+  .studioCenterPanel .studioMobileConfigSummary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(120deg, rgba(var(--bg-card-rgb), .32), transparent 46%);
+    pointer-events: none;
+  }
+
+  .studioCenterPanel .studioMobileConfigSummary button:first-child {
+    border-color: rgba(var(--color-primary-rgb), .2);
+    background: linear-gradient(145deg, rgba(var(--color-primary-rgb), .11), rgba(var(--bg-card-rgb), .88));
+  }
+
+  .studioLayoutPc .studioMobileRecentList footer button {
+    display: inline-grid;
+    place-items: center;
+    padding: 0;
+  }
+
+  #studio-mobile-config-sheet.studioMobileConfigSheet.isOpen,
+  .studioLayoutPc > .studioMobileRecentSheet.isOpen {
+    animation: studio-panel-rise var(--motion-base) var(--motion-ease) both;
+  }
+
+  .studioSidePanel.studioRightPanel .studioGenerateArea {
+    box-shadow: var(--surface-highlight), var(--shadow-md);
+  }
+}

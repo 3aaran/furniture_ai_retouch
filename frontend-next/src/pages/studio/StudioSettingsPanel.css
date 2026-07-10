@@ -31,15 +31,22 @@
 }
 
 .studioCollapseHead i {
-  min-height: 24px;
-  padding: 0 8px;
+  width: 28px;
+  min-height: 28px;
   border-radius: var(--radius-pill);
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   color: var(--color-primary);
   background: var(--color-primary-soft);
-  font-size: 11px;
   font-style: normal;
+  transition: color var(--motion-fast) ease, background var(--motion-fast) ease, transform var(--motion-fast) var(--motion-ease);
+}
+
+.studioCollapseHead:hover i {
+  color: var(--text-inverse);
+  background: var(--color-primary);
+  transform: translateX(1px);
 }
 
 .studioPromptField {

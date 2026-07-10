@@ -19,31 +19,24 @@
 }
 
 .studioBranchTabs button {
-  position: relative;
   min-height: 48px;
-  padding: 8px 10px 8px 34px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   overflow: hidden;
   text-align: left;
 }
 
-.studioBranchTabs button::before {
-  content: '图';
-  position: absolute;
-  left: 9px;
-  top: 50%;
+.studioBranchTabs button > svg {
   width: 18px;
   height: 18px;
   border-radius: 7px;
-  display: grid;
-  place-items: center;
   color: var(--color-primary);
   background: var(--color-primary-soft);
-  font-size: 10px;
-  transform: translateY(-50%);
+  padding: 4px;
+  box-sizing: content-box;
 }
-
-.studioBranchTabs button:nth-child(2)::before { content: '宣'; }
-.studioBranchTabs button:nth-child(3)::before { content: '影'; }
 
 .studioBranchTabs button:disabled {
   color: var(--text-dim);
@@ -61,7 +54,7 @@
   box-shadow: 0 10px 22px rgba(var(--color-primary-rgb), .15);
 }
 
-.studioBranchTabs button.isActive::before {
+.studioBranchTabs button.isActive > svg {
   color: var(--color-primary);
   background: rgba(var(--bg-card-rgb), .92);
 }

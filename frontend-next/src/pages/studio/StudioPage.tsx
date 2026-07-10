@@ -6,6 +6,7 @@ import { TaskCompareModal } from '../../components/tasks/TaskCompareModal';
 import { fullTaskImageUrl, fullTaskSourceImageUrl, taskPreviewImageUrl } from '../../components/tasks/taskImageUrls';
 import type { StudioLocalImage, StudioRecentTask } from './studioViewTypes';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
+import { AppIcon, type AppIconName } from '../../components/icons/AppIcon';
 import {
   featureBranches,
   promoOptionChoices,
@@ -16,6 +17,24 @@ import {
   type FeatureGroup,
   type StudioFeatureKey,
 } from './studioData';
+
+const branchIcons: Record<FeatureGroup, AppIconName> = {
+  base: 'studio',
+  promotion: 'promotion',
+  video: 'document',
+};
+
+const featureIcons: Record<StudioFeatureKey, AppIconName> = {
+  material: 'resources',
+  replace_bg: 'building',
+  remove_bg: 'eye',
+  enhance: 'settings',
+  lineart: 'edit',
+  multiview: 'dashboard',
+  promo_main_image: 'document',
+  promo_poster_image: 'promotion',
+  promo_detail_image: 'eye',
+};
 import {
   createAiTask,
   deleteAiTask,
@@ -37,10 +56,11 @@ import { getCurrentUserSnapshot } from '../../stores/auth.store';
 import './StudioPage.css';
 import './StudioControls.css';
 import './StudioResourcePager.css';
+import './StudioPolish.css';
 
 type LocalImage = StudioLocalImage;
 type RecentTask = StudioRecentTask;
-type MobileConfigSheet = 'feature' | 'resource' | 'resolution' | 'ratio' | null;
+type MobileConfigSheet = 'feature' | 'options' | 'resolution' | 'ratio' | null;
 type AssetPickerTarget = 'source' | 'reference' | null;
 
 const MAX_REFERENCE_IMAGES = 9;
@@ -428,8 +448,8 @@ export function StudioPage() {
     setMobileConfigSheet(null);
   }
 
-  function openResourceConfigFromMobile() {
-    setMobileConfigSheet('resource');
+  function openFeatureOptionsFromMobile() {
+    setMobileConfigSheet('options');
   }
 
   async function uploadOne(file: File, target: 'source' | 'reference') {
@@ -736,7 +756,7 @@ export function StudioPage() {
             <div className="studioResourceGrid">
             <input ref={resourceUploadInputRef} type="file" accept="image/*" hidden onChange={handleResourceUploadInput} />
             <button className="studioUploadResource" type="button" onClick={() => resourceUploadInputRef.current?.click()}>
-              <span>+</span><b>上传</b>
+              <span><AppIcon name="plus" size={20} /></span><b>上传</b>
             </button>
             {pagedResourceItems.map(renderResourceCard)}
             {resourceLoading && <div className="studioLibraryEmpty isLoading">正在读取资产库...</div>}
@@ -784,11 +804,11 @@ export function StudioPage() {
             <div className="studioBranchTabs" aria-label="功能主分支">
               {featureBranches.map((item) => {
                 const disabled = 'disabled' in item ? item.disabled : false;
-                return <button key={item.key} type="button" disabled={disabled} className={featureGroup === item.key ? 'isActive' : ''} onClick={() => openFeatureGroup(item.key)}>{item.label}</button>;
+                return <button key={item.key} type="button" disabled={disabled} className={featureGroup === item.key ? 'isActive' : ''} onClick={() => openFeatureGroup(item.key)}><AppIcon name={branchIcons[item.key]} size={17} /><b>{item.label}</b></button>;
               })}
             </div>
             <div className="studioDivider" />
-            <div className={featurePickerGroup ? 'studioFeatureList isPickerOpen' : 'studioFeatureList'}>{visibleFeatures.map((item) => <button key={item.key} type="button" className={featureKey === item.key ? 'isActive' : ''} onClick={() => chooseFeature(item.key)}><span>{item.tag}</span><b>{item.label}</b></button>)}</div>
+            <div className={featurePickerGroup ? 'studioFeatureList isPickerOpen' : 'studioFeatureList'}>{visibleFeatures.map((item) => <button key={item.key} type="button" className={featureKey === item.key ? 'isActive' : ''} onClick={() => chooseFeature(item.key)}><span><AppIcon name={featureIcons[item.key]} size={16} /></span><b>{item.label}</b></button>)}</div>
           </>}
           {!isMobile && <div className="studioFeatureConfig">{renderLeftConfig()}</div>}
         </aside>
@@ -796,8 +816,8 @@ export function StudioPage() {
         {mobileConfigSheet && <button className="studioMobileConfigBackdrop" type="button" aria-label="关闭配置弹窗" onClick={closeMobileConfig} />}
         <section id="studio-mobile-config-sheet" className={`studioMobileConfigSheet ${mobileConfigSheet ? 'isOpen' : ''}`.trim()} aria-hidden={!mobileConfigSheet}>
           <div className="studioMobileConfigHead">
-            <span>{mobileConfigSheet === 'resource' ? '资源配置' : '工作室设置'}</span>
-            <button type="button" aria-label="关闭配置弹窗" onClick={closeMobileConfig}>×</button>
+            <span>{mobileConfigSheet === 'options' ? (needsResourceLibrary ? '资源配置' : '功能配置') : '工作室设置'}</span>
+            <button type="button" aria-label="关闭配置弹窗" onClick={closeMobileConfig}><AppIcon name="close" /></button>
           </div>
 
           {mobileConfigSheet === 'feature' && (
@@ -805,20 +825,20 @@ export function StudioPage() {
               <div className="studioMobileConfigBlock">
                 <span>生成类型</span>
                 <div className="studioMobileConfigChips">
-                  {featureBranches.filter((item) => item.key !== 'video').map((item) => <button key={item.key} type="button" className={featureGroup === item.key ? 'isActive' : ''} onClick={() => selectGroup(item.key)}>{item.label}</button>)}
+                  {featureBranches.filter((item) => item.key !== 'video').map((item) => <button key={item.key} type="button" className={featureGroup === item.key ? 'isActive' : ''} onClick={() => selectGroup(item.key)}><AppIcon name={branchIcons[item.key]} size={15} /><span>{item.label}</span></button>)}
                 </div>
               </div>
               <div className="studioMobileConfigBlock">
                 <span>功能</span>
                 <div className="studioMobileConfigList">
-                  {studioFeatures.filter((item) => item.group === featureGroup).map((item) => <button key={item.key} type="button" className={featureKey === item.key ? 'isActive' : ''} onClick={() => chooseFeature(item.key)}><b>{item.label}</b><em>{item.tag}</em></button>)}
+                  {studioFeatures.filter((item) => item.group === featureGroup).map((item) => <button key={item.key} type="button" className={featureKey === item.key ? 'isActive' : ''} onClick={() => chooseFeature(item.key)}><span><AppIcon name={featureIcons[item.key]} size={17} /></span><b>{item.label}</b></button>)}
                 </div>
               </div>
-              {needsResourceLibrary && <button className="studioMobileResourceConfig" type="button" onClick={openResourceConfigFromMobile}>打开资源配置</button>}
+              <button className="studioMobileResourceConfig" type="button" onClick={openFeatureOptionsFromMobile}>{needsResourceLibrary ? '打开资源配置' : '打开功能配置'}</button>
             </>
           )}
 
-          {mobileConfigSheet === 'resource' && <div className="studioMobileConfigBlock studioMobileResourceSheet">{renderLeftConfig()}</div>}
+          {mobileConfigSheet === 'options' && <div className="studioMobileConfigBlock studioMobileResourceSheet">{renderLeftConfig()}</div>}
 
           {mobileConfigSheet === 'resolution' && (
             <div className="studioMobileConfigBlock">
@@ -843,7 +863,7 @@ export function StudioPage() {
         <section className={`studioMobileRecentSheet ${mobileRecentOpen ? 'isOpen' : ''}`.trim()} aria-hidden={!mobileRecentOpen}>
           <div className="studioMobileRecentHead">
             <div><span>最近生成</span><b>{recentTasks.length ? `${recentTasks.length} 条记录` : '暂无记录'}</b></div>
-            <button type="button" aria-label="关闭最近生成" onClick={() => setMobileRecentOpen(false)}>×</button>
+            <button type="button" aria-label="关闭最近生成" onClick={() => setMobileRecentOpen(false)}><AppIcon name="close" /></button>
           </div>
           <div className="studioMobileRecentList">
             {recentTasks.length ? recentTasks.slice(0, 8).map((task) => (
@@ -851,8 +871,8 @@ export function StudioPage() {
                 {task.previewUrl ? <img src={task.previewUrl} alt={task.feature} loading="lazy" decoding="async" /> : <i aria-hidden="true">图</i>}
                 <div><b>{task.feature}</b><span>{task.status}</span><em>{task.resolution} · {task.ratio} · {task.time}</em></div>
                 <footer>
-                  <button type="button" onClick={(event) => { event.stopPropagation(); continueTaskImage(task); }}>编辑</button>
-                  <button type="button" onClick={(event) => { event.stopPropagation(); void deleteRecentTask(task); }}>删除</button>
+                  <button type="button" aria-label="放入工作室" onClick={(event) => { event.stopPropagation(); continueTaskImage(task); }}><AppIcon name="edit" size={15} /></button>
+                  <button type="button" aria-label="删除记录" onClick={(event) => { event.stopPropagation(); void deleteRecentTask(task); }}><AppIcon name="trash" size={15} /></button>
                 </footer>
               </article>
             )) : <div className="studioMobileRecentEmpty">还没有生成记录</div>}
@@ -869,7 +889,7 @@ export function StudioPage() {
           draggingSource={draggingSource}
           recentTasks={recentTasks}
           showInlineRecent={!isMobile}
-          featureDrawerOpen={featureDrawerOpen}
+          featureDrawerOpen={mobileConfigSheet === 'feature'}
           featureButtonRef={featureButtonRef}
           onOpenFeatureConfig={() => setMobileConfigSheet('feature')}
           onOpenResolutionConfig={() => setMobileConfigSheet('resolution')}

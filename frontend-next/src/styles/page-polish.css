@@ -1,0 +1,30 @@
+:is(.assetSearchBar, .assetBatchBar, .opPanel, .opPager, .profileHeroV3) {
+  box-shadow: var(--surface-highlight), var(--shadow-sm);
+}
+
+:is(.assetSearchActionButton, .assetCreateMainButton, .opTextButton, .opRowActions button) {
+  box-shadow: inset 0 1px 0 rgba(var(--bg-card-rgb), .86);
+}
+
+:is(.assetSearchActionButton, .assetCreateMainButton, .opTextButton, .opRowActions button):hover:not(:disabled) {
+  border-color: rgba(var(--color-primary-rgb), .24);
+  box-shadow: var(--surface-highlight), var(--shadow-xs);
+}
+
+@media (hover: hover) {
+  :is(.assetCard, .opTaskCard, .assetCategoryManageCard) {
+    transition: transform var(--motion-base) var(--motion-ease), border-color var(--motion-fast) ease, box-shadow var(--motion-base) var(--motion-ease);
+  }
+
+  :is(.assetCard, .opTaskCard, .assetCategoryManageCard):hover {
+    transform: translateY(-2px);
+    border-color: rgba(var(--color-primary-rgb), .2);
+    box-shadow: var(--surface-highlight), var(--shadow-md);
+  }
+}
+
+@media (max-width: 767px) {
+  :is(.assetSearchBar, .assetBatchBar, .opPanel, .opPager, .profileHeroV3) {
+    box-shadow: var(--surface-highlight), var(--shadow-xs);
+  }
+}
