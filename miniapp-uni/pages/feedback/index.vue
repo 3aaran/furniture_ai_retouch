@@ -81,7 +81,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .form-card { display: grid; gap: 20rpx; padding: 24rpx; border-radius: 28rpx; background: var(--xg-bg-card); border: 1rpx solid rgba(255,255,255,.09); }
 .form-card label { display: grid; gap: 12rpx; }
 .form-card label text { color: var(--xg-text-muted); font-size: 25rpx; font-weight: 800; }

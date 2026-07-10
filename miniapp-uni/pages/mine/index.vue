@@ -90,7 +90,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .profile-card { display: flex; gap: 20rpx; align-items: center; padding: 24rpx; border-radius: 28rpx; background: var(--xg-bg-card); border: 1rpx solid rgba(var(--xg-color-primary-rgb), .14); }
 .avatar { width: 104rpx; height: 104rpx; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg,var(--xg-color-primary),var(--xg-color-accent)); color: var(--xg-text-inverse); font-size: 40rpx; font-weight: 900; }
 .profile-main { flex: 1; min-width: 0; }

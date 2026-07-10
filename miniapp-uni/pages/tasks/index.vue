@@ -6,7 +6,7 @@
       <view class="page-head-main">
         <view class="page-icon"><app-icon name="image" tone="dark" :size="34" /></view>
         <view class="page-title-text">
-          <text class="ui-strong">历史任务</text>
+          <text class="ui-strong">历史记录</text>
           <text>生成记录与图片结果</text>
         </view>
       </view>
@@ -91,7 +91,7 @@ export default {
         const payload = await getTaskImages({ keyword: this.keyword, pageSize: this.pageSize }, { showLoading: false });
         this.tasks = unwrapList(payload).map(this.normalizeTask);
       } catch (error) {
-        this.errorText = error.message || '历史任务读取失败';
+        this.errorText = error.message || '历史记录读取失败';
         this.tasks = [];
       } finally {
         this.loading = false;
@@ -130,7 +130,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .history-page { padding-bottom: 40rpx; }
 .head-actions { display: flex; gap: 14rpx; }
 .head-actions button { width: 72rpx; height: 72rpx; padding: 0; border-radius: 22rpx; color: var(--xg-color-primary); background: rgba(255,255,255,.055); border: 1rpx solid rgba(255,255,255,.13); }

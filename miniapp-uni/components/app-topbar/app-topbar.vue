@@ -75,11 +75,11 @@ export default {
       menuVisible: false,
       activeKey: 'workbench',
       menuItems: [
-        { key: 'workbench', label: 'AI 工作台', icon: 'brush', url: '/pages/workbench/index' },
-        { key: 'resources', label: '资源库', icon: 'layers', url: '/pages/resources/index' },
+        { key: 'workbench', label: '工作室', icon: 'brush', url: '/pages/workbench/index' },
+        { key: 'resources', label: '资产库', icon: 'layers', url: '/pages/resources/index' },
         { key: 'users', label: '用户管理', icon: 'users', url: '/pages/users/index' },
-        { key: 'tasks', label: '历史任务', icon: 'image', url: '/pages/tasks/index' },
-        { key: 'promotion', label: '推广邀请', icon: 'ticket', url: '/pages/promotion/index' },
+        { key: 'tasks', label: '历史记录', icon: 'image', url: '/pages/tasks/index' },
+        { key: 'promotion', label: '邀请共创', icon: 'ticket', url: '/pages/promotion/index' },
         { key: 'mine', label: '我的', icon: 'wallet', url: '/pages/mine/index' }
       ]
     };
@@ -137,7 +137,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .topbar-wrap {
   position: relative;
   z-index: 60;

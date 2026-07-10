@@ -298,6 +298,15 @@
   box-shadow: 0 0 0 3px var(--color-accent-soft), var(--shadow-xs);
 }
 
+@media (hover: hover) {
+  .studioUploadResource:hover,
+  .studioResourceCard:hover {
+    transform: translateY(-2px);
+    border-color: rgba(var(--color-primary-rgb), .26);
+    box-shadow: var(--surface-highlight), var(--shadow-sm);
+  }
+}
+
 .studioResourceCard img {
   width: 100%;
   height: 82px;

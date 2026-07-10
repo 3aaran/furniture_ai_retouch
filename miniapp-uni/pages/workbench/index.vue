@@ -28,7 +28,7 @@
           <view class="upload-plus"><app-icon name="upload" tone="dark" :size="44" /></view>
           <text class="ui-strong">点击上传家具图片</text>
           <text>或</text>
-          <view class="resource-select-btn" @click.stop="openResourceDrawer('origin')">从资源库选择</view>
+          <view class="resource-select-btn" @click.stop="openResourceDrawer('origin')">从资产库选择</view>
         </view>
         <view v-else class="upload-preview">
           <image v-if="originImage.imageUrl" :src="originImage.imageUrl" mode="aspectFill" />
@@ -56,7 +56,7 @@
             <text class="ui-strong">上传参考图</text>
           </template>
         </view>
-        <button class="secondary-btn ref-resource-btn" @click="openResourceDrawer('reference')">从资源库选择</button>
+        <button class="secondary-btn ref-resource-btn" @click="openResourceDrawer('reference')">从资产库选择</button>
         <view v-if="selectedResource" class="selected-tip">已选择资源模板：{{ selectedResource.name }}</view>
       </view>
     </view>
@@ -131,7 +131,7 @@
               <text>{{ item.categoryText }}</text>
             </view>
           </view>
-          <view v-if="!filteredResources.length" class="empty-drawer">暂无资源，切换空间或在资源库上传后再试</view>
+          <view v-if="!filteredResources.length" class="empty-drawer">暂无资产，切换空间或在资产库上传后再试</view>
         </view>
         <view v-else class="hint-line">当前参数：{{ optionsSummary }}</view>
         <view v-if="isPromotionSelected" class="option-stack promo-options">
@@ -431,7 +431,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .workbench-page { padding-bottom: 40rpx; }
 .metric-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12rpx; margin: 22rpx 0 18rpx; }
 .metric-card { min-height: 80rpx; display: flex; align-items: center; gap: 14rpx; padding: 14rpx 18rpx; border-radius: 22rpx; border: 1rpx solid rgba(255,255,255,.1); background: rgba(255,255,255,.045); }

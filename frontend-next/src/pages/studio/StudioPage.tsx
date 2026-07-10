@@ -36,14 +36,16 @@ import { resolveApiUrl } from '../../services/http';
 import { getCurrentUserSnapshot } from '../../stores/auth.store';
 import './StudioPage.css';
 import './StudioControls.css';
+import './StudioResourcePager.css';
 
 type LocalImage = StudioLocalImage;
 type RecentTask = StudioRecentTask;
-type MobileConfigSheet = 'feature' | 'resolution' | 'ratio' | null;
+type MobileConfigSheet = 'feature' | 'resource' | 'resolution' | 'ratio' | null;
 type AssetPickerTarget = 'source' | 'reference' | null;
 
 const MAX_REFERENCE_IMAGES = 9;
 const DEFAULT_QUOTA = 0;
+const RESOURCE_PAGE_SIZE = 10;
 
 function localPreview(file: File): LocalImage {
   return {
@@ -166,6 +168,7 @@ export function StudioPage() {
   const [resourceItems, setResourceItems] = useState<ResourceApiItem[]>([]);
   const [resourceLoading, setResourceLoading] = useState(false);
   const [resourceError, setResourceError] = useState('');
+  const [resourcePage, setResourcePage] = useState(1);
   const [removeWhiteBg, setRemoveWhiteBg] = useState(true);
   const [removeMirror, setRemoveMirror] = useState(false);
   const [enhanceFocus, setEnhanceFocus] = useState(true);
@@ -212,6 +215,12 @@ export function StudioPage() {
       return true;
     });
   }, [featureKey, isMobile, mainCategory, needsResourceLibrary, resourceItems, resourceKeyword, resourceScope, subCategory]);
+  const resourcePageCount = Math.max(1, Math.ceil(visibleResourceItems.length / RESOURCE_PAGE_SIZE));
+  const activeResourcePage = Math.min(resourcePage, resourcePageCount);
+  const pagedResourceItems = useMemo(() => {
+    const start = (activeResourcePage - 1) * RESOURCE_PAGE_SIZE;
+    return visibleResourceItems.slice(start, start + RESOURCE_PAGE_SIZE);
+  }, [activeResourcePage, visibleResourceItems]);
 
   const assetSelectedIds = useMemo(() => {
     const ids = new Set<string>();
@@ -355,6 +364,10 @@ export function StudioPage() {
   }, [featureKey, isMobile, needsResourceLibrary, resourceKeyword, resourceScope]);
 
   useEffect(() => {
+    setResourcePage(1);
+  }, [featureKey, mainCategory, resourceKeyword, resourceScope, subCategory]);
+
+  useEffect(() => {
     if (!featureDrawerOpen && !featurePickerGroup && !mobileConfigSheet && !mobileRecentOpen) return;
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -416,8 +429,7 @@ export function StudioPage() {
   }
 
   function openResourceConfigFromMobile() {
-    setMobileConfigSheet(null);
-    setFeatureDrawerOpen(true);
+    setMobileConfigSheet('resource');
   }
 
   async function uploadOne(file: File, target: 'source' | 'reference') {
@@ -726,11 +738,20 @@ export function StudioPage() {
             <button className="studioUploadResource" type="button" onClick={() => resourceUploadInputRef.current?.click()}>
               <span>+</span><b>上传</b>
             </button>
-            {visibleResourceItems.map(renderResourceCard)}
-            {resourceLoading && <div className="studioLibraryEmpty">正在读取资产库...</div>}
+            {pagedResourceItems.map(renderResourceCard)}
+            {resourceLoading && <div className="studioLibraryEmpty isLoading">正在读取资产库...</div>}
             {!resourceLoading && !visibleResourceItems.length && !resourceError && <div className="studioLibraryEmpty">资产库暂无可用资源，可点击加号上传</div>}
             {!resourceLoading && resourceError && <div className="studioLibraryEmpty">资源加载失败：{resourceError}</div>}
           </div>
+          {!resourceLoading && visibleResourceItems.length > RESOURCE_PAGE_SIZE && (
+            <div className="studioResourcePager" aria-label="资源分页">
+              <span>{visibleResourceItems.length} 个资源 · 第 {activeResourcePage}/{resourcePageCount} 页</span>
+              <div>
+                <button type="button" disabled={activeResourcePage === 1} onClick={() => setResourcePage((page) => Math.max(1, page - 1))}>上一页</button>
+                <button type="button" disabled={activeResourcePage === resourcePageCount} onClick={() => setResourcePage((page) => Math.min(resourcePageCount, page + 1))}>下一页</button>
+              </div>
+            </div>
+          )}
         </>
       );
     }
@@ -769,12 +790,13 @@ export function StudioPage() {
             <div className="studioDivider" />
             <div className={featurePickerGroup ? 'studioFeatureList isPickerOpen' : 'studioFeatureList'}>{visibleFeatures.map((item) => <button key={item.key} type="button" className={featureKey === item.key ? 'isActive' : ''} onClick={() => chooseFeature(item.key)}><span>{item.tag}</span><b>{item.label}</b></button>)}</div>
           </>}
-          <div className="studioFeatureConfig">{renderLeftConfig()}</div>
+          {!isMobile && <div className="studioFeatureConfig">{renderLeftConfig()}</div>}
         </aside>
 
         {mobileConfigSheet && <button className="studioMobileConfigBackdrop" type="button" aria-label="关闭配置弹窗" onClick={closeMobileConfig} />}
         <section id="studio-mobile-config-sheet" className={`studioMobileConfigSheet ${mobileConfigSheet ? 'isOpen' : ''}`.trim()} aria-hidden={!mobileConfigSheet}>
           <div className="studioMobileConfigHead">
+            <span>{mobileConfigSheet === 'resource' ? '资源配置' : '工作室设置'}</span>
             <button type="button" aria-label="关闭配置弹窗" onClick={closeMobileConfig}>×</button>
           </div>
 
@@ -792,9 +814,11 @@ export function StudioPage() {
                   {studioFeatures.filter((item) => item.group === featureGroup).map((item) => <button key={item.key} type="button" className={featureKey === item.key ? 'isActive' : ''} onClick={() => chooseFeature(item.key)}><b>{item.label}</b><em>{item.tag}</em></button>)}
                 </div>
               </div>
-              <button className="studioMobileResourceConfig" type="button" onClick={openResourceConfigFromMobile}>打开资源配置</button>
+              {needsResourceLibrary && <button className="studioMobileResourceConfig" type="button" onClick={openResourceConfigFromMobile}>打开资源配置</button>}
             </>
           )}
+
+          {mobileConfigSheet === 'resource' && <div className="studioMobileConfigBlock studioMobileResourceSheet">{renderLeftConfig()}</div>}
 
           {mobileConfigSheet === 'resolution' && (
             <div className="studioMobileConfigBlock">

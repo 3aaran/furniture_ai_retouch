@@ -1,0 +1,50 @@
+.studioResourcePager {
+  min-height: 38px;
+  margin-top: 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 6px 7px 6px 11px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--text-muted);
+  background: rgba(var(--bg-card-rgb), .7);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.studioResourcePager > div {
+  display: flex;
+  gap: 5px;
+}
+
+.studioResourcePager button {
+  min-height: 26px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  padding: 0 8px;
+  color: var(--color-primary);
+  background: var(--bg-card-soft);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.studioResourcePager button:disabled {
+  opacity: .42;
+  cursor: not-allowed;
+}
+
+.studioLibraryEmpty.isLoading {
+  border-style: solid;
+  color: var(--color-primary);
+  background: linear-gradient(105deg, var(--bg-card-soft) 30%, rgba(var(--color-accent-rgb), .16) 48%, var(--bg-card-soft) 65%);
+  background-size: 260% 100%;
+  animation: ui-sheen 1.5s linear infinite;
+}
+
+@media (max-width: 767px) {
+  .studioResourcePager {
+    margin-top: 8px;
+  }
+}

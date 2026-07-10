@@ -95,6 +95,8 @@ test('pc studio reads real backend content instead of local demo resources', () 
   assert.match(source, /fetchWorkbenchResources/);
   assert.match(source, /uploadWorkbenchResource/);
   assert.match(source, /visibleResourceItems/);
+  assert.match(source, /RESOURCE_PAGE_SIZE/);
+  assert.match(source, /studioResourcePager/);
   assert.doesNotMatch(source, /filteredDemoResources|本地示例资源/);
 });
 
@@ -138,4 +140,6 @@ test('mobile feature picker stays open while resource configuration owns all par
   assert.match(source, /studioFeatures\.filter\(\(item\) => item\.group === featureGroup\)/);
   assert.doesNotMatch(source, /!needsResourceLibrary && <div className="studioMobileConfigBlock"><span>功能参数<\/span>/);
   assert.match(source, /<button className="studioMobileResourceConfig"/);
+  assert.match(source, /'resource'/);
+  assert.match(source, /setMobileConfigSheet\('resource'\)/);
 });

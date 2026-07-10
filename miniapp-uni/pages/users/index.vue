@@ -408,7 +408,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .users-summary { margin-top: 22rpx; display: flex; align-items: stretch; gap: 16rpx; }
 .summary-main { flex: 1; min-width: 0; padding: 24rpx; border-radius: 26rpx; display: flex; align-items: center; gap: 16rpx; background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.025)); border: 1rpx solid rgba(255,255,255,.09); }
 .summary-icon { width: 72rpx; height: 72rpx; flex: 0 0 72rpx; display: flex; align-items: center; justify-content: center; border-radius: 22rpx; color: var(--xg-text-inverse); background: linear-gradient(135deg,var(--xg-color-primary),var(--xg-color-accent)); }

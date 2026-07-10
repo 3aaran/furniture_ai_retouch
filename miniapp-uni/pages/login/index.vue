@@ -162,6 +162,9 @@ export default {
       return this.mode === 'sms' ? '验证码登录' : '登录';
     }
   },
+  onShow() {
+    if (getToken()) this.redirectAfterLogin();
+  },
   onUnload() {
     this.clearTimer();
   },
@@ -353,7 +356,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .login-page { min-height: 100vh; padding: 0 28rpx; box-sizing: border-box; background: var(--xg-bg-page); color: var(--xg-text-main); overflow: hidden; }
 .auth-shell { min-height: 100vh; display: flex; align-items: center; padding: 36rpx 0 calc(28rpx + env(safe-area-inset-bottom)); box-sizing: border-box; }
 .auth-card { width: 100%; max-width: 860rpx; margin: 0 auto; padding: 40rpx; box-sizing: border-box; border-radius: 40rpx; border: 1rpx solid var(--xg-border-soft); background: rgba(255,255,255,.94); box-shadow: var(--xg-shadow-soft); }

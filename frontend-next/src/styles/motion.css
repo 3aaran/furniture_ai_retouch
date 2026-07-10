@@ -1,0 +1,57 @@
+@keyframes ui-fade-up {
+  from { opacity: 0; transform: translateY(8px) scale(.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes ui-sheen {
+  from { background-position: 120% 0; }
+  to { background-position: -20% 0; }
+}
+
+@keyframes ui-pulse {
+  0%, 100% { opacity: .55; }
+  50% { opacity: 1; }
+}
+
+:where(button, a, input, select, textarea) { -webkit-tap-highlight-color: transparent; }
+
+:where(button, a) {
+  transition: transform var(--motion-fast) var(--motion-ease), color var(--motion-fast) ease, background-color var(--motion-fast) ease, border-color var(--motion-fast) ease, box-shadow var(--motion-base) var(--motion-ease), opacity var(--motion-fast) ease;
+}
+
+:where(button:not(:disabled)):active { transform: translateY(1px) scale(.985); }
+
+:where(input, select, textarea):focus-visible,
+:where(button, a):focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+.cardSurface,
+.uiCard {
+  box-shadow: var(--surface-highlight), var(--shadow-sm);
+  transition: transform var(--motion-base) var(--motion-ease), box-shadow var(--motion-base) var(--motion-ease), border-color var(--motion-fast) ease;
+}
+
+:is(.studioSidePanel, .studioMainBlock, .opHero, .opPanel, .assetMainPanel, .authCardV2) {
+  animation: ui-fade-up var(--motion-slow) var(--motion-ease) both;
+}
+
+:is(.profileMenuNext, .shellQuickModal, .opModal, .assetFilterSheet, .assetDetailDrawer, .assetActionSheet, .assetCategoryDialog) {
+  animation: ui-fade-up var(--motion-base) var(--motion-ease) both;
+}
+
+@media (hover: hover) {
+  .cardSurface:hover,
+  .uiCard:hover {
+    transform: translateY(-2px);
+    border-color: rgba(var(--color-primary-rgb), .2);
+    box-shadow: var(--surface-highlight), var(--shadow-md);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}

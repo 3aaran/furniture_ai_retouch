@@ -10,21 +10,21 @@
     {
       "path": "pages/workbench/index",
       "style": {
-        "navigationBarTitleText": "AI 工作台",
+        "navigationBarTitleText": "工作室",
         "navigationStyle": "custom"
       }
     },
     {
       "path": "pages/tasks/index",
       "style": {
-        "navigationBarTitleText": "历史任务",
+        "navigationBarTitleText": "历史记录",
         "navigationStyle": "custom"
       }
     },
     {
       "path": "pages/resources/index",
       "style": {
-        "navigationBarTitleText": "资源库",
+        "navigationBarTitleText": "资产库",
         "navigationStyle": "custom"
       }
     },
@@ -59,7 +59,7 @@
     {
       "path": "pages/promotion/index",
       "style": {
-        "navigationBarTitleText": "推广邀请",
+        "navigationBarTitleText": "邀请共创",
         "navigationStyle": "custom"
       }
     },

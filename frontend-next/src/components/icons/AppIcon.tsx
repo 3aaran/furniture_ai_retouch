@@ -45,6 +45,11 @@ type AppIconProps = SVGProps<SVGSVGElement> & {
   size?: number;
 };
 
+export const appIconTokens = {
+  size: 18,
+  strokeWidth: 1.8,
+} as const;
+
 const paths: Record<AppIconName, string> = {
   mail: 'M4.75 6.75h14.5v10.5H4.75V6.75Zm1.15.9 6.1 4.75 6.1-4.75M5.75 16.25l4.65-4M18.25 16.25l-4.65-4',
   alert: 'M12 4.75v8.25M12 16.75v.5',
@@ -86,7 +91,7 @@ const paths: Record<AppIconName, string> = {
   chevronRight: 'm9.25 6.75 5.25 5.25-5.25 5.25',
 };
 
-export function AppIcon({ name, size = 18, strokeWidth = 1.8, ...props }: AppIconProps) {
+export function AppIcon({ name, size = appIconTokens.size, strokeWidth = appIconTokens.strokeWidth, ...props }: AppIconProps) {
   return (
     <svg
       aria-hidden="true"

@@ -28,3 +28,17 @@ miniapp-uni/components/**/*.vue
 - Web 的 PC/mobile overrides
 
 小程序页面样式优先写在对应页面 `.vue` 的 scoped style 中，公共变量写入 `uni.scss`。
+
+## 入口规则
+
+- 小程序不提供独立首页，不注册 `pages/index/index`。
+- `pages.json` 第一项固定为 `pages/login/index`。
+- 已存在登录态时，登录页直接 `reLaunch` 到 `pages/workbench/index`。
+- 未登录用户访问业务页时，由 `utils/auth.js` 统一重定向到登录页。
+
+## 样式职责
+
+- `App.vue` 只保留运行时 CSS 变量和真正跨页面的基础类。
+- `uni.scss` 维护 uni-app/第三方组件使用的编译期主题变量。
+- 页面与业务组件的 `<style>` 必须使用 `scoped`，避免 `.error-card`、`.empty-card`、`.search-box` 等同名类跨页面覆盖。
+- 页面私有布局不要继续追加到 `App.vue`，需要复用时再提取为明确命名的公共组件。

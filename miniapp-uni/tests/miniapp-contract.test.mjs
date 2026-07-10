@@ -12,6 +12,16 @@ function readJsonc(file) {
   return JSON.parse(text);
 }
 
+test('miniapp starts at login and does not register a separate home page', () => {
+  const config = readJsonc('pages.json');
+  const pages = config.pages.map(item => item.path);
+  assert.equal(pages[0], 'pages/login/index');
+  assert.ok(!pages.includes('pages/index/index'));
+
+  const legacyHome = read('pages/index/index.vue');
+  assert.doesNotMatch(legacyHome, /<template|<script|<style/);
+});
+
 test('miniapp exposes Web mobile account service pages', () => {
   const pages = readJsonc('pages.json').pages.map(item => item.path);
   for (const path of [
@@ -23,6 +33,24 @@ test('miniapp exposes Web mobile account service pages', () => {
   ]) {
     assert.ok(pages.includes(path), `${path} must be registered in pages.json`);
   }
+});
+
+test('miniapp terminology follows frontend-next navigation labels', () => {
+  const pagesJson = read('pages.json');
+  const topbar = read('components/app-topbar/app-topbar.vue');
+  const resources = read('pages/resources/index.vue');
+  const tasks = read('pages/tasks/index.vue');
+  const promotion = read('pages/promotion/index.vue');
+
+  for (const label of ['工作室', '资产库', '历史记录', '邀请共创']) {
+    assert.ok(pagesJson.includes(label), `pages.json must expose ${label}`);
+    assert.ok(topbar.includes(label), `topbar must expose ${label}`);
+  }
+
+  assert.match(resources, /资产库/);
+  assert.match(tasks, /历史记录/);
+  assert.match(promotion, /邀请共创/);
+  assert.doesNotMatch(`${pagesJson}\n${topbar}\n${resources}\n${tasks}\n${promotion}`, /AI 工作台|资源库|历史任务|推广邀请/);
 });
 
 test('side menu and mine page navigate to real service pages', () => {
@@ -125,6 +153,7 @@ test('miniapp login shows auth page without automatic silent login', () => {
   assert.match(login, /@getphonenumber="handleWechatPhoneLogin"/);
   assert.match(login, /tryWechatSilentLogin/);
   assert.doesNotMatch(login, /onLoad\(\)\s*\{[\s\S]*tryWechatSilentLogin/);
+  assert.match(login, /onShow\(\)\s*\{[\s\S]*getToken\(\)[\s\S]*redirectAfterLogin\(\)/);
   assert.match(login, /wechatSilentLogin/);
   assert.match(login, /wechatPhoneLogin/);
   assert.match(authApi, /\/api\/auth\/wechat\/silent-login/);
@@ -162,6 +191,28 @@ test('miniapp visual system follows frontend-next palette and brand mark', () =>
 
   assert.match(login, /var\(--xg-bg-page\)/);
   assert.doesNotMatch(login, /#eef4fb|#3040a0|#00bcd4|#16223a|#60708c|#f7faff/);
+});
+
+test('miniapp page and business component styles stay locally scoped', () => {
+  const files = [
+    'components/app-icon/app-icon.vue',
+    'components/app-topbar/app-topbar.vue',
+    ...readJsonc('pages.json').pages.map(item => `${item.path}.vue`)
+  ];
+
+  for (const file of files) {
+    assert.match(read(file), /<style\s+scoped>/, `${file} must keep page-private styles scoped`);
+  }
+});
+
+test('uni-app theme variables follow frontend-next tokens', () => {
+  const theme = read('uni.scss');
+  assert.match(theme, /\$uni-color-primary:\s*#3040a0/);
+  assert.match(theme, /\$uni-color-success:\s*#32c7a3/);
+  assert.match(theme, /\$uni-color-warning:\s*#ffb84d/);
+  assert.match(theme, /\$uni-color-error:\s*#ff7087/);
+  assert.match(theme, /\$uni-bg-color-grey:\s*#eef4fb/);
+  assert.match(theme, /\$uni-text-color:\s*#16223a/);
 });
 
 test('miniapp pages do not keep the previous black gold theme palette', () => {

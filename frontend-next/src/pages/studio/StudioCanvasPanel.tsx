@@ -95,7 +95,7 @@ export function StudioCanvasPanel({
         <section id="studio-recent-strip" className="studioRecentStrip">
           <div className="studioSectionTitle"><b>最近生成</b></div>
           <div className="studioRecentList">
-            {recentTasks.slice(0, 5).map((task) => (
+            {recentTasks.slice(0, 12).map((task) => (
               <article key={task.id}>
                 <button className="studioRecentPreview" type="button" onClick={() => onOpenRecentTask(task)}>
                   {task.previewUrl ? <img src={task.previewUrl} alt={task.feature} loading="lazy" decoding="async" /> : <i aria-hidden="true">图</i>}

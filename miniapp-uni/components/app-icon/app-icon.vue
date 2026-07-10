@@ -28,7 +28,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .app-icon {
   position: relative;
   display: inline-flex;

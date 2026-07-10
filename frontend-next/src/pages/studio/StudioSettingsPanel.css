@@ -166,6 +166,18 @@
   min-height: 49px;
   border-radius: var(--radius-lg);
   box-shadow: 0 16px 34px rgba(var(--color-primary-rgb), .16);
+  position: relative;
+  overflow: hidden;
+}
+
+.studioGenerateButton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 34%, rgba(255, 255, 255, .28) 50%, transparent 66%);
+  background-size: 220% 100%;
+  pointer-events: none;
+  animation: ui-sheen 4.8s linear infinite;
 }
 
 .studioGenerateMeta {

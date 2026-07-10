@@ -6,7 +6,7 @@
       <view class="page-head-main">
         <view class="page-icon"><app-icon name="layers" tone="dark" :size="34" /></view>
         <view class="page-title-text">
-          <text class="ui-strong">资源库</text>
+          <text class="ui-strong">资产库</text>
           <text>系统空间、门店空间、我的空间</text>
         </view>
       </view>
@@ -156,7 +156,7 @@ export default {
         }
         this.rawResources = unwrapList(payload);
       } catch (error) {
-        this.errorText = error.message || '资源库读取失败';
+        this.errorText = error.message || '资产库读取失败';
         this.rawResources = [];
       } finally {
         this.loading = false;
@@ -240,7 +240,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .space-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10rpx; margin: 4rpx 0 18rpx; }
 .space-tabs button { height: 70rpx; border-radius: 20rpx; color: var(--xg-text-muted); background: rgba(255,255,255,.04); border: 1rpx solid rgba(255,255,255,.1); font-size: 25rpx; font-weight: 900; }
 .space-tabs button.active { color: var(--xg-text-inverse); background: linear-gradient(135deg,var(--xg-color-primary),var(--xg-color-accent)); border-color: transparent; }

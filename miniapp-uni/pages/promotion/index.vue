@@ -7,7 +7,7 @@
         <view class="page-head-main">
           <view class="page-icon"><app-icon name="ticket" tone="dark" :size="34" /></view>
           <view class="page-title-text">
-            <text class="ui-strong">推广邀请</text>
+            <text class="ui-strong">邀请共创</text>
             <text>邀请门店入驻后的收益记录</text>
           </view>
         </view>
@@ -149,7 +149,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .invite-panel { margin-top: 24rpx; padding: 24rpx; border-radius: 30rpx; background: linear-gradient(180deg, rgba(var(--xg-color-primary-rgb), .1), rgba(255,255,255,.035)); border: 1rpx solid rgba(var(--xg-color-primary-rgb), .18); }
 .invite-head { margin-top: 0; }
 .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 14rpx; }

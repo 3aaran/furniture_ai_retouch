@@ -107,7 +107,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .notice-list { display: grid; gap: 18rpx; }
 .notice-card { display: flex; gap: 18rpx; padding: 20rpx; border-radius: 24rpx; background: rgba(255,255,255,.045); border: 1rpx solid rgba(255,255,255,.1); }
 .notice-card.is-unread { border-color: rgba(var(--xg-color-primary-rgb), .42); background: rgba(var(--xg-color-primary-rgb), .08); }

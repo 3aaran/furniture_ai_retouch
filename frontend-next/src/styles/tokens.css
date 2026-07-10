@@ -78,6 +78,19 @@
   --radius-xl: 28px;
   --radius-pill: 999px;
 
+  /* Interaction and icon system */
+  --icon-size-xs: 14px;
+  --icon-size-sm: 16px;
+  --icon-size-md: 18px;
+  --icon-size-lg: 22px;
+  --icon-stroke-width: 1.8;
+  --motion-fast: 140ms;
+  --motion-base: 220ms;
+  --motion-slow: 360ms;
+  --motion-ease: cubic-bezier(.2, .75, .25, 1);
+  --focus-ring: 0 0 0 3px rgba(var(--color-accent-rgb), .2);
+  --surface-highlight: inset 0 1px 0 rgba(var(--bg-card-rgb), .92);
+
   /* Layout */
   --topbar-height: 64px;
   --mobile-topbar-height: 54px;

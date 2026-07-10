@@ -132,7 +132,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .summary-grid { display: grid; grid-template-columns: 1fr; gap: 16rpx; margin-bottom: 20rpx; }
 .summary-card { min-height: 116rpx; padding: 22rpx; border-radius: 28rpx; background: var(--xg-bg-card); border: 1rpx solid rgba(var(--xg-color-primary-rgb), .12); }
 .summary-card text { color: var(--xg-text-muted); font-size: 24rpx; }
