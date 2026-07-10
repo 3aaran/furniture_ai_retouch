@@ -11,7 +11,9 @@ const appShellCss = readFileSync(join(operationsDir, '..', '..', 'app', 'AppShel
 const operationsSource = readFileSync(join(operationsDir, 'OperationsPage.tsx'), 'utf8');
 const operationsCss = readFileSync(join(operationsDir, 'OperationsPage.css'), 'utf8');
 const accountPagesCss = readFileSync(join(operationsDir, 'OperationsAccountPages.css'), 'utf8');
-const compareCss = readFileSync(join(operationsDir, 'TaskComparePage.css'), 'utf8');
+const taskComponentsDir = join(operationsDir, '..', '..', 'components', 'tasks');
+const compareCss = readFileSync(join(taskComponentsDir, 'TaskCompareModal.css'), 'utf8');
+const taskImageUrlsSource = readFileSync(join(taskComponentsDir, 'taskImageUrls.ts'), 'utf8');
 const historySource = readFileSync(join(operationsDir, 'HistoryPage.tsx'), 'utf8');
 const operationsUtilsSource = readFileSync(join(operationsDir, 'operations.utils.ts'), 'utf8');
 const usersSource = readFileSync(join(operationsDir, 'UsersPage.tsx'), 'utf8');
@@ -20,7 +22,7 @@ const promotionSource = readFileSync(join(operationsDir, 'PromotionPage.tsx'), '
 const quotaSource = readFileSync(join(operationsDir, 'QuotaPage.tsx'), 'utf8');
 const profileSource = readFileSync(join(operationsDir, 'ProfilePage.tsx'), 'utf8');
 const shellQuickModalSource = readFileSync(join(operationsDir, '..', '..', 'app', 'ShellQuickModal.tsx'), 'utf8');
-const compareSource = readFileSync(join(operationsDir, 'TaskCompareModal.tsx'), 'utf8');
+const compareSource = readFileSync(join(taskComponentsDir, 'TaskCompareModal.tsx'), 'utf8');
 const splitPageSource = [
   historySource,
   usersSource,
@@ -74,7 +76,7 @@ test('history task detail uses old compare preview pattern', () => {
   assert.doesNotMatch(historySource, /AppIcon name="eye"/);
   assert.match(operationsUtilsSource, /export function fullImageUrl/);
   assert.match(operationsUtilsSource, /export function fullSourceImageUrl/);
-  assert.match(operationsUtilsSource, /sourceThumbUrl/);
+  assert.match(taskImageUrlsSource, /sourceThumbUrl/);
   assert.match(operationsCss, /\.historyStatusTabs/);
   assert.match(operationsCss, /\.historySelectRow[\s\S]*repeat\(2, minmax\(0, 1fr\)\)/);
   assert.match(operationsCss, /\.stitchHistoryPage \.opTaskImage img[\s\S]*position: absolute[\s\S]*height: 100%[\s\S]*object-fit: contain/);
@@ -85,11 +87,11 @@ test('history task detail uses old compare preview pattern', () => {
   assert.match(compareSource, /生成结果/);
   assert.match(compareSource, /compareDetailImages/);
   assert.match(compareSource, /compareDetailPanel/);
-  assert.match(compareSource, /TaskComparePage\.css/);
+  assert.match(compareSource, /TaskCompareModal\.css/);
   assert.match(compareSource, /compareDetailList/);
   assert.match(compareSource, /compareDetailPrompt/);
-  assert.match(compareSource, /fullImageUrl\(detail\)/);
-  assert.match(compareSource, /fullSourceImageUrl\(detail\)/);
+  assert.match(compareSource, /fullTaskImageUrl\(detail\)/);
+  assert.match(compareSource, /fullTaskSourceImageUrl\(detail\)/);
   assert.match(compareSource, /算力消耗/);
   assert.doesNotMatch(compareSource, /detail\.statusMessage/);
   assert.doesNotMatch(compareSource, /compareDetailStats/);
@@ -117,6 +119,8 @@ test('history task detail uses old compare preview pattern', () => {
   assert.doesNotMatch(operationsCss, /promptBox/);
   assert.doesNotMatch(operationsCss, /infoRows/);
   assert.doesNotMatch(operationsCss, /opTaskDetail/);
+  assert.match(operationsSource, /components\/tasks\/TaskCompareModal/);
+  assert.doesNotMatch(operationsSource, /\.\/TaskCompareModal/);
 });
 
 test('users page uses compact toolbar actions without the hero block', () => {

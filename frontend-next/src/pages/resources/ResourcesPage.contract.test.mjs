@@ -38,3 +38,32 @@ test('resources mobile search, main category, and subcategory share one row', ()
   assert.doesNotMatch(css, /assetPcOnlyAction/);
 }
 );
+
+test('resources mobile category manager uses single-column modal and scoped subcategory creation', () => {
+  assert.doesNotMatch(source, /assetCreateSubButton/);
+  assert.doesNotMatch(css, /assetCreateSubButton/);
+  assert.match(source, /function openCreateSubDialog\(main\?: CategoryOption\)/);
+  assert.match(source, /if \(!main\)/);
+  assert.match(source, /main\.id \? String\(main\.id\) : ''/);
+  assert.match(source, /categoryDialog\.mainName/);
+  assert.doesNotMatch(source, /createMainCategory\(\{ scope: managerScope, name: categoryDialog\.mainName/);
+  assert.match(source, /const managerCategoryOptions = useMemo\(\(\) => categoryOptionsForScope\(flattenCategoryTrees\(\[\], categoryPurposes\), managerScope\)/);
+  assert.match(source, /<button className="assetAddSubInline" type="button" disabled=\{busy\}/);
+  assert.doesNotMatch(source, /item\.canManage && item\.id && <button className="assetAddSubInline"/);
+  assert.doesNotMatch(source, /\{item\.id && <button className="assetAddSubInline"/);
+  assert.doesNotMatch(source, /onClick=\{\(\) => openCreateSubDialog\(\)\}/);
+  assert.match(source, /<\/aside>}\s+\{categoryDialog && <div className="assetDialogLayer"/);
+  assert.match(css, /\.assetDialogLayer\s*\{[\s\S]*width:\s*100vw[\s\S]*place-items:\s*center/);
+  assert.match(css, /@media \(max-width: 767px\)[\s\S]*\.assetCategoryManageHead\s*\{[\s\S]*display:\s*grid/);
+  assert.match(css, /@media \(max-width: 767px\)[\s\S]*\.assetCategoryManageTools\s*\{[\s\S]*grid-template-columns:\s*minmax\(112px, 1fr\) auto 38px/);
+  assert.match(css, /@media \(max-width: 767px\)[\s\S]*\.assetCategoryCardGrid\s*\{[\s\S]*grid-template-columns:\s*minmax\(0, 1fr\)/);
+  assert.match(css, /@media \(max-width: 767px\)[\s\S]*\.assetCategoryPurposeGroup > header::after\s*\{[\s\S]*display:\s*none/);
+});
+
+test('category creation refreshes only category trees instead of waiting for the asset list', () => {
+  assert.match(source, /async function loadCategoryTrees\(\)/);
+  assert.match(source, /await loadCategoryTrees\(\)/);
+  assert.match(source, /await refreshCategories\(\)/);
+  assert.doesNotMatch(source, /await createMainCategory\([\s\S]{0,320}await reloadAfterAction\(\)/);
+  assert.doesNotMatch(source, /await createSubCategory\([\s\S]{0,240}await reloadAfterAction\(\)/);
+});

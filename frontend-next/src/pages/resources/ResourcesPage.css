@@ -921,7 +921,6 @@
 }
 
 .assetCreateMainButton,
-.assetCreateSubButton,
 .assetSheetClose,
 .assetCategoryCreatePanel button,
 .assetCategoryManageCard button,
@@ -933,8 +932,7 @@
   cursor: pointer;
 }
 
-.assetCreateMainButton,
-.assetCreateSubButton {
+.assetCreateMainButton {
   min-height: 42px;
   border-color: rgba(var(--color-primary-rgb), .18);
   border-radius: var(--radius-pill);
@@ -944,11 +942,6 @@
   gap: 8px;
   color: var(--color-primary);
   background: var(--color-primary-soft);
-}
-
-.assetCreateSubButton {
-  color: var(--text-main);
-  background: var(--bg-card-soft);
 }
 
 .assetSheetClose {
@@ -1192,9 +1185,12 @@
   position: fixed;
   inset: 0;
   z-index: calc(var(--z-drawer) + 1);
+  width: 100vw;
+  min-height: 100dvh;
   display: grid;
   place-items: center;
   padding: 24px;
+  overflow: auto;
 }
 
 .assetDialogBackdrop {
@@ -1291,7 +1287,6 @@
 
 .assetAddSubInline:hover,
 .assetCreateMainButton:hover,
-.assetCreateSubButton:hover,
 .assetCategoryCreatePanel button:hover {
   color: var(--text-inverse);
   border-color: transparent;
@@ -1420,6 +1415,106 @@
     width: auto;
     max-height: calc(100dvh - var(--mobile-topbar-height) - 24px);
     border-radius: 22px;
+  }
+
+  .assetCategoryManageSheet {
+    overflow-x: hidden;
+    padding: 0;
+    gap: 0;
+  }
+
+  .assetCategoryManageHead {
+    min-height: 0;
+    padding: 14px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 12px;
+  }
+
+  .assetCategoryManageHead b {
+    font-size: 22px;
+  }
+
+  .assetCategoryManageTools {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(112px, 1fr) auto 38px;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .assetCategoryManageTools select {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .assetCreateMainButton {
+    min-width: 132px;
+    padding: 0 12px;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+  .assetSheetClose {
+    align-self: center;
+  }
+
+  .assetCategoryManageBody {
+    padding: 14px;
+    gap: 18px;
+  }
+
+  .assetCategoryPurposeGroup {
+    gap: 12px;
+  }
+
+  .assetCategoryPurposeGroup > header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+  }
+
+  .assetCategoryPurposeGroup > header h3 {
+    min-width: 0;
+    overflow: hidden;
+    font-size: 20px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .assetCategoryPurposeGroup > header::after {
+    display: none;
+  }
+
+  .assetCategoryCardGrid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .assetCategoryManageCard {
+    border-radius: var(--radius-lg);
+  }
+
+  .assetCategoryManageCard > header {
+    min-height: 58px;
+    padding: 12px;
+  }
+
+  .assetCategoryManageCard > header b {
+    font-size: 17px;
+  }
+
+  .assetCategorySubList {
+    padding: 10px 12px 12px;
+  }
+
+  .assetCategorySubList p {
+    grid-template-columns: minmax(0, 1fr) auto auto auto;
+    gap: 8px;
+  }
+
+  .assetAddSubInline {
+    width: 100%;
   }
 
   .assetDetailImage {

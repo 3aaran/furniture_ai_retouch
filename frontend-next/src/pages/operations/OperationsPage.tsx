@@ -5,7 +5,7 @@ import { HistoryPage } from './HistoryPage';
 import { ProfilePage } from './ProfilePage';
 import { PromotionPage } from './PromotionPage';
 import { QuotaPage } from './QuotaPage';
-import { TaskCompareModal } from './TaskCompareModal';
+import { TaskCompareModal } from '../../components/tasks/TaskCompareModal';
 import { UserActionModal } from './UserActionModal';
 import { UsersPage } from './UsersPage';
 import type { OperationsPageType, Row, UserModalState } from './operations.types';

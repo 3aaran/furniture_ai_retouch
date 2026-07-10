@@ -99,8 +99,8 @@ export type AiTask = {
   originalUrl?: string | null;
   inputUrl?: string | null;
   sourceImageUrl?: string | null;
-  originImage?: { id?: string; url?: string; imageUrl?: string; originalName?: string } | null;
-  resultImage?: { id?: string; url?: string; imageUrl?: string; downloadUrl?: string; originalName?: string } | null;
+  originImage?: { id?: string; url?: string; imageUrl?: string; thumbUrl?: string | null; previewUrl?: string | null; downloadUrl?: string | null; originalName?: string } | null;
+  resultImage?: { id?: string; url?: string; imageUrl?: string; thumbUrl?: string | null; previewUrl?: string | null; downloadUrl?: string; originalName?: string } | null;
   userPrompt?: string;
   prompt?: string;
   errorMessage?: string;
@@ -124,6 +124,12 @@ export type CreateAiTaskPayload = {
   userPrompt?: string;
   customText?: string;
   options?: Record<string, unknown>;
+};
+
+type CreateAiTaskResponse = {
+  task: AiTask;
+  balance?: number;
+  user?: AiTask['user'];
 };
 
 export type UploadResourcePayload = {
@@ -203,11 +209,12 @@ export function fetchRecentAiTasks(params: Record<string, string | number | unde
   return request<PagedResult<AiTask> | AiTask[]>(withQuery('/api/ai/tasks/recent', params));
 }
 
-export function createAiTask(payload: CreateAiTaskPayload) {
-  return request<AiTask>('/api/ai/tasks', {
+export async function createAiTask(payload: CreateAiTaskPayload) {
+  const response = await request<CreateAiTaskResponse>('/api/ai/tasks', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
+  return { ...response.task, user: response.user ?? response.task.user };
 }
 
 export function fetchAiTaskStatus(taskId: string) {

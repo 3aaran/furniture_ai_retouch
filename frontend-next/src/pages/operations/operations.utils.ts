@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { request, resolveApiUrl, withQuery } from '../../services/http';
+import { request, withQuery } from '../../services/http';
+import { fullTaskImageUrl, fullTaskSourceImageUrl, taskPreviewImageUrl, taskSourcePreviewImageUrl } from '../../components/tasks/taskImageUrls';
 import type { OperationsPageType, PageConfig, PagedRows, QueryState, Row } from './operations.types';
 
 export const pageConfigs: PageConfig[] = [
@@ -50,19 +51,19 @@ export function featureText(item: Row) {
 }
 
 export function imageUrl(item: Row) {
-  return resolveApiUrl(item.thumbUrl || item.previewUrl || item.resultUrl || item.url || item.imageUrl || item.downloadUrl || item.resultImage?.url) || '';
+  return taskPreviewImageUrl(item);
 }
 
 export function sourceImageUrl(item: Row) {
-  return resolveApiUrl(item.sourceThumbUrl || item.sourcePreviewUrl || item.originImage?.thumbUrl || item.originImage?.previewUrl || item.sourceUrl || item.originUrl || item.originalUrl || item.inputUrl || item.sourceImageUrl || item.originImage?.url) || '';
+  return taskSourcePreviewImageUrl(item);
 }
 
 export function fullImageUrl(item: Row) {
-  return resolveApiUrl(item.downloadUrl || item.resultImage?.downloadUrl || item.resultUrl || item.url || item.imageUrl || item.resultImage?.url || item.resultImage?.imageUrl || item.thumbUrl || item.previewUrl) || '';
+  return fullTaskImageUrl(item);
 }
 
 export function fullSourceImageUrl(item: Row) {
-  return resolveApiUrl(item.sourceDownloadUrl || item.originImage?.downloadUrl || item.sourceUrl || item.originUrl || item.originalUrl || item.inputUrl || item.sourceImageUrl || item.originImage?.url || item.originImage?.imageUrl || item.sourceThumbUrl) || '';
+  return fullTaskSourceImageUrl(item);
 }
 
 export function quotaText(value: unknown) {

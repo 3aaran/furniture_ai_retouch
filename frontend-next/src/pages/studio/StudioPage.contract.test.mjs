@@ -119,7 +119,10 @@ test('studio asset picker and recent task actions use real APIs without random s
   assert.match(source, /StudioAssetPickerModal/);
   assert.match(source, /fetchAiTaskDetail/);
   assert.match(source, /deleteAiTask/);
-  assert.match(source, /StudioTaskDetailModal/);
+  assert.match(source, /TaskCompareModal/);
+  assert.match(source, /fullTaskImageUrl/);
+  assert.match(source, /fullTaskSourceImageUrl/);
+  assert.doesNotMatch(source, /StudioTaskDetailModal/);
   assert.match(source, /resourceType: 'user_reference'/);
   assert.doesNotMatch(source, /pickLatestResource|pickLatestResources|从资源库/);
   assert.match(source, /资产库/);

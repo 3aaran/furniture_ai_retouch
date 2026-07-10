@@ -2,7 +2,8 @@ import { type ChangeEvent, type DragEvent, useCallback, useEffect, useMemo, useR
 import { StudioAssetPickerModal } from './StudioAssetPickerModal';
 import { StudioCanvasPanel } from './StudioCanvasPanel';
 import { StudioSettingsPanel } from './StudioSettingsPanel';
-import { StudioTaskDetailModal, taskImageForStudio } from './StudioTaskDetailModal';
+import { TaskCompareModal } from '../../components/tasks/TaskCompareModal';
+import { fullTaskImageUrl, fullTaskSourceImageUrl, taskPreviewImageUrl } from '../../components/tasks/taskImageUrls';
 import type { StudioLocalImage, StudioRecentTask } from './studioViewTypes';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 import {
@@ -55,7 +56,7 @@ function localPreview(file: File): LocalImage {
 }
 
 function imageUrlFromUpload(result: ImageUploadResult, fallback: string) {
-  return resolveApiUrl(result.previewUrl || result.thumbUrl || result.imageUrl || result.url) || fallback;
+  return resolveApiUrl(result.imageUrl || result.url || result.downloadUrl || result.previewUrl || result.thumbUrl) || fallback;
 }
 
 function isAuthRequiredMessage(message: string) {
@@ -70,9 +71,17 @@ function taskToRecent(task: AiTask): RecentTask {
     resolution: task.resolution || '2K',
     ratio: task.ratio || '自适应',
     time: task.finishedAt ? '已完成' : task.submittedAt || task.createdAt ? new Date(task.submittedAt || task.createdAt || '').toLocaleTimeString() : '刚刚',
-    previewUrl: resolveApiUrl(task.previewUrl || task.thumbUrl || task.resultUrl || task.url) || '',
+    previewUrl: taskPreviewImageUrl(task),
     raw: task,
   };
+}
+
+function taskImageForStudio(task: AiTask, prefer: 'result' | 'source') {
+  const isSource = prefer === 'source';
+  const id = isSource ? task.sourceImageId || task.originImage?.id : task.imageId || task.resultImage?.id;
+  const url = isSource ? fullTaskSourceImageUrl(task) : fullTaskImageUrl(task);
+  if (!id && !url) return null;
+  return { id: String(id || task.id), imageId: String(id || task.id), name: isSource ? '产品原图' : '生成结果', url, status: 'ready' as const };
 }
 
 function resourceName(item: ResourceApiItem) {
@@ -889,7 +898,7 @@ export function StudioPage() {
           />
         )}
         {taskDetailLoading && <button className="studioToast" type="button">正在读取任务详情...</button>}
-        <StudioTaskDetailModal
+        <TaskCompareModal
           detail={taskDetail}
           taskList={taskDetailList}
           onClose={() => setTaskDetail(null)}
