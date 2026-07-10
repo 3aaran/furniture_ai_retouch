@@ -59,7 +59,6 @@
   margin-inline: auto;
 }
 
-.studioMobileDrawerHead,
 .studioSourceHead,
 .studioSectionTitle {
   display: flex;
@@ -68,7 +67,6 @@
   gap: 10px;
 }
 
-.studioMobileDrawerHead span,
 .studioSignalTitle small,
 .studioConfigTitle {
   color: var(--color-primary);
@@ -77,19 +75,13 @@
   letter-spacing: .12em;
 }
 
-.studioMobileDrawerHead b,
 .studioSourceHead b {
   display: block;
   color: var(--text-main);
   font-size: 15px;
 }
 
-.studioMobileDrawerHead > button,
 .studioDrawerBackdrop {
-  display: none;
-}
-
-.studioMobileDrawerHead {
   display: none;
 }
 
@@ -176,10 +168,6 @@
     transform: translateX(0);
   }
 
-  .studioMobileDrawerHead {
-    display: flex;
-  }
-
   .studioDrawerBackdrop {
     position: fixed;
     inset: var(--mobile-topbar-height) 0 0;
@@ -187,18 +175,6 @@
     display: block;
     border: 0;
     background: rgba(var(--text-main-rgb), .48);
-  }
-
-  .studioMobileDrawerHead > button {
-    width: 32px;
-    height: 32px;
-    border: 1px solid var(--border-soft);
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    color: var(--text-main);
-    background: var(--bg-card-soft);
-    font-size: 20px;
   }
 
   .studioMobileConfigBackdrop,
@@ -277,15 +253,6 @@
   .studioMobileConfigBlock {
     display: grid;
     gap: 9px;
-  }
-
-  .studioMobileInlineConfig {
-    display: grid;
-    gap: 9px;
-  }
-
-  .studioMobileInlineConfig .studioDescRow {
-    display: none;
   }
 
   .studioMobileConfigChips {

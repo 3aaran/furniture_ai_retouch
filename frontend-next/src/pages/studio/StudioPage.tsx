@@ -10,8 +10,6 @@ import {
   featureBranches,
   promoOptionChoices,
   ratioOptions,
-  resourceCategories,
-  resourceScopes,
   resolutionOptions,
   studioFeatures,
   type FeatureGroup,
@@ -22,7 +20,6 @@ import {
   deleteAiTask,
   fetchAiTaskStatus,
   fetchAiTaskDetail,
-  fetchCategoryTree,
   fetchPublicSettings,
   fetchRecentAiTasks,
   fetchWorkbenchResources,
@@ -157,12 +154,6 @@ export function StudioPage() {
   const [customPrompt, setCustomPrompt] = useState('');
   const [resolution, setResolution] = useState('2K');
   const [ratio, setRatio] = useState('自适应');
-  const [resourceKeyword, setResourceKeyword] = useState('');
-  const [resourceScope, setResourceScope] = useState('SYSTEM');
-  const [resourceCategoryOptions, setResourceCategoryOptions] = useState(resourceCategories);
-  const [categoryLoading, setCategoryLoading] = useState(false);
-  const [mainCategory, setMainCategory] = useState('');
-  const [subCategory, setSubCategory] = useState('');
   const [selectedResource, setSelectedResource] = useState('');
   const [resourceItems, setResourceItems] = useState<ResourceApiItem[]>([]);
   const [resourceLoading, setResourceLoading] = useState(false);
@@ -192,8 +183,6 @@ export function StudioPage() {
 
   const currentFeature = studioFeatures.find((item) => item.key === featureKey) || studioFeatures[0];
   const visibleFeatures = studioFeatures.filter((item) => item.group === (featurePickerGroup || featureGroup));
-  const currentCategory = resourceCategoryOptions.find((item) => item.name === mainCategory);
-  const currentSubOptions = currentCategory?.subs || [];
   const isPromotionSelected = currentFeature.group === 'promotion';
   const needsResourceLibrary = featureKey === 'material' || featureKey === 'replace_bg';
   const selectedResourceItem = resourceItems.find((item) => String(item.id) === selectedResource) || null;
@@ -203,16 +192,9 @@ export function StudioPage() {
     const targetType = featureKey === 'replace_bg' ? 'scene' : 'material';
     return resourceItems.filter((item) => {
       if (needsResourceLibrary && resourceType(item) !== targetType) return false;
-      if (resourceScope !== 'ALL' && item.scope !== resourceScope) return false;
-      if (mainCategory && resourceMainName(item) !== mainCategory) return false;
-      if (subCategory && resourceSubName(item) !== subCategory) return false;
-      if (resourceKeyword.trim()) {
-        const keyword = resourceKeyword.trim().toLowerCase();
-        return `${resourceName(item)}${resourceMainName(item)}${resourceSubName(item)}`.toLowerCase().includes(keyword);
-      }
       return true;
     });
-  }, [featureKey, mainCategory, needsResourceLibrary, resourceItems, resourceKeyword, resourceScope, subCategory]);
+  }, [featureKey, needsResourceLibrary, resourceItems]);
 
   const assetSelectedIds = useMemo(() => {
     const ids = new Set<string>();
@@ -299,41 +281,11 @@ export function StudioPage() {
   useEffect(() => {
     if (!needsResourceLibrary) return;
     let cancelled = false;
-    setCategoryLoading(true);
-    const scopeForCategory = resourceScope === 'ALL' ? 'SYSTEM' : resourceScope;
-    fetchCategoryTree(scopeForCategory)
-      .then((tree) => {
-        if (cancelled) return;
-        const purposeKey = featureKey === 'replace_bg' ? 'scene' : 'material';
-        const purpose = tree.purposes.find((item) => item.purposeKey === purposeKey);
-        const nextCategories = (purpose?.mains || []).map((item) => ({
-          name: item.name,
-          subs: (item.subs || []).map((sub) => sub.name),
-        }));
-        setResourceCategoryOptions(nextCategories.length ? nextCategories : resourceCategories);
-        if (mainCategory && !nextCategories.some((item) => item.name === mainCategory)) {
-          setMainCategory('');
-          setSubCategory('');
-        }
-      })
-      .catch((error: Error) => {
-        if (!cancelled) setResourceError(`分类加载失败：${error.message}`);
-      })
-      .finally(() => {
-        if (!cancelled) setCategoryLoading(false);
-      });
-    return () => { cancelled = true; };
-  }, [featureKey, mainCategory, needsResourceLibrary, resourceScope]);
-
-  useEffect(() => {
-    if (!needsResourceLibrary) return;
-    let cancelled = false;
     setResourceLoading(true);
     setResourceError('');
     fetchWorkbenchResources({
-      keyword: resourceKeyword,
       resourceType: featureKey === 'replace_bg' ? 'scene' : 'material',
-      scope: resourceScope,
+      scope: 'ALL',
       pageSize: 999,
     })
       .then((data) => {
@@ -349,7 +301,7 @@ export function StudioPage() {
         if (!cancelled) setResourceLoading(false);
       });
     return () => { cancelled = true; };
-  }, [featureKey, needsResourceLibrary, resourceKeyword, resourceScope]);
+  }, [featureKey, needsResourceLibrary]);
 
   useEffect(() => {
     if (!featureDrawerOpen && !featurePickerGroup && !mobileConfigSheet && !mobileRecentOpen) return;
@@ -375,7 +327,7 @@ export function StudioPage() {
     if (nextFeature) setFeatureKey(nextFeature.key);
     setSelectedResource('');
     setFeaturePickerGroup(null);
-    closeFeatureDrawer();
+    if (!isMobile) closeFeatureDrawer();
   }
 
   function openFeatureGroup(group: FeatureGroup) {
@@ -396,8 +348,10 @@ export function StudioPage() {
     setFeatureKey(key);
     setSelectedResource('');
     setFeaturePickerGroup(null);
-    setMobileConfigSheet(null);
-    closeFeatureDrawer();
+    if (!isMobile) {
+      setMobileConfigSheet(null);
+      closeFeatureDrawer();
+    }
   }
 
   function chooseMobileResolution(value: string) {
@@ -490,9 +444,9 @@ export function StudioPage() {
     try {
       const result = await uploadWorkbenchResource({
         file,
-        scope: resourceScope === 'ALL' || resourceScope === 'SYSTEM' ? 'USER' : resourceScope,
-        objectName: mainCategory || (featureKey === 'replace_bg' ? '场景模板' : '材质'),
-        colorName: subCategory,
+        scope: 'USER',
+        objectName: featureKey === 'replace_bg' ? '场景模板' : '材质',
+        colorName: '',
       });
       const items = result.items || [];
       if (items.length) {
@@ -702,20 +656,6 @@ export function StudioPage() {
     if (featureKey === 'material' || featureKey === 'replace_bg') {
       return (
         <>
-          <div className="studioResourceFilters">
-            <div className="studioScopeTabs">
-              {resourceScopes.map((item) => <button key={item.value} type="button" className={resourceScope === item.value ? 'isActive' : ''} onClick={() => setResourceScope(item.value)}>{item.label}</button>)}
-            </div>
-            <div className="studioCategoryTabs" aria-label="资源主分类">
-              <button type="button" className={!mainCategory ? 'isActive' : ''} onClick={() => { setMainCategory(''); setSubCategory(''); }}>{categoryLoading ? '加载中' : '全部'}</button>
-              {resourceCategoryOptions.map((item) => <button key={item.name} type="button" className={mainCategory === item.name ? 'isActive' : ''} onClick={() => { setMainCategory(item.name); setSubCategory(''); }}>{item.name}</button>)}
-            </div>
-            <div className="studioSubcategoryChips" aria-label="资源子分类">
-              <button type="button" className={!subCategory ? 'isActive' : ''} onClick={() => setSubCategory('')}>全部</button>
-              {currentSubOptions.map((item) => <button key={item} type="button" className={subCategory === item ? 'isActive' : ''} onClick={() => setSubCategory(item)}>{item}</button>)}
-            </div>
-            <div className="studioSearchBox"><input value={resourceKeyword} onChange={(event) => setResourceKeyword(event.target.value)} placeholder="搜索名称" /></div>
-          </div>
           <div className="studioResourceGrid">
             <input ref={resourceUploadInputRef} type="file" accept="image/*" hidden onChange={handleResourceUploadInput} />
             <button className="studioUploadResource" type="button" onClick={() => resourceUploadInputRef.current?.click()}>
@@ -723,7 +663,7 @@ export function StudioPage() {
             </button>
             {visibleResourceItems.map(renderResourceCard)}
             {resourceLoading && <div className="studioLibraryEmpty">正在读取资产库...</div>}
-            {!resourceLoading && !visibleResourceItems.length && !resourceError && <div className="studioLibraryEmpty">资产库暂无匹配资源，可切换分类或点击加号上传</div>}
+            {!resourceLoading && !visibleResourceItems.length && !resourceError && <div className="studioLibraryEmpty">资产库暂无可用资源，可点击加号上传</div>}
             {!resourceLoading && resourceError && <div className="studioLibraryEmpty">资源加载失败：{resourceError}</div>}
           </div>
         </>
@@ -754,15 +694,16 @@ export function StudioPage() {
       {featureDrawerOpen && <button className="studioDrawerBackdrop" type="button" aria-label="关闭功能与资源" onClick={closeFeatureDrawer} />}
       <section className="studioLayoutPc">
         <aside id="studio-feature-panel" className={`studioSidePanel studioLeftPanel ${featureDrawerOpen ? 'isFeatureOpen' : ''}`.trim()} aria-hidden={isMobile && !featureDrawerOpen} inert={isMobile && !featureDrawerOpen}>
-          <div className="studioMobileDrawerHead"><div><span>当前功能</span><b>{currentFeature.label}</b></div><button type="button" aria-label="关闭功能与资源" onClick={closeFeatureDrawer}>×</button></div>
-          <div className="studioBranchTabs" aria-label="功能主分支">
-            {featureBranches.map((item) => {
-              const disabled = 'disabled' in item ? item.disabled : false;
-              return <button key={item.key} type="button" disabled={disabled} className={featureGroup === item.key ? 'isActive' : ''} onClick={() => openFeatureGroup(item.key)}>{item.label}</button>;
-            })}
-          </div>
-          <div className="studioDivider" />
-          <div className={featurePickerGroup ? 'studioFeatureList isPickerOpen' : 'studioFeatureList'}>{visibleFeatures.map((item) => <button key={item.key} type="button" className={featureKey === item.key ? 'isActive' : ''} onClick={() => chooseFeature(item.key)}><span>{item.tag}</span><b>{item.label}</b></button>)}</div>
+          {!isMobile && <>
+            <div className="studioBranchTabs" aria-label="功能主分支">
+              {featureBranches.map((item) => {
+                const disabled = 'disabled' in item ? item.disabled : false;
+                return <button key={item.key} type="button" disabled={disabled} className={featureGroup === item.key ? 'isActive' : ''} onClick={() => openFeatureGroup(item.key)}>{item.label}</button>;
+              })}
+            </div>
+            <div className="studioDivider" />
+            <div className={featurePickerGroup ? 'studioFeatureList isPickerOpen' : 'studioFeatureList'}>{visibleFeatures.map((item) => <button key={item.key} type="button" className={featureKey === item.key ? 'isActive' : ''} onClick={() => chooseFeature(item.key)}><span>{item.tag}</span><b>{item.label}</b></button>)}</div>
+          </>}
           <div className="studioFeatureConfig">{renderLeftConfig()}</div>
         </aside>
 
@@ -775,19 +716,12 @@ export function StudioPage() {
           {mobileConfigSheet === 'feature' && (
             <>
               <div className="studioMobileConfigBlock">
-                <span>生成类型</span>
-                <div className="studioMobileConfigChips">
-                  {featureBranches.filter((item) => item.key !== 'video').map((item) => <button key={item.key} type="button" className={featureGroup === item.key ? 'isActive' : ''} onClick={() => selectGroup(item.key)}>{item.label}</button>)}
-                </div>
-              </div>
-              <div className="studioMobileConfigBlock">
                 <span>功能</span>
                 <div className="studioMobileConfigList">
-                  {studioFeatures.filter((item) => item.group === featureGroup).map((item) => <button key={item.key} type="button" className={featureKey === item.key ? 'isActive' : ''} onClick={() => chooseFeature(item.key)}><b>{item.label}</b><em>{item.tag}</em></button>)}
+                  {studioFeatures.map((item) => <button key={item.key} type="button" className={featureKey === item.key ? 'isActive' : ''} onClick={() => chooseFeature(item.key)}><b>{item.label}</b><em>{item.tag}</em></button>)}
                 </div>
               </div>
               <button className="studioMobileResourceConfig" type="button" onClick={openResourceConfigFromMobile}>打开资源配置</button>
-              {!needsResourceLibrary && <div className="studioMobileConfigBlock"><span>功能参数</span><div className="studioMobileInlineConfig">{renderLeftConfig()}</div></div>}
             </>
           )}
 

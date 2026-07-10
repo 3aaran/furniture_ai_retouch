@@ -82,26 +82,23 @@ test('desktop studio keeps compact measured workspace geometry and density', () 
   assert.doesNotMatch(source, /studioLeftHeader/);
   assert.doesNotMatch(css, /studioLeftHeader/);
   assert.match(css, /@media \(min-width: 768px\)[\s\S]*\.studioFeatureList\s*\{[\s\S]*display:\s*none/);
-  assert.match(css, /@media \(min-width: 768px\)[\s\S]*\.studioDescRow,[\s\S]*\.studioSearchBox\s*\{[\s\S]*display:\s*none/);
-  assert.match(css, /\.studioResourceFilters \.studioSearchBox\s*\{[\s\S]*display:\s*block/);
+  assert.match(css, /@media \(min-width: 768px\)[\s\S]*\.studioDescRow\s*\{[\s\S]*display:\s*none/);
+  assert.doesNotMatch(css, /studioResourceFilters|studioSearchBox/);
   assert.match(css, /\.studioUploadBox\s*\{[\s\S]*border-radius:\s*var\(--radius-xl\)/);
 });
 
 test('pc studio reads real backend content instead of local demo resources', () => {
   assert.match(source, /fetchWorkbenchResources/);
-  assert.match(source, /fetchCategoryTree/);
   assert.match(source, /uploadWorkbenchResource/);
   assert.match(source, /visibleResourceItems/);
   assert.doesNotMatch(source, /filteredDemoResources|本地示例资源/);
 });
 
-test('studio resource picker follows compact tab and chip layout', () => {
-  assert.match(source, /studioScopeTabs/);
-  assert.match(source, /studioCategoryTabs/);
-  assert.match(source, /studioSubcategoryChips/);
-  assert.doesNotMatch(source, /<select value=\{resourceScope\}/);
+test('studio resource picker removes redundant filter controls', () => {
+  assert.doesNotMatch(source, /studioScopeTabs|studioCategoryTabs|studioSubcategoryChips|studioResourceFilters/);
+  assert.doesNotMatch(source, /resourceScope|resourceCategoryOptions|resourceKeyword/);
   assert.doesNotMatch(source, /studioFilterStack/);
-  assert.doesNotMatch(css, /studioFilterStack|studioSectionLabel/);
+  assert.doesNotMatch(css, /studioFilterStack|studioSectionLabel|studioResourceFilters|studioSearchBox/);
   assert.doesNotMatch(source, /resourceMainName\(item\) \|\| '未分类'/);
 });
 
@@ -127,4 +124,13 @@ test('studio asset picker and recent task actions use real APIs without random s
   assert.doesNotMatch(source, /pickLatestResource|pickLatestResources|从资源库/);
   assert.match(source, /资产库/);
   assert.match(source, /studioToast/);
+});
+
+test('mobile feature picker stays open while resource configuration owns all parameters', () => {
+  assert.match(source, /if \(!isMobile\) \{\s+setMobileConfigSheet\(null\);\s+closeFeatureDrawer\(\);\s+\}/);
+  assert.match(source, /\{studioFeatures\.map\(\(item\) => <button key=\{item\.key\}/);
+  assert.doesNotMatch(source, /!needsResourceLibrary && <div className="studioMobileConfigBlock"><span>功能参数<\/span>/);
+  assert.doesNotMatch(source, /<div className="studioMobileDrawerHead">/);
+  assert.doesNotMatch(source, /<div className="studioResourceFilters">/);
+  assert.match(source, /\{!isMobile && <>[\s\S]*studioBranchTabs[\s\S]*studioFeatureList[\s\S]*<\/>\}/);
 });

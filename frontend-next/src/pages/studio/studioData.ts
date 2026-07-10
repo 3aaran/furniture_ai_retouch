@@ -41,43 +41,6 @@ export const studioFeatures: StudioFeature[] = [
 export const resolutionOptions = ['1K', '2K', '4K'];
 export const ratioOptions = ['自适应', '1:1', '4:3', '3:4', '16:9'];
 
-export const resourceScopes = [
-  { value: 'SYSTEM', label: '系统资源' },
-  { value: 'MERCHANT', label: '用户资源' },
-  { value: 'USER', label: '个人资源' },
-  { value: 'ALL', label: '全部资源' },
-];
-
-export const resourceCategories = [
-  { name: '木材', subs: ['橡木', '胡桃木', '樱桃木', '白蜡木'] },
-  { name: '布料', subs: ['亚麻', '绒布', '科技布', '棉麻'] },
-  { name: '皮革', subs: ['真皮', '仿皮', '磨砂皮'] },
-  { name: '空间', subs: ['客厅', '卧室', '展厅', '书房'] },
-];
-
-export type ResourceItem = {
-  id: string;
-  name: string;
-  scope: 'SYSTEM' | 'MERCHANT' | 'USER';
-  mainCategory: string;
-  subCategory: string;
-  type: '材质' | '场景';
-  tone: string;
-};
-
-export const demoResources: ResourceItem[] = [
-  { id: 'M001', name: '浅橡木纹', scope: 'SYSTEM', mainCategory: '木材', subCategory: '橡木', type: '材质', tone: '自然浅色' },
-  { id: 'M002', name: '深胡桃木', scope: 'SYSTEM', mainCategory: '木材', subCategory: '胡桃木', type: '材质', tone: '高级深色' },
-  { id: 'M003', name: '白蜡木纹', scope: 'SYSTEM', mainCategory: '木材', subCategory: '白蜡木', type: '材质', tone: '清爽浅色' },
-  { id: 'M004', name: '樱桃木纹', scope: 'SYSTEM', mainCategory: '木材', subCategory: '樱桃木', type: '材质', tone: '温润暖色' },
-  { id: 'M005', name: '米白亚麻', scope: 'SYSTEM', mainCategory: '布料', subCategory: '亚麻', type: '材质', tone: '温和中性' },
-  { id: 'M006', name: '灰色绒布', scope: 'SYSTEM', mainCategory: '布料', subCategory: '绒布', type: '材质', tone: '柔和质感' },
-  { id: 'F001', name: '米白亚麻', scope: 'MERCHANT', mainCategory: '布料', subCategory: '亚麻', type: '材质', tone: '温和中性' },
-  { id: 'F002', name: '灰色绒布', scope: 'USER', mainCategory: '布料', subCategory: '绒布', type: '材质', tone: '柔和质感' },
-  { id: 'S001', name: '现代客厅', scope: 'SYSTEM', mainCategory: '空间', subCategory: '客厅', type: '场景', tone: '现代简约' },
-  { id: 'S002', name: '暖色卧室', scope: 'SYSTEM', mainCategory: '空间', subCategory: '卧室', type: '场景', tone: '温暖家居' },
-];
-
 export const promoOptionChoices = {
   mainBackground: ['暖灰渐变商业摄影背景', '浅米色高级背景', '米白色柔和光影', '极简空间背景'],
   mainComposition: ['主体居中', '左侧留白', '右侧留白', '主体偏下'],

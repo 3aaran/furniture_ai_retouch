@@ -48,7 +48,7 @@ test('resources mobile category manager uses single-column modal and scoped subc
   assert.match(source, /categoryDialog\.mainName/);
   assert.doesNotMatch(source, /createMainCategory\(\{ scope: managerScope, name: categoryDialog\.mainName/);
   assert.match(source, /const managerCategoryOptions = useMemo\(\(\) => categoryOptionsForScope\(flattenCategoryTrees\(\[\], categoryPurposes\), managerScope\)/);
-  assert.match(source, /<button className="assetAddSubInline" type="button" disabled=\{busy\}/);
+  assert.match(source, /<button className="assetAddSubInline" type="button" disabled=\{categoryBusy\}/);
   assert.doesNotMatch(source, /item\.canManage && item\.id && <button className="assetAddSubInline"/);
   assert.doesNotMatch(source, /\{item\.id && <button className="assetAddSubInline"/);
   assert.doesNotMatch(source, /onClick=\{\(\) => openCreateSubDialog\(\)\}/);
@@ -62,8 +62,20 @@ test('resources mobile category manager uses single-column modal and scoped subc
 
 test('category creation refreshes only category trees instead of waiting for the asset list', () => {
   assert.match(source, /async function loadCategoryTrees\(\)/);
-  assert.match(source, /await loadCategoryTrees\(\)/);
-  assert.match(source, /await refreshCategories\(\)/);
+  assert.match(source, /loadCategoryTrees\(\),/);
+  assert.match(source, /refreshCategoriesInBackground\(managerScope, '主分类已创建'\)/);
+  assert.match(source, /refreshCategoriesInBackground\(managerScope, '子分类已创建'\)/);
+  assert.match(source, /void refreshCategories\(scopeToRefresh\)\.catch/);
   assert.doesNotMatch(source, /await createMainCategory\([\s\S]{0,320}await reloadAfterAction\(\)/);
   assert.doesNotMatch(source, /await createSubCategory\([\s\S]{0,240}await reloadAfterAction\(\)/);
+});
+
+test('asset upload and category mutations keep independent pending states', () => {
+  assert.match(source, /const \[uploadBusy, setUploadBusy\] = useState\(false\)/);
+  assert.match(source, /const \[categoryBusy, setCategoryBusy\] = useState\(false\)/);
+  assert.doesNotMatch(source, /const \[busy, setBusy\] = useState\(false\)/);
+  assert.match(source, /disabled=\{uploadBusy\} onClick=\{uploadAssets\}/);
+  assert.match(source, /disabled=\{categoryBusy\} onClick=\{createMain\}/);
+  assert.match(source, /disabled=\{categoryBusy\} onClick=\{createSub\}/);
+  assert.match(source, /setCategoryDialog\(null\);\s+refreshCategoriesInBackground\(managerScope, '主分类已创建'\)/);
 });

@@ -177,7 +177,9 @@ export function ResourcesPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [modal, setModal] = useState<AssetModal>(null);
   const [notice, setNotice] = useState('');
-  const [busy, setBusy] = useState(false);
+  const [assetBusy, setAssetBusy] = useState(false);
+  const [uploadBusy, setUploadBusy] = useState(false);
+  const [categoryBusy, setCategoryBusy] = useState(false);
   const [detailName, setDetailName] = useState('');
   const [targetScope, setTargetScope] = useState<ManageScope>('USER');
   const [targetMain, setTargetMain] = useState('');
@@ -402,8 +404,19 @@ export function ResourcesPage() {
     await loadAssets();
   }
 
-  async function refreshCategories() {
-    await loadCategoryTrees();
+  async function refreshCategories(scopeToRefresh: ManageScope) {
+    const tree = await fetchCategoryTree(scopeToRefresh);
+    setCategoryPurposes((current) => [
+      ...current.map((purpose) => ({ ...purpose, mains: purpose.mains.filter((main) => main.scope !== scopeToRefresh) })),
+      ...tree.purposes,
+    ]);
+  }
+
+  function refreshCategoriesInBackground(scopeToRefresh: ManageScope, successMessage: string) {
+    setNotice(successMessage);
+    void refreshCategories(scopeToRefresh).catch(() => {
+      setNotice(`${successMessage}，分类列表将在下次打开时同步`);
+    });
   }
 
   async function saveDetailName() {
@@ -413,7 +426,7 @@ export function ResourcesPage() {
       setNotice('名称不能为空');
       return;
     }
-    setBusy(true);
+    setAssetBusy(true);
     setNotice('');
     try {
       await updateWorkbenchResource(selected.id, { name: nextName });
@@ -423,7 +436,7 @@ export function ResourcesPage() {
     } catch (reason) {
       setNotice(reason instanceof Error ? reason.message : '名称更新失败');
     } finally {
-      setBusy(false);
+      setAssetBusy(false);
     }
   }
 
@@ -433,7 +446,7 @@ export function ResourcesPage() {
       setNotice('请选择主分类');
       return;
     }
-    setBusy(true);
+    setAssetBusy(true);
     setNotice('');
     try {
       const results = await Promise.allSettled(selectedItems.map((item) => updateWorkbenchResource(item.id, { scope: targetScope, objectName: targetMain, colorName: targetSub })));
@@ -445,13 +458,13 @@ export function ResourcesPage() {
     } catch (reason) {
       setNotice(reason instanceof Error ? reason.message : '批量分类变更失败');
     } finally {
-      setBusy(false);
+      setAssetBusy(false);
     }
   }
 
   async function applyBatchDelete() {
     if (!selectedItems.length) return;
-    setBusy(true);
+    setAssetBusy(true);
     setNotice('');
     try {
       const results = await Promise.allSettled(selectedItems.map((item) => deleteWorkbenchResource(item.id)));
@@ -463,7 +476,7 @@ export function ResourcesPage() {
     } catch (reason) {
       setNotice(reason instanceof Error ? reason.message : '批量删除失败');
     } finally {
-      setBusy(false);
+      setAssetBusy(false);
     }
   }
 
@@ -476,7 +489,7 @@ export function ResourcesPage() {
       setNotice('请选择要上传的图片文件');
       return;
     }
-    setBusy(true);
+    setUploadBusy(true);
     setNotice('');
     try {
       await uploadWorkbenchResources({ files: uploadFiles, name: uploadName.trim(), scope: targetScope, objectName: targetMain || '未分类', colorName: targetSub });
@@ -487,7 +500,7 @@ export function ResourcesPage() {
     } catch (reason) {
       setNotice(reason instanceof Error ? reason.message : '上传失败');
     } finally {
-      setBusy(false);
+      setUploadBusy(false);
     }
   }
 
@@ -497,18 +510,17 @@ export function ResourcesPage() {
       setNotice('请输入主分类名称');
       return;
     }
-    setBusy(true);
+    setCategoryBusy(true);
     setNotice('');
     try {
       await createMainCategory({ scope: managerScope, name, purposeKey: newMainPurpose });
-      await refreshCategories();
       setNewMainName('');
       setCategoryDialog(null);
-      setNotice('主分类已创建');
+      refreshCategoriesInBackground(managerScope, '主分类已创建');
     } catch (reason) {
       setNotice(reason instanceof Error ? reason.message : '创建主分类失败');
     } finally {
-      setBusy(false);
+      setCategoryBusy(false);
     }
   }
 
@@ -518,21 +530,20 @@ export function ResourcesPage() {
       setNotice('请填写子分类名称');
       return;
     }
-    setBusy(true);
+    setCategoryBusy(true);
     setNotice('');
     try {
       const mainId: string | number = newSubMainId;
       if (!mainId) throw new Error('缺少主分类，无法添加子分类');
       await createSubCategory(mainId, { name });
-      await refreshCategories();
       setNewSubName('');
       setNewSubMainId('');
       setCategoryDialog(null);
-      setNotice('子分类已创建');
+      refreshCategoriesInBackground(managerScope, '子分类已创建');
     } catch (reason) {
       setNotice(reason instanceof Error ? reason.message : '创建子分类失败');
     } finally {
-      setBusy(false);
+      setCategoryBusy(false);
     }
   }
 
@@ -543,7 +554,7 @@ export function ResourcesPage() {
       setNotice('分类名称不能为空');
       return;
     }
-    setBusy(true);
+    setCategoryBusy(true);
     setNotice('');
     try {
       if (categoryDialog.type === 'rename-main') {
@@ -558,18 +569,18 @@ export function ResourcesPage() {
         setNotice('子分类已重命名');
       }
       setCategoryDialog(null);
-      await reloadAfterAction();
+      await refreshCategories(managerScope);
     } catch (reason) {
       setNotice(reason instanceof Error ? reason.message : '重命名失败');
     } finally {
-      setBusy(false);
+      setCategoryBusy(false);
     }
   }
 
   async function deleteMain(item: CategoryOption) {
     if (!item.id || !item.canManage) return;
     if (!window.confirm(`确认删除主分类“${item.main}”？`)) return;
-    setBusy(true);
+    setCategoryBusy(true);
     setNotice('');
     try {
       await updateMainCategory(item.id, { status: 'DELETED' });
@@ -582,30 +593,30 @@ export function ResourcesPage() {
         setTargetMain('');
         setTargetSub('');
       }
-      await reloadAfterAction();
+      await refreshCategories(managerScope);
       setNotice('主分类已删除');
     } catch (reason) {
       setNotice(reason instanceof Error ? reason.message : '删除主分类失败');
     } finally {
-      setBusy(false);
+      setCategoryBusy(false);
     }
   }
 
   async function deleteSub(sub: { id?: string | number; name: string; canManage?: boolean }) {
     if (!sub.id || !sub.canManage) return;
     if (!window.confirm(`确认删除子分类“${sub.name}”？`)) return;
-    setBusy(true);
+    setCategoryBusy(true);
     setNotice('');
     try {
       await updateSubCategory(sub.id, { status: 'DELETED' });
       if (subCategory === sub.name) setSubCategory('');
       if (targetSub === sub.name) setTargetSub('');
-      await reloadAfterAction();
+      await refreshCategories(managerScope);
       setNotice('子分类已删除');
     } catch (reason) {
       setNotice(reason instanceof Error ? reason.message : '删除子分类失败');
     } finally {
-      setBusy(false);
+      setCategoryBusy(false);
     }
   }
 
@@ -661,11 +672,11 @@ export function ResourcesPage() {
   return <div className="assetPage">
     {modal && <button className="assetOverlay" type="button" aria-label="关闭弹窗" onClick={closeModal} />}
 
-    {modal === 'upload' && <aside className="assetActionSheet isOpen"><div className="assetFilterHead"><div><span>上传资产</span><b>上传图片并保存为资产</b></div><button type="button" onClick={closeModal}>×</button></div><div className="assetFormGrid"><label><span>选择图片</span><input type="file" accept="image/*" multiple onChange={handleUploadFiles} /></label><label><span>统一名称（可选）</span><input value={uploadName} onChange={(event) => setUploadName(event.target.value)} placeholder="不填则使用文件名" /></label>{categoryFields}</div>{notice && <p className="assetNotice">{notice}</p>}<div className="assetFilterActions"><button type="button" onClick={closeModal}>取消</button><button type="button" disabled={busy} onClick={uploadAssets}>{busy ? '上传中...' : `上传 ${uploadFiles.length || ''}`}</button></div></aside>}
+    {modal === 'upload' && <aside className="assetActionSheet isOpen"><div className="assetFilterHead"><div><span>上传资产</span><b>上传图片并保存为资产</b></div><button type="button" onClick={closeModal}>×</button></div><div className="assetFormGrid"><label><span>选择图片</span><input type="file" accept="image/*" multiple onChange={handleUploadFiles} /></label><label><span>统一名称（可选）</span><input value={uploadName} onChange={(event) => setUploadName(event.target.value)} placeholder="不填则使用文件名" /></label>{categoryFields}</div>{notice && <p className="assetNotice">{notice}</p>}<div className="assetFilterActions"><button type="button" onClick={closeModal}>取消</button><button type="button" disabled={uploadBusy} onClick={uploadAssets}>{uploadBusy ? '上传中...' : `上传 ${uploadFiles.length || ''}`}</button></div></aside>}
 
-    {modal === 'batch-category' && <aside className="assetActionSheet isOpen"><div className="assetFilterHead"><div><span>批量分类</span><b>已选择 {selectedItems.length} 项资产</b></div><button type="button" onClick={closeModal}>×</button></div><div className="assetFormGrid">{categoryFields}</div>{notice && <p className="assetNotice">{notice}</p>}<div className="assetFilterActions"><button type="button" onClick={closeModal}>取消</button><button type="button" disabled={busy} onClick={applyBatchCategory}>{busy ? '处理中...' : '变更分类'}</button></div></aside>}
+    {modal === 'batch-category' && <aside className="assetActionSheet isOpen"><div className="assetFilterHead"><div><span>批量分类</span><b>已选择 {selectedItems.length} 项资产</b></div><button type="button" onClick={closeModal}>×</button></div><div className="assetFormGrid">{categoryFields}</div>{notice && <p className="assetNotice">{notice}</p>}<div className="assetFilterActions"><button type="button" onClick={closeModal}>取消</button><button type="button" disabled={assetBusy} onClick={applyBatchCategory}>{assetBusy ? '处理中...' : '变更分类'}</button></div></aside>}
 
-    {modal === 'batch-delete' && <aside className="assetActionSheet isOpen"><div className="assetFilterHead"><div><span>批量删除</span><b>确认删除 {selectedItems.length} 项资产</b></div><button type="button" onClick={closeModal}>×</button></div><p className="assetDangerText">删除后这些资产将从资产库移除，该操作会调用后端删除接口。</p>{notice && <p className="assetNotice">{notice}</p>}<div className="assetFilterActions"><button type="button" onClick={closeModal}>取消</button><button className="danger" type="button" disabled={busy} onClick={applyBatchDelete}>{busy ? '删除中...' : '确认删除'}</button></div></aside>}
+    {modal === 'batch-delete' && <aside className="assetActionSheet isOpen"><div className="assetFilterHead"><div><span>批量删除</span><b>确认删除 {selectedItems.length} 项资产</b></div><button type="button" onClick={closeModal}>×</button></div><p className="assetDangerText">删除后这些资产将从资产库移除，该操作会调用后端删除接口。</p>{notice && <p className="assetNotice">{notice}</p>}<div className="assetFilterActions"><button type="button" onClick={closeModal}>取消</button><button className="danger" type="button" disabled={assetBusy} onClick={applyBatchDelete}>{assetBusy ? '删除中...' : '确认删除'}</button></div></aside>}
 
     {modal === 'category-manage' && <aside className="assetCategoryManageSheet isOpen">
       <div className="assetCategoryManageHead">
@@ -673,10 +684,10 @@ export function ResourcesPage() {
         <div className="assetCategoryManageTools"><select value={managerScope} onChange={(event) => setManagerScopeAndReset(event.target.value as ManageScope)}>{manageScopeOptions.map((item) => <option key={item.key} value={item.key}>{item.label}</option>)}</select><button className="assetCreateMainButton" type="button" onClick={openCreateMainDialog}><AppIcon name="plus" />创建主分类</button><button className="assetSheetClose" type="button" aria-label="关闭分类管理" onClick={closeModal}>×</button></div>
       </div>
       {notice && <p className="assetNotice">{notice}</p>}
-      <div className="assetCategoryManageBody">{managerPurposeGroups.length ? managerPurposeGroups.map((group) => <section className="assetCategoryPurposeGroup" key={group.key}><header><h3>{group.label}</h3><span>{group.categories.length} 个主分类</span></header><div className="assetCategoryCardGrid">{group.categories.map((item, index) => <article className="assetCategoryManageCard" key={`${item.scope}-${item.main}`}><header><div><em>#{index + 1}</em><b title={item.main}>{item.main}</b></div><div className="assetCategoryCardActions">{item.canManage && item.id && <><button type="button" aria-label="重命名主分类" disabled={busy} onClick={() => openRenameMainDialog(item)}><AppIcon name="edit" /></button><button type="button" aria-label="删除主分类" disabled={busy} onClick={() => deleteMain(item)}><AppIcon name="trash" /></button></>}</div></header><div className="assetCategorySubList">{item.subs.length ? item.subs.map((sub, subIndex) => <p key={sub.name}><span><AppIcon name="grip" />{sub.name}</span><em>#{subIndex + 1}</em>{sub.canManage && sub.id && <button type="button" aria-label="重命名子分类" disabled={busy} onClick={() => openRenameSubDialog(sub)}><AppIcon name="edit" /></button>}{sub.canManage && sub.id && <button type="button" aria-label="删除子分类" disabled={busy} onClick={() => deleteSub(sub)}><AppIcon name="trash" /></button>}</p>) : <i>暂无子分类</i>}<button className="assetAddSubInline" type="button" disabled={busy} onClick={() => openCreateSubDialog(item)}><AppIcon name="plus" />添加子分类</button></div></article>)}</div></section>) : <div className="assetCategoryEmpty">当前空间暂无分类，可点击上方创建主分类。</div>}</div>
+      <div className="assetCategoryManageBody">{managerPurposeGroups.length ? managerPurposeGroups.map((group) => <section className="assetCategoryPurposeGroup" key={group.key}><header><h3>{group.label}</h3><span>{group.categories.length} 个主分类</span></header><div className="assetCategoryCardGrid">{group.categories.map((item, index) => <article className="assetCategoryManageCard" key={`${item.scope}-${item.main}`}><header><div><em>#{index + 1}</em><b title={item.main}>{item.main}</b></div><div className="assetCategoryCardActions">{item.canManage && item.id && <><button type="button" aria-label="重命名主分类" disabled={categoryBusy} onClick={() => openRenameMainDialog(item)}><AppIcon name="edit" /></button><button type="button" aria-label="删除主分类" disabled={categoryBusy} onClick={() => deleteMain(item)}><AppIcon name="trash" /></button></>}</div></header><div className="assetCategorySubList">{item.subs.length ? item.subs.map((sub, subIndex) => <p key={sub.name}><span><AppIcon name="grip" />{sub.name}</span><em>#{subIndex + 1}</em>{sub.canManage && sub.id && <button type="button" aria-label="重命名子分类" disabled={categoryBusy} onClick={() => openRenameSubDialog(sub)}><AppIcon name="edit" /></button>}{sub.canManage && sub.id && <button type="button" aria-label="删除子分类" disabled={categoryBusy} onClick={() => deleteSub(sub)}><AppIcon name="trash" /></button>}</p>) : <i>暂无子分类</i>}<button className="assetAddSubInline" type="button" disabled={categoryBusy} onClick={() => openCreateSubDialog(item)}><AppIcon name="plus" />添加子分类</button></div></article>)}</div></section>) : <div className="assetCategoryEmpty">当前空间暂无分类，可点击上方创建主分类。</div>}</div>
     </aside>}
 
-    {categoryDialog && <div className="assetDialogLayer"><button className="assetDialogBackdrop" type="button" aria-label="关闭分类弹窗" onClick={closeCategoryDialog} /><section className="assetCategoryDialog" role="dialog" aria-modal="true"><div className="assetCategoryDialogHead"><div><span>{categoryDialog.type === 'create-main' ? '创建主分类' : categoryDialog.type === 'create-sub' ? '创建子分类' : '重命名分类'}</span><b>{managerScope === 'MERCHANT' ? '门店空间' : '个人空间'}</b></div><button type="button" aria-label="关闭" onClick={closeCategoryDialog}>×</button></div>{categoryDialog.type === 'create-main' ? <div className="assetCategoryDialogForm"><label><span>功能用途</span><select value={newMainPurpose} onChange={(event) => setNewMainPurpose(event.target.value)}>{purposeOptions.map((item) => <option key={item.key} value={item.key}>{item.label}</option>)}</select></label><label><span>主分类名称</span><input value={newMainName} onChange={(event) => setNewMainName(event.target.value)} placeholder="输入主分类名称" /></label><div><button type="button" onClick={closeCategoryDialog}>取消</button><button type="button" disabled={busy} onClick={createMain}>{busy ? '创建中...' : '确认创建'}</button></div></div> : categoryDialog.type === 'create-sub' ? <div className="assetCategoryDialogForm"><label><span>所属主分类</span><input value={categoryDialog.mainName} readOnly /></label><label><span>子分类名称</span><input value={newSubName} onChange={(event) => setNewSubName(event.target.value)} placeholder="输入子分类名称" /></label><div><button type="button" onClick={closeCategoryDialog}>取消</button><button type="button" disabled={busy} onClick={createSub}>{busy ? '创建中...' : '确认创建'}</button></div></div> : <div className="assetCategoryDialogForm"><label><span>{categoryDialog.type === 'rename-main' ? '主分类名称' : '子分类名称'}</span><input value={renameCategoryName} onChange={(event) => setRenameCategoryName(event.target.value)} placeholder="输入新的分类名称" /></label><div><button type="button" onClick={closeCategoryDialog}>取消</button><button type="button" disabled={busy} onClick={renameCategory}>{busy ? '保存中...' : '确认重命名'}</button></div></div>}</section></div>}
+    {categoryDialog && <div className="assetDialogLayer"><button className="assetDialogBackdrop" type="button" aria-label="关闭分类弹窗" onClick={closeCategoryDialog} /><section className="assetCategoryDialog" role="dialog" aria-modal="true"><div className="assetCategoryDialogHead"><div><span>{categoryDialog.type === 'create-main' ? '创建主分类' : categoryDialog.type === 'create-sub' ? '创建子分类' : '重命名分类'}</span><b>{managerScope === 'MERCHANT' ? '门店空间' : '个人空间'}</b></div><button type="button" aria-label="关闭" onClick={closeCategoryDialog}>×</button></div>{categoryDialog.type === 'create-main' ? <div className="assetCategoryDialogForm"><label><span>功能用途</span><select value={newMainPurpose} onChange={(event) => setNewMainPurpose(event.target.value)}>{purposeOptions.map((item) => <option key={item.key} value={item.key}>{item.label}</option>)}</select></label><label><span>主分类名称</span><input value={newMainName} onChange={(event) => setNewMainName(event.target.value)} placeholder="输入主分类名称" /></label><div><button type="button" onClick={closeCategoryDialog}>取消</button><button type="button" disabled={categoryBusy} onClick={createMain}>{categoryBusy ? '创建中...' : '确认创建'}</button></div></div> : categoryDialog.type === 'create-sub' ? <div className="assetCategoryDialogForm"><label><span>所属主分类</span><input value={categoryDialog.mainName} readOnly /></label><label><span>子分类名称</span><input value={newSubName} onChange={(event) => setNewSubName(event.target.value)} placeholder="输入子分类名称" /></label><div><button type="button" onClick={closeCategoryDialog}>取消</button><button type="button" disabled={categoryBusy} onClick={createSub}>{categoryBusy ? '创建中...' : '确认创建'}</button></div></div> : <div className="assetCategoryDialogForm"><label><span>{categoryDialog.type === 'rename-main' ? '主分类名称' : '子分类名称'}</span><input value={renameCategoryName} onChange={(event) => setRenameCategoryName(event.target.value)} placeholder="输入新的分类名称" /></label><div><button type="button" onClick={closeCategoryDialog}>取消</button><button type="button" disabled={categoryBusy} onClick={renameCategory}>{categoryBusy ? '保存中...' : '确认重命名'}</button></div></div>}</section></div>}
 
     <main className="assetMainPanel">
       {selectedItems.length > 0 ? <section className="assetBatchBar"><b>已选择 {selectedItems.length} 项资产</b><button type="button" onClick={() => setModal('batch-category')}>批量分类变更</button><button type="button" onClick={() => setModal('batch-delete')}>批量删除</button><button type="button" onClick={clearSelection}>取消选择</button></section> : <section className="assetSearchBar" aria-label="资产搜索与筛选">
@@ -714,6 +725,6 @@ export function ResourcesPage() {
     </main>
 
     {selected && <button className="assetOverlay" type="button" aria-label="关闭资产详情" onClick={() => setSelected(null)} />}
-    {selected && <aside className="assetDetailDrawer"><div className="assetDetailHead"><div><span>资产详情</span><b>{resourceName(selected)}</b></div><button type="button" onClick={() => setSelected(null)}>×</button></div><div className="assetDetailImage">{resourceFullImage(selected) ? <img src={resourceFullImage(selected)} alt={resourceName(selected)} /> : <span>{resourceTypeName(selected)}</span>}</div>{canManageResource(selected) && <div className="assetDetailEdit"><label><span>资产名称</span><input value={detailName} onChange={(event) => setDetailName(event.target.value)} /></label><button type="button" disabled={busy} onClick={saveDetailName}>重命名</button></div>}<dl className="assetDetailMeta"><dt>权限</dt><dd>{scopeName(selected.scope)}</dd><dt>类型</dt><dd>{resourceTypeName(selected)}</dd><dt>主分类</dt><dd>{mainName(selected)}</dd><dt>子分类</dt><dd>{subName(selected) || '无'}</dd><dt>创建时间</dt><dd>{formatDate(selected.createdAt)}</dd></dl>{notice && <p className="assetNotice">{notice}</p>}{resourceFullImage(selected) && <a className="assetDetailDownload" href={resourceFullImage(selected)} target="_blank" rel="noreferrer">打开原图</a>}</aside>}
+    {selected && <aside className="assetDetailDrawer"><div className="assetDetailHead"><div><span>资产详情</span><b>{resourceName(selected)}</b></div><button type="button" onClick={() => setSelected(null)}>×</button></div><div className="assetDetailImage">{resourceFullImage(selected) ? <img src={resourceFullImage(selected)} alt={resourceName(selected)} /> : <span>{resourceTypeName(selected)}</span>}</div>{canManageResource(selected) && <div className="assetDetailEdit"><label><span>资产名称</span><input value={detailName} onChange={(event) => setDetailName(event.target.value)} /></label><button type="button" disabled={assetBusy} onClick={saveDetailName}>重命名</button></div>}<dl className="assetDetailMeta"><dt>权限</dt><dd>{scopeName(selected.scope)}</dd><dt>类型</dt><dd>{resourceTypeName(selected)}</dd><dt>主分类</dt><dd>{mainName(selected)}</dd><dt>子分类</dt><dd>{subName(selected) || '无'}</dd><dt>创建时间</dt><dd>{formatDate(selected.createdAt)}</dd></dl>{notice && <p className="assetNotice">{notice}</p>}{resourceFullImage(selected) && <a className="assetDetailDownload" href={resourceFullImage(selected)} target="_blank" rel="noreferrer">打开原图</a>}</aside>}
   </div>;
 }
