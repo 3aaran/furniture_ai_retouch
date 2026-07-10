@@ -143,32 +143,32 @@ export default {
 </script>
 
 <style>
-.home-hero { padding: 30rpx 24rpx; border-radius: 32rpx; background: linear-gradient(135deg, rgba(242,213,140,.16), rgba(255,255,255,.035)); border: 1rpx solid rgba(242,213,140,.16); }
-.hero-mark { width: 74rpx; height: 74rpx; display: flex; align-items: center; justify-content: center; border-radius: 24rpx; color: #181207; background: linear-gradient(135deg,#f3da94,#c79b3b); }
-.hero-meta { margin-top: 18rpx; color: #d9bb6a; font-size: 23rpx; font-weight: 800; }
-.hero-title { margin-top: 12rpx; color: #fff4df; font-size: 44rpx; font-weight: 900; }
-.hero-desc { margin-top: 12rpx; color: rgba(255,244,223,.62); font-size: 25rpx; line-height: 1.65; }
+.home-hero { padding: 30rpx 24rpx; border-radius: 32rpx; background: linear-gradient(135deg, rgba(var(--xg-color-primary-rgb), .16), rgba(255,255,255,.035)); border: 1rpx solid rgba(var(--xg-color-primary-rgb), .16); }
+.hero-mark { width: 74rpx; height: 74rpx; display: flex; align-items: center; justify-content: center; border-radius: 24rpx; color: var(--xg-text-inverse); background: linear-gradient(135deg,var(--xg-color-primary),var(--xg-color-accent)); }
+.hero-meta { margin-top: 18rpx; color: var(--xg-color-primary); font-size: 23rpx; font-weight: 800; }
+.hero-title { margin-top: 12rpx; color: var(--xg-text-main); font-size: 44rpx; font-weight: 900; }
+.hero-desc { margin-top: 12rpx; color: var(--xg-text-muted); font-size: 25rpx; line-height: 1.65; }
 .hero-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 14rpx; margin-top: 26rpx; }
-.quota-card { display: flex; justify-content: space-between; align-items: center; margin-top: 24rpx; padding: 24rpx; border-radius: 26rpx; background: #111317; border: 1rpx solid rgba(255,255,255,.1); }
-.quota-label { color: rgba(255,244,223,.56); font-size: 23rpx; }
-.quota-value { color: #f3dc9a; font-size: 52rpx; font-weight: 900; }
-.quota-side { max-width: 360rpx; text-align: right; color: #fff4df; font-size: 25rpx; }
-.quota-side text { display: block; margin-top: 6rpx; color: rgba(255,244,223,.55); font-size: 22rpx; }
+.quota-card { display: flex; justify-content: space-between; align-items: center; margin-top: 24rpx; padding: 24rpx; border-radius: 26rpx; background: var(--xg-bg-card); border: 1rpx solid rgba(255,255,255,.1); }
+.quota-label { color: var(--xg-text-muted); font-size: 23rpx; }
+.quota-value { color: var(--xg-color-primary); font-size: 52rpx; font-weight: 900; }
+.quota-side { max-width: 360rpx; text-align: right; color: var(--xg-text-main); font-size: 25rpx; }
+.quota-side text { display: block; margin-top: 6rpx; color: var(--xg-text-muted); font-size: 22rpx; }
 .entry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16rpx; margin-top: 24rpx; }
-.entry-card { padding: 22rpx; border-radius: 24rpx; background: #111317; border: 1rpx solid rgba(255,255,255,.1); }
-.entry-card.primary { border-color: rgba(242,213,140,.28); background: rgba(242,213,140,.08); }
-.entry-kicker { color: #d9bb6a; font-size: 22rpx; font-weight: 900; }
-.entry-title { margin: 8rpx 0; color: #fff4df; font-size: 30rpx; font-weight: 900; }
-.entry-card text { color: rgba(255,244,223,.56); font-size: 23rpx; }
-.task-row { display: flex; align-items: center; gap: 16rpx; padding: 18rpx; border-radius: 22rpx; margin-bottom: 14rpx; background: #111317; border: 1rpx solid rgba(255,255,255,.08); }
-.task-thumb { width: 80rpx; height: 80rpx; border-radius: 18rpx; display: flex; align-items: center; justify-content: center; background: rgba(242,213,140,.12); color: #f3dc9a; font-size: 22rpx; font-weight: 900; }
+.entry-card { padding: 22rpx; border-radius: 24rpx; background: var(--xg-bg-card); border: 1rpx solid rgba(255,255,255,.1); }
+.entry-card.primary { border-color: rgba(var(--xg-color-primary-rgb), .28); background: rgba(var(--xg-color-primary-rgb), .08); }
+.entry-kicker { color: var(--xg-color-primary); font-size: 22rpx; font-weight: 900; }
+.entry-title { margin: 8rpx 0; color: var(--xg-text-main); font-size: 30rpx; font-weight: 900; }
+.entry-card text { color: var(--xg-text-muted); font-size: 23rpx; }
+.task-row { display: flex; align-items: center; gap: 16rpx; padding: 18rpx; border-radius: 22rpx; margin-bottom: 14rpx; background: var(--xg-bg-card); border: 1rpx solid rgba(255,255,255,.08); }
+.task-thumb { width: 80rpx; height: 80rpx; border-radius: 18rpx; display: flex; align-items: center; justify-content: center; background: rgba(var(--xg-color-primary-rgb), .12); color: var(--xg-color-primary); font-size: 22rpx; font-weight: 900; }
 .task-main { flex: 1; min-width: 0; }
-.task-title { color: #fff4df; font-size: 27rpx; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.status-pill { padding: 8rpx 14rpx; border-radius: 999rpx; background: rgba(255,255,255,.08); color: #e8dcc2; font-size: 22rpx; }
+.task-title { color: var(--xg-text-main); font-size: 27rpx; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.status-pill { padding: 8rpx 14rpx; border-radius: 999rpx; background: rgba(255,255,255,.08); color: var(--xg-text-muted); font-size: 22rpx; }
 .status-pill.success, .status-pill.completed { color: #99e0b4; background: rgba(82,204,127,.12); }
-.status-pill.running, .status-pill.processing { color: #f3dc9a; background: rgba(242,213,140,.12); }
+.status-pill.running, .status-pill.processing { color: var(--xg-color-primary); background: rgba(var(--xg-color-primary-rgb), .12); }
 .status-pill.failed, .status-pill.error { color: #ffaaa0; background: rgba(255,112,112,.12); }
-.empty-card, .error-card { padding: 22rpx; border-radius: 20rpx; background: rgba(255,255,255,.04); color: rgba(255,244,223,.6); font-size: 24rpx; border: 1rpx solid rgba(255,255,255,.08); }
+.empty-card, .error-card { padding: 22rpx; border-radius: 20rpx; background: rgba(255,255,255,.04); color: var(--xg-text-muted); font-size: 24rpx; border: 1rpx solid rgba(255,255,255,.08); }
 .error-card { margin-top: 18rpx; color: #ffb4a8; border-color: rgba(255,112,112,.22); }
-.link { color: #f3dc9a; font-size: 24rpx; }
+.link { color: var(--xg-color-primary); font-size: 24rpx; }
 </style>

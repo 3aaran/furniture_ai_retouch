@@ -6,7 +6,7 @@
       <view class="page-head-main">
         <view class="page-icon"><app-icon name="message" tone="dark" :size="34" /></view>
         <view class="page-title-text">
-          <b>问题反馈</b>
+          <text class="ui-strong">问题反馈</text>
           <text>提交后平台管理员会在后台统一处理</text>
         </view>
       </view>
@@ -82,10 +82,10 @@ export default {
 </script>
 
 <style>
-.form-card { display: grid; gap: 20rpx; padding: 24rpx; border-radius: 28rpx; background: #111317; border: 1rpx solid rgba(255,255,255,.09); }
+.form-card { display: grid; gap: 20rpx; padding: 24rpx; border-radius: 28rpx; background: var(--xg-bg-card); border: 1rpx solid rgba(255,255,255,.09); }
 .form-card label { display: grid; gap: 12rpx; }
-.form-card label text { color: rgba(255,246,220,.72); font-size: 25rpx; font-weight: 800; }
-.form-card input, .form-card textarea { width: 100%; box-sizing: border-box; border-radius: 20rpx; border: 1rpx solid rgba(255,255,255,.1); background: rgba(255,255,255,.045); color: #fff6dc; font-size: 28rpx; }
+.form-card label text { color: var(--xg-text-muted); font-size: 25rpx; font-weight: 800; }
+.form-card input, .form-card textarea { width: 100%; box-sizing: border-box; border-radius: 20rpx; border: 1rpx solid rgba(255,255,255,.1); background: rgba(255,255,255,.045); color: var(--xg-text-main); font-size: 28rpx; }
 .form-card input { height: 82rpx; padding: 0 22rpx; }
 .form-card textarea { min-height: 260rpx; padding: 22rpx; }
 .submit-btn { margin-top: 8rpx; }

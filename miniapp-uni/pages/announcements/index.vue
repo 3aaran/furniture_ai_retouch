@@ -6,7 +6,7 @@
       <view class="page-head-main">
         <view class="page-icon"><app-icon name="mail" tone="dark" :size="34" /></view>
         <view class="page-title-text">
-          <b>公告邮箱</b>
+          <text class="ui-strong">公告邮箱</text>
           <text>{{ unreadCount }} 条未读</text>
         </view>
       </view>
@@ -18,9 +18,9 @@
       <view v-for="item in items" :key="item.id" :class="['notice-card', item.isRead ? 'is-read' : 'is-unread']" @click="openNotice(item)">
         <view class="notice-state"><app-icon :name="item.isRead ? 'check' : 'mail'" :tone="item.isRead ? 'muted' : 'dark'" :size="24" /></view>
         <view class="notice-copy">
-          <b>{{ item.title }}</b>
+          <text class="ui-strong">{{ item.title }}</text>
           <text>{{ item.content }}</text>
-          <small>{{ fmtTime(item.createdAt) }}</small>
+          <text class="ui-small">{{ fmtTime(item.createdAt) }}</text>
         </view>
       </view>
     </view>
@@ -33,14 +33,14 @@
         <view class="modal-head">
           <view>
             <text>{{ selected.isRead ? '已读' : '未读' }}</text>
-            <b>{{ selected.title }}</b>
+            <text class="ui-strong">{{ selected.title }}</text>
           </view>
           <button @click="selected = null"><app-icon name="x" :size="28" /></button>
         </view>
         <scroll-view scroll-y class="modal-body">
           <text>{{ selected.content }}</text>
         </scroll-view>
-        <small>{{ fmtTime(selected.createdAt) }}</small>
+        <text class="ui-small">{{ fmtTime(selected.createdAt) }}</text>
       </view>
     </view>
   </view>
@@ -110,21 +110,21 @@ export default {
 <style>
 .notice-list { display: grid; gap: 18rpx; }
 .notice-card { display: flex; gap: 18rpx; padding: 20rpx; border-radius: 24rpx; background: rgba(255,255,255,.045); border: 1rpx solid rgba(255,255,255,.1); }
-.notice-card.is-unread { border-color: rgba(242,213,140,.42); background: rgba(242,213,140,.08); }
-.notice-state { width: 76rpx; height: 44rpx; flex: 0 0 76rpx; display: flex; align-items: center; justify-content: center; border-radius: 999rpx; background: #e8c763; color: #171208; font-size: 22rpx; font-weight: 900; }
-.notice-card.is-read .notice-state { background: rgba(255,255,255,.08); color: rgba(255,246,220,.6); }
+.notice-card.is-unread { border-color: rgba(var(--xg-color-primary-rgb), .42); background: rgba(var(--xg-color-primary-rgb), .08); }
+.notice-state { width: 76rpx; height: 44rpx; flex: 0 0 76rpx; display: flex; align-items: center; justify-content: center; border-radius: 999rpx; background: var(--xg-color-primary); color: var(--xg-text-inverse); font-size: 22rpx; font-weight: 900; }
+.notice-card.is-read .notice-state { background: rgba(255,255,255,.08); color: var(--xg-text-muted); }
 .notice-copy { flex: 1; min-width: 0; }
-.notice-copy b { display: block; color: #fff6dc; font-size: 29rpx; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.notice-copy text { display: block; margin-top: 8rpx; color: rgba(255,246,220,.62); font-size: 24rpx; line-height: 1.45; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.notice-copy small { display: block; margin-top: 10rpx; color: rgba(255,246,220,.42); font-size: 22rpx; }
+.notice-copy .ui-strong { display: block; color: var(--xg-text-main); font-size: 29rpx; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.notice-copy text { display: block; margin-top: 8rpx; color: var(--xg-text-muted); font-size: 24rpx; line-height: 1.45; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.notice-copy .ui-small { display: block; margin-top: 10rpx; color: var(--xg-text-muted); font-size: 22rpx; }
 .modal-mask { position: fixed; inset: 0; z-index: 100; display: flex; align-items: flex-end; padding: 20rpx; box-sizing: border-box; background: rgba(0,0,0,.58); }
-.notice-modal { width: 100%; max-height: 78vh; box-sizing: border-box; padding: 24rpx; border-radius: 30rpx 30rpx 0 0; background: #111317; border: 1rpx solid rgba(242,213,140,.18); }
+.notice-modal { width: 100%; max-height: 78vh; box-sizing: border-box; padding: 24rpx; border-radius: 30rpx 30rpx 0 0; background: var(--xg-bg-card); border: 1rpx solid rgba(var(--xg-color-primary-rgb), .18); }
 .modal-head { display: flex; justify-content: space-between; gap: 18rpx; margin-bottom: 18rpx; }
-.modal-head text { display: block; color: #efd482; font-size: 23rpx; }
-.modal-head b { display: block; margin-top: 4rpx; color: #fff6dc; font-size: 34rpx; font-weight: 900; }
-.modal-head button { width: 72rpx; height: 72rpx; padding: 0; border-radius: 22rpx; color: #efd482; background: rgba(255,255,255,.055); border: 1rpx solid rgba(255,255,255,.13); font-size: 30rpx; }
-.modal-body { max-height: 52vh; color: rgba(255,246,220,.82); font-size: 28rpx; line-height: 1.7; white-space: pre-wrap; }
-.notice-modal small { display: block; margin-top: 18rpx; color: rgba(255,246,220,.42); font-size: 22rpx; }
-.empty-card, .error-card { margin-top: 20rpx; padding: 24rpx; border-radius: 22rpx; background: rgba(255,255,255,.04); color: rgba(255,246,220,.62); font-size: 26rpx; border: 1rpx solid rgba(255,255,255,.08); }
+.modal-head text { display: block; color: var(--xg-color-primary); font-size: 23rpx; }
+.modal-head .ui-strong { display: block; margin-top: 4rpx; color: var(--xg-text-main); font-size: 34rpx; font-weight: 900; }
+.modal-head button { width: 72rpx; height: 72rpx; padding: 0; border-radius: 22rpx; color: var(--xg-color-primary); background: rgba(255,255,255,.055); border: 1rpx solid rgba(255,255,255,.13); font-size: 30rpx; }
+.modal-body { max-height: 52vh; color: var(--xg-text-muted); font-size: 28rpx; line-height: 1.7; white-space: pre-wrap; }
+.notice-modal .ui-small { display: block; margin-top: 18rpx; color: var(--xg-text-muted); font-size: 22rpx; }
+.empty-card, .error-card { margin-top: 20rpx; padding: 24rpx; border-radius: 22rpx; background: rgba(255,255,255,.04); color: var(--xg-text-muted); font-size: 26rpx; border: 1rpx solid rgba(255,255,255,.08); }
 .error-card { color: #ffb4a8; border-color: rgba(255,112,112,.22); }
 </style>

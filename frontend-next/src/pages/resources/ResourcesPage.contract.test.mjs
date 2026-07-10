@@ -31,5 +31,10 @@ test('resources mobile search, main category, and subcategory share one row', ()
   assert.match(css, /@media \(max-width: 767px\)[\s\S]*\.assetSearchBar\s*\{[\s\S]*grid-template-columns:\s*repeat\(3, minmax\(0, 1fr\)\)/);
   assert.match(css, /@media \(max-width: 767px\)[\s\S]*\.assetSearchTop,[\s\S]*\.assetFilterRow\s*\{[\s\S]*display:\s*contents/);
   assert.match(css, /@media \(max-width: 767px\)[\s\S]*\.assetSpaceTabs\s*\{[\s\S]*grid-column:\s*1 \/ -1/);
+  assert.match(source, /assetSearchActionButton/);
+  assert.doesNotMatch(source, /assetPcOnlyAction/);
+  assert.match(css, /@media \(max-width: 767px\)[\s\S]*\.assetSearchActions\s*\{[\s\S]*order:\s*5[\s\S]*grid-column:\s*1 \/ -1/);
+  assert.match(css, /@media \(max-width: 767px\)[\s\S]*\.assetSearchActionButton\s*\{[\s\S]*flex:\s*1 1 0/);
+  assert.doesNotMatch(css, /assetPcOnlyAction/);
 }
 );

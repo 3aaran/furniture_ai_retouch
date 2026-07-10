@@ -35,11 +35,12 @@ export default {
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  color: #f3dc9a;
+  color: var(--xg-color-primary);
 }
-.app-icon-dark { color: #181207; }
-.app-icon-light { color: #fff4df; }
-.app-icon-muted { color: rgba(255, 244, 223, .6); }
+.app-icon-gold { color: var(--xg-color-primary); }
+.app-icon-dark { color: var(--xg-text-inverse); }
+.app-icon-light { color: var(--xg-text-main); }
+.app-icon-muted { color: var(--xg-text-muted); }
 .app-icon .i {
   position: absolute;
   box-sizing: border-box;
@@ -74,8 +75,8 @@ export default {
 
 /* Ticket */
 .app-icon-ticket .i1 { width: 82%; height: 54%; left: 9%; top: 23%; border: 4rpx solid currentColor; border-radius: 10rpx; }
-.app-icon-ticket .i2 { width: 16%; height: 16%; left: 2%; top: 42%; border-radius: 50%; background: #0d0f12; border: 4rpx solid currentColor; }
-.app-icon-ticket .i3 { width: 16%; height: 16%; right: 2%; top: 42%; border-radius: 50%; background: #0d0f12; border: 4rpx solid currentColor; }
+.app-icon-ticket .i2 { width: 16%; height: 16%; left: 2%; top: 42%; border-radius: 50%; background: var(--xg-bg-card); border: 4rpx solid currentColor; }
+.app-icon-ticket .i3 { width: 16%; height: 16%; right: 2%; top: 42%; border-radius: 50%; background: var(--xg-bg-card); border: 4rpx solid currentColor; }
 .app-icon-ticket .i4 { height: 44%; left: 50%; top: 28%; border-left: 4rpx dashed currentColor; opacity: .7; }
 
 /* Message square */

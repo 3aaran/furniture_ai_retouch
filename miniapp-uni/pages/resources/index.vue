@@ -6,7 +6,7 @@
       <view class="page-head-main">
         <view class="page-icon"><app-icon name="layers" tone="dark" :size="34" /></view>
         <view class="page-title-text">
-          <b>资源库</b>
+          <text class="ui-strong">资源库</text>
           <text>系统空间、门店空间、我的空间</text>
         </view>
       </view>
@@ -29,7 +29,7 @@
 
     <view class="category-block">
       <view class="category-head">
-        <b>{{ activePurposeName }}</b>
+        <text class="ui-strong">{{ activePurposeName }}</text>
         <text>{{ activeSpaceName }}</text>
       </view>
       <view class="category-main-row">
@@ -46,7 +46,7 @@
           <app-icon v-else name="image" :size="42" />
           <view class="scope-badge">{{ item.scopeText }}</view>
         </view>
-        <b>{{ item.name }}</b>
+        <text class="ui-strong">{{ item.name }}</text>
         <text>{{ item.categoryText }}</text>
       </view>
     </view>
@@ -242,28 +242,28 @@ export default {
 
 <style>
 .space-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10rpx; margin: 4rpx 0 18rpx; }
-.space-tabs button { height: 70rpx; border-radius: 20rpx; color: rgba(255,246,220,.74); background: rgba(255,255,255,.04); border: 1rpx solid rgba(255,255,255,.1); font-size: 25rpx; font-weight: 900; }
-.space-tabs button.active { color: #171208; background: linear-gradient(135deg,#fff1b8,#d6a942); border-color: transparent; }
-.search-box { height: 78rpx; display: flex; align-items: center; gap: 16rpx; padding: 0 24rpx; margin-bottom: 18rpx; border-radius: 22rpx; border: 1rpx solid rgba(255,255,255,.1); background: rgba(255,255,255,.035); color: rgba(255,246,220,.7); }
-.search-box input { flex: 1; color: #fff6dc; font-size: 28rpx; }
+.space-tabs button { height: 70rpx; border-radius: 20rpx; color: var(--xg-text-muted); background: rgba(255,255,255,.04); border: 1rpx solid rgba(255,255,255,.1); font-size: 25rpx; font-weight: 900; }
+.space-tabs button.active { color: var(--xg-text-inverse); background: linear-gradient(135deg,var(--xg-color-primary),var(--xg-color-accent)); border-color: transparent; }
+.search-box { height: 78rpx; display: flex; align-items: center; gap: 16rpx; padding: 0 24rpx; margin-bottom: 18rpx; border-radius: 22rpx; border: 1rpx solid rgba(255,255,255,.1); background: rgba(255,255,255,.035); color: var(--xg-text-muted); }
+.search-box input { flex: 1; color: var(--xg-text-main); font-size: 28rpx; }
 .purpose-scroll { margin: 0 -24rpx 18rpx; padding-left: 24rpx; white-space: nowrap; }
 .purpose-row { display: flex; gap: 12rpx; padding-right: 24rpx; }
-.purpose-pill { display: inline-flex; padding: 14rpx 22rpx; border-radius: 999rpx; color: rgba(255,246,220,.7); background: rgba(255,255,255,.045); border: 1rpx solid rgba(255,255,255,.09); font-size: 24rpx; font-weight: 800; }
-.purpose-pill.active { color: #171208; background: linear-gradient(135deg,#fff1b8,#d6a942); }
+.purpose-pill { display: inline-flex; padding: 14rpx 22rpx; border-radius: 999rpx; color: var(--xg-text-muted); background: rgba(255,255,255,.045); border: 1rpx solid rgba(255,255,255,.09); font-size: 24rpx; font-weight: 800; }
+.purpose-pill.active { color: var(--xg-text-inverse); background: linear-gradient(135deg,var(--xg-color-primary),var(--xg-color-accent)); }
 .category-block { margin-bottom: 20rpx; padding: 20rpx; border-radius: 22rpx; background: rgba(255,255,255,.035); border: 1rpx solid rgba(255,255,255,.08); }
 .category-head { display: flex; align-items: center; justify-content: space-between; gap: 16rpx; margin-bottom: 16rpx; }
-.category-head b { color: #fff6dc; font-size: 29rpx; font-weight: 900; }
-.category-head text { color: rgba(255,246,220,.58); font-size: 23rpx; }
+.category-head .ui-strong { color: var(--xg-text-main); font-size: 29rpx; font-weight: 900; }
+.category-head text { color: var(--xg-text-muted); font-size: 23rpx; }
 .category-main-row { display: flex; flex-wrap: wrap; gap: 10rpx; }
-.category-chip { display: inline-flex; padding: 10rpx 16rpx; border-radius: 999rpx; color: rgba(255,246,220,.66); background: rgba(255,255,255,.04); border: 1rpx solid rgba(255,255,255,.08); font-size: 22rpx; }
-.category-chip.active { color: #171208; background: #e9c85e; border-color: transparent; font-weight: 900; }
+.category-chip { display: inline-flex; padding: 10rpx 16rpx; border-radius: 999rpx; color: var(--xg-text-muted); background: rgba(255,255,255,.04); border: 1rpx solid rgba(255,255,255,.08); font-size: 22rpx; }
+.category-chip.active { color: var(--xg-text-inverse); background: var(--xg-color-primary); border-color: transparent; font-weight: 900; }
 .resource-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18rpx; }
 .resource-card { overflow: hidden; border-radius: 20rpx; background: rgba(255,255,255,.045); border: 1rpx solid rgba(255,255,255,.1); }
-.resource-thumb { position: relative; width: 100%; height: 210rpx; display: flex; align-items: center; justify-content: center; color: #efd482; background: rgba(226,199,115,.1); font-size: 40rpx; }
+.resource-thumb { position: relative; width: 100%; height: 210rpx; display: flex; align-items: center; justify-content: center; color: var(--xg-color-primary); background: rgba(var(--xg-color-primary-rgb), .1); font-size: 40rpx; }
 .resource-thumb image { width: 100%; height: 100%; display: block; }
-.scope-badge { position: absolute; left: 10rpx; top: 10rpx; padding: 4rpx 12rpx; border-radius: 999rpx; color: #171208; background: rgba(255,236,170,.92); font-size: 18rpx; font-weight: 900; }
-.resource-card b { display: block; padding: 14rpx 14rpx 0; color: #fff6dc; font-size: 24rpx; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.resource-card text { display: block; padding: 6rpx 14rpx 16rpx; color: rgba(255,246,220,.55); font-size: 20rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.empty-card, .error-card { margin-top: 20rpx; padding: 24rpx; border-radius: 22rpx; background: rgba(255,255,255,.04); color: rgba(255,246,220,.62); font-size: 26rpx; border: 1rpx solid rgba(255,255,255,.08); }
+.scope-badge { position: absolute; left: 10rpx; top: 10rpx; padding: 4rpx 12rpx; border-radius: 999rpx; color: var(--xg-text-inverse); background: rgba(255,236,170,.92); font-size: 18rpx; font-weight: 900; }
+.resource-card .ui-strong { display: block; padding: 14rpx 14rpx 0; color: var(--xg-text-main); font-size: 24rpx; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.resource-card text { display: block; padding: 6rpx 14rpx 16rpx; color: var(--xg-text-muted); font-size: 20rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.empty-card, .error-card { margin-top: 20rpx; padding: 24rpx; border-radius: 22rpx; background: rgba(255,255,255,.04); color: var(--xg-text-muted); font-size: 26rpx; border: 1rpx solid rgba(255,255,255,.08); }
 .error-card { color: #ffb4a8; border-color: rgba(255,112,112,.22); }
 </style>

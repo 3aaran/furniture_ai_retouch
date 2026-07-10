@@ -667,7 +667,7 @@ export function ResourcesPage() {
       {selectedItems.length > 0 ? <section className="assetBatchBar"><b>已选择 {selectedItems.length} 项资产</b><button type="button" onClick={() => setModal('batch-category')}>批量分类变更</button><button type="button" onClick={() => setModal('batch-delete')}>批量删除</button><button type="button" onClick={clearSelection}>取消选择</button></section> : <section className="assetSearchBar" aria-label="资产搜索与筛选">
         <div className="assetSearchTop">
           <label className="assetSearchInput"><span>搜索资产</span><input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="输入资产名称" /></label>
-          <div className="assetSearchActions"><button className="assetPcOnlyAction" type="button" onClick={() => setModal('category-manage')}>分类管理</button><button className="assetPcOnlyAction" type="button" onClick={() => setModal('upload')}>上传</button></div>
+          <div className="assetSearchActions"><button className="assetSearchActionButton" type="button" onClick={() => setModal('category-manage')}>分类管理</button><button className="assetSearchActionButton" type="button" onClick={() => setModal('upload')}>上传</button></div>
         </div>
         <div className="assetFilterRow">
           <div className="assetSpaceTabs" aria-label="资产空间">

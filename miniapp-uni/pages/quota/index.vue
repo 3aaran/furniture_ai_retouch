@@ -6,16 +6,16 @@
       <view class="page-head-main">
         <view class="page-icon"><app-icon name="wallet" tone="dark" :size="34" /></view>
         <view class="page-title-text">
-          <b>额度明细</b>
+          <text class="ui-strong">额度明细</text>
           <text>算力余额与真实流水</text>
         </view>
       </view>
     </view>
 
     <view class="summary-grid">
-      <view class="summary-card current"><text>当前余额</text><b>{{ summary.currentBalance ?? quotaText ?? '-' }}</b></view>
-      <view class="summary-card income"><text>总收入</text><b>+{{ summary.totalIncome || 0 }}</b></view>
-      <view class="summary-card expense"><text>总支出</text><b>{{ summary.totalExpense || 0 }}</b></view>
+      <view class="summary-card current"><text>当前余额</text><text class="ui-strong">{{ summary.currentBalance ?? quotaText ?? '-' }}</text></view>
+      <view class="summary-card income"><text>总收入</text><text class="ui-strong">+{{ summary.totalIncome || 0 }}</text></view>
+      <view class="summary-card expense"><text>总支出</text><text class="ui-strong">{{ summary.totalExpense || 0 }}</text></view>
     </view>
 
     <view class="filter-card">
@@ -34,12 +34,12 @@
       <view v-for="item in items" :key="item.id" class="log-card">
         <view class="log-main">
           <view :class="['type-badge', signedAmount(item) >= 0 ? 'plus' : 'minus']">{{ item.typeLabel || merchantTypeText(item.type) }}</view>
-          <b :class="signedAmount(item) >= 0 ? 'num-plus' : 'num-minus'">{{ signedAmount(item) >= 0 ? '+' : '' }}{{ signedAmount(item) }}</b>
+          <text class="ui-strong" :class="signedAmount(item) >= 0 ? 'num-plus' : 'num-minus'">{{ signedAmount(item) >= 0 ? '+' : '' }}{{ signedAmount(item) }}</text>
         </view>
         <view class="log-meta">
           <text>变动后余额：{{ item.balanceAfter ?? '-' }}</text>
           <text>关联任务：{{ shortTaskId(item.related_task_id) }}</text>
-          <small>{{ fmtTime(item.created_at || item.createdAt) }}</small>
+          <text class="ui-small">{{ fmtTime(item.created_at || item.createdAt) }}</text>
         </view>
       </view>
     </view>
@@ -134,27 +134,27 @@ export default {
 
 <style>
 .summary-grid { display: grid; grid-template-columns: 1fr; gap: 16rpx; margin-bottom: 20rpx; }
-.summary-card { min-height: 116rpx; padding: 22rpx; border-radius: 28rpx; background: #111317; border: 1rpx solid rgba(242,213,140,.12); }
-.summary-card text { color: rgba(255,244,223,.55); font-size: 24rpx; }
-.summary-card b { display: block; margin-top: 8rpx; color: #fff4df; font-size: 44rpx; font-weight: 900; }
-.summary-card.income b { color: #61dfa1; }
-.summary-card.expense b { color: #ff897e; }
+.summary-card { min-height: 116rpx; padding: 22rpx; border-radius: 28rpx; background: var(--xg-bg-card); border: 1rpx solid rgba(var(--xg-color-primary-rgb), .12); }
+.summary-card text { color: var(--xg-text-muted); font-size: 24rpx; }
+.summary-card .ui-strong { display: block; margin-top: 8rpx; color: var(--xg-text-main); font-size: 44rpx; font-weight: 900; }
+.summary-card.income .ui-strong { color: #61dfa1; }
+.summary-card.expense .ui-strong { color: #ff897e; }
 .filter-card { display: grid; gap: 14rpx; margin-bottom: 20rpx; }
-.search-box, .picker-box { height: 78rpx; box-sizing: border-box; display: flex; align-items: center; gap: 16rpx; padding: 0 24rpx; border-radius: 22rpx; border: 1rpx solid rgba(255,255,255,.1); background: rgba(255,255,255,.035); color: rgba(255,246,220,.7); }
-.search-box input { flex: 1; color: #fff6dc; font-size: 28rpx; }
-.picker-box { justify-content: space-between; color: #fff6dc; font-size: 28rpx; }
+.search-box, .picker-box { height: 78rpx; box-sizing: border-box; display: flex; align-items: center; gap: 16rpx; padding: 0 24rpx; border-radius: 22rpx; border: 1rpx solid rgba(255,255,255,.1); background: rgba(255,255,255,.035); color: var(--xg-text-muted); }
+.search-box input { flex: 1; color: var(--xg-text-main); font-size: 28rpx; }
+.picker-box { justify-content: space-between; color: var(--xg-text-main); font-size: 28rpx; }
 .log-list { display: grid; gap: 18rpx; }
 .log-card { padding: 20rpx; border-radius: 24rpx; background: rgba(255,255,255,.045); border: 1rpx solid rgba(255,255,255,.1); }
 .log-main { display: flex; align-items: center; justify-content: space-between; gap: 18rpx; }
 .type-badge { height: 44rpx; display: inline-flex; align-items: center; padding: 0 18rpx; border-radius: 999rpx; font-size: 24rpx; font-weight: 900; }
 .type-badge.plus { color: #102017; background: #65e3a5; }
 .type-badge.minus { color: #fff; background: #cf304b; }
-.log-main b { font-size: 40rpx; font-weight: 900; }
+.log-main .ui-strong { font-size: 40rpx; font-weight: 900; }
 .num-plus { color: #61dfa1; }
 .num-minus { color: #ff897e; }
-.log-meta { display: grid; gap: 8rpx; margin-top: 16rpx; color: rgba(255,246,220,.62); font-size: 24rpx; }
-.log-meta small { color: rgba(255,246,220,.45); font-size: 22rpx; }
-.empty-card, .error-card { margin-top: 20rpx; padding: 24rpx; border-radius: 22rpx; background: rgba(255,255,255,.04); color: rgba(255,246,220,.62); font-size: 26rpx; border: 1rpx solid rgba(255,255,255,.08); }
+.log-meta { display: grid; gap: 8rpx; margin-top: 16rpx; color: var(--xg-text-muted); font-size: 24rpx; }
+.log-meta .ui-small { color: var(--xg-text-muted); font-size: 22rpx; }
+.empty-card, .error-card { margin-top: 20rpx; padding: 24rpx; border-radius: 22rpx; background: rgba(255,255,255,.04); color: var(--xg-text-muted); font-size: 26rpx; border: 1rpx solid rgba(255,255,255,.08); }
 .error-card { color: #ffb4a8; border-color: rgba(255,112,112,.22); }
 .more-btn { margin-top: 24rpx; }
 </style>

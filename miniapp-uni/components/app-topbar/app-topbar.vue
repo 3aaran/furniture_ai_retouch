@@ -46,10 +46,10 @@
 
       <view class="menu-tools">
         <view class="tool-item" @click="navigateQuick('/pages/feedback/index')">
-          <app-icon name="message" :size="30" /><b>问题反馈</b>
+          <app-icon name="message" :size="30" /><text class="tool-label">问题反馈</text>
         </view>
         <view class="tool-item" @click="navigateQuick('/pages/announcements/index')">
-          <app-icon name="mail" :size="30" /><b>公告邮箱</b>
+          <app-icon name="mail" :size="30" /><text class="tool-label">公告邮箱</text>
         </view>
       </view>
     </view>
@@ -65,7 +65,7 @@ export default {
     quota: { type: [String, Number], default: '' },
     avatarText: { type: String, default: '勋' },
     avatarUrl: { type: String, default: '' },
-    logo: { type: String, default: '/static/brand/xungang-mark.svg' },
+    logo: { type: String, default: '/static/brand/xungang-mark.png' },
     showAvatar: { type: Boolean, default: true },
     showBack: { type: Boolean, default: false },
     backUrl: { type: String, default: '/pages/workbench/index' }
@@ -151,9 +151,9 @@ export default {
   align-items: center;
   gap: 16rpx;
   padding: 14rpx 24rpx;
-  background: rgba(7, 8, 10, 0.97);
-  border-bottom: 1rpx solid rgba(242, 213, 140, 0.16);
-  box-shadow: 0 18rpx 52rpx rgba(0, 0, 0, 0.18);
+  background: rgba(255, 255, 255, 0.94);
+  border-bottom: 1rpx solid var(--xg-border-soft);
+  box-shadow: var(--xg-shadow-soft);
 }
 .topbar-icon-btn {
   width: 84rpx;
@@ -163,18 +163,18 @@ export default {
   align-items: center;
   justify-content: center;
   border-radius: 26rpx;
-  border: 1rpx solid rgba(242, 213, 140, 0.2);
-  background: rgba(255, 255, 255, 0.035);
+  border: 1rpx solid var(--xg-border-soft);
+  background: var(--xg-bg-card-soft);
 }
 .back-icon {
-  color: #f3dc9a;
+  color: var(--xg-color-primary);
   font-size: 62rpx;
   line-height: 1;
   font-weight: 500;
 }
 .topbar-title-box { flex: 1; min-width: 0; }
-.topbar-title { display: block; color: #fff4df; font-size: 31rpx; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.topbar-subtitle { display: block; margin-top: 3rpx; color: rgba(255, 244, 223, 0.56); font-size: 21rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.topbar-title { display: block; color: var(--xg-text-main); font-size: 31rpx; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.topbar-subtitle { display: block; margin-top: 3rpx; color: var(--xg-text-muted); font-size: 21rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .quota-chip {
   max-width: 150rpx;
   height: 58rpx;
@@ -183,8 +183,8 @@ export default {
   align-items: center;
   gap: 8rpx;
   border-radius: 999rpx;
-  color: #181207;
-  background: linear-gradient(135deg, #f3da94, #c79b3b);
+  color: var(--xg-text-inverse);
+  background: linear-gradient(135deg, var(--xg-color-primary), var(--xg-color-accent));
   font-size: 22rpx;
   font-weight: 900;
   overflow: hidden;
@@ -199,11 +199,11 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 3rpx solid rgba(242, 213, 140, 0.34);
-  background: linear-gradient(135deg, #fff1b8, #c99731);
+  border: 3rpx solid rgba(var(--xg-color-primary-rgb), 0.16);
+  background: linear-gradient(135deg, var(--xg-color-primary), var(--xg-color-accent));
 }
 .avatar-img { width: 100%; height: 100%; }
-.avatar-text { color: #15100a; font-size: 29rpx; font-weight: 900; }
+.avatar-text { color: var(--xg-text-inverse); font-size: 29rpx; font-weight: 900; }
 .menu-mask {
   position: fixed;
   left: 0;
@@ -224,8 +224,8 @@ export default {
   max-width: 620rpx;
   box-sizing: border-box;
   padding: calc(var(--status-bar-height) + 30rpx) 28rpx 42rpx;
-  background: linear-gradient(180deg, rgba(18, 19, 21, 0.99), rgba(9, 10, 12, 0.99));
-  border-right: 1rpx solid rgba(242, 213, 140, 0.18);
+  background: var(--xg-bg-card);
+  border-right: 1rpx solid var(--xg-border-soft);
   transform: translateX(-102%);
   transition: transform 0.22s ease;
   box-shadow: 26rpx 0 70rpx rgba(0, 0, 0, 0.56);
@@ -237,17 +237,17 @@ export default {
   height: 78rpx;
   border-radius: 24rpx;
   overflow: hidden;
-  border: 1rpx solid rgba(242, 213, 140, 0.24);
-  background: #050607;
+  border: 1rpx solid var(--xg-border-soft);
+  background: var(--xg-bg-card-soft);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .brand-logo-img { width: 100%; height: 100%; }
-.brand-logo-text { color: #f3dc9a; font-size: 27rpx; font-weight: 900; }
+.brand-logo-text { color: var(--xg-color-primary); font-size: 27rpx; font-weight: 900; }
 .brand-copy { flex: 1; min-width: 0; }
-.brand-name { display: block; color: #fff4df; font-size: 35rpx; font-weight: 900; }
-.brand-desc { display: block; margin-top: 4rpx; color: rgba(255, 244, 223, 0.58); font-size: 24rpx; }
+.brand-name { display: block; color: var(--xg-text-main); font-size: 35rpx; font-weight: 900; }
+.brand-desc { display: block; margin-top: 4rpx; color: var(--xg-text-muted); font-size: 24rpx; }
 .menu-close {
   width: 74rpx;
   height: 74rpx;
@@ -255,9 +255,9 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #f5ead0;
-  border: 1rpx solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
+  color: var(--xg-color-primary);
+  border: 1rpx solid var(--xg-border-soft);
+  background: var(--xg-bg-card-soft);
 }
 .menu-list { display: grid; gap: 18rpx; }
 .menu-item {
@@ -268,13 +268,13 @@ export default {
   align-items: center;
   gap: 22rpx;
   border-radius: 28rpx;
-  color: #f5f0e6;
-  background: rgba(255, 255, 255, 0.035);
-  border: 1rpx solid rgba(255, 255, 255, 0.1);
+  color: var(--xg-text-main);
+  background: var(--xg-bg-card-soft);
+  border: 1rpx solid var(--xg-border-soft);
 }
 .menu-item-active {
-  color: #181207;
-  background: linear-gradient(135deg, #f3da94, #c79b3b);
+  color: var(--xg-text-inverse);
+  background: linear-gradient(135deg, var(--xg-color-primary), var(--xg-color-accent));
   border-color: transparent;
 }
 .menu-icon { width: 48rpx; }
@@ -282,7 +282,7 @@ export default {
 .menu-tools {
   margin-top: 28rpx;
   padding-top: 24rpx;
-  border-top: 1rpx solid rgba(255, 255, 255, 0.08);
+  border-top: 1rpx solid var(--xg-border-soft);
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14rpx;
@@ -294,9 +294,9 @@ export default {
   justify-content: center;
   gap: 10rpx;
   border-radius: 24rpx;
-  color: #f5f0e6;
-  background: rgba(255, 255, 255, 0.035);
-  border: 1rpx solid rgba(255, 255, 255, 0.1);
+  color: var(--xg-text-main);
+  background: var(--xg-bg-card-soft);
+  border: 1rpx solid var(--xg-border-soft);
 }
-.tool-item b { font-size: 25rpx; }
+.tool-label { font-size: 25rpx; font-weight: 900; }
 </style>

@@ -115,7 +115,7 @@ test('workbench distinguishes product origin resource selection from reference r
   assert.match(workbench, /resourcePickTarget === 'origin'/);
 });
 
-test('miniapp login follows WeChat authorization flow before manual fallback', () => {
+test('miniapp login shows auth page without automatic silent login', () => {
   const login = read('pages/login/index.vue');
   const authApi = read('api/auth.js');
   const server = fs.readFileSync(new URL('../../backend/src/server.js', import.meta.url), 'utf8');
@@ -124,6 +124,7 @@ test('miniapp login follows WeChat authorization flow before manual fallback', (
   assert.match(login, /open-type="getPhoneNumber"/);
   assert.match(login, /@getphonenumber="handleWechatPhoneLogin"/);
   assert.match(login, /tryWechatSilentLogin/);
+  assert.doesNotMatch(login, /onLoad\(\)\s*\{[\s\S]*tryWechatSilentLogin/);
   assert.match(login, /wechatSilentLogin/);
   assert.match(login, /wechatPhoneLogin/);
   assert.match(authApi, /\/api\/auth\/wechat\/silent-login/);
@@ -138,4 +139,55 @@ test('miniapp login follows WeChat authorization flow before manual fallback', (
   assert.match(login, /不发送验证码/);
   assert.match(db, /wechat_openid/);
   assert.match(db, /wechat_bound_at/);
+});
+
+test('miniapp visual system follows frontend-next palette and brand mark', () => {
+  const app = read('App.vue');
+  const login = read('pages/login/index.vue');
+  const topbar = read('components/app-topbar/app-topbar.vue');
+  const icon = read('components/app-icon/app-icon.vue');
+
+  assert.match(app, /--xg-color-primary:\s*#3040a0/);
+  assert.match(app, /--xg-color-accent:\s*#00bcd4/);
+  assert.match(app, /--xg-bg-page:\s*#eef4fb/);
+  assert.doesNotMatch(app, /#07080a|#08090b|#0d0f12|#fff4df|#f3da94|#c79b3b/);
+
+  assert.ok(fs.existsSync(new URL('../static/brand/xungang-mark.png', import.meta.url)), 'miniapp must use frontend-next brand mark asset');
+  assert.match(topbar, /\/static\/brand\/xungang-mark\.png/);
+  assert.match(topbar, /var\(--xg-color-primary\)/);
+  assert.doesNotMatch(topbar, /#07080a|#f3da94|#c79b3b|#fff4df/);
+
+  assert.match(icon, /\.app-icon-gold\s*\{\s*color:\s*var\(--xg-color-primary\)/);
+  assert.doesNotMatch(icon, /#f3dc9a|#181207|#fff4df/);
+
+  assert.match(login, /var\(--xg-bg-page\)/);
+  assert.doesNotMatch(login, /#eef4fb|#3040a0|#00bcd4|#16223a|#60708c|#f7faff/);
+});
+
+test('miniapp pages do not keep the previous black gold theme palette', () => {
+  const files = [
+    'App.vue',
+    'components/app-icon/app-icon.vue',
+    'components/app-topbar/app-topbar.vue',
+    ...readJsonc('pages.json').pages.map(item => `${item.path}.vue`)
+  ];
+  const forbidden = /#07080a|#08090b|#0d0f12|#111317|#fff4df|#fff6dc|#f3dc9a|#f3da94|#c79b3b|#efd482|#d9bb6a|#e8c763|#e9c85e|#d6a942|#fff1b8|#ffe597|rgba\(\s*242\s*,\s*213\s*,\s*140|rgba\(\s*239\s*,\s*212\s*,\s*130|rgba\(\s*255\s*,\s*244\s*,\s*223|rgba\(\s*255\s*,\s*246\s*,\s*220/i;
+
+  for (const file of files) {
+    assert.doesNotMatch(read(file), forbidden, `${file} still contains old black/gold theme color`);
+  }
+});
+
+test('miniapp templates and styles avoid unsupported b and small selectors', () => {
+  const files = [
+    'App.vue',
+    'components/app-topbar/app-topbar.vue',
+    ...readJsonc('pages.json').pages.map(item => `${item.path}.vue`)
+  ];
+
+  for (const file of files) {
+    const source = read(file);
+    assert.doesNotMatch(source, /<\/?\s*(b|small)\b/i, `${file} must use text classes instead of b/small tags`);
+    assert.doesNotMatch(source, /(?:^|[\s,{>])(?:b|small)(?=[\s.#:{,>])/im, `${file} must not style b/small tag selectors`);
+  }
 });

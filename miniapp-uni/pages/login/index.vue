@@ -1,38 +1,6 @@
 <template>
   <view class="page login-page">
-    <app-topbar title="勋港家具 AI" subtitle="微信授权登录" :show-avatar="false" />
-
     <view class="auth-shell">
-      <view class="auth-grid"></view>
-      <view class="auth-glow auth-glow-one"></view>
-      <view class="auth-glow auth-glow-two"></view>
-
-      <view class="login-hero">
-        <view class="brand-row">
-          <view class="hero-mark"><app-icon name="brush" tone="dark" :size="42" /></view>
-          <view class="brand-copy">
-            <text class="brand-name">勋港家具 AI</text>
-            <text class="brand-subtitle">家具视觉工作台</text>
-          </view>
-        </view>
-        <text class="login-title">登录后继续处理门店图片</text>
-        <text class="login-desc">在小程序里完成上传、AI 修图、资源归档和历史任务查看。</text>
-        <view class="hero-stats">
-          <view class="hero-stat">
-            <text class="hero-stat-value">AI</text>
-            <text class="hero-stat-label">修图工作台</text>
-          </view>
-          <view class="hero-stat">
-            <text class="hero-stat-value">云端</text>
-            <text class="hero-stat-label">资源库</text>
-          </view>
-          <view class="hero-stat">
-            <text class="hero-stat-value">门店</text>
-            <text class="hero-stat-label">账号体系</text>
-          </view>
-        </view>
-      </view>
-
       <view class="auth-card">
         <view class="auth-mode-tabs">
           <view :class="['auth-mode-tab', authMode === 'login' ? 'active' : '']" @click="switchAuthMode('login')">登录</view>
@@ -53,7 +21,7 @@
           <view class="wechat-card">
             <view class="wechat-head">
               <text class="wechat-title">微信手机号快捷登录</text>
-              <text class="wechat-desc">{{ silentChecking ? '正在尝试自动登录...' : '首次授权手机号，之后自动登录' }}</text>
+              <text class="wechat-desc">点击按钮授权手机号后登录已开通账号</text>
             </view>
             <button class="primary-btn wechat-btn" open-type="getPhoneNumber" :disabled="submitting || silentChecking" @getphonenumber="handleWechatPhoneLogin">
               {{ submitting ? '登录中' : '微信授权登录' }}
@@ -154,12 +122,10 @@
 <script>
 import { loginByCode, loginByPassword, sendSmsCode, submitMerchantApplication, verifySmsCode, wechatPhoneLogin, wechatSilentLogin } from '../../api/auth.js';
 import { getToken } from '../../utils/request.js';
-import AppTopbar from '../../components/app-topbar/app-topbar.vue';
 
 const PHONE_RE = /^1[3-9]\d{9}$/;
 
 export default {
-  components: { AppTopbar },
   data() {
     return {
       submitting: false,
@@ -195,9 +161,6 @@ export default {
       if (this.submitting) return '登录中';
       return this.mode === 'sms' ? '验证码登录' : '登录';
     }
-  },
-  onLoad() {
-    this.tryWechatSilentLogin();
   },
   onUnload() {
     this.clearTimer();
@@ -391,61 +354,46 @@ export default {
 </script>
 
 <style>
-.login-page { position: relative; padding-top: 0; overflow: hidden; }
-.auth-shell { position: relative; padding: 28rpx 0 56rpx; }
-.auth-grid { position: absolute; left: -24rpx; right: -24rpx; top: 0; height: 520rpx; opacity: .22; background: linear-gradient(rgba(255,255,255,.08) 1rpx, transparent 1rpx), linear-gradient(90deg, rgba(255,255,255,.06) 1rpx, transparent 1rpx); background-size: 64rpx 64rpx; }
-.auth-glow { position: absolute; border-radius: 999rpx; pointer-events: none; }
-.auth-glow-one { width: 360rpx; height: 360rpx; left: -180rpx; top: 42rpx; background: rgba(242,213,140,.16); }
-.auth-glow-two { width: 440rpx; height: 440rpx; right: -220rpx; top: 260rpx; background: rgba(95,128,180,.16); }
-.login-hero, .auth-card { position: relative; z-index: 1; }
-.login-hero { padding: 28rpx 4rpx 26rpx; }
-.brand-row { display: flex; align-items: center; }
-.hero-mark { width: 96rpx; height: 96rpx; flex: 0 0 96rpx; display: flex; align-items: center; justify-content: center; border-radius: 18rpx; color: #181207; background: linear-gradient(135deg,#f3da94,#c79b3b); box-shadow: 0 18rpx 48rpx rgba(199,155,59,.24); }
-.brand-copy { min-width: 0; margin-left: 18rpx; }
-.brand-name { display: block; color: #fff; font-size: 34rpx; font-weight: 900; line-height: 1.12; }
-.brand-subtitle { display: block; margin-top: 8rpx; color: #aeb8c5; font-size: 23rpx; }
-.login-title { display: block; margin-top: 44rpx; color: #fff; font-size: 54rpx; line-height: 1.08; font-weight: 900; }
-.login-desc { display: block; margin-top: 16rpx; color: #aeb8c5; font-size: 26rpx; line-height: 1.65; }
-.hero-stats { display: flex; margin-top: 28rpx; }
-.hero-stat { flex: 1; min-height: 98rpx; padding: 18rpx 14rpx; box-sizing: border-box; border: 1rpx solid rgba(255,255,255,.12); border-radius: 8rpx; background: rgba(255,255,255,.045); }
-.hero-stat + .hero-stat { margin-left: 12rpx; }
-.hero-stat-value { display: block; color: #f2d58c; font-size: 27rpx; line-height: 1.1; font-weight: 900; }
-.hero-stat-label { display: block; margin-top: 10rpx; color: #c7d0db; font-size: 21rpx; line-height: 1.2; }
-.auth-card { margin-top: 16rpx; padding: 24rpx; border-radius: 8rpx; border: 1rpx solid rgba(255,255,255,.14); background: linear-gradient(180deg, rgba(22,27,34,.96), rgba(13,16,21,.98)); box-shadow: 0 30rpx 90rpx rgba(0,0,0,.44); }
-.auth-mode-tabs { display: flex; padding: 6rpx; border-radius: 8rpx; background: #0c1118; border: 1rpx solid rgba(255,255,255,.12); }
-.auth-mode-tab { flex: 1; height: 70rpx; display: flex; align-items: center; justify-content: center; border-radius: 6rpx; color: #aeb8c5; font-size: 26rpx; font-weight: 900; }
-.auth-mode-tab.active { color: #141414; background: linear-gradient(135deg,#d8b86a,#f5dfa2); }
-.auth-panel { margin-top: 26rpx; }
-.card-head { display: flex; align-items: center; margin-bottom: 22rpx; }
-.card-head-icon { width: 68rpx; height: 68rpx; flex: 0 0 68rpx; display: flex; align-items: center; justify-content: center; margin-right: 16rpx; border-radius: 8rpx; background: linear-gradient(135deg,#d8b86a,#f5dfa2); }
-.card-eyebrow { display: block; color: #f2d58c; font-size: 23rpx; font-weight: 900; }
-.card-title { display: block; margin-top: 4rpx; color: #fff; font-size: 36rpx; font-weight: 900; line-height: 1.1; }
-.wechat-card { padding: 24rpx; border-radius: 8rpx; border: 1rpx solid rgba(255,255,255,.12); background: rgba(255,255,255,.045); }
+.login-page { min-height: 100vh; padding: 0 28rpx; box-sizing: border-box; background: var(--xg-bg-page); color: var(--xg-text-main); overflow: hidden; }
+.auth-shell { min-height: 100vh; display: flex; align-items: center; padding: 36rpx 0 calc(28rpx + env(safe-area-inset-bottom)); box-sizing: border-box; }
+.auth-card { width: 100%; max-width: 860rpx; margin: 0 auto; padding: 40rpx; box-sizing: border-box; border-radius: 40rpx; border: 1rpx solid var(--xg-border-soft); background: rgba(255,255,255,.94); box-shadow: var(--xg-shadow-soft); }
+.auth-mode-tabs { display: flex; padding: 10rpx; border-radius: 40rpx; background: var(--xg-bg-card-soft); border: 1rpx solid var(--xg-border-soft); }
+.auth-mode-tab { flex: 1; height: 82rpx; display: flex; align-items: center; justify-content: center; border-radius: 28rpx; color: var(--xg-text-muted); font-size: 28rpx; font-weight: 900; }
+.auth-mode-tab.active { color: var(--xg-text-inverse); background: linear-gradient(135deg,var(--xg-color-primary),var(--xg-color-accent)); box-shadow: var(--xg-shadow-soft); }
+.auth-panel { margin-top: 32rpx; }
+.card-head { display: flex; align-items: center; margin-bottom: 28rpx; }
+.card-head-icon { width: 56rpx; height: 56rpx; flex: 0 0 56rpx; display: flex; align-items: center; justify-content: center; margin-right: 14rpx; border-radius: 14rpx; background: rgba(var(--xg-color-primary-rgb),.12); border: 1rpx solid rgba(var(--xg-color-primary-rgb),.26); }
+.card-head-icon .app-icon { color: var(--xg-color-primary); }
+.card-eyebrow { display: block; color: var(--xg-color-primary); font-size: 24rpx; font-weight: 900; }
+.card-title { display: block; margin-top: 8rpx; color: var(--xg-text-main); font-size: 48rpx; font-weight: 900; line-height: 1.1; }
+.wechat-card { padding: 24rpx; border-radius: 28rpx; border: 1rpx solid var(--xg-border-soft); background: var(--xg-bg-card-soft); }
 .wechat-head { margin-bottom: 20rpx; }
-.wechat-title { display: block; color: #fff4df; font-size: 30rpx; font-weight: 900; }
-.wechat-desc { display: block; margin-top: 8rpx; color: rgba(255,244,223,.62); font-size: 23rpx; line-height: 1.5; }
-.wechat-btn { margin-top: 6rpx; border-radius: 8rpx; }
-.wechat-tip { display: block; margin-top: 18rpx; color: rgba(255,244,223,.54); font-size: 22rpx; line-height: 1.55; }
-.manual-toggle { height: 76rpx; margin-top: 20rpx; padding: 0 20rpx; display: flex; align-items: center; justify-content: space-between; border-radius: 8rpx; color: rgba(255,244,223,.76); background: rgba(255,255,255,.035); border: 1rpx solid rgba(255,255,255,.1); }
+.wechat-title { display: block; color: var(--xg-text-main); font-size: 30rpx; font-weight: 900; }
+.wechat-desc { display: block; margin-top: 10rpx; color: var(--xg-text-muted); font-size: 24rpx; line-height: 1.55; }
+.wechat-btn { margin-top: 8rpx; border-radius: 28rpx; }
+.wechat-tip { display: block; margin-top: 18rpx; color: var(--xg-text-muted); font-size: 22rpx; line-height: 1.55; }
+.manual-toggle { height: 78rpx; margin-top: 22rpx; padding: 0 24rpx; display: flex; align-items: center; justify-content: space-between; border-radius: 999rpx; color: var(--xg-text-muted); background: var(--xg-bg-card); border: 1rpx solid var(--xg-border-soft); }
 .manual-toggle text { font-size: 25rpx; font-weight: 900; }
-.manual-toggle-action { color: #f3dc9a; font-size: 24rpx; }
-.manual-panel { margin-top: 18rpx; }
-.login-tabs { display: flex; padding: 6rpx; border-radius: 8rpx; border: 1rpx solid rgba(255,255,255,.12); background: #0c1118; }
-.login-tab { flex: 1; height: 70rpx; display: flex; align-items: center; justify-content: center; border-radius: 6rpx; color: #aeb8c5; font-size: 24rpx; font-weight: 900; }
-.login-tab + .login-tab { margin-left: 6rpx; }
+.manual-toggle-action { color: var(--xg-color-primary); font-size: 24rpx; }
+.manual-panel { margin-top: 20rpx; }
+.login-tabs { display: flex; padding: 10rpx; border-radius: 28rpx; border: 1rpx solid var(--xg-border-soft); background: var(--xg-bg-card-soft); }
+.login-tab { flex: 1; height: 78rpx; display: flex; align-items: center; justify-content: center; border-radius: 22rpx; color: var(--xg-text-muted); font-size: 24rpx; font-weight: 900; }
+.login-tab + .login-tab { margin-left: 10rpx; }
 .login-tab .app-icon { margin-right: 8rpx; }
-.login-tab.active { color: #181207; background: linear-gradient(135deg,#d8b86a,#f5dfa2); }
+.login-tab.active { color: var(--xg-text-inverse); background: linear-gradient(135deg,var(--xg-color-primary),var(--xg-color-accent)); }
 .login-form { margin-top: 20rpx; }
 .field { margin-bottom: 20rpx; }
-.field text { display: block; margin-bottom: 10rpx; color: #d9e1eb; font-size: 24rpx; font-weight: 900; }
-.field input, .field textarea { width: 100%; box-sizing: border-box; border-radius: 8rpx; color: #fff4df; background: #0c1118; border: 1rpx solid rgba(255,255,255,.14); font-size: 27rpx; }
-.field input { height: 86rpx; padding: 0 22rpx; }
+.field text { display: block; margin-bottom: 12rpx; color: var(--xg-text-main); font-size: 24rpx; font-weight: 900; }
+.field input, .field textarea { width: 100%; box-sizing: border-box; border-radius: 28rpx; color: var(--xg-text-main); background: var(--xg-bg-card-soft); border: 1rpx solid var(--xg-border-soft); font-size: 27rpx; }
+.field input { height: 94rpx; padding: 0 26rpx; }
 .field textarea { min-height: 140rpx; padding: 20rpx 22rpx; line-height: 1.55; }
 .code-row { display: flex; align-items: stretch; }
-.code-row input { flex: 1; min-width: 0; border-radius: 8rpx 0 0 8rpx; }
-.code-btn { width: 190rpx; height: 86rpx; flex: 0 0 190rpx; border-radius: 0 8rpx 8rpx 0; font-size: 23rpx; }
-.apply-note { margin-bottom: 20rpx; padding: 18rpx 20rpx; border-radius: 8rpx; border: 1rpx solid rgba(242,213,140,.18); background: rgba(242,213,140,.08); }
-.apply-note text { color: #f2d58c; font-size: 23rpx; line-height: 1.6; }
-.apply-form .primary-btn, .login-form .primary-btn { margin-top: 8rpx; border-radius: 8rpx; }
-.error-card { margin: 20rpx 0 0; padding: 18rpx 20rpx; border-radius: 8rpx; font-size: 23rpx; line-height: 1.6; border: 1rpx solid rgba(255,112,112,.25); background: rgba(255,112,112,.08); color: #ffb4a8; }
+.code-row input { flex: 1; min-width: 0; border-radius: 28rpx 0 0 28rpx; }
+.code-btn { width: 212rpx; height: 94rpx; flex: 0 0 212rpx; border-left: 0; border-radius: 0 28rpx 28rpx 0; color: var(--xg-color-primary); background: rgba(var(--xg-color-accent-rgb),.12); border-color: rgba(var(--xg-color-accent-rgb),.36); font-size: 23rpx; }
+.apply-note { margin-bottom: 20rpx; padding: 20rpx 22rpx; border-radius: 28rpx; border: 1rpx solid rgba(var(--xg-color-primary-rgb),.22); background: rgba(var(--xg-color-primary-rgb),.12); }
+.apply-note text { color: var(--xg-color-primary); font-size: 23rpx; line-height: 1.6; }
+.apply-form .primary-btn, .login-form .primary-btn { margin-top: 12rpx; border-radius: 28rpx; }
+.primary-btn { background: linear-gradient(135deg,var(--xg-color-primary),var(--xg-color-accent)); color: var(--xg-text-inverse); box-shadow: var(--xg-shadow-soft); }
+.secondary-btn { color: var(--xg-color-primary); background: rgba(var(--xg-color-accent-rgb),.12); border-color: rgba(var(--xg-color-accent-rgb),.36); }
+.error-card { margin: 20rpx 0 0; padding: 18rpx 20rpx; border-radius: 28rpx; font-size: 23rpx; line-height: 1.6; border: 1rpx solid rgba(255,112,135,.28); background: rgba(255,112,135,.1); color: #cc3654; }
 </style>
