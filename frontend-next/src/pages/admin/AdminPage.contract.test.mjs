@@ -58,6 +58,14 @@ test('new pages preserve existing backend API contracts without changing the bac
   assert.match(manageSource, /\/api\/admin\/redeem-codes/);
 });
 
+test('system resource upload supports the same batch file selection as the asset library', () => {
+  assert.match(configSource, /const \[files, setFiles\] = useState<File\[\]>\(\[\]\)/);
+  assert.match(configSource, /Array\.from\(event\.target\.files \|\| \[\]\)/);
+  assert.match(configSource, /<input type="file" accept="image\/\*" multiple/);
+  assert.match(configSource, /for \(const file of files\) formData\.append\('image', file\)/);
+  assert.match(configSource, /files\.length \? `已选择 \$\{files\.length\} 张图片`/);
+});
+
 test('workflow management uses a visual node editor instead of raw JSON editing', () => {
   assert.match(manageSource, /<AdminWorkflowEditor draft=\{editor\}/);
   assert.match(workflowEditorSource, /adminWorkflowLibrary/);

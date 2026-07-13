@@ -95,28 +95,22 @@ export function AdminResourcesPage() {
     keyword: '', resourceType: '', status: '', page: 1, pageSize: 12,
   });
   const [form, setForm] = useState({ name: '', resourceType: 'material', objectName: '', colorName: '', description: '', imageUrl: '' });
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState('');
+  const [files, setFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [deleteTarget, setDeleteTarget] = useState<AdminResource | null>(null);
   const [notice, setNotice] = useState('');
   const [noticeTone, setNoticeTone] = useState<'success' | 'danger'>('success');
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => () => { if (preview.startsWith('blob:')) URL.revokeObjectURL(preview); }, [preview]);
+  useEffect(() => () => { previews.forEach((preview) => URL.revokeObjectURL(preview)); }, [previews]);
 
-  function chooseFile(nextFile: File | null) {
-    if (preview.startsWith('blob:')) URL.revokeObjectURL(preview);
-    setFile(nextFile);
-    setPreview(nextFile ? URL.createObjectURL(nextFile) : '');
+  function chooseFiles(nextFiles: File[]) {
+    setFiles(nextFiles);
+    setPreviews(nextFiles.map((file) => URL.createObjectURL(file)));
   }
 
   async function createResource() {
-    if (!form.name.trim()) {
-      setNotice('请输入资源名称');
-      setNoticeTone('danger');
-      return;
-    }
-    if (!file && !form.imageUrl.trim()) {
+    if (!files.length && !form.imageUrl.trim()) {
       setNotice('请上传资源图片或填写图片 URL');
       setNoticeTone('danger');
       return;
@@ -125,11 +119,11 @@ export function AdminResourcesPage() {
     try {
       const formData = new FormData();
       Object.entries(form).forEach(([key, value]) => formData.append(key, value));
-      if (file) formData.append('image', file);
+      for (const file of files) formData.append('image', file);
       await adminUpload('/api/admin/resources', formData);
       setForm({ name: '', resourceType: 'material', objectName: '', colorName: '', description: '', imageUrl: '' });
-      chooseFile(null);
-      setNotice('系统资源已创建');
+      chooseFiles([]);
+      setNotice(files.length > 1 ? `已创建 ${files.length} 项系统资源` : '系统资源已创建');
       setNoticeTone('success');
       await reload();
     } catch (createError) {
@@ -175,15 +169,15 @@ export function AdminResourcesPage() {
       {notice && <AdminNotice message={notice} tone={noticeTone} onClose={() => setNotice('')} />}
       <AdminPanel title="新增系统资源" description="上传图片并填写用于检索和筛选的资源信息">
         <div className="adminResourceCreate">
-          <label className="adminResourceUploader"><input type="file" accept="image/*" onChange={(event) => chooseFile(event.target.files?.[0] || null)} />{preview ? <img src={preview} alt="资源预览" /> : <span><AppIcon name="plus" /><b>上传资源图片</b><small>支持常见图片格式</small></span>}</label>
+          <label className="adminResourceUploader"><input type="file" accept="image/*" multiple onChange={(event) => chooseFiles(Array.from(event.target.files || []))} />{previews.length ? <div className="adminResourcePreviewGrid">{previews.slice(0, 4).map((preview, index) => <img key={preview} src={preview} alt={`待上传资源 ${index + 1}`} />)}{previews.length > 4 && <span>+{previews.length - 4}</span>}</div> : <span><AppIcon name="plus" /><b>上传资源图片</b><small>支持常见图片格式，最多 50 张</small></span>}<em>{files.length ? `已选择 ${files.length} 张图片` : '点击选择或重新选择图片'}</em></label>
           <div className="adminFormGrid">
-            <label><span>资源名称</span><input value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} /></label>
+            <label><span>统一名称（可选）</span><input value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="不填则使用每个文件名" /></label>
             <label><span>资源类型</span><select value={form.resourceType} onChange={(event) => setForm({ ...form, resourceType: event.target.value })}>{Object.entries(adminResourceTypeNames).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
             <label><span>适用对象</span><input value={form.objectName} onChange={(event) => setForm({ ...form, objectName: event.target.value })} /></label>
             <label><span>颜色 / 色系</span><input value={form.colorName} onChange={(event) => setForm({ ...form, colorName: event.target.value })} /></label>
             <label className="isFull"><span>图片 URL（上传图片后可不填）</span><input value={form.imageUrl} onChange={(event) => setForm({ ...form, imageUrl: event.target.value })} /></label>
             <label className="isFull"><span>资源说明</span><textarea value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} /></label>
-            <div className="adminFormActions isFull"><AdminButton icon="plus" tone="primary" disabled={busy} onClick={() => void createResource()}>{busy ? '创建中...' : '创建资源'}</AdminButton></div>
+            <div className="adminFormActions isFull"><AdminButton icon="plus" tone="primary" disabled={busy} onClick={() => void createResource()}>{busy ? '上传中...' : files.length > 1 ? `上传 ${files.length} 张` : '创建资源'}</AdminButton></div>
           </div>
         </div>
       </AdminPanel>
