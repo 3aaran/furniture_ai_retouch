@@ -95,14 +95,20 @@
 
   .studioLeftPanel {
     position: relative;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
   }
 
   .studioCenterPanel {
     position: relative;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
   }
 
   .studioRightPanel {
+    gap: 0;
     overflow: hidden;
   }
 }

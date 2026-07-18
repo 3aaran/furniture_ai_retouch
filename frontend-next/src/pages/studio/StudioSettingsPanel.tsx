@@ -82,7 +82,8 @@ export function StudioSettingsPanel({
 
   return (
     <aside className="studioSidePanel studioRightPanel" aria-label="生成设置">
-      <section className={promptOpen ? 'studioCollapseCard isOpen' : 'studioCollapseCard'}>
+      <div className="studioSettingsScroll">
+        <section className={promptOpen ? 'studioCollapseCard isOpen' : 'studioCollapseCard'}>
         <button className="studioCollapseHead" type="button" aria-expanded={promptOpen} onClick={() => setPromptOpen((open) => !open)}>
           <span><b>{isVideoSelected ? '视频要求' : '提示词'}</b><em>{customPrompt ? '已填写' : isVideoSelected ? '必填' : '可选'}</em></span><i><AppIcon name={promptOpen ? 'chevronDown' : 'chevronRight'} size={16} /></i>
         </button>
@@ -117,12 +118,13 @@ export function StudioSettingsPanel({
           {videoVersion !== '标准' && <p className="studioVideoConstraint">Mini/快速版仅支持 480p、720p；1080p 和 4K 需选择标准版。</p>}
         </section>
       )}
-      {showOutputControls && (
-        <div className="studioOutputControls">
-          <div className="studioControlGroup studioInlineControl"><span>分辨率：</span><div>{resolutionOptions.map((item) => <button key={item} type="button" disabled={isVideoSelected && videoVersion !== '标准' && ['1080p', '4K'].includes(item)} className={resolution === item ? 'isActive' : ''} onClick={() => onResolutionChange(item)}>{item}</button>)}</div></div>
-          <div className="studioControlGroup studioInlineControl"><span>比例：</span><div>{ratioOptions.map((item) => <button key={item} type="button" className={ratio === item ? 'isActive' : ''} onClick={() => onRatioChange(item)}>{item === 'adaptive' ? '自适应' : item}</button>)}</div></div>
-        </div>
-      )}
+        {showOutputControls && (
+          <div className="studioOutputControls">
+            <div className="studioControlGroup studioInlineControl"><span>分辨率：</span><div>{resolutionOptions.map((item) => <button key={item} type="button" disabled={isVideoSelected && videoVersion !== '标准' && ['1080p', '4K'].includes(item)} className={resolution === item ? 'isActive' : ''} onClick={() => onResolutionChange(item)}>{item}</button>)}</div></div>
+            <div className="studioControlGroup studioInlineControl"><span>比例：</span><div>{ratioOptions.map((item) => <button key={item} type="button" className={ratio === item ? 'isActive' : ''} onClick={() => onRatioChange(item)}>{item === 'adaptive' ? '自适应' : item}</button>)}</div></div>
+          </div>
+        )}
+      </div>
       <div className="studioGenerateArea"><Button className={isGenerating ? 'studioGenerateButton isGenerating' : 'studioGenerateButton'} onClick={onGenerate} disabled={isGenerating}>{isGenerating ? (isVideoSelected ? '视频生成中...' : '提交中...') : isVideoSelected ? '生成视频' : isPromotionSelected ? '生成宣传图' : '生成效果'}</Button><div className="studioGenerateMeta" aria-live="polite">消耗 {cost} 点算力 <b>剩余：{quota}</b></div></div>
     </aside>
   );

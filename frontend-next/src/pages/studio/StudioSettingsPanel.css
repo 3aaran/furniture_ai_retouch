@@ -1,3 +1,13 @@
+.studioSettingsScroll {
+  min-height: 0;
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
 .studioCollapseCard {
   border: 0;
   border-radius: 0;
@@ -168,9 +178,18 @@
 }
 
 .studioVideoSettings .studioControlGroup > div {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
+}
+
+.studioVideoSettings .studioControlGroup:nth-child(2) > div {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.studioVideoSettings .studioControlGroup button {
+  min-width: 0;
+  padding-inline: 6px;
 }
 
 .studioVideoConstraint {
@@ -237,6 +256,11 @@
 }
 
 @media (min-width: 768px) {
+  .studioSettingsScroll {
+    flex: 1 1 auto;
+    padding-right: 4px;
+  }
+
   .studioCollapseCard {
     border-bottom: 1px solid var(--border-subtle);
     padding-bottom: 8px;
@@ -278,6 +302,14 @@
     gap: 10px;
   }
 
+  .studioGenerateArea {
+    flex: 0 0 auto;
+    margin-top: 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-subtle);
+    background: linear-gradient(180deg, rgba(var(--bg-card-rgb), .7), rgba(var(--bg-card-rgb), .96) 28%);
+  }
+
   .studioGenerateButton {
     min-height: 52px;
     height: 52px;
@@ -298,9 +330,14 @@
     box-shadow: var(--shadow-sm);
   }
 
+  .studioSettingsScroll,
   .studioCollapseCard,
   .studioGenerateArea {
     width: 100%;
+  }
+
+  .studioSettingsScroll {
+    overflow: visible;
   }
 
   .studioPromptInput {

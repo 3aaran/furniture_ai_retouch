@@ -110,6 +110,15 @@ test('desktop studio resource picker restores scoped category filters', () => {
   assert.doesNotMatch(source, /resourceMainName\(item\) \|\| '未分类'/);
 });
 
+test('desktop studio keeps all three columns independently usable without clipping settings', () => {
+  assert.match(source, /className="studioSettingsScroll"/);
+  assert.match(css, /@media \(min-width: 768px\)[\s\S]*\.studioLeftPanel\s*\{[\s\S]*overflow-y:\s*auto/);
+  assert.match(css, /@media \(min-width: 768px\)[\s\S]*\.studioCenterPanel\s*\{[\s\S]*overflow-y:\s*auto/);
+  assert.match(css, /\.studioSettingsScroll\s*\{[\s\S]*min-height:\s*0[\s\S]*overflow-y:\s*auto/);
+  assert.match(css, /@media \(min-width: 768px\)[\s\S]*\.studioGenerateArea\s*\{[\s\S]*flex:\s*0 0 auto/);
+  assert.match(css, /\.studioVideoSettings \.studioControlGroup:nth-child\(2\) > div\s*\{[\s\S]*grid-template-columns:\s*repeat\(4/);
+});
+
 test('studio recent strip and settings match annotated behavior', () => {
   assert.doesNotMatch(source, /来自后端 AI 任务记录/);
   assert.match(source, /task\.previewUrl \? <img/);
