@@ -1,4 +1,4 @@
-import type { AiTask } from '../../services/studio.api';
+import type { StudioTask } from '../../services/studio.api';
 
 export type StudioLocalImage = {
   id: string;
@@ -16,5 +16,7 @@ export type StudioRecentTask = {
   ratio: string;
   time: string;
   previewUrl?: string;
-  raw?: AiTask;
+  mediaType?: 'image' | 'video';
+  progress?: number;
+  raw?: StudioTask;
 };

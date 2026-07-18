@@ -9,3 +9,15 @@ test('createAiTask unwraps the backend task envelope before studio polling uses 
   assert.match(source, /response\.task/);
   assert.match(source, /return \{ \.\.\.response\.task, user: response\.user \?\? response\.task\.user \}/);
 });
+
+test('studio api exposes the independent video task contract', () => {
+  assert.match(source, /export type VideoTask/);
+  assert.match(source, /export type CreateVideoTaskPayload/);
+  assert.match(source, /\/api\/ai\/video\/tasks/);
+  assert.match(source, /createVideoTask/);
+  assert.match(source, /fetchRecentVideoTasks/);
+  assert.match(source, /fetchVideoTaskStatus/);
+  assert.match(source, /fetchVideoTaskDetail/);
+  assert.match(source, /deleteVideoTask/);
+  assert.match(source, /resolveAuthenticatedMediaUrl/);
+});

@@ -58,6 +58,23 @@ test('new pages preserve existing backend API contracts without changing the bac
   assert.match(manageSource, /\/api\/admin\/redeem-codes/);
 });
 
+test('AI model config renders a dedicated editable real video model panel', () => {
+  assert.match(configSource, /type VideoModelConfig/);
+  assert.match(configSource, /videoConfig\?: VideoModelConfig/);
+  assert.match(configSource, /SD 2\.0 参考生视频/);
+  assert.match(configSource, /kwvideo-v2-ref/);
+  assert.match(configSource, /adminVideoModelGrid/);
+  assert.match(configSource, /updateVideoConfig/);
+  assert.match(configSource, /videoConfig\?\.baseUrl/);
+  assert.match(configSource, /videoConfig\?\.createPath/);
+  assert.match(configSource, /videoConfig\?\.statusPath/);
+  assert.match(configSource, /videoConfig\?\.apiKeyMasked/);
+  assert.match(configSource, /参考图沿用现有图片 OSS/);
+  assert.match(configSource, /filter\(\(item\) => item\.featureKey !== 'video_generate'\)/);
+  assert.match(css, /\.adminVideoModelGrid/);
+  assert.match(css, /\.adminAiFeatureList\s*\{[\s\S]*grid-template-columns/);
+});
+
 test('system resource upload supports the same batch file selection as the asset library', () => {
   assert.match(configSource, /const \[files, setFiles\] = useState<File\[\]>\(\[\]\)/);
   assert.match(configSource, /Array\.from\(event\.target\.files \|\| \[\]\)/);

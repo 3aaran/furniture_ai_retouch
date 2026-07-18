@@ -277,9 +277,6 @@ export async function initDb(){
     CONSTRAINT fk_images_merchant FOREIGN KEY(merchant_id) REFERENCES merchants(id) ON DELETE SET NULL
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`);
 
-  await pool.query(`UPDATE users u SET storage_used_bytes=(SELECT IFNULL(SUM(i.size_bytes),0) FROM images i WHERE i.user_id=u.id AND i.deleted_at IS NULL)`);
-
-
   await pool.query(`CREATE TABLE IF NOT EXISTS quota_logs (
     id VARCHAR(36) PRIMARY KEY,
     merchant_id VARCHAR(36) NOT NULL,
@@ -539,6 +536,7 @@ export async function initDb(){
     merchant_id VARCHAR(36) NULL,
     user_id VARCHAR(36) NOT NULL,
     feature_key VARCHAR(50) NOT NULL,
+    media_type VARCHAR(20) NOT NULL DEFAULT 'image',
     feature_id VARCHAR(36) NULL,
     model_id VARCHAR(36) NULL,
     origin_image_id VARCHAR(36) NOT NULL,
@@ -557,6 +555,15 @@ export async function initDb(){
     cost INT NOT NULL DEFAULT 0,
     status ENUM('queued','running','succeeded','failed') NOT NULL DEFAULT 'queued',
     result_image_id VARCHAR(36) NULL,
+    result_video_id VARCHAR(36) NULL,
+    provider_task_id VARCHAR(160) NULL,
+    provider_status VARCHAR(50) NULL,
+    provider_progress INT NOT NULL DEFAULT 0,
+    next_poll_at DATETIME NULL,
+    last_polled_at DATETIME NULL,
+    poll_count INT NOT NULL DEFAULT 0,
+    client_request_id VARCHAR(120) NULL,
+    duration_seconds INT NULL,
     error_message TEXT NULL,
     failure_code VARCHAR(80) NULL,
     failure_stage VARCHAR(80) NULL,
@@ -568,7 +575,70 @@ export async function initDb(){
     INDEX idx_task_user(user_id),
     INDEX idx_task_feature(feature_key),
     INDEX idx_task_status(status),
-    INDEX idx_task_submitted(submitted_at)
+    INDEX idx_task_submitted(submitted_at),
+    INDEX idx_ai_tasks_video_poll(media_type,status,next_poll_at),
+    UNIQUE INDEX uniq_ai_tasks_user_client_request(user_id,client_request_id),
+    UNIQUE INDEX uniq_ai_tasks_provider_task(provider,provider_task_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`);
+  await ensureColumn('ai_tasks', 'media_type', "VARCHAR(20) NOT NULL DEFAULT 'image'", 'feature_key');
+  await ensureColumn('ai_tasks', 'provider_task_id', 'VARCHAR(160) NULL', 'result_image_id');
+  await ensureColumn('ai_tasks', 'provider_status', 'VARCHAR(50) NULL', 'provider_task_id');
+  await ensureColumn('ai_tasks', 'provider_progress', 'INT NOT NULL DEFAULT 0', 'provider_status');
+  await ensureColumn('ai_tasks', 'next_poll_at', 'DATETIME NULL', 'provider_progress');
+  await ensureColumn('ai_tasks', 'last_polled_at', 'DATETIME NULL', 'next_poll_at');
+  await ensureColumn('ai_tasks', 'poll_count', 'INT NOT NULL DEFAULT 0', 'last_polled_at');
+  await ensureColumn('ai_tasks', 'client_request_id', 'VARCHAR(120) NULL', 'poll_count');
+  await ensureColumn('ai_tasks', 'duration_seconds', 'INT NULL', 'client_request_id');
+  await ensureColumn('ai_tasks', 'result_video_id', 'VARCHAR(36) NULL', 'result_image_id');
+  await ensureIndex('ai_tasks', 'idx_ai_tasks_video_poll', 'INDEX idx_ai_tasks_video_poll (media_type,status,next_poll_at)');
+  await ensureIndex('ai_tasks', 'uniq_ai_tasks_user_client_request', 'UNIQUE INDEX uniq_ai_tasks_user_client_request (user_id,client_request_id)');
+  await ensureIndex('ai_tasks', 'uniq_ai_tasks_provider_task', 'UNIQUE INDEX uniq_ai_tasks_provider_task (provider,provider_task_id)');
+
+  await pool.query(`CREATE TABLE IF NOT EXISTS videos (
+    id VARCHAR(36) PRIMARY KEY,
+    merchant_id VARCHAR(36) NULL,
+    user_id VARCHAR(36) NOT NULL,
+    task_id VARCHAR(36) NULL,
+    original_name VARCHAR(255) NULL,
+    file_name VARCHAR(255) NOT NULL,
+    storage_provider VARCHAR(30) NOT NULL DEFAULT 'local',
+    storage_key VARCHAR(700) NOT NULL,
+    url VARCHAR(800) NOT NULL,
+    mime_type VARCHAR(80) NOT NULL DEFAULT 'video/mp4',
+    size_bytes BIGINT NOT NULL DEFAULT 0,
+    width INT NULL,
+    height INT NULL,
+    duration_seconds INT NULL,
+    codec VARCHAR(80) NULL,
+    poster_url VARCHAR(800) NULL,
+    poster_storage_key VARCHAR(700) NULL,
+    status ENUM('ACTIVE','DELETED') NOT NULL DEFAULT 'ACTIVE',
+    deleted_at DATETIME NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_videos_merchant(merchant_id),
+    INDEX idx_videos_user(user_id),
+    INDEX idx_videos_task(task_id),
+    INDEX idx_videos_created(created_at)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`);
+  await pool.query(`
+    UPDATE users u
+    SET storage_used_bytes=
+      (SELECT IFNULL(SUM(i.size_bytes),0) FROM images i WHERE i.user_id=u.id AND i.deleted_at IS NULL)
+      +
+      (SELECT IFNULL(SUM(v.size_bytes),0) FROM videos v WHERE v.user_id=u.id AND v.deleted_at IS NULL)
+  `);
+
+  await pool.query(`CREATE TABLE IF NOT EXISTS ai_task_video_outputs (
+    id VARCHAR(36) PRIMARY KEY,
+    task_id VARCHAR(36) NOT NULL,
+    video_id VARCHAR(36) NOT NULL,
+    output_role VARCHAR(60) NOT NULL DEFAULT 'RESULT',
+    sort_order INT NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_video_output_task(task_id),
+    INDEX idx_video_output_video(video_id),
+    UNIQUE KEY uniq_task_video_output(task_id,video_id,output_role)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`);
   await pool.query(`CREATE TABLE IF NOT EXISTS ai_task_inputs (
     id VARCHAR(36) PRIMARY KEY,

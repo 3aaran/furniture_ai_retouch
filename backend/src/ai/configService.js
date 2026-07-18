@@ -13,6 +13,10 @@ const FEATURES = [
   ['video_generate', '宣传视频生成', 'cost_video_generate', 100]
 ];
 
+const SEEDANCE_VIDEO_MODEL_ID = 'model_seedance_reference_video';
+const SEEDANCE_VIDEO_MODEL_NAME = 'kwvideo-v2-ref';
+const SEEDANCE_VIDEO_PROVIDER = 'seedance-reference';
+
 function maskKey(key = '') {
   const v = String(key || '');
   if (!v) return '';
@@ -42,6 +46,18 @@ export async function ensureAiConfigRows() {
     )
   `);
 
+  await pool.query(`
+    INSERT IGNORE INTO ai_models(
+      id,provider,model_name,base_url,api_path,api_key_encrypted,
+      timeout_ms,poll_interval_ms,max_concurrency,max_retries,
+      input_modes_json,output_format,max_prompt_chars,enabled
+    ) VALUES(
+      'model_seedance_reference_video','seedance-reference','kwvideo-v2-ref',
+      'https://api.lk888.ai','/v1/media/generate','',
+      120000,4000,2,5,'{"statusPath":"/v1/media/status"}','video',8000,1
+    )
+  `);
+
   for (const [key, name, costKey, sortOrder] of FEATURES) {
     await pool.query(
       `INSERT IGNORE INTO ai_features(
@@ -51,6 +67,12 @@ export async function ensureAiConfigRows() {
       [`feature_${key}`, key, name, 'model_default', costKey, sortOrder]
     );
   }
+  await pool.query(
+    `UPDATE ai_features
+     SET model_id=?
+     WHERE feature_key='video_generate'`,
+    [SEEDANCE_VIDEO_MODEL_ID]
+  );
 }
 
 export async function getAiConfig({ includeSecret = false } = {}) {
@@ -81,6 +103,7 @@ export async function getAiConfig({ includeSecret = false } = {}) {
       safetyNote: '',
       enabled: !!Number(model?.enabled || 0)
     },
+    videoConfig: await getSeedanceVideoConfig({ includeSecret }),
     features: features.map((f) => ({
       id: f.id,
       featureKey: f.feature_key,
@@ -128,6 +151,7 @@ export async function saveAiConfig(data = {}) {
 
   for (const f of data.features || []) {
     if (!f.featureKey) continue;
+    const videoFeature = f.featureKey === 'video_generate';
     const provider = String(f.provider || defaultModel.provider || 'mock');
     const modelName = String(f.modelName || defaultModel.model_name || '');
     const apiPath = String(f.apiPath || '');
@@ -135,9 +159,18 @@ export async function saveAiConfig(data = {}) {
       provider === String(defaultModel.provider || 'mock') &&
       modelName === String(defaultModel.model_name || '') &&
       apiPath === String(defaultModel.api_path || '');
-    const modelId = usesDefaultModel ? 'model_default' : `model_${f.featureKey}`;
+    const modelId = videoFeature
+      ? SEEDANCE_VIDEO_MODEL_ID
+      : (usesDefaultModel ? 'model_default' : `model_${f.featureKey}`);
 
-    if (!usesDefaultModel) {
+    if (videoFeature) {
+      await saveSeedanceVideoConfig({
+        provider: f.provider,
+        modelName: f.modelName,
+        createPath: f.apiPath,
+        enabled: f.enabled
+      });
+    } else if (!usesDefaultModel) {
       await pool.query(
         `INSERT INTO ai_models(
           id,provider,model_name,base_url,api_path,api_key_encrypted,
@@ -202,6 +235,8 @@ export async function saveAiConfig(data = {}) {
     );
   }
 
+  if (data.videoConfig) await saveSeedanceVideoConfig(data.videoConfig);
+
   return getAiConfig({ includeSecret: false });
 }
 
@@ -234,4 +269,64 @@ export async function getFeatureConfig(featureKey) {
     quality_rules: f.quality_rules || '',
     enabled: f.enabled
   };
+}
+
+export async function getSeedanceVideoConfig({ includeSecret = false } = {}) {
+  await ensureAiConfigRows();
+  const [[model]] = await pool.query('SELECT * FROM ai_models WHERE id=? LIMIT 1', [SEEDANCE_VIDEO_MODEL_ID]);
+  const metadata = parseJson(model?.input_modes_json, {});
+  const baseUrl = String(model?.base_url || process.env.SEEDANCE_VIDEO_BASE_URL || 'https://api.lk888.ai').trim().replace(/\/$/, '');
+  let configuredKey = String(model?.api_key_encrypted || process.env.SEEDANCE_VIDEO_API_KEY || '').trim();
+  if (!configuredKey) {
+    const [fallbackModels] = await pool.query(
+      `SELECT id,base_url,api_key_encrypted
+       FROM ai_models
+       WHERE id IN ('model_video_generate','model_default')
+         AND TRIM(COALESCE(api_key_encrypted,''))<>''
+       ORDER BY FIELD(id,'model_video_generate','model_default')`
+    );
+    const fallback = fallbackModels.find((item) => String(item.base_url || '').trim().replace(/\/$/, '') === baseUrl);
+    configuredKey = String(fallback?.api_key_encrypted || '').trim();
+  }
+  return {
+    id: SEEDANCE_VIDEO_MODEL_ID,
+    provider: String(model?.provider || SEEDANCE_VIDEO_PROVIDER),
+    modelName: String(model?.model_name || SEEDANCE_VIDEO_MODEL_NAME),
+    baseUrl,
+    createPath: String(model?.api_path || process.env.SEEDANCE_VIDEO_CREATE_PATH || '/v1/media/generate'),
+    statusPath: String(metadata?.statusPath || process.env.SEEDANCE_VIDEO_STATUS_PATH || '/v1/media/status'),
+    apiKey: includeSecret ? configuredKey : undefined,
+    apiKeyMasked: maskKey(configuredKey),
+    timeoutMs: Math.max(10000, Number(model?.timeout_ms || 120000)),
+    pollIntervalMs: Math.max(1000, Number(model?.poll_interval_ms || process.env.VIDEO_POLL_INTERVAL_MS || 4000)),
+    maxConcurrency: Math.max(1, Number(model?.max_concurrency || 2)),
+    maxRetries: Math.max(0, Number(model?.max_retries || 5)),
+    enabled: !!Number(model?.enabled ?? 1)
+  };
+}
+
+export async function saveSeedanceVideoConfig(data = {}) {
+  await ensureAiConfigRows();
+  const [[current]] = await pool.query('SELECT * FROM ai_models WHERE id=? LIMIT 1', [SEEDANCE_VIDEO_MODEL_ID]);
+  const metadata = parseJson(current?.input_modes_json, {});
+  const fields = ["output_format='video'"];
+  const values = [];
+  if (data.provider !== undefined) { fields.push('provider=?'); values.push(String(data.provider || SEEDANCE_VIDEO_PROVIDER)); }
+  if (data.modelName !== undefined) { fields.push('model_name=?'); values.push(String(data.modelName || SEEDANCE_VIDEO_MODEL_NAME)); }
+  if (data.baseUrl !== undefined) { fields.push('base_url=?'); values.push(String(data.baseUrl || 'https://api.lk888.ai').trim()); }
+  if (data.createPath !== undefined) { fields.push('api_path=?'); values.push(String(data.createPath || '/v1/media/generate')); }
+  if (data.apiKey !== undefined && String(data.apiKey).trim()) { fields.push('api_key_encrypted=?'); values.push(String(data.apiKey).trim()); }
+  if (data.timeoutMs !== undefined) { fields.push('timeout_ms=?'); values.push(Math.max(10000, Number(data.timeoutMs || 120000))); }
+  if (data.pollIntervalMs !== undefined) { fields.push('poll_interval_ms=?'); values.push(Math.max(1000, Number(data.pollIntervalMs || 4000))); }
+  if (data.maxConcurrency !== undefined) { fields.push('max_concurrency=?'); values.push(Math.max(1, Number(data.maxConcurrency || 2))); }
+  if (data.maxRetries !== undefined) { fields.push('max_retries=?'); values.push(Math.max(0, Number(data.maxRetries || 5))); }
+  if (data.enabled !== undefined) { fields.push('enabled=?'); values.push(data.enabled ? 1 : 0); }
+  if (data.statusPath !== undefined) {
+    fields.push('input_modes_json=?');
+    values.push(JSON.stringify({ ...metadata, statusPath: String(data.statusPath || '/v1/media/status') }));
+  }
+  values.push(SEEDANCE_VIDEO_MODEL_ID);
+  await pool.query(`UPDATE ai_models SET ${fields.join(',')} WHERE id=?`, values);
+  await pool.query('UPDATE ai_features SET model_id=? WHERE feature_key=?', [SEEDANCE_VIDEO_MODEL_ID, 'video_generate']);
+  return getSeedanceVideoConfig({ includeSecret: false });
 }

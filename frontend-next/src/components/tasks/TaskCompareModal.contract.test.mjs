@@ -15,6 +15,16 @@ test('one task compare modal uses original urls only for detail preview and down
 });
 
 test('task compare displays only the user-entered generation requirement', () => {
-  assert.match(modalSource, /firstText\(detail\.userPrompt, detail\.detailUserPrompt, detail\.settings\?\.userPrompt\)/);
+  assert.match(modalSource, /firstText\(detail\.userPrompt, detail\.detailUserPrompt, detail\.settings\?\.userPrompt/);
   assert.doesNotMatch(modalSource, /detail\.settings\?\.userPrompt, detail\.prompt/);
+});
+
+test('task detail renders video results as playable media without image continuation', () => {
+  assert.match(modalSource, /mediaType/);
+  assert.match(modalSource, /videoUrl/);
+  assert.match(modalSource, /<video/);
+  assert.match(modalSource, /controls/);
+  assert.match(modalSource, /playsInline/);
+  assert.match(modalSource, /preload="metadata"/);
+  assert.match(modalSource, /!isVideo && onContinueImage/);
 });

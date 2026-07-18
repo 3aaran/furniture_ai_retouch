@@ -45,6 +45,8 @@ logs/
 
 # database/export/backup files
 *.sql
+!backend/sql/
+!backend/sql/2026-07-17-seedance-reference-video.sql
 *.sqlite
 *.sqlite3
 *.db
@@ -104,6 +106,7 @@ frontend/public/downloads/*.exe
 frontend/public/downloads/*.apk
 
 # local Codex project notes
+.codex-tmp/
 skills/
 PROJECT_FILE_MAP.md
 agent.md

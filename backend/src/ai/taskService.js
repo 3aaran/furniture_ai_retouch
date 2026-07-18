@@ -306,6 +306,9 @@ function publicTask(task) {
  * 提交 AI 任务
  */
 export async function submitAiTask(payload, user) {
+  if (String(payload?.featureKey || payload?.operation || '').trim() === 'video_generate') {
+    throw new Error('video_generate 必须使用视频专用接口 /api/ai/video/tasks');
+  }
   const normalizedTaskParams = normalizeTaskParams(payload);
   validateTaskParams(normalizedTaskParams);
   const featureKey = normalizedTaskParams.featureKey;

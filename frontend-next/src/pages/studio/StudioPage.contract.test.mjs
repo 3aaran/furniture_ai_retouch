@@ -138,12 +138,26 @@ test('studio asset picker and recent task actions use real APIs without random s
 
 test('mobile feature picker stays open while feature configuration owns all parameters', () => {
   assert.match(source, /if \(!isMobile\) \{\s+setMobileConfigSheet\(null\);\s+closeFeatureDrawer\(\);\s+\}/);
-  assert.match(source, /featureBranches\.filter\(\(item\) => item\.key !== 'video'\)/);
+  assert.match(source, /featureBranches\.map/);
   assert.match(source, /studioFeatures\.filter\(\(item\) => item\.group === featureGroup\)/);
   assert.doesNotMatch(source, /!needsResourceLibrary && <div className="studioMobileConfigBlock"><span>功能参数<\/span>/);
   assert.match(source, /<button className="studioMobileResourceConfig"/);
-  assert.match(source, /'resource'/);
   assert.match(source, /setMobileConfigSheet\('options'\)/);
+});
+
+test('studio enables reference video generation on desktop and mobile', () => {
+  assert.match(source, /video_generate/);
+  assert.match(source, /createVideoTask/);
+  assert.match(source, /fetchRecentVideoTasks/);
+  assert.match(source, /fetchVideoTaskStatus/);
+  assert.match(source, /fetchVideoTaskDetail/);
+  assert.match(source, /deleteVideoTask/);
+  assert.match(source, /clientRequestId/);
+  assert.match(source, /videoVersion/);
+  assert.match(source, /videoDuration/);
+  assert.match(source, /videoExtraRequirements/);
+  assert.match(source, /1 到 9 张参考图|1–9 张参考图/);
+  assert.doesNotMatch(source, /宣传短视频正在开发中/);
 });
 
 test('mobile exposes feature configuration for every studio feature', () => {

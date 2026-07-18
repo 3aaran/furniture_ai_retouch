@@ -8,6 +8,33 @@
   50% { box-shadow: 0 18px 38px rgba(var(--color-accent-rgb), .24); }
 }
 
+.studioVideoGuide {
+  display: grid;
+  gap: 10px;
+}
+
+.studioVideoGuideRow {
+  display: grid;
+  gap: 4px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.studioVideoGuideRow:last-child {
+  border-bottom: 0;
+}
+
+.studioVideoGuideRow b {
+  color: var(--text-main);
+  font-size: 12px;
+}
+
+.studioVideoGuideRow span {
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
 @media (min-width: 768px) {
   .studioLayoutPc > .studioLeftPanel {
     background:

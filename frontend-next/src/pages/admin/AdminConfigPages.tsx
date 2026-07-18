@@ -56,8 +56,24 @@ type AiFeatureConfig = {
   apiPath?: string;
 };
 
+type VideoModelConfig = {
+  provider?: string;
+  modelName?: string;
+  baseUrl?: string;
+  createPath?: string;
+  statusPath?: string;
+  apiKey?: string;
+  apiKeyMasked?: string;
+  timeoutMs?: number;
+  pollIntervalMs?: number;
+  maxConcurrency?: number;
+  maxRetries?: number;
+  enabled?: boolean;
+};
+
 type AiConfig = {
   providerConfig?: AiProviderConfig;
+  videoConfig?: VideoModelConfig;
   features?: AiFeatureConfig[];
 };
 
@@ -218,8 +234,14 @@ export function AdminAiConfigPage() {
     setConfig((current) => current ? {
       ...current,
       providerConfig: { ...current.providerConfig, provider: option.provider, defaultModel: option.modelName, defaultApiPath: option.apiPath },
-      features: (current.features || []).map((feature) => ({ ...feature, provider: option.provider, modelName: option.modelName, apiPath: option.apiPath })),
+      features: (current.features || []).map((feature) => feature.featureKey === 'video_generate'
+        ? feature
+        : { ...feature, provider: option.provider, modelName: option.modelName, apiPath: option.apiPath }),
     } : current);
+  }
+
+  function updateVideoConfig(key: keyof VideoModelConfig, value: string | number | boolean) {
+    setConfig((current) => current ? { ...current, videoConfig: { ...current.videoConfig, [key]: value } } : current);
   }
 
   function updateFeature(index: number, patch: Partial<AiFeatureConfig>) {
@@ -257,23 +279,46 @@ export function AdminAiConfigPage() {
       <AdminPageHeader eyebrow="AI MODEL CONFIG" title="模型配置" description="维护全局 AI 服务和每项功能使用的模型、接口与启用状态。" actions={<AdminButton icon="save" tone="primary" disabled={!config || busy} onClick={() => void save()}>{busy ? '保存中...' : '保存配置'}</AdminButton>} />
       {notice && <AdminNotice message={notice} tone={noticeTone} onClose={() => setNotice('')} />}
       {!config ? <AdminEmpty loading text="AI 配置加载中" /> : <>
-        <AdminPanel title="全局模型服务" description="更改全局模型时，会同步更新所有功能的默认模型映射。">
-          <div className="adminFormGrid">
-            <label><span>模型服务</span><select value={modelValue(config.providerConfig?.provider, config.providerConfig?.defaultModel)} onChange={(event) => selectGlobalModel(event.target.value)}>{modelOptions.map((option) => <option key={modelValue(option.provider, option.modelName)} value={modelValue(option.provider, option.modelName)}>{option.label}</option>)}</select></label>
-            <label><span>接口密钥</span><input type="password" placeholder={config.providerConfig?.apiKeyMasked || '保存后自动脱敏显示'} value={config.providerConfig?.apiKey || ''} onChange={(event) => updateProvider('apiKey', event.target.value)} /></label>
-            <label className="isFull"><span>接口路径地址</span><input value={config.providerConfig?.defaultApiPath || ''} onChange={(event) => updateProvider('defaultApiPath', event.target.value)} placeholder="https://example.com/v1/images/generations" /></label>
-            <label className="adminSwitch isFull"><input type="checkbox" checked={Boolean(config.providerConfig?.enabled)} onChange={(event) => updateProvider('enabled', event.target.checked)} /><span><b>启用 AI 生成功能</b><small>关闭后平台不再提交新的 AI 生成任务。</small></span></label>
-          </div>
-        </AdminPanel>
-        <AdminPanel title="功能模型映射" description="每项功能可以单独指定模型和接口地址。">
-          <div className="adminAiFeatureList">{(config.features || []).map((item, index) => <article key={item.featureKey}>
-            <header><div><span>{featureName(item.featureKey)}</span><small>{item.featureKey}</small></div><label className="adminCompactSwitch"><input type="checkbox" checked={Boolean(item.enabled)} onChange={(event) => updateFeature(index, { enabled: event.target.checked })} /><span /></label></header>
+        <div className="adminAiServiceGrid">
+          <AdminPanel title="图片模型服务" description="控制背景净化、材质替换、宣传图等图片生成功能。">
             <div className="adminFormGrid">
-              <label><span>模型来源</span><input readOnly value={item.provider || ''} /></label>
-              <label><span>模型名称</span><select value={modelValue(item.provider, item.modelName)} onChange={(event) => selectFeatureModel(index, event.target.value)}>{modelOptions.map((option) => <option key={modelValue(option.provider, option.modelName)} value={modelValue(option.provider, option.modelName)}>{option.label}</option>)}</select></label>
-              <label className="isFull"><span>接口路径地址</span><input value={item.apiPath || ''} onChange={(event) => updateFeature(index, { apiPath: event.target.value })} placeholder="可单独覆盖全局接口地址" /></label>
+              <label><span>模型服务</span><select value={modelValue(config.providerConfig?.provider, config.providerConfig?.defaultModel)} onChange={(event) => selectGlobalModel(event.target.value)}>{modelOptions.map((option) => <option key={modelValue(option.provider, option.modelName)} value={modelValue(option.provider, option.modelName)}>{option.label}</option>)}</select></label>
+              <label><span>接口密钥</span><input type="password" placeholder={config.providerConfig?.apiKeyMasked || '保存后自动脱敏显示'} value={config.providerConfig?.apiKey || ''} onChange={(event) => updateProvider('apiKey', event.target.value)} /></label>
+              <label className="isFull"><span>接口路径地址</span><input value={config.providerConfig?.defaultApiPath || ''} onChange={(event) => updateProvider('defaultApiPath', event.target.value)} placeholder="https://example.com/v1/images/generations" /></label>
+              <label className="adminSwitch isFull"><input type="checkbox" checked={Boolean(config.providerConfig?.enabled)} onChange={(event) => updateProvider('enabled', event.target.checked)} /><span><b>启用图片生成功能</b><small>关闭后不会再提交新的图片生成任务。</small></span></label>
             </div>
-          </article>)}</div>
+          </AdminPanel>
+
+          <AdminPanel className="adminVideoModelPanel" title="SD 2.0 参考生视频" description="独立维护宣传短视频使用的真实模型与任务查询接口。">
+            <div className="adminFormGrid adminVideoModelGrid">
+              <label><span>模型来源</span><input value={config.videoConfig?.provider || ''} onChange={(event) => updateVideoConfig('provider', event.target.value)} placeholder="seedance-reference" /></label>
+              <label><span>模型名称</span><input value={config.videoConfig?.modelName || ''} onChange={(event) => updateVideoConfig('modelName', event.target.value)} placeholder="kwvideo-v2-ref" /></label>
+              <label className="isFull"><span>服务基础地址</span><input value={config.videoConfig?.baseUrl || ''} onChange={(event) => updateVideoConfig('baseUrl', event.target.value)} placeholder="https://api.lk888.ai" /></label>
+              <label><span>创建任务路径</span><input value={config.videoConfig?.createPath || ''} onChange={(event) => updateVideoConfig('createPath', event.target.value)} placeholder="/v1/media/generate" /></label>
+              <label><span>查询任务路径</span><input value={config.videoConfig?.statusPath || ''} onChange={(event) => updateVideoConfig('statusPath', event.target.value)} placeholder="/v1/media/status" /></label>
+              <label className="isFull"><span>视频接口密钥</span><input type="password" placeholder={config.videoConfig?.apiKeyMasked || '留空时复用同域图片模型密钥'} value={config.videoConfig?.apiKey || ''} onChange={(event) => updateVideoConfig('apiKey', event.target.value)} /></label>
+              <label><span>请求超时（毫秒）</span><input type="number" min="10000" value={config.videoConfig?.timeoutMs ?? 120000} onChange={(event) => updateVideoConfig('timeoutMs', Number(event.target.value))} /></label>
+              <label><span>轮询间隔（毫秒）</span><input type="number" min="1000" value={config.videoConfig?.pollIntervalMs ?? 4000} onChange={(event) => updateVideoConfig('pollIntervalMs', Number(event.target.value))} /></label>
+              <label><span>最大并发任务</span><input type="number" min="1" value={config.videoConfig?.maxConcurrency ?? 2} onChange={(event) => updateVideoConfig('maxConcurrency', Number(event.target.value))} /></label>
+              <label><span>最大重试次数</span><input type="number" min="0" value={config.videoConfig?.maxRetries ?? 5} onChange={(event) => updateVideoConfig('maxRetries', Number(event.target.value))} /></label>
+              <div className="adminVideoStorageNote isFull"><AppIcon name="resources" /><div><b>参考图沿用现有图片 OSS</b><span>视频生成直接使用图片记录的 OSS 签名地址，不重复上传，也不需要单独配置视频图片存储。</span></div></div>
+              <label className="adminSwitch isFull"><input type="checkbox" checked={Boolean(config.videoConfig?.enabled)} onChange={(event) => updateVideoConfig('enabled', event.target.checked)} /><span><b>启用宣传短视频生成</b><small>关闭后保留历史任务，但不再提交新的视频任务。</small></span></label>
+            </div>
+          </AdminPanel>
+        </div>
+
+        <AdminPanel title="图片功能模型映射" description="仅配置图片功能；宣传短视频使用上方独立视频模型配置。">
+          <div className="adminAiFeatureList">{(config.features || []).filter((item) => item.featureKey !== 'video_generate').map((item) => {
+            const index = (config.features || []).findIndex((feature) => feature.featureKey === item.featureKey);
+            return <article key={item.featureKey}>
+              <header><div><span>{featureName(item.featureKey)}</span><small>{item.featureKey}</small></div><label className="adminCompactSwitch"><input type="checkbox" checked={Boolean(item.enabled)} onChange={(event) => updateFeature(index, { enabled: event.target.checked })} /><span /></label></header>
+              <div className="adminFormGrid">
+                <label><span>模型来源</span><input readOnly value={item.provider || ''} /></label>
+                <label><span>模型名称</span><select value={modelValue(item.provider, item.modelName)} onChange={(event) => selectFeatureModel(index, event.target.value)}>{modelOptions.map((option) => <option key={modelValue(option.provider, option.modelName)} value={modelValue(option.provider, option.modelName)}>{option.label}</option>)}</select></label>
+                <label className="isFull"><span>接口路径地址</span><input value={item.apiPath || ''} onChange={(event) => updateFeature(index, { apiPath: event.target.value })} placeholder="可单独覆盖图片模型接口地址" /></label>
+              </div>
+            </article>;
+          })}</div>
         </AdminPanel>
       </>}
     </div>

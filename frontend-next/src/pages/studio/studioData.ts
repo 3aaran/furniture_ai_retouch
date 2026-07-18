@@ -9,7 +9,8 @@ export type StudioFeatureKey =
   | 'multiview'
   | 'promo_main_image'
   | 'promo_poster_image'
-  | 'promo_detail_image';
+  | 'promo_detail_image'
+  | 'video_generate';
 
 export type StudioFeature = {
   key: StudioFeatureKey;
@@ -22,7 +23,7 @@ export type StudioFeature = {
 export const featureBranches = [
   { key: 'base', label: '基础' },
   { key: 'promotion', label: '宣传图' },
-  { key: 'video', label: '宣传短视频（开发中）', disabled: true },
+  { key: 'video', label: '宣传短视频' },
 ] as const;
 
 export const studioFeatures: StudioFeature[] = [
@@ -35,10 +36,15 @@ export const studioFeatures: StudioFeature[] = [
   { key: 'promo_main_image', group: 'promotion', label: '产品主图', desc: '生成干净高级的商品主图，适合电商首图和产品封面。', cost: 12 },
   { key: 'promo_poster_image', group: 'promotion', label: '广告海报图', desc: '生成带广告构图和留白的宣传海报，适合后期添加标题、价格和品牌信息。', cost: 12 },
   { key: 'promo_detail_image', group: 'promotion', label: '产品细节图', desc: '生成材质、纹理、工艺等局部细节图，适合详情页和宣传手册使用。', cost: 8 },
+  { key: 'video_generate', group: 'video', label: '参考生视频', desc: '使用 1 到 9 张家具参考图生成可播放的宣传短视频。', cost: 30 },
 ];
 
 export const resolutionOptions = ['1K', '2K', '4K'];
 export const ratioOptions = ['自适应', '1:1', '4:3', '3:4', '16:9'];
+export const videoVersionOptions = ['Mini', '快速', '标准'];
+export const videoDurationOptions = ['auto', '4', '5', '6', '8', '10', '12', '15'];
+export const videoResolutionOptions = ['480p', '720p', '1080p', '4K'];
+export const videoRatioOptions = ['adaptive', '16:9', '4:3', '1:1', '3:4', '9:16', '21:9'];
 
 export const resourceScopes = [
   { value: 'SYSTEM', label: '系统资源' },

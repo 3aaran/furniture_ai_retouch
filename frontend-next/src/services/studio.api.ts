@@ -1,4 +1,4 @@
-import { request, requestForm, withQuery } from './http';
+import { getAuthToken, request, requestForm, resolveApiUrl, withQuery } from './http';
 
 export type ImageUploadResult = {
   id: string;
@@ -110,6 +110,54 @@ export type AiTask = {
   user?: { quota?: number; merchantQuota?: number; [key: string]: unknown };
 };
 
+export type VideoTask = {
+  id: string;
+  mediaType: 'video';
+  featureKey?: string;
+  status: string;
+  providerStatus?: string;
+  progress?: number;
+  duration?: number | null;
+  durationSeconds?: number | null;
+  videoId?: string | null;
+  videoUrl?: string;
+  posterUrl?: string;
+  downloadUrl?: string;
+  prompt?: string;
+  userPrompt?: string;
+  finalPrompt?: string;
+  extraRequirements?: string[];
+  taskParams?: Record<string, unknown>;
+  version?: string;
+  resolution?: string;
+  aspectRatio?: string;
+  ratio?: string;
+  cost?: number;
+  errorMessage?: string;
+  failureCode?: string;
+  failureStage?: string;
+  clientRequestId?: string;
+  submittedAt?: string | null;
+  startedAt?: string | null;
+  finishedAt?: string | null;
+  events?: Array<{ eventType?: string; eventDetail?: string; createdAt?: string }>;
+  inputImages?: Array<{ id?: string; url?: string; role?: string; sortOrder?: number; originalName?: string }>;
+};
+
+export type CreateVideoTaskPayload = {
+  featureKey: 'video_generate';
+  clientRequestId: string;
+  imageIds: string[];
+  prompt: string;
+  extraRequirements?: string[];
+  version: 'Mini' | '快速' | '标准';
+  duration: 'auto' | number;
+  aspectRatio: string;
+  resolution: string;
+};
+
+export type StudioTask = AiTask | VideoTask;
+
 export type CreateAiTaskPayload = {
   featureKey: string;
   imageA: { imageId: string; url?: string; imageUrl?: string; name?: string };
@@ -130,6 +178,12 @@ type CreateAiTaskResponse = {
   task: AiTask;
   balance?: number;
   user?: AiTask['user'];
+};
+
+type CreateVideoTaskResponse = {
+  task: VideoTask;
+  balance?: number;
+  idempotent?: boolean;
 };
 
 export type UploadResourcePayload = {
@@ -215,6 +269,38 @@ export async function createAiTask(payload: CreateAiTaskPayload) {
     body: JSON.stringify(payload),
   });
   return { ...response.task, user: response.user ?? response.task.user };
+}
+
+export async function createVideoTask(payload: CreateVideoTaskPayload) {
+  const response = await request<CreateVideoTaskResponse>('/api/ai/video/tasks', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+  return { ...response.task, balance: response.balance, idempotent: response.idempotent };
+}
+
+export function fetchRecentVideoTasks(params: Record<string, string | number | undefined | null> = {}) {
+  return request<PagedResult<VideoTask>>(withQuery('/api/ai/video/tasks/recent', params));
+}
+
+export function fetchVideoTaskStatus(taskId: string) {
+  return request<VideoTask>(`/api/ai/video/tasks/${encodeURIComponent(taskId)}/status`);
+}
+
+export function fetchVideoTaskDetail(taskId: string) {
+  return request<VideoTask>(`/api/ai/video/tasks/${encodeURIComponent(taskId)}`);
+}
+
+export function deleteVideoTask(taskId: string) {
+  return request<{ message?: string }>(`/api/ai/video/tasks/${encodeURIComponent(taskId)}`, { method: 'DELETE' });
+}
+
+export function resolveAuthenticatedMediaUrl(url?: string | null) {
+  const resolved = resolveApiUrl(url);
+  if (!resolved || !/\/api\/videos\//.test(resolved)) return resolved;
+  const token = getAuthToken();
+  if (!token || /[?&]token=/.test(resolved)) return resolved;
+  return `${resolved}${resolved.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}`;
 }
 
 export function fetchAiTaskStatus(taskId: string) {

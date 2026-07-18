@@ -66,6 +66,15 @@
   overscroll-behavior: contain;
 }
 
+.studioPromptStack {
+  display: grid;
+  gap: 7px;
+}
+
+.studioPromptExtra {
+  min-height: 68px;
+}
+
 .studioReferenceCard {
   display: grid;
   gap: 8px;
@@ -146,6 +155,31 @@
   font-weight: 900;
 }
 
+.studioVideoSettings {
+  display: grid;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.studioVideoSettings .studioControlGroup {
+  display: grid;
+  gap: 7px;
+}
+
+.studioVideoSettings .studioControlGroup > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.studioVideoConstraint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
 .studioInlineControl {
   display: flex;
   align-items: center;
@@ -160,6 +194,11 @@
 .studioInlineControl > div {
   flex: 1 1 auto;
   min-width: 0;
+}
+
+.studioControlGroup button:disabled {
+  cursor: not-allowed;
+  opacity: .42;
 }
 
 .studioGenerateArea {

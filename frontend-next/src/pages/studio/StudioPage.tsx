@@ -14,6 +14,10 @@ import {
   resourceScopes,
   resolutionOptions,
   studioFeatures,
+  videoDurationOptions,
+  videoRatioOptions,
+  videoResolutionOptions,
+  videoVersionOptions,
   type FeatureGroup,
   type StudioFeatureKey,
 } from './studioData';
@@ -34,21 +38,30 @@ const featureIcons: Record<StudioFeatureKey, AppIconName> = {
   promo_main_image: 'document',
   promo_poster_image: 'promotion',
   promo_detail_image: 'eye',
+  video_generate: 'document',
 };
 import {
   createAiTask,
+  createVideoTask,
   deleteAiTask,
+  deleteVideoTask,
   fetchAiTaskStatus,
   fetchAiTaskDetail,
   fetchCategoryTree,
   fetchPublicSettings,
   fetchRecentAiTasks,
+  fetchRecentVideoTasks,
+  fetchVideoTaskDetail,
+  fetchVideoTaskStatus,
   fetchWorkbenchResources,
+  resolveAuthenticatedMediaUrl,
   uploadImage,
   uploadWorkbenchResource,
   type AiTask,
   type ImageUploadResult,
   type ResourceApiItem,
+  type StudioTask,
+  type VideoTask,
 } from '../../services/studio.api';
 import { getCurrentUser } from '../../services/auth.api';
 import { resolveApiUrl } from '../../services/http';
@@ -84,15 +97,34 @@ function isAuthRequiredMessage(message: string) {
   return /401|未登录|登录已过期/.test(message);
 }
 
-function taskToRecent(task: AiTask): RecentTask {
+function isVideoTask(task: StudioTask | RecentTask | null | undefined): task is VideoTask | (RecentTask & { mediaType: 'video' }) {
+  if (!task) return false;
+  if ('mediaType' in task && task.mediaType === 'video') return true;
+  return 'featureKey' in task && task.featureKey === 'video_generate';
+}
+
+function taskStatusText(task: StudioTask) {
+  const status = String(task.status || '').toLowerCase();
+  if ('statusLabel' in task && task.statusLabel) return task.statusLabel;
+  if (status === 'succeeded' || status === 'success') return '已完成';
+  if (status === 'queued' || status === 'pending') return '排队中';
+  if (status === 'running' || status === 'processing') return isVideoTask(task) && task.progress ? `生成中 ${task.progress}%` : '生成中';
+  if (status.includes('fail')) return '失败';
+  return task.status || '未知';
+}
+
+function taskToRecent(task: StudioTask): RecentTask {
+  const video = isVideoTask(task);
   return {
     id: task.id,
-    feature: task.featureName || task.featureKey || task.kind || 'AI 任务',
-    status: task.statusLabel || task.status || '未知',
-    resolution: task.resolution || '2K',
-    ratio: task.ratio || '自适应',
-    time: task.finishedAt ? '已完成' : task.submittedAt || task.createdAt ? new Date(task.submittedAt || task.createdAt || '').toLocaleTimeString() : '刚刚',
-    previewUrl: taskPreviewImageUrl(task),
+    feature: video ? '参考生视频' : task.featureName || task.featureKey || task.kind || 'AI 任务',
+    status: taskStatusText(task),
+    resolution: task.resolution || (video ? '720p' : '2K'),
+    ratio: video ? task.aspectRatio || task.ratio || 'adaptive' : task.ratio || '自适应',
+    time: task.finishedAt ? '已完成' : task.submittedAt || (!video && task.createdAt) ? new Date(task.submittedAt || (!video ? task.createdAt : '') || '').toLocaleTimeString() : '刚刚',
+    previewUrl: video ? resolveAuthenticatedMediaUrl(task.posterUrl) : taskPreviewImageUrl(task),
+    mediaType: video ? 'video' : 'image',
+    progress: video ? Number(task.progress || 0) : undefined,
     raw: task,
   };
 }
@@ -176,6 +208,12 @@ export function StudioPage() {
   const [assetLoading, setAssetLoading] = useState(false);
   const [assetError, setAssetError] = useState('');
   const [customPrompt, setCustomPrompt] = useState('');
+  const [videoExtraRequirements, setVideoExtraRequirements] = useState('');
+  const [videoVersion, setVideoVersion] = useState<'Mini' | '快速' | '标准'>('快速');
+  const [videoDuration, setVideoDuration] = useState<'auto' | number>('auto');
+  const [videoResolution, setVideoResolution] = useState('720p');
+  const [videoAspectRatio, setVideoAspectRatio] = useState('adaptive');
+  const [activeVideoTaskId, setActiveVideoTaskId] = useState('');
   const [resolution, setResolution] = useState('2K');
   const [ratio, setRatio] = useState('自适应');
   const [resourceKeyword, setResourceKeyword] = useState('');
@@ -196,6 +234,7 @@ export function StudioPage() {
   const [multiView, setMultiView] = useState('三角度视图');
   const [quota, setQuota] = useState(() => Number(getCurrentUserSnapshot()?.quota ?? DEFAULT_QUOTA));
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isVideoSubmitting, setIsVideoSubmitting] = useState(false);
   const [promoOptions, setPromoOptions] = useState({
     mainBackground: promoOptionChoices.mainBackground[0],
     mainComposition: promoOptionChoices.mainComposition[0],
@@ -209,7 +248,7 @@ export function StudioPage() {
     detailTextMode: promoOptionChoices.detailTextMode[0],
   });
   const [recentTasks, setRecentTasks] = useState<RecentTask[]>([]);
-  const [taskDetail, setTaskDetail] = useState<AiTask | null>(null);
+  const [taskDetail, setTaskDetail] = useState<StudioTask | null>(null);
   const [taskDetailLoading, setTaskDetailLoading] = useState(false);
 
   const currentFeature = studioFeatures.find((item) => item.key === featureKey) || studioFeatures[0];
@@ -217,9 +256,15 @@ export function StudioPage() {
   const currentCategory = resourceCategoryOptions.find((item) => item.name === mainCategory);
   const currentSubOptions = currentCategory?.subs || [];
   const isPromotionSelected = currentFeature.group === 'promotion';
+  const isVideoSelected = featureKey === 'video_generate';
   const needsResourceLibrary = featureKey === 'material' || featureKey === 'replace_bg';
   const selectedResourceItem = resourceItems.find((item) => String(item.id) === selectedResource) || null;
-  const taskDetailList = recentTasks.map((item) => item.raw).filter((item): item is AiTask => Boolean(item));
+  const taskDetailList = recentTasks.map((item) => item.raw).filter((item): item is StudioTask => Boolean(item));
+  const activeResolution = isVideoSelected ? videoResolution : resolution;
+  const activeRatio = isVideoSelected ? videoAspectRatio : ratio;
+  const activeResolutionOptions = isVideoSelected ? videoResolutionOptions : resolutionOptions;
+  const activeRatioOptions = isVideoSelected ? videoRatioOptions : ratioOptions;
+  const referenceImageLimit = isVideoSelected ? MAX_REFERENCE_IMAGES - 1 : MAX_REFERENCE_IMAGES;
 
   const visibleResourceItems = useMemo(() => {
     const targetType = featureKey === 'replace_bg' ? 'scene' : 'material';
@@ -282,14 +327,29 @@ export function StudioPage() {
 
   useEffect(() => {
     let cancelled = false;
-    fetchRecentAiTasks({ pageSize: 20 })
-      .then((data) => {
-        const items = Array.isArray(data) ? data : data.items;
-        if (!cancelled) setRecentTasks((items || []).map(taskToRecent));
-      })
-      .catch((error: Error) => {
-        if (!cancelled && !isAuthRequiredMessage(error.message)) notify(`最近任务加载失败：${error.message}`);
-      });
+    Promise.allSettled([
+      fetchRecentAiTasks({ pageSize: 20 }),
+      fetchRecentVideoTasks({ pageSize: 20 }),
+    ]).then(([imageResult, videoResult]) => {
+      if (cancelled) return;
+      const imageItems = imageResult.status === 'fulfilled'
+        ? (Array.isArray(imageResult.value) ? imageResult.value : imageResult.value.items || [])
+        : [];
+      const videoItems = videoResult.status === 'fulfilled' ? videoResult.value.items || [] : [];
+      const merged = [...imageItems, ...videoItems]
+        .sort((a, b) => new Date(b.submittedAt || (!isVideoTask(b) ? b.createdAt : '') || 0).getTime() - new Date(a.submittedAt || (!isVideoTask(a) ? a.createdAt : '') || 0).getTime())
+        .slice(0, 20);
+      setRecentTasks(merged.map(taskToRecent));
+      const unfinishedVideo = videoItems.find((item) => ['queued', 'pending', 'running', 'processing'].includes(String(item.status || '').toLowerCase()));
+      if (unfinishedVideo) {
+        setActiveVideoTaskId(unfinishedVideo.id);
+        void pollVideoTask(unfinishedVideo.id);
+      }
+      const failedMessage = imageResult.status === 'rejected'
+        ? imageResult.reason?.message
+        : videoResult.status === 'rejected' ? videoResult.reason?.message : '';
+      if (failedMessage && !isAuthRequiredMessage(String(failedMessage))) notify(`部分最近任务加载失败：${failedMessage}`);
+    });
     return () => { cancelled = true; };
   }, [notify]);
 
@@ -402,10 +462,6 @@ export function StudioPage() {
   }, [closeFeatureDrawer, featureDrawerOpen, featurePickerGroup, mobileConfigSheet, mobileRecentOpen]);
 
   function selectGroup(group: FeatureGroup) {
-    if (group === 'video') {
-      notify('宣传短视频正在开发中');
-      return;
-    }
     setFeatureGroup(group);
     const nextFeature = studioFeatures.find((item) => item.group === group);
     if (nextFeature) setFeatureKey(nextFeature.key);
@@ -415,10 +471,6 @@ export function StudioPage() {
   }
 
   function openFeatureGroup(group: FeatureGroup) {
-    if (group === 'video') {
-      notify('宣传短视频正在开发中');
-      return;
-    }
     if (isMobile) {
       selectGroup(group);
       return;
@@ -430,6 +482,7 @@ export function StudioPage() {
     const nextFeature = studioFeatures.find((item) => item.key === key);
     if (nextFeature) setFeatureGroup(nextFeature.group);
     setFeatureKey(key);
+    if (key === 'video_generate') setReferenceImages((current) => current.slice(0, MAX_REFERENCE_IMAGES - 1));
     setSelectedResource('');
     setFeaturePickerGroup(null);
     if (!isMobile) {
@@ -439,12 +492,14 @@ export function StudioPage() {
   }
 
   function chooseMobileResolution(value: string) {
-    setResolution(value);
+    if (isVideoSelected) setVideoResolution(value);
+    else setResolution(value);
     setMobileConfigSheet(null);
   }
 
   function chooseMobileRatio(value: string) {
-    setRatio(value);
+    if (isVideoSelected) setVideoAspectRatio(value);
+    else setRatio(value);
     setMobileConfigSheet(null);
   }
 
@@ -455,7 +510,7 @@ export function StudioPage() {
   async function uploadOne(file: File, target: 'source' | 'reference') {
     const local = localPreview(file);
     if (target === 'source') setSourceImage(local);
-    else setReferenceImages((current) => [...current, local].slice(0, MAX_REFERENCE_IMAGES));
+    else setReferenceImages((current) => [...current, local].slice(0, referenceImageLimit));
 
     try {
       const uploaded = await uploadImage(file);
@@ -489,7 +544,7 @@ export function StudioPage() {
       void uploadOne(images[0], 'source');
       return;
     }
-    const slots = MAX_REFERENCE_IMAGES - referenceImages.length;
+    const slots = referenceImageLimit - referenceImages.length;
     images.slice(0, Math.max(0, slots)).forEach((file) => void uploadOne(file, 'reference'));
   }
 
@@ -569,7 +624,7 @@ export function StudioPage() {
       return;
     }
     if (assetPickerTarget === 'reference') {
-      if (referenceImages.length >= MAX_REFERENCE_IMAGES) {
+      if (referenceImages.length >= referenceImageLimit) {
         notify('参考图数量已达上限');
         return;
       }
@@ -578,7 +633,7 @@ export function StudioPage() {
         notify('参考图已添加');
         return;
       }
-      setReferenceImages((current) => [...current, image].slice(0, MAX_REFERENCE_IMAGES));
+      setReferenceImages((current) => [...current, image].slice(0, referenceImageLimit));
       notify('已从资产库添加参考图');
     }
   }
@@ -621,18 +676,98 @@ export function StudioPage() {
     }
   }
 
+  async function pollVideoTask(taskId: string) {
+    let queryFailures = 0;
+    for (let index = 0; index < 180; index += 1) {
+      const delay = document.hidden ? 15000 : index < 2 ? 1500 : 5000;
+      await new Promise((resolve) => window.setTimeout(resolve, delay));
+      try {
+        const status = await fetchVideoTaskStatus(taskId);
+        queryFailures = 0;
+        setRecentTasks((current) => current.map((item) => item.id === taskId ? taskToRecent(status) : item));
+        setTaskDetail((current) => current?.id === taskId ? { ...current, ...status } : current);
+        const normalizedStatus = String(status.status || '').toLowerCase();
+        if (normalizedStatus === 'succeeded' || normalizedStatus === 'failed') {
+          setActiveVideoTaskId((current) => current === taskId ? '' : current);
+          notify(normalizedStatus === 'succeeded' ? '视频生成完成，可点击最近生成查看' : `视频生成失败：${status.errorMessage || '请查看任务详情'}`);
+          return;
+        }
+      } catch (error) {
+        queryFailures += 1;
+        if (queryFailures >= 3) notify(`视频状态暂时无法查询：${error instanceof Error ? error.message : '系统将继续重试'}`);
+      }
+    }
+    notify('视频仍在生成，请稍后刷新页面查看进度');
+  }
+
   async function generateTask() {
     if (!sourceImage?.imageId) {
-      notify(sourceImage?.status === 'uploading' ? '产品原图正在上传，请稍后' : '请先上传产品原图');
-      return;
-    }
-    if (needsResourceLibrary && !selectedResourceItem) {
-      notify(featureKey === 'replace_bg' ? '请先选择场景资源' : '请先选择材质资源');
+      notify(sourceImage?.status === 'uploading' ? '首张图片正在上传，请稍后' : isVideoSelected ? '请先上传至少 1 张参考图' : '请先上传产品原图');
       return;
     }
     const uploadingRef = referenceImages.find((item) => item.status === 'uploading');
     if (uploadingRef) {
       notify('参考图正在上传，请稍后');
+      return;
+    }
+
+    if (isVideoSelected) {
+      if (activeVideoTaskId) {
+        notify('已有视频任务正在生成，请等待完成后再提交');
+        return;
+      }
+      if (!customPrompt.trim()) {
+        notify('请填写视频画面和运动要求');
+        return;
+      }
+      if (videoVersion !== '标准' && ['1080p', '4K'].includes(videoResolution)) {
+        notify('Mini/快速版只支持 480p 或 720p');
+        return;
+      }
+      const imageIds = [sourceImage.imageId, ...referenceImages.map((item) => item.imageId)]
+        .filter((value): value is string => Boolean(value));
+      const uniqueImageIds = [...new Set(imageIds)].slice(0, MAX_REFERENCE_IMAGES);
+      if (!uniqueImageIds.length || uniqueImageIds.length > MAX_REFERENCE_IMAGES) {
+        notify('视频生成需要 1 到 9 张参考图');
+        return;
+      }
+      const clientRequestId = typeof crypto.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : `video-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      const extraRequirements = videoExtraRequirements
+        .split(/\r?\n|；/)
+        .map((item) => item.trim())
+        .filter(Boolean);
+      setIsVideoSubmitting(true);
+      notify('正在提交视频生成任务...');
+      try {
+        const task = await createVideoTask({
+          featureKey: 'video_generate',
+          clientRequestId,
+          imageIds: uniqueImageIds,
+          prompt: customPrompt.trim(),
+          extraRequirements,
+          version: videoVersion,
+          duration: videoDuration,
+          aspectRatio: videoAspectRatio,
+          resolution: videoResolution,
+        });
+        if (task.balance !== undefined) setQuota(Number(task.balance));
+        setActiveVideoTaskId(task.id);
+        setIsVideoSubmitting(false);
+        setRecentTasks((current) => [taskToRecent(task), ...current.filter((item) => item.id !== task.id)].slice(0, 20));
+        notify('视频任务已提交，可在最近生成查看进度');
+        void pollVideoTask(task.id);
+      } catch (error) {
+        setIsVideoSubmitting(false);
+        setActiveVideoTaskId('');
+        notify(`视频任务提交失败：${error instanceof Error ? error.message : '请稍后重试'}`);
+      }
+      return;
+    }
+
+    if (needsResourceLibrary && !selectedResourceItem) {
+      notify(featureKey === 'replace_bg' ? '请先选择场景资源' : '请先选择材质资源');
       return;
     }
     setIsGenerating(true);
@@ -666,40 +801,48 @@ export function StudioPage() {
     }
   }
 
-  async function openRecentTask(task: RecentTask | AiTask) {
+  async function openRecentTask(task: RecentTask | StudioTask) {
     const taskId = String(task.id || '');
     if (!taskId) return;
+    const raw = 'raw' in task ? task.raw : task;
+    const video = isVideoTask(raw || task);
     setTaskDetailLoading(true);
     try {
-      const detail = await fetchAiTaskDetail(taskId);
+      const detail = video ? await fetchVideoTaskDetail(taskId) : await fetchAiTaskDetail(taskId);
       setTaskDetail(detail);
-      setRecentTasks((current) => current.map((item) => item.id === taskId ? taskToRecent({ ...(item.raw || detail), ...detail }) : item));
+      setRecentTasks((current) => current.map((item) => item.id === taskId ? taskToRecent({ ...(item.raw || detail), ...detail } as StudioTask) : item));
     } catch (error) {
-      const fallback = 'raw' in task ? task.raw : task;
-      if (fallback) setTaskDetail(fallback);
+      if (raw) setTaskDetail(raw);
       notify(`任务详情读取失败：${error instanceof Error ? error.message : '请稍后重试'}`);
     } finally {
       setTaskDetailLoading(false);
     }
   }
 
-  async function deleteRecentTask(task: RecentTask | AiTask) {
+  async function deleteRecentTask(task: RecentTask | StudioTask) {
     const taskId = String(task.id || '');
     if (!taskId) return;
+    const raw = 'raw' in task ? task.raw : task;
     try {
-      await deleteAiTask(taskId);
+      if (isVideoTask(raw || task)) await deleteVideoTask(taskId);
+      else await deleteAiTask(taskId);
       setRecentTasks((current) => current.filter((item) => String(item.id) !== taskId));
       if (taskDetail?.id === taskId) setTaskDetail(null);
+      if (activeVideoTaskId === taskId) setActiveVideoTaskId('');
       notify('记录已删除');
     } catch (error) {
       notify(`删除失败：${error instanceof Error ? error.message : '请稍后重试'}`);
     }
   }
 
-  function continueTaskImage(task: RecentTask | AiTask, prefer: 'result' | 'source' = 'result') {
+  function continueTaskImage(task: RecentTask | StudioTask, prefer: 'result' | 'source' = 'result') {
     const raw = 'raw' in task ? task.raw : task;
     if (!raw) {
       notify('当前记录不可放入工作室');
+      return;
+    }
+    if (isVideoTask(raw)) {
+      notify('视频记录可直接播放或下载，不支持放入图片工作室');
       return;
     }
     const image = taskImageForStudio(raw, prefer);
@@ -711,6 +854,11 @@ export function StudioPage() {
     setTaskDetail(null);
     setMobileRecentOpen(false);
     notify('已放入工作室，可继续编辑');
+  }
+
+  function changeVideoVersion(value: 'Mini' | '快速' | '标准') {
+    setVideoVersion(value);
+    if (value !== '标准' && ['1080p', '4K'].includes(videoResolution)) setVideoResolution('720p');
   }
 
   function optionSelect(label: string, key: keyof typeof promoOptions, choices: string[]) {
@@ -736,6 +884,20 @@ export function StudioPage() {
   }
 
   function renderLeftConfig() {
+    if (featureKey === 'video_generate') {
+      return (
+        <div className="studioVideoGuide">
+          <div className="studioDescRow"><span><AppIcon name="document" size={18} /></span><p>{currentFeature.desc}</p></div>
+          <div className="studioConfigTitle">参考图要求</div>
+          <div className="studioOptionCard">
+            <div className="studioVideoGuideRow"><b>图片数量</b><span>产品原图计为第 1 张，最多再添加 8 张参考图。</span></div>
+            <div className="studioVideoGuideRow"><b>画面描述</b><span>右侧提示词为必填，请写清镜头运动、家具动作和场景氛围。</span></div>
+            <div className="studioVideoGuideRow"><b>生成状态</b><span>{activeVideoTaskId ? '当前已有任务生成中，可在最近生成查看进度。' : '当前可提交新的视频任务。'}</span></div>
+          </div>
+        </div>
+      );
+    }
+
     if (featureKey === 'material' || featureKey === 'replace_bg') {
         return (
           <>
@@ -802,10 +964,7 @@ export function StudioPage() {
         <aside id="studio-feature-panel" className={`studioSidePanel studioLeftPanel ${featureDrawerOpen ? 'isFeatureOpen' : ''}`.trim()} aria-hidden={isMobile && !featureDrawerOpen} inert={isMobile && !featureDrawerOpen}>
           {!isMobile && <>
             <div className="studioBranchTabs" aria-label="功能主分支">
-              {featureBranches.map((item) => {
-                const disabled = 'disabled' in item ? item.disabled : false;
-                return <button key={item.key} type="button" disabled={disabled} className={featureGroup === item.key ? 'isActive' : ''} onClick={() => openFeatureGroup(item.key)}><AppIcon name={branchIcons[item.key]} size={17} /><b>{item.label}</b></button>;
-              })}
+              {featureBranches.map((item) => <button key={item.key} type="button" className={featureGroup === item.key ? 'isActive' : ''} onClick={() => openFeatureGroup(item.key)}><AppIcon name={branchIcons[item.key]} size={17} /><b>{item.label}</b></button>)}
             </div>
             <div className="studioDivider" />
             <div className={featurePickerGroup ? 'studioFeatureList isPickerOpen' : 'studioFeatureList'}>{visibleFeatures.map((item) => <button key={item.key} type="button" className={featureKey === item.key ? 'isActive' : ''} onClick={() => chooseFeature(item.key)}><span><AppIcon name={featureIcons[item.key]} size={16} /></span><b>{item.label}</b></button>)}</div>
@@ -825,7 +984,7 @@ export function StudioPage() {
               <div className="studioMobileConfigBlock">
                 <span>生成类型</span>
                 <div className="studioMobileConfigChips">
-                  {featureBranches.filter((item) => item.key !== 'video').map((item) => <button key={item.key} type="button" className={featureGroup === item.key ? 'isActive' : ''} onClick={() => selectGroup(item.key)}><AppIcon name={branchIcons[item.key]} size={15} /><span>{item.label}</span></button>)}
+                  {featureBranches.map((item) => <button key={item.key} type="button" className={featureGroup === item.key ? 'isActive' : ''} onClick={() => selectGroup(item.key)}><AppIcon name={branchIcons[item.key]} size={15} /><span>{item.label}</span></button>)}
                 </div>
               </div>
               <div className="studioMobileConfigBlock">
@@ -844,7 +1003,7 @@ export function StudioPage() {
             <div className="studioMobileConfigBlock">
               <span>选择分辨率</span>
               <div className="studioMobileConfigChips">
-                {resolutionOptions.map((item) => <button key={item} type="button" className={resolution === item ? 'isActive' : ''} onClick={() => chooseMobileResolution(item)}>{item}</button>)}
+                {activeResolutionOptions.map((item) => <button key={item} type="button" disabled={isVideoSelected && videoVersion !== '标准' && ['1080p', '4K'].includes(item)} className={activeResolution === item ? 'isActive' : ''} onClick={() => chooseMobileResolution(item)}>{item}</button>)}
               </div>
             </div>
           )}
@@ -853,7 +1012,7 @@ export function StudioPage() {
             <div className="studioMobileConfigBlock">
               <span>选择比例</span>
               <div className="studioMobileConfigChips">
-                {ratioOptions.map((item) => <button key={item} type="button" className={ratio === item ? 'isActive' : ''} onClick={() => chooseMobileRatio(item)}>{item}</button>)}
+                {activeRatioOptions.map((item) => <button key={item} type="button" className={activeRatio === item ? 'isActive' : ''} onClick={() => chooseMobileRatio(item)}>{item === 'adaptive' ? '自适应' : item}</button>)}
               </div>
             </div>
           )}
@@ -868,10 +1027,10 @@ export function StudioPage() {
           <div className="studioMobileRecentList">
             {recentTasks.length ? recentTasks.slice(0, 8).map((task) => (
               <article key={task.id} onClick={() => void openRecentTask(task)}>
-                {task.previewUrl ? <img src={task.previewUrl} alt={task.feature} loading="lazy" decoding="async" /> : <i aria-hidden="true">图</i>}
+                {task.previewUrl ? <img src={task.previewUrl} alt={task.feature} loading="lazy" decoding="async" /> : <i aria-hidden="true">{task.mediaType === 'video' ? '视频' : '图'}</i>}
                 <div><b>{task.feature}</b><span>{task.status}</span><em>{task.resolution} · {task.ratio} · {task.time}</em></div>
                 <footer>
-                  <button type="button" aria-label="放入工作室" onClick={(event) => { event.stopPropagation(); continueTaskImage(task); }}><AppIcon name="edit" size={15} /></button>
+                  {task.mediaType !== 'video' && <button type="button" aria-label="放入工作室" onClick={(event) => { event.stopPropagation(); continueTaskImage(task); }}><AppIcon name="edit" size={15} /></button>}
                   <button type="button" aria-label="删除记录" onClick={(event) => { event.stopPropagation(); void deleteRecentTask(task); }}><AppIcon name="trash" size={15} /></button>
                 </footer>
               </article>
@@ -882,9 +1041,10 @@ export function StudioPage() {
         <StudioCanvasPanel
           title={currentFeature.label}
           description={currentFeature.desc}
-          featureModeLabel={featureGroup === 'base' ? '生图功能' : '宣传图'}
-          resolution={resolution}
-          ratio={ratio}
+          featureModeLabel={isVideoSelected ? '视频生成' : featureGroup === 'base' ? '生图功能' : '宣传图'}
+          sourceLabel={isVideoSelected ? '首张参考图' : '产品原图'}
+          resolution={activeResolution}
+          ratio={activeRatio}
           sourceImage={sourceImage}
           draggingSource={draggingSource}
           recentTasks={recentTasks}
@@ -908,27 +1068,36 @@ export function StudioPage() {
 
         <StudioSettingsPanel
           isPromotionSelected={isPromotionSelected}
+          isVideoSelected={isVideoSelected}
           customPrompt={customPrompt}
+          videoExtraRequirements={videoExtraRequirements}
+          videoVersion={videoVersion}
+          videoVersionOptions={videoVersionOptions}
+          videoDuration={videoDuration}
+          videoDurationOptions={videoDurationOptions}
           referenceImages={referenceImages}
-          maxReferenceImages={MAX_REFERENCE_IMAGES}
+          maxReferenceImages={referenceImageLimit}
           draggingReference={draggingRef}
-          resolution={resolution}
-          resolutionOptions={resolutionOptions}
-          ratio={ratio}
-          ratioOptions={ratioOptions}
+          resolution={activeResolution}
+          resolutionOptions={activeResolutionOptions}
+          ratio={activeRatio}
+          ratioOptions={activeRatioOptions}
           showOutputControls={!isMobile}
-          isGenerating={isGenerating}
+          isGenerating={isVideoSelected ? isVideoSubmitting || Boolean(activeVideoTaskId) : isGenerating}
           cost={currentFeature.cost}
           quota={quota}
           onPromptChange={setCustomPrompt}
+          onVideoExtraRequirementsChange={setVideoExtraRequirements}
+          onVideoVersionChange={changeVideoVersion}
+          onVideoDurationChange={setVideoDuration}
           onReferenceInput={(event) => handleFileInput(event, 'reference')}
           onReferenceDragOver={(event) => handleDragOver(event, 'reference')}
           onReferenceDragLeave={() => handleDragLeave('reference')}
           onReferenceDrop={(event) => handleDrop(event, 'reference')}
           onRemoveReference={removeReference}
           onSelectReferenceResource={() => openAssetPicker('reference')}
-          onResolutionChange={setResolution}
-          onRatioChange={setRatio}
+          onResolutionChange={isVideoSelected ? setVideoResolution : setResolution}
+          onRatioChange={isVideoSelected ? setVideoAspectRatio : setRatio}
           onGenerate={generateTask}
         />
         {assetPickerTarget && (

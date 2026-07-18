@@ -20,6 +20,9 @@ import { registerMerchantRoutes } from './routes/merchantRoutes.js';
 import { registerResourceCategoryRoutes } from './routes/resourceCategoryRoutes.js';
 import { registerProfileRoutes } from './routes/profileRoutes.js';
 import { registerWorkflowRoutes } from './routes/workflowRoutes.js';
+import { registerVideoRoutes } from './routes/videoRoutes.js';
+import { setVideoTaskWakeHandler } from './ai/videoTaskService.js';
+import { videoTaskWorker } from './ai/videoTaskWorker.js';
 import { recycleExpiredTrialAccount } from './services/trialAccountService.js';
 import { bindImageToResourceCategory } from './services/resourceBindingService.js';
 import { processStoredImage, processTypeForOperation } from './services/imageProcessService.js';
@@ -624,6 +627,8 @@ app.post('/api/announcements/:id/read', requireAuth, async (req,res)=>{
 
 registerAdminRoutes(app,{upload});
 registerWorkflowRoutes(app);
+registerVideoRoutes(app);
+setVideoTaskWakeHandler(() => videoTaskWorker.wake());
 
 registerResourceCategoryRoutes(app);
 
@@ -646,7 +651,7 @@ registerProfileRoutes(app,{upload});
 
 app.get('/api/settings/public', requireAuth, async (req,res)=>{
   const s=await getSettingsMap();
-  const keys=['cost_remove_bg','cost_replace_bg','cost_enhance','cost_material','cost_multiview','cost_lineart','resolution_multiplier_1k','resolution_multiplier_2k','resolution_multiplier_4k'];
+  const keys=['cost_remove_bg','cost_replace_bg','cost_enhance','cost_material','cost_multiview','cost_lineart','cost_video_generate','video_default_duration_seconds','video_max_duration_seconds','resolution_multiplier_1k','resolution_multiplier_2k','resolution_multiplier_4k'];
   res.json(Object.fromEntries(keys.map(k=>[k,s[k]])));
 });
 
@@ -1411,4 +1416,23 @@ app.post('/api/feedbacks', requireAuth, async (req,res)=>{
   res.json({message:'反馈已提交'});
 });
 
-app.listen(port,()=>console.log(`${APP_NAME} backend running on http://localhost:${port}`));
+const server=app.listen(port,()=>console.log(`${APP_NAME} backend running on http://localhost:${port}`));
+videoTaskWorker.start();
+
+let shuttingDown=false;
+async function shutdown(signal){
+  if(shuttingDown) return;
+  shuttingDown=true;
+  console.log(`[server] 收到 ${signal}，停止视频 worker 并关闭服务`);
+  videoTaskWorker.stop();
+  server.close(async error=>{
+    try{ await pool.end(); }
+    catch(dbError){ console.error('[server] 关闭数据库连接失败',dbError.message); }
+    if(error){
+      console.error('[server] 关闭 HTTP 服务失败',error.message);
+      process.exitCode=1;
+    }
+  });
+}
+process.once('SIGINT',()=>shutdown('SIGINT'));
+process.once('SIGTERM',()=>shutdown('SIGTERM'));

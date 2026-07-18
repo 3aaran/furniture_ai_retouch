@@ -458,6 +458,32 @@ export async function getStoredFileReadStream(imageOrUrl = '') {
   };
 }
 
+// 视频等大文件复用的路径上传原语；调用方负责临时文件生命周期。
+export async function saveFilePathToStorage(filePath, { storageKey, mimeType = 'application/octet-stream' } = {}) {
+  const cleanKey = String(storageKey || '').replace(/^\/+/, '');
+  if (!cleanKey) throw new Error('storageKey 不能为空');
+  if (isOssStorage()) {
+    try {
+      await getOssClient().put(cleanKey, filePath, {
+        mime: mimeType,
+        headers: { 'Content-Type': mimeType },
+        timeout: OSS_TIMEOUT_MS
+      });
+    } catch (err) {
+      throw withFailureStage(err, 'storage');
+    }
+  } else {
+    const finalPath = diskPathFromStorageKey(cleanKey);
+    fs.mkdirSync(path.dirname(finalPath), { recursive: true });
+    await fs.promises.rename(filePath, finalPath);
+  }
+  return {
+    storageProvider: STORAGE_PROVIDER,
+    storageKey: cleanKey,
+    url: publicUrlFromStorageKey(cleanKey)
+  };
+}
+
 export async function saveUploadedImage(file, { merchantId = null, userId = null, kind = 'original' } = {}) {
   if (!file) return null;
 
@@ -605,10 +631,12 @@ export async function getUserStorageSummary(conn, userId) {
 
 export async function refreshUserStorageUsage(conn, userId) {
   const [[sum]] = await conn.query(
-    'SELECT IFNULL(SUM(size_bytes),0) total FROM images WHERE user_id=? AND deleted_at IS NULL',
-    [userId]
+    `SELECT
+       (SELECT IFNULL(SUM(size_bytes),0) FROM images WHERE user_id=? AND deleted_at IS NULL) image_total,
+       (SELECT IFNULL(SUM(size_bytes),0) FROM videos WHERE user_id=? AND deleted_at IS NULL) video_total`,
+    [userId, userId]
   );
-  const total = Number(sum?.total || 0);
+  const total = Number(sum?.image_total || 0) + Number(sum?.video_total || 0);
   await conn.query('UPDATE users SET storage_used_bytes=? WHERE id=?', [total, userId]);
   return getUserStorageSummary(conn, userId);
 }

@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { AppIcon } from '../icons/AppIcon';
 import { fullTaskImageUrl, fullTaskSourceImageUrl, type TaskImageRecord } from './taskImageUrls';
+import { resolveAuthenticatedMediaUrl } from '../../services/studio.api';
+import { resolveApiUrl } from '../../services/http';
 import './TaskCompareModal.css';
 
 export type TaskCompareItem = TaskImageRecord & {
@@ -11,6 +13,15 @@ export type TaskCompareItem = TaskImageRecord & {
   kind?: string | null;
   status?: string | null;
   statusLabel?: string | null;
+  mediaType?: string | null;
+  videoUrl?: string | null;
+  posterUrl?: string | null;
+  progress?: number | string | null;
+  duration?: number | string | null;
+  durationSeconds?: number | string | null;
+  aspectRatio?: string | null;
+  errorMessage?: string | null;
+  inputImages?: Array<{ id?: string | number; url?: string | null; role?: string; sortOrder?: number }> | null;
   quotaUsed?: number | string | null;
   costUsed?: number | string | null;
   cost?: number | string | null;
@@ -60,7 +71,11 @@ function taskUser(item: TaskCompareItem) {
 }
 
 function taskSpec(item: TaskCompareItem) {
-  return [item.resolution, item.ratio, item.outputFormat?.resolution, item.outputFormat?.ratio].filter(Boolean).join(' / ') || '-';
+  return [item.resolution, item.aspectRatio, item.ratio, item.outputFormat?.resolution, item.outputFormat?.ratio].filter(Boolean).join(' / ') || '-';
+}
+
+function isVideoTask(item: TaskCompareItem) {
+  return String(item.mediaType || '').toLowerCase() === 'video' || item.featureKey === 'video_generate';
 }
 
 function quotaUsed(item: TaskCompareItem) {
@@ -95,18 +110,24 @@ export function TaskCompareModal<T extends TaskCompareItem>({
 
   if (!detail) return null;
 
-  const resultSrc = fullTaskImageUrl(detail);
-  const sourceSrc = fullTaskSourceImageUrl(detail);
+  const isVideo = isVideoTask(detail);
+  const videoSrc = isVideo ? resolveAuthenticatedMediaUrl(detail.videoUrl) : '';
+  const videoPoster = isVideo ? resolveAuthenticatedMediaUrl(detail.posterUrl) : '';
+  const resultSrc = isVideo ? videoSrc : fullTaskImageUrl(detail);
+  const sourceSrc = isVideo
+    ? resolveApiUrl(detail.inputImages?.[0]?.url) || fullTaskSourceImageUrl(detail)
+    : fullTaskSourceImageUrl(detail);
   const currentIndex = taskList.findIndex((item) => taskKey(item) === taskKey(detail));
   const total = taskList.length || 1;
   const feature = featureText(detail);
   const status = statusText(detail.status);
   const failed = String(detail.status || '').toUpperCase().includes('FAIL');
-  const prompt = firstText(detail.userPrompt, detail.detailUserPrompt, detail.settings?.userPrompt);
+  const prompt = firstText(detail.userPrompt, detail.detailUserPrompt, detail.settings?.userPrompt) || (isVideo ? firstText(detail.prompt) : '');
   const details = [
     ['任务编号', taskKey(detail) || '-'],
     ['生成账号', taskUser(detail)],
     ['生成规格', taskSpec(detail)],
+    ...(isVideo ? [['生成进度', `${Number(detail.progress || 0)}%`], ['视频时长', detail.durationSeconds || detail.duration ? `${detail.durationSeconds || detail.duration} 秒` : '自动']] : []),
     ['算力消耗', `${quotaUsed(detail) || '-'} 算力`],
     ['创建时间', formatTime(detail.createdAt || detail.submittedAt || detail.created_at)],
   ];
@@ -129,14 +150,18 @@ export function TaskCompareModal<T extends TaskCompareItem>({
         </header>
 
         <main className="compareDetailBody">
-          <section className="compareDetailImages" aria-label="图片对比">
+          <section className="compareDetailImages" aria-label={isVideo ? '视频任务详情' : '图片对比'}>
             <article className="compareDetailImageCard">
-              <header><h3>产品原图</h3><span>{sourceSrc ? '原始输入' : '未提供'}</span></header>
-              <div className="compareDetailImageStage">{sourceSrc ? <img src={sourceSrc} alt="产品原图" decoding="async" /> : <span>无原图</span>}</div>
+              <header><h3>{isVideo ? '首张参考图' : '产品原图'}</h3><span>{sourceSrc ? '原始输入' : '未提供'}</span></header>
+              <div className="compareDetailImageStage">{sourceSrc ? <img src={sourceSrc} alt={isVideo ? '首张参考图' : '产品原图'} decoding="async" /> : <span>无原图</span>}</div>
             </article>
             <article className="compareDetailImageCard">
-              <header><h3>生成结果</h3><span>{resultSrc ? 'AI 输出' : '未生成'}</span></header>
-              <div className="compareDetailImageStage">{resultSrc ? <img src={resultSrc} alt="生成结果" decoding="async" /> : <span>无生成图</span>}</div>
+              <header><h3>{isVideo ? '生成视频' : '生成结果'}</h3><span>{resultSrc ? 'AI 输出' : status}</span></header>
+              <div className="compareDetailImageStage">{isVideo
+                ? videoSrc
+                  ? <video src={videoSrc} poster={videoPoster || undefined} controls playsInline preload="metadata" />
+                  : <span>{failed ? detail.errorMessage || '视频生成失败' : `视频${status}`}</span>
+                : resultSrc ? <img src={resultSrc} alt="生成结果" decoding="async" /> : <span>无生成图</span>}</div>
             </article>
           </section>
 
@@ -144,8 +169,8 @@ export function TaskCompareModal<T extends TaskCompareItem>({
             <div className="compareDetailStatus"><div><span>任务详情</span><h2>{feature}</h2></div><em className={failed ? 'isFailed' : ''}>{detail.statusLabel || status}</em></div>
             <div className="compareDetailScroll"><dl className="compareDetailList">{details.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl><section className="compareDetailPrompt"><h3>生成要求</h3><p>{prompt || '无'}</p></section></div>
             <div className="compareDetailActions">
-              <button type="button" disabled={!resultSrc} onClick={() => resultSrc && window.open(resultSrc, '_blank', 'noopener,noreferrer')}><AppIcon name="download" />打开结果图</button>
-              {onContinueImage && <button className="isPrimary" type="button" disabled={!resultSrc} onClick={() => onContinueImage(detail, 'result')}><AppIcon name="studio" />放入工作室</button>}
+              <button type="button" disabled={!resultSrc} onClick={() => resultSrc && window.open(isVideo ? resolveAuthenticatedMediaUrl(detail.downloadUrl) || resultSrc : resultSrc, '_blank', 'noopener,noreferrer')}><AppIcon name="download" />{isVideo ? '下载视频' : '打开结果图'}</button>
+              {!isVideo && onContinueImage && <button className="isPrimary" type="button" disabled={!resultSrc} onClick={() => onContinueImage(detail, 'result')}><AppIcon name="studio" />放入工作室</button>}
               {onDelete && <button className="isDanger" type="button" onClick={() => onDelete(detail)}><AppIcon name="trash" />删除记录</button>}
             </div>
           </aside>

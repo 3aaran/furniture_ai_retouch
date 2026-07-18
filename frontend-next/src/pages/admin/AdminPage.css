@@ -1262,8 +1262,66 @@
   color: var(--text-muted);
 }
 
+.adminAiServiceGrid {
+  display: grid;
+  grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.adminAiServiceGrid > .adminPanel {
+  min-width: 0;
+}
+
+.adminVideoModelPanel {
+  border-color: rgba(var(--color-primary-rgb), .2);
+}
+
+.adminVideoModelGrid {
+  align-items: start;
+}
+
+.adminVideoStorageNote {
+  min-height: 64px;
+  padding: 12px;
+  border: 1px solid rgba(var(--color-primary-rgb), .16);
+  border-radius: var(--radius-md);
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 11px;
+  align-items: center;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.adminVideoStorageNote > svg {
+  width: 38px;
+  height: 38px;
+  padding: 8px;
+  border-radius: 12px;
+  background: var(--bg-card);
+}
+
+.adminVideoStorageNote > div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.adminVideoStorageNote b {
+  color: var(--text-main);
+  font-size: 13px;
+}
+
+.adminVideoStorageNote span {
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
 .adminAiFeatureList {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -1905,7 +1963,9 @@
     grid-template-columns: 180px minmax(0, 1fr);
   }
 
-  .adminSettingsGrid {
+  .adminSettingsGrid,
+  .adminAiServiceGrid,
+  .adminAiFeatureList {
     grid-template-columns: 1fr;
   }
 }

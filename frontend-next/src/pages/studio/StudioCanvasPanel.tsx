@@ -7,6 +7,7 @@ type StudioCanvasPanelProps = {
   title: string;
   description: string;
   featureModeLabel: string;
+  sourceLabel: string;
   resolution: string;
   ratio: string;
   sourceImage: StudioLocalImage | null;
@@ -34,6 +35,7 @@ export function StudioCanvasPanel({
   title,
   description,
   featureModeLabel,
+  sourceLabel,
   resolution,
   ratio,
   sourceImage,
@@ -78,7 +80,7 @@ export function StudioCanvasPanel({
       </div>
 
       <section className="studioMainBlock">
-        <div className="studioSourceHead"><b>产品原图</b>{sourceImage && <button type="button" onClick={onClearSource}>清除</button>}</div>
+        <div className="studioSourceHead"><b>{sourceLabel}</b>{sourceImage && <button type="button" onClick={onClearSource}>清除</button>}</div>
         <label
           className={`${draggingSource ? 'studioUploadBox isDragging' : 'studioUploadBox'}${sourceImage ? ' hasImage' : ''}`}
           onDragOver={onSourceDragOver}
@@ -87,7 +89,7 @@ export function StudioCanvasPanel({
         >
           <input type="file" accept="image/*" onChange={onSourceInput} />
           {sourceImage
-            ? <div className="studioPreviewWrap"><img src={sourceImage.url} alt="产品原图" /></div>
+            ? <div className="studioPreviewWrap"><img src={sourceImage.url} alt={sourceLabel} /></div>
             : <div className="studioUploadInner"><div><AppIcon name="plus" size={30} /></div><b>点击上传家具图片</b><em>或</em><button type="button" onClick={(event) => { event.preventDefault(); onSelectSourceResource(); }}>资产库</button></div>}
         </label>
       </section>
@@ -99,11 +101,11 @@ export function StudioCanvasPanel({
             {recentTasks.slice(0, 12).map((task) => (
               <article key={task.id}>
                 <button className="studioRecentPreview" type="button" onClick={() => onOpenRecentTask(task)}>
-                  {task.previewUrl ? <img src={task.previewUrl} alt={task.feature} loading="lazy" decoding="async" /> : <i aria-hidden="true">图</i>}
+                  {task.previewUrl ? <img src={task.previewUrl} alt={task.feature} loading="lazy" decoding="async" /> : <i aria-hidden="true">{task.mediaType === 'video' ? '视频' : '图'}</i>}
                   <b>{task.feature}</b>
                 </button>
                 <div className="studioRecentActions">
-                  <button type="button" aria-label="放入工作室" title="放入工作室" onClick={() => onContinueRecentTask(task)}><AppIcon name="edit" size={14} /></button>
+                  {task.mediaType !== 'video' && <button type="button" aria-label="放入工作室" title="放入工作室" onClick={() => onContinueRecentTask(task)}><AppIcon name="edit" size={14} /></button>}
                   <button type="button" aria-label="删除记录" title="删除记录" onClick={() => onDeleteRecentTask(task)}><AppIcon name="trash" size={14} /></button>
                 </div>
               </article>
