@@ -126,7 +126,7 @@ export function createVideoTaskService(options = {}) {
         const dbUser = await tx.lockUser(user.id);
         if (!dbUser || dbUser.status !== 'ACTIVE') throw new Error('账号不可用');
         const merchant = user.merchant_id ? await tx.lockMerchant(user.merchant_id) : null;
-        if (!merchant || merchant.status !== 'ACTIVE') throw new Error('所属门店不可用');
+        if (merchant && merchant.status !== 'ACTIVE') throw new Error('所属门店不可用');
 
         const images = await tx.listAuthorizedImages(normalized.imageIds, user);
         const imageById = new Map(images.map((image) => [String(image.id), image]));

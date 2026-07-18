@@ -108,6 +108,7 @@ export default {
       try { this.user = unwrapUser(await getCurrentUser({ showLoading: false, showErrorToast: false })) || {}; } catch (e) {}
     },
     async reload() {
+      if (!requireLogin(() => this.reload())) return;
       this.loading = true;
       this.errorText = '';
       try {
@@ -125,12 +126,14 @@ export default {
       }
     },
     changeStatus(e) {
+      if (!requireLogin(() => this.changeStatus(e))) return;
       const index = Number(e.detail.value) || 0;
       this.query.status = this.statusOptions[index]?.key || '';
       this.query.pageSize = 10;
       this.reload();
     },
     loadMore() {
+      if (!requireLogin(() => this.loadMore())) return;
       this.query.pageSize += 10;
       this.reload();
     },
@@ -141,6 +144,7 @@ export default {
       return `${Math.round(Number(value || 0) * 100)}%`;
     },
     copyText(text, label) {
+      if (!requireLogin(() => this.copyText(text, label))) return;
       if (!text) return uni.showToast({ title: `${label}为空`, icon: 'none' });
       uni.setClipboardData({ data: text, success: () => uni.showToast({ title: `${label}已复制`, icon: 'success' }) });
     },

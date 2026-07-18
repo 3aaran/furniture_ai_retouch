@@ -93,6 +93,7 @@ export default {
       try { this.user = unwrapUser(await getCurrentUser({ showLoading: false, showErrorToast: false })) || {}; } catch (e) {}
     },
     async reload() {
+      if (!requireLogin(() => this.reload())) return;
       this.loading = true;
       this.errorText = '';
       try {
@@ -108,10 +109,12 @@ export default {
       }
     },
     loadMore() {
+      if (!requireLogin(() => this.loadMore())) return;
       this.query.pageSize += 10;
       this.reload();
     },
     changeType(e) {
+      if (!requireLogin(() => this.changeType(e))) return;
       const index = Number(e.detail.value) || 0;
       this.query.type = this.typeOptions[index]?.key || '';
       this.query.pageSize = 10;

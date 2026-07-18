@@ -1,16 +1,16 @@
 {
   "pages": [
     {
-      "path": "pages/login/index",
+      "path": "pages/workbench/index",
       "style": {
-        "navigationBarTitleText": "登录",
+        "navigationBarTitleText": "工作室",
         "navigationStyle": "custom"
       }
     },
     {
-      "path": "pages/workbench/index",
+      "path": "pages/login/index",
       "style": {
-        "navigationBarTitleText": "工作室",
+        "navigationBarTitleText": "登录",
         "navigationStyle": "custom"
       }
     },

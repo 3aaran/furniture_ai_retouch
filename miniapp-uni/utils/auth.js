@@ -3,9 +3,8 @@ export const USER_KEY = 'user';
 export const QUOTA_KEY = 'quota';
 
 const LEGACY_TOKEN_KEY = 'miniapp_auth_token';
-const LOGIN_URL = '/pages/login/index';
-
-let isRedirectingLogin = false;
+const pendingLoginActions = [];
+let loginSheetRequested = false;
 
 export function getToken() {
   const token = uni.getStorageSync(TOKEN_KEY) || '';
@@ -40,28 +39,42 @@ export function isLoggedIn() {
   return Boolean(getToken());
 }
 
-function getCurrentRoute() {
-  const pages = getCurrentPages ? getCurrentPages() : [];
-  const currentPage = pages && pages.length ? pages[pages.length - 1] : null;
-  return currentPage && currentPage.route ? `/${currentPage.route}` : '';
+function queueLoginAction(action) {
+  if (typeof action !== 'function') return;
+  pendingLoginActions.push(action);
+  if (pendingLoginActions.length > 10) pendingLoginActions.shift();
 }
 
-export function requireLogin() {
+export function notifyLoginRequired(action) {
   if (isLoggedIn()) return true;
-
-  const currentRoute = getCurrentRoute();
-  if (currentRoute === LOGIN_URL) return false;
-  if (isRedirectingLogin) return false;
-
-  isRedirectingLogin = true;
-  uni.reLaunch({
-    url: LOGIN_URL,
-    complete() {
-      setTimeout(() => {
-        isRedirectingLogin = false;
-      }, 500);
-    }
-  });
-
+  queueLoginAction(action);
+  if (!loginSheetRequested) {
+    loginSheetRequested = true;
+    setTimeout(() => {
+      loginSheetRequested = false;
+      uni.$emit('auth:required');
+    }, 0);
+  }
   return false;
+}
+
+export function requireLogin(action) {
+  if (isLoggedIn()) return true;
+  if (typeof action === 'function') notifyLoginRequired(action);
+  return false;
+}
+
+export async function resumePendingLoginActions() {
+  const actions = pendingLoginActions.splice(0, pendingLoginActions.length);
+  for (const action of actions) {
+    try {
+      await Promise.resolve(action());
+    } catch (error) {
+      uni.showToast({ title: error?.message || '操作恢复失败，请重试', icon: 'none' });
+    }
+  }
+}
+
+export function clearPendingLoginActions() {
+  pendingLoginActions.splice(0, pendingLoginActions.length);
 }

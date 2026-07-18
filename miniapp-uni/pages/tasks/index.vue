@@ -56,8 +56,8 @@ export default {
   onReachBottom() { this.loadMore(); },
   methods: {
     async loadUser() { try { this.user = unwrapUser(await getCurrentUser({ showLoading: false, showErrorToast: false })) || {}; } catch (e) {} },
-    reload() { this.loadPage(1, true); },
-    loadMore() { if (!this.loading && !this.loadingMore && this.hasMore) this.loadPage(this.page + 1, false); },
+    reload() { if (!requireLogin(() => this.reload())) return; this.loadPage(1, true); },
+    loadMore() { if (!requireLogin(() => this.loadMore())) return; if (!this.loading && !this.loadingMore && this.hasMore) this.loadPage(this.page + 1, false); },
     async loadPage(nextPage, replace) {
       if (replace) this.loading = true; else this.loadingMore = true;
       this.errorText = '';
@@ -77,8 +77,8 @@ export default {
       const name = featureName(item.featureKey || item.operation || item.kind || item.type || '', item.featureName || item.operationName || item.kindName);
       return { ...item, id: item.id || item.taskId, featureName: name, featureShort: name.slice(0, 2), statusClass: String(item.status || 'success').toLowerCase(), createdAtText: fmtTime(item.createdAt || item.created_at), thumbnail: normalizeFileUrl(thumbnailOf(item)), original: normalizeFileUrl(originalOf(item)) };
     },
-    previewTask(task) { if (task.original) return uni.previewImage({ urls: [task.original], current: task.original }); uni.showToast({ title: '暂无图片可预览', icon: 'none' }); },
-    copyImageUrl(task) { if (!task.original) return uni.showToast({ title: '暂无图片链接', icon: 'none' }); uni.setClipboardData({ data: task.original, success: () => uni.showToast({ title: '原图链接已复制', icon: 'success' }) }); },
+    previewTask(task) { if (!requireLogin(() => this.previewTask(task))) return; if (task.original) return uni.previewImage({ urls: [task.original], current: task.original }); uni.showToast({ title: '暂无图片可预览', icon: 'none' }); },
+    copyImageUrl(task) { if (!requireLogin(() => this.copyImageUrl(task))) return; if (!task.original) return uni.showToast({ title: '暂无图片链接', icon: 'none' }); uni.setClipboardData({ data: task.original, success: () => uni.showToast({ title: '原图链接已复制', icon: 'success' }) }); },
     goMine() { uni.reLaunch({ url: '/pages/mine/index' }); }
   }
 };

@@ -48,10 +48,6 @@ export function wechatSilentLogin(payload) {
   return post('/api/auth/wechat/silent-login', payload, { auth: false, showLoading: false, showErrorToast: false }).then(saveLoginToken);
 }
 
-export function wechatPhoneLogin(payload) {
-  return post('/api/auth/wechat/phone-login', payload, { auth: false, loadingText: '登录中' }).then(saveLoginToken);
-}
-
 // 后端保留的旧登录验证码入口；小程序默认优先使用 /api/sms/send-code。
 export function sendAuthLoginCode(payload) {
   return post('/api/auth/send-code', payload, { auth: false, loadingText: '发送中' });

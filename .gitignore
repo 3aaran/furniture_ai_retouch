@@ -47,6 +47,7 @@ logs/
 *.sql
 !backend/sql/
 !backend/sql/2026-07-17-seedance-reference-video.sql
+!backend/sql/2026-07-19-wechat-openid-trial.sql
 *.sqlite
 *.sqlite3
 *.db
@@ -65,6 +66,7 @@ logs/
 .DS_Store
 Thumbs.db
 desktop.ini
+NUL
 
 # editor/IDE
 .vscode/

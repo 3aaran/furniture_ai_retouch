@@ -60,6 +60,7 @@ export default {
       try { this.user = unwrapUser(await getCurrentUser({ showLoading: false, showErrorToast: false })) || {}; } catch (e) {}
     },
     async submit() {
+      if (!requireLogin(() => this.submit())) return;
       const title = this.form.title.trim();
       const content = this.form.content.trim();
       if (!title) return uni.showToast({ title: '请输入反馈标题', icon: 'none' });

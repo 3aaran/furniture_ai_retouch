@@ -50,6 +50,16 @@ async function ensureIndex(table, indexName, definition) {
   }
 }
 
+async function ensureNullableColumn(table, column, definition) {
+  const [rows] = await pool.query(
+    'SELECT IS_NULLABLE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=? AND COLUMN_NAME=? LIMIT 1',
+    [table, column]
+  );
+  if (rows.length && rows[0].IS_NULLABLE !== 'YES') {
+    await pool.query(`ALTER TABLE ${table} MODIFY COLUMN ${column} ${definition} NULL`);
+  }
+}
+
 export async function initDb(){
   // AUTO_INIT_DB=false 用于线上跳过自动初始化。
   if (!envFlag('AUTO_INIT_DB', true)) {
@@ -279,7 +289,7 @@ export async function initDb(){
 
   await pool.query(`CREATE TABLE IF NOT EXISTS quota_logs (
     id VARCHAR(36) PRIMARY KEY,
-    merchant_id VARCHAR(36) NOT NULL,
+    merchant_id VARCHAR(36) NULL,
     operator_user_id VARCHAR(36) NULL,
     related_user_id VARCHAR(36) NULL,
     amount INT NOT NULL,
@@ -294,7 +304,7 @@ export async function initDb(){
     INDEX idx_related_task(related_task_id),
     INDEX idx_related_order(related_order_id)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`);
-
+  await ensureNullableColumn('quota_logs', 'merchant_id', 'VARCHAR(36)');
 
   await pool.query(`CREATE TABLE IF NOT EXISTS system_logs (
     id VARCHAR(36) PRIMARY KEY,
@@ -757,6 +767,7 @@ export async function initDb(){
     ['invite_new_store_reward_ratio','0.10'],
     ['invite_source_store_reward_ratio','0.05'],
     ['trial_account_hours','72'],
+    ['wechat_trial_initial_quota','50'],
     ['user_storage_limit_bytes',String(DEFAULT_USER_STORAGE_LIMIT_BYTES)],
     ['ai_generation_enabled','1'],
     ['notice_mail_enabled','1']

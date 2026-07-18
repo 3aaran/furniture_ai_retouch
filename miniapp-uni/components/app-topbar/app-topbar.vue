@@ -55,12 +55,17 @@
         </view>
       </view>
     </view>
+
+    <login-sheet />
   </view>
 </template>
 
 <script>
+import LoginSheet from '../login-sheet/login-sheet.vue';
+
 export default {
   name: 'AppTopbar',
+  components: { LoginSheet },
   props: {
     title: { type: String, default: '' },
     subtitle: { type: String, default: '' },

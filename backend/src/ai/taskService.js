@@ -402,9 +402,6 @@ export async function submitAiTask(payload, user) {
       }
     }
 
-    if (!merchant) {
-      throw new Error('当前账号未绑定门店，无法提交 AI 任务');
-    }
     const merchantQuotaMode = usesMerchantQuota(dbUser);
     const currentQuota = merchantQuotaMode ? Number(merchant?.quota_balance || 0) : Number(dbUser?.quota_balance || 0);
     if (currentQuota < cost) {

@@ -350,11 +350,20 @@ export default {
       return '按 Web 工作台默认参数生成';
     }
   },
+  onLoad() {
+    uni.$on('auth:success', this.handleAuthSuccess);
+  },
   onShow() {
+    this.applyPendingFeature();
+    this.applyPendingResource();
     if (!requireLogin()) return;
-    this.applyPendingFeature(); this.applyPendingResource(); this.loadData();
+    this.loadData();
+  },
+  onUnload() {
+    uni.$off('auth:success', this.handleAuthSuccess);
   },
   methods: {
+    handleAuthSuccess() { this.loadData(); },
     async loadData() {
       this.errorText = '';
       try { this.user = unwrapUser(await getCurrentUser({ showLoading: false, showErrorToast: false })) || {}; } catch (e) {}
@@ -401,7 +410,7 @@ export default {
       return { ...item, id: item.id || item.taskId, featureName: name, featureShort: name.slice(0, 2), statusText: statusText(item.status || 'success'), createdAtText: fmtTime(item.createdAt || item.created_at), thumbnail: normalizeFileUrl(thumbnailOf(item)), original: normalizeFileUrl(originalOf(item)) };
     },
     openDrawer(name) { this.activeDrawer = name; },
-    openResourceDrawer(target = 'reference') { this.resourcePickTarget = target; this.openDrawer('resources'); },
+    openResourceDrawer(target = 'reference') { if (!requireLogin(() => this.openResourceDrawer(target))) return; this.resourcePickTarget = target; this.openDrawer('resources'); },
     closeDrawer() { this.activeDrawer = ''; },
     selectFeatureGroup(key) {
       if (key === 'video') {
@@ -437,14 +446,14 @@ export default {
     applyPendingFeature() { const key = uni.getStorageSync(FEATURE_KEY); if (key && this.features.some((item) => item.key === key)) { this.selectedFeatureKey = key; const feature = this.features.find((item) => item.key === key); this.featureGroup = feature.group || 'base'; uni.removeStorageSync(FEATURE_KEY); } },
     applyPendingResource() { const resource = uni.getStorageSync(RESOURCE_KEY); if (resource && resource.id) { this.selectedResource = resource; uni.removeStorageSync(RESOURCE_KEY); } },
     chooseResourceUpload() { if (this.resourcePickTarget === 'origin') return this.chooseInputImage(); return this.chooseReferenceImage(); },
-    chooseInputImage() { if (this.uploadBusy) return; uni.chooseImage({ count: Math.max(1, 4 - this.inputImages.length), sizeType: ['original', 'compressed'], sourceType: ['album', 'camera'], success: async (res) => { for (const path of (res.tempFilePaths || [])) await this.uploadOne(path, 'source'); } }); },
-    chooseReferenceImage() { if (this.uploadBusy) return; uni.chooseImage({ count: 1, sizeType: ['original', 'compressed'], sourceType: ['album', 'camera'], success: async (res) => { const path = (res.tempFilePaths || [])[0]; if (path) await this.uploadOne(path, 'reference'); } }); },
+    chooseInputImage() { if (!requireLogin(() => this.chooseInputImage())) return; if (this.uploadBusy) return; uni.chooseImage({ count: Math.max(1, 4 - this.inputImages.length), sizeType: ['original', 'compressed'], sourceType: ['album', 'camera'], success: async (res) => { for (const path of (res.tempFilePaths || [])) await this.uploadOne(path, 'source'); } }); },
+    chooseReferenceImage() { if (!requireLogin(() => this.chooseReferenceImage())) return; if (this.uploadBusy) return; uni.chooseImage({ count: 1, sizeType: ['original', 'compressed'], sourceType: ['album', 'camera'], success: async (res) => { const path = (res.tempFilePaths || [])[0]; if (path) await this.uploadOne(path, 'reference'); } }); },
     async uploadOne(filePath, target = 'source') { this.uploadBusy = true; try { const response = await uploadImage(filePath, { source: target === 'reference' ? 'miniapp_workbench_reference' : 'miniapp_workbench' }); const image = response.image || response.data?.image || response.item || response.data || response; const next = { ...image, id: image.id || image.imageId, name: image.originalName || image.name || '上传图片', thumbnail: normalizeFileUrl(thumbnailOf(image)), original: normalizeFileUrl(originalOf(image)) }; if (target === 'reference') this.referenceImage = next; else this.inputImages.push(next); } catch (error) { this.errorText = error.message || '上传失败'; } finally { this.uploadBusy = false; } },
     previewOriginal(item = {}) { if (item.original) uni.previewImage({ urls: [item.original], current: item.original }); },
     changeRatio(e) { this.ratio = this.ratioOptions[Number(e.detail.value)] || this.ratio; },
     changeEnhanceAngle(e) { this.enhanceOpts.angle = this.enhanceAngles[Number(e.detail.value)] || '不变'; },
     buildOptions() { const base = { resolution: this.resolution, ratio: this.ratio }; if (this.isPromotionSelected) return { taskType: this.selectedFeatureKey === 'promo_main_image' ? 'PROMO_MAIN_IMAGE' : this.selectedFeatureKey === 'promo_poster_image' ? 'PROMO_POSTER_IMAGE' : 'PROMO_DETAIL_IMAGE', promotionType: this.currentFeature.name, ...base, ...(promotionOptionDefaults[this.selectedFeatureKey] || {}), ...(this.promotionOptions[this.selectedFeatureKey] || {}), promptTemplate: promotionPrompts[this.selectedFeatureKey], keepSubject: true, forbidGeneratedText: true, forbidLogo: true, forbidPeople: true }; if (this.selectedFeatureKey === 'material') { const tpl = this.selectedResource || {}; return { ...base, materialName: tpl.name || '', materialColor: tpl.colorName || '', materialCategory: tpl.subCategoryName || tpl.mainCategoryName || tpl.objectName || tpl.category || '', resourceName: tpl.name || '', templateName: tpl.name || '', keepStructure: true, keepAngle: true, keepProportion: true }; } if (this.selectedFeatureKey === 'replace_bg') { const tpl = this.selectedResource || {}; return { ...base, sceneType: tpl.name || tpl.subCategoryName || tpl.mainCategoryName || tpl.category || '真实室内商业场景', sceneName: tpl.name || '', sceneDesc: tpl.description || '', resourceName: tpl.name || '', templateName: tpl.name || '', keepLighting: true, keepPerspective: true }; } if (this.selectedFeatureKey === 'remove_bg') return { ...base, whiteBg: !!this.removeOpts.whiteBg, mirror: !!this.removeOpts.mirror, backgroundTone: this.removeOpts.whiteBg ? 'Pure white' : 'Warm white', shadowStyle: '柔和阴影' }; if (this.selectedFeatureKey === 'enhance') return { ...base, focus: !!this.enhanceOpts.focus, angle: this.enhanceOpts.angle, enhanceSharpness: true, enhanceLight: true, enhanceTexture: true, enhanceColor: true, commercialStyle: true }; if (this.selectedFeatureKey === 'lineart') return { ...base, lineStyle: 'Simple line art', lineColor: '黑色', keepDetailLevel: '中等', withShadow: false }; if (this.selectedFeatureKey === 'multiview') { const viewCount = this.multiView === '三角度视图' ? 3 : 4; return { ...base, view: this.multiView, viewCount, layoutType: viewCount === 3 ? '横排' : '宫格', backgroundStyle: '纯白' }; } return base; },
-    async submitTask() { if (!this.originImage) return uni.showToast({ title: '请先上传家具原图', icon: 'none' }); this.submitBusy = true; this.errorText = ''; try { const tpl = this.selectedResource; const referenceIds = this.referenceImage?.id ? [this.referenceImage.id] : []; const result = await createAiTask({ originImageId: this.originImage.id || this.originImage.imageId, featureKey: this.selectedFeatureKey, selectedResourceId: tpl?.id || null, selectedResourceSnapshot: tpl ? { id: tpl.id, imageId: tpl.id, name: tpl.name, resourceType: tpl.resourceType, mainCategoryName: tpl.mainCategoryName || tpl.objectName || '', subCategoryName: tpl.subCategoryName || tpl.colorName || '', imageUrl: tpl.original || tpl.imageUrl || tpl.url || '' } : null, functionalReferenceImageId: null, templatePrompt: tpl ? (tpl.description || tpl.name) : '', userPrompt: this.custom.trim(), userReferenceImageIds: referenceIds, referenceImageIds: referenceIds, resolution: this.resolution, ratio: this.ratio, options: this.buildOptions() }); if (result?.user) this.user = result.user; uni.showToast({ title: '任务已提交，正在生成', icon: 'success' }); await this.loadRecent(); this.openDrawer('recent'); } catch (error) { this.errorText = error.message || '任务提交失败'; } finally { this.submitBusy = false; } },
+    async submitTask() { if (!requireLogin(() => this.submitTask())) return; if (!this.originImage) return uni.showToast({ title: '请先上传家具原图', icon: 'none' }); this.submitBusy = true; this.errorText = ''; try { const tpl = this.selectedResource; const referenceIds = this.referenceImage?.id ? [this.referenceImage.id] : []; const result = await createAiTask({ originImageId: this.originImage.id || this.originImage.imageId, featureKey: this.selectedFeatureKey, selectedResourceId: tpl?.id || null, selectedResourceSnapshot: tpl ? { id: tpl.id, imageId: tpl.id, name: tpl.name, resourceType: tpl.resourceType, mainCategoryName: tpl.mainCategoryName || tpl.objectName || '', subCategoryName: tpl.subCategoryName || tpl.colorName || '', imageUrl: tpl.original || tpl.imageUrl || tpl.url || '' } : null, functionalReferenceImageId: null, templatePrompt: tpl ? (tpl.description || tpl.name) : '', userPrompt: this.custom.trim(), userReferenceImageIds: referenceIds, referenceImageIds: referenceIds, resolution: this.resolution, ratio: this.ratio, options: this.buildOptions() }); if (result?.user) this.user = result.user; uni.showToast({ title: '任务已提交，正在生成', icon: 'success' }); await this.loadRecent(); this.openDrawer('recent'); } catch (error) { this.errorText = error.message || '任务提交失败'; } finally { this.submitBusy = false; } },
     goHistory() { uni.reLaunch({ url: '/pages/tasks/index' }); },
     goMine() { uni.reLaunch({ url: '/pages/mine/index' }); }
   }

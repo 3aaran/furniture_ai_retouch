@@ -20,13 +20,13 @@
 
           <view class="wechat-card">
             <view class="wechat-head">
-              <text class="wechat-title">微信手机号快捷登录</text>
-              <text class="wechat-desc">点击按钮授权手机号后登录已开通账号</text>
+              <text class="wechat-title">微信一键登录</text>
+              <text class="wechat-desc">使用当前微信身份登录，不需要授权手机号</text>
             </view>
-            <button class="primary-btn wechat-btn" open-type="getPhoneNumber" :disabled="submitting || silentChecking" @getphonenumber="handleWechatPhoneLogin">
-              {{ submitting ? '登录中' : '微信授权登录' }}
+            <button class="primary-btn wechat-btn" :disabled="submitting" @click="handleWechatLogin">
+              {{ submitting ? '登录中' : '微信一键登录' }}
             </button>
-            <text class="wechat-tip">授权后只用手机号匹配已开通账号，不发送验证码，不自动创建陌生账号。</text>
+            <text class="wechat-tip">首次登录会创建独立体验账号；已有微信账号会直接恢复登录。</text>
           </view>
 
           <view class="manual-toggle" @click="manualOpen = !manualOpen">
@@ -120,7 +120,7 @@
 </template>
 
 <script>
-import { loginByCode, loginByPassword, sendSmsCode, submitMerchantApplication, verifySmsCode, wechatPhoneLogin, wechatSilentLogin } from '../../api/auth.js';
+import { loginByCode, loginByPassword, sendSmsCode, submitMerchantApplication, verifySmsCode, wechatSilentLogin } from '../../api/auth.js';
 import { getToken } from '../../utils/request.js';
 
 const PHONE_RE = /^1[3-9]\d{9}$/;
@@ -129,7 +129,6 @@ export default {
   data() {
     return {
       submitting: false,
-      silentChecking: false,
       manualOpen: false,
       authMode: 'login',
       mode: 'password',
@@ -193,46 +192,20 @@ export default {
         });
       });
     },
-    async tryWechatSilentLogin() {
-      if (getToken()) {
-        this.redirectAfterLogin();
-        return;
-      }
-      this.silentChecking = true;
-      try {
-        const code = await this.getWechatLoginCode();
-        const result = await wechatSilentLogin({ code });
-        if (getToken() || result?.token || result?.accessToken) {
-          this.redirectAfterLogin();
-          return;
-        }
-        if (result?.needPhoneAuth) this.errorText = '';
-      } catch (error) {
-        this.errorText = '';
-      } finally {
-        this.silentChecking = false;
-      }
-    },
-    async handleWechatPhoneLogin(e) {
-      const detail = e?.detail || {};
-      if (!detail.code) {
-        if (detail.errMsg && detail.errMsg.indexOf('deny') >= 0) this.errorText = '需要授权手机号后才能快捷登录';
-        else this.errorText = detail.errMsg || '未获取到微信手机号授权';
-        return;
-      }
+    async handleWechatLogin() {
       this.errorText = '';
       this.submitting = true;
       try {
-        const loginCode = await this.getWechatLoginCode();
-        await wechatPhoneLogin({ loginCode, phoneCode: detail.code });
-        if (!getToken()) {
-          this.errorText = '微信登录接口未返回 token，请检查后端返回结构。';
+        const code = await this.getWechatLoginCode();
+        const result = await wechatSilentLogin({ code });
+        if (!getToken() && !result?.token && !result?.accessToken) {
+          this.errorText = result?.message || '微信登录接口未返回 token，请检查后端返回结构。';
           return;
         }
         uni.showToast({ title: '登录成功', icon: 'success' });
         setTimeout(() => this.redirectAfterLogin(), 250);
       } catch (error) {
-        this.errorText = error.message || '微信授权登录失败';
+        this.errorText = error.message || '微信登录失败';
       } finally {
         this.submitting = false;
       }

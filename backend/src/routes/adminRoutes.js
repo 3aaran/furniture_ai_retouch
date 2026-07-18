@@ -108,7 +108,7 @@ export function registerAdminRoutes(app,{upload}){
   
   app.patch('/api/admin/settings', requireAuth, async (req,res)=>{
     if(!isSystemAdmin(req.user)) return res.status(403).json({message:SYSTEM_ADMIN_REQUIRED_MESSAGE});
-    const allowed=['recharge_ratio','income_per_quota','cost_per_ai_quota','cost_remove_bg','cost_replace_bg','cost_enhance','cost_material','cost_multiview','cost_lineart','cost_video_generate','video_default_duration_seconds','video_max_duration_seconds','announcement_retention_days','announcement_user_max_count','resolution_multiplier_1k','resolution_multiplier_2k','resolution_multiplier_4k','cost_resolution_1k','cost_resolution_2k','cost_resolution_4k','invite_new_store_reward_ratio','invite_source_store_reward_ratio','trial_account_hours','user_storage_limit_bytes'];
+    const allowed=['recharge_ratio','income_per_quota','cost_per_ai_quota','cost_remove_bg','cost_replace_bg','cost_enhance','cost_material','cost_multiview','cost_lineart','cost_video_generate','video_default_duration_seconds','video_max_duration_seconds','announcement_retention_days','announcement_user_max_count','resolution_multiplier_1k','resolution_multiplier_2k','resolution_multiplier_4k','cost_resolution_1k','cost_resolution_2k','cost_resolution_4k','invite_new_store_reward_ratio','invite_source_store_reward_ratio','trial_account_hours','wechat_trial_initial_quota','user_storage_limit_bytes'];
     for(const k of allowed){
       if(req.body[k]!==undefined){
         const parsedLimit=k==='user_storage_limit_bytes'?parseStorageLimitBytes(req.body[k]):null;

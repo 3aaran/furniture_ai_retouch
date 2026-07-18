@@ -150,9 +150,11 @@ export default {
       this.query.mainCategory = mainCategory;
     },
     reload() {
+      if (!requireLogin(() => this.reload())) return;
       this.loadPage(1, true);
     },
     loadMore() {
+      if (!requireLogin(() => this.loadMore())) return;
       if (!this.loading && !this.loadingMore && this.hasMore) this.loadPage(this.query.page + 1, false);
     },
     async loadPage(page, replace) {
@@ -253,6 +255,7 @@ export default {
       });
     },
     useInWorkbench(item) {
+      if (!requireLogin(() => this.useInWorkbench(item))) return;
       uni.setStorageSync(RESOURCE_KEY, item);
       uni.reLaunch({ url: '/pages/workbench/index' });
     },

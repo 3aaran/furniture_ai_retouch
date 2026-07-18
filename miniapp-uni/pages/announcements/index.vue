@@ -78,6 +78,7 @@ export default {
       try { this.user = unwrapUser(await getCurrentUser({ showLoading: false, showErrorToast: false })) || {}; } catch (e) {}
     },
     async reload() {
+      if (!requireLogin(() => this.reload())) return;
       this.loading = true;
       this.errorText = '';
       try {
@@ -92,6 +93,7 @@ export default {
       }
     },
     async openNotice(item) {
+      if (!requireLogin(() => this.openNotice(item))) return;
       this.selected = item;
       if (item.isRead) return;
       item.isRead = true;

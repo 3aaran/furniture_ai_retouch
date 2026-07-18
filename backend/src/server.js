@@ -183,6 +183,52 @@ async function loginResponseForUser(user) {
   const [[fresh]] = await pool.query('SELECT * FROM users WHERE id=? LIMIT 1', [user.id]);
   return { token: sign(fresh || user), user: await publicMe(fresh || user) };
 }
+
+async function createWechatTrialUser(session) {
+  const openid = String(session?.openid || '').trim();
+  if (!openid) throw new Error('微信登录身份无效');
+  const settings = await getSettingsMap();
+  const quota = Math.max(0, Math.floor(Number(settings.wechat_trial_initial_quota || 50)));
+  const username = `WX${crypto.createHash('sha256').update(openid).digest('hex').slice(0, 16).toUpperCase()}`;
+  const id = uuid();
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+    const [[existing]] = await conn.query('SELECT * FROM users WHERE wechat_openid=? AND status<>"DELETED" LIMIT 1 FOR UPDATE', [openid]);
+    if (existing) {
+      await conn.commit();
+      return { user: existing, created: false };
+    }
+    await conn.query(
+      `INSERT INTO users(
+        id,merchant_id,phone,username,display_name,company_name,password_hash,
+        wechat_openid,wechat_unionid,wechat_bound_at,role,quota_balance,status,trial_expire_at
+      ) VALUES(?,NULL,NULL,?,'微信体验用户',NULL,NULL,?,?,NOW(),'TRIAL',?,'ACTIVE',NULL)`,
+      [id, username, openid, session.unionid || null, quota]
+    );
+    if (quota > 0) {
+      await conn.query(
+        `INSERT INTO quota_logs(
+          id,merchant_id,operator_user_id,related_user_id,amount,type,balance_after,remark
+        ) VALUES(?,NULL,?,?,?,'MANUAL_ADJUST',?,'微信首次登录体验额度')`,
+        [uuid(), id, id, quota, quota]
+      );
+    }
+    const [[user]] = await conn.query('SELECT * FROM users WHERE id=? LIMIT 1', [id]);
+    await conn.commit();
+    return { user, created: true };
+  } catch (error) {
+    await conn.rollback();
+    if (error?.code === 'ER_DUP_ENTRY') {
+      const [[user]] = await pool.query('SELECT * FROM users WHERE wechat_openid=? AND status<>"DELETED" LIMIT 1', [openid]);
+      if (user) return { user, created: false };
+    }
+    throw error;
+  } finally {
+    conn.release();
+  }
+}
+
 async function getWechatPhoneIdentityStatus(phone) {
   const [users] = await pool.query('SELECT * FROM users WHERE phone=? AND status<>"DELETED" LIMIT 1', [phone]);
   if (users[0]) return { type: 'USER', user: users[0] };
@@ -423,13 +469,10 @@ app.post('/api/auth/wechat/silent-login', async (req,res)=>{
   try {
     const session = await getWechatSession(req.body.code);
     const [rows] = await pool.query('SELECT * FROM users WHERE wechat_openid=? AND status<>"DELETED" LIMIT 1', [session.openid]);
-    const user = rows[0];
-    if (!user) {
-      return res.json({ success: true, needPhoneAuth: true, message: '请授权手机号完成登录' });
-    }
-    return res.json({ ...(await loginResponseForUser(user)), success: true, needPhoneAuth: false });
+    const account = rows[0] ? { user: rows[0], created: false } : await createWechatTrialUser(session);
+    return res.json({ ...(await loginResponseForUser(account.user)), success: true, needPhoneAuth: false, created: account.created });
   } catch (e) {
-    return res.status(e.status || 500).json({ success: false, message: e.message || '微信静默登录失败' });
+    return res.status(e.status || 500).json({ success: false, message: e.message || '微信登录失败' });
   }
 });
 

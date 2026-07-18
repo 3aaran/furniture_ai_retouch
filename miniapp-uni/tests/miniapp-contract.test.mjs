@@ -12,10 +12,11 @@ function readJsonc(file) {
   return JSON.parse(text);
 }
 
-test('miniapp starts at login and does not register a separate home page', () => {
+test('miniapp starts at workbench and keeps login as an on-demand page', () => {
   const config = readJsonc('pages.json');
   const pages = config.pages.map(item => item.path);
-  assert.equal(pages[0], 'pages/login/index');
+  assert.equal(pages[0], 'pages/workbench/index');
+  assert.ok(pages.includes('pages/login/index'));
   assert.ok(!pages.includes('pages/index/index'));
 
   const legacyHome = read('pages/index/index.vue');
@@ -143,31 +144,58 @@ test('workbench distinguishes product origin resource selection from reference r
   assert.match(workbench, /resourcePickTarget === 'origin'/);
 });
 
-test('miniapp login shows auth page without automatic silent login', () => {
+test('miniapp uses on-demand OPENID login instead of phone-number authorization', () => {
   const login = read('pages/login/index.vue');
+  const loginSheet = read('components/login-sheet/login-sheet.vue');
+  const topbar = read('components/app-topbar/app-topbar.vue');
+  const auth = read('utils/auth.js');
+  const request = read('utils/request.js');
   const authApi = read('api/auth.js');
   const server = fs.readFileSync(new URL('../../backend/src/server.js', import.meta.url), 'utf8');
+  const taskService = fs.readFileSync(new URL('../../backend/src/ai/taskService.js', import.meta.url), 'utf8');
+  const videoTaskService = fs.readFileSync(new URL('../../backend/src/ai/videoTaskService.js', import.meta.url), 'utf8');
+  const merchantRoutes = fs.readFileSync(new URL('../../backend/src/routes/merchantRoutes.js', import.meta.url), 'utf8');
   const db = fs.readFileSync(new URL('../../backend/src/db.js', import.meta.url), 'utf8');
 
-  assert.match(login, /open-type="getPhoneNumber"/);
-  assert.match(login, /@getphonenumber="handleWechatPhoneLogin"/);
-  assert.match(login, /tryWechatSilentLogin/);
-  assert.doesNotMatch(login, /onLoad\(\)\s*\{[\s\S]*tryWechatSilentLogin/);
-  assert.match(login, /onShow\(\)\s*\{[\s\S]*getToken\(\)[\s\S]*redirectAfterLogin\(\)/);
-  assert.match(login, /wechatSilentLogin/);
-  assert.match(login, /wechatPhoneLogin/);
+  assert.doesNotMatch(`${login}
+${loginSheet}`, /getPhoneNumber|handleWechatPhoneLogin|wechatPhoneLogin/);
+  assert.match(loginSheet, /微信一键登录/);
+  assert.match(loginSheet, /wechatSilentLogin/);
+  assert.match(loginSheet, /uni\.\$on\('auth:required'/);
+  assert.match(topbar, /<login-sheet/);
+  assert.match(auth, /pendingLoginActions/);
+  assert.match(auth, /uni\.\$emit\('auth:required'/);
+  assert.match(auth, /resumePendingLoginActions/);
+  assert.match(request, /notifyLoginRequired/);
+  assert.doesNotMatch(request, /reLaunch\(\{[\s\S]*pages\/login\/index/);
   assert.match(authApi, /\/api\/auth\/wechat\/silent-login/);
-  assert.match(authApi, /\/api\/auth\/wechat\/phone-login/);
-  assert.match(server, /app\.post\('\/api\/auth\/wechat\/silent-login'/);
-  assert.match(server, /app\.post\('\/api\/auth\/wechat\/phone-login'/);
-  assert.match(server, /jscode2session/);
-  assert.match(server, /getuserphonenumber/);
-  assert.match(server, /getWechatPhoneIdentityStatus/);
-  assert.match(server, /APPLICATION_PENDING/);
-  assert.match(server, /NOT_FOUND/);
-  assert.match(login, /不发送验证码/);
+  assert.match(server, /createWechatTrialUser/);
+  assert.match(server, /wechat_trial_initial_quota/);
+  assert.match(server, /微信首次登录体验额度/);
+  assert.match(server, /beginTransaction\(\)/);
+  assert.match(server, /TRIAL/);
+  assert.doesNotMatch(taskService, /当前账号未绑定门店，无法提交 AI 任务/);
+  assert.match(videoTaskService, /if \(merchant && merchant\.status !== 'ACTIVE'\)/);
+  assert.match(merchantRoutes, /app\.get\('\/api\/merchant\/quota-logs', requireAuth/);
+  assert.doesNotMatch(merchantRoutes, /需要商家账号/);
+  assert.match(db, /merchant_id VARCHAR\(36\) NULL/);
   assert.match(db, /wechat_openid/);
-  assert.match(db, /wechat_bound_at/);
+  assert.match(db, /wechat_trial_initial_quota/);
+});
+
+test('page entry stays browsable while protected workbench actions request login', () => {
+  const pageFiles = readJsonc('pages.json').pages
+    .map(item => `${item.path}.vue`)
+    .filter(file => file !== 'pages/login/index.vue');
+  for (const file of pageFiles) {
+    const source = read(file);
+    assert.doesNotMatch(source, /onShow\(\)\s*\{[\s\S]{0,100}notifyLoginRequired/);
+  }
+
+  const workbench = read('pages/workbench/index.vue');
+  assert.match(workbench, /chooseInputImage\(\)\s*\{[\s\S]*requireLogin\(\(\) => this\.chooseInputImage\(\)\)/);
+  assert.match(workbench, /chooseReferenceImage\(\)\s*\{[\s\S]*requireLogin\(\(\) => this\.chooseReferenceImage\(\)\)/);
+  assert.match(workbench, /submitTask\(\)\s*\{[\s\S]*requireLogin\(\(\) => this\.submitTask\(\)\)/);
 });
 
 test('miniapp visual system follows frontend-next palette and brand mark', () => {

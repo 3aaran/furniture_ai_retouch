@@ -36,14 +36,15 @@
       </view>
     </view>
 
-    <button class="secondary-btn logout-btn" @click="logout">退出登录</button>
+    <button v-if="loggedIn" class="secondary-btn logout-btn" @click="logout">退出登录</button>
+    <button v-else class="primary-btn logout-btn" @click="login">登录后查看账号信息</button>
   </view>
 </template>
 
 <script>
 import AppTopbar from '../../components/app-topbar/app-topbar.vue';
 import { getCurrentUser } from '../../api/user.js';
-import { clearLoginState, requireLogin } from '../../utils/auth.js';
+import { clearLoginState, isLoggedIn, notifyLoginRequired, requireLogin } from '../../utils/auth.js';
 import { displayName, roleText, unwrapUser, userQuota } from '../../utils/model.js';
 
 export default {
@@ -60,9 +61,10 @@ export default {
     topbarAvatar() { return this.displayNameText.slice(0, 1); },
     roleLine() { return roleText(this.user.role); },
     merchantName() { return this.user.companyName || this.user.company || this.user.merchantName || this.user.merchant?.name || ''; },
+    loggedIn() { return Boolean(this.user?.id) || isLoggedIn(); },
     statusText() {
       const map = { ACTIVE: '启用', DISABLED: '禁用', enabled: '启用', disabled: '禁用' };
-      return map[this.user.status] || this.user.status || '-';
+      return map[this.user.status] || this.user.status || (this.loggedIn ? '-' : '未登录');
     }
   },
   onShow() {
@@ -82,9 +84,11 @@ export default {
     goQuota() { uni.navigateTo({ url: '/pages/quota/index' }); },
     goFeedback() { uni.navigateTo({ url: '/pages/feedback/index' }); },
     goAnnouncements() { uni.navigateTo({ url: '/pages/announcements/index' }); },
+    login() { notifyLoginRequired(() => this.loadUser()); },
     logout() {
       clearLoginState();
-      uni.reLaunch({ url: '/pages/login/index' });
+      this.user = {};
+      uni.reLaunch({ url: '/pages/workbench/index' });
     }
   }
 };

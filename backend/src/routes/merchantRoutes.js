@@ -124,11 +124,15 @@ export function registerMerchantRoutes(app,deps){
     };
   }
 
-  app.get('/api/merchant/quota-logs', ...merchantOnly, async (req,res)=>{
-    if(!req.user.merchant_id) return res.status(403).json({message:'需要商家账号'});
-    const wh=['q.merchant_id=?']; const ps=[req.user.merchant_id];
-    const power=isMerchantPower(req.user);
-    if(!power){ wh.push('(q.related_user_id=? OR q.operator_user_id=?)'); ps.push(req.user.id, req.user.id); }
+  app.get('/api/merchant/quota-logs', requireAuth, async (req,res)=>{
+    const wh=[]; const ps=[];
+    const power=Boolean(req.user.merchant_id) && isMerchantPower(req.user);
+    if(req.user.merchant_id){
+      wh.push('q.merchant_id=?'); ps.push(req.user.merchant_id);
+      if(!power){ wh.push('(q.related_user_id=? OR q.operator_user_id=?)'); ps.push(req.user.id, req.user.id); }
+    }else{
+      wh.push('(q.related_user_id=? OR q.operator_user_id=?)'); ps.push(req.user.id, req.user.id);
+    }
     if(req.query.type){
       const t=String(req.query.type);
       if(t==='AI_GENERATE') wh.push('q.type="AI_COST"');
